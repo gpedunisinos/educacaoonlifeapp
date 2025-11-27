@@ -1,12 +1,12 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:unisinos_usp_app/services/auth_user.dart';
 import 'package:unisinos_usp_app/services/google_auth_service.dart';
 import 'package:unisinos_usp_app/services/user_auth_service.dart';
 import 'package:unisinos_usp_app/webclients/user_webclient.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:widgets_spo/services/auth_provider.dart';
 import 'package:widgets_spo/utils.dart';
 

@@ -1,7 +1,7 @@
-import 'package:unisinos_usp_app/controllers/user_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

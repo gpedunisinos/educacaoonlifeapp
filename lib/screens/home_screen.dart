@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:unisinos_usp_app/controllers/user_controller.dart';
+import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 
 class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
@@ -20,8 +20,18 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: const Center(
-        child: Text('Tela principal'),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('Tela principal'),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => Get.toNamed('/categories'),
+              child: const Text('Gerenciar categorias'),
+            ),
+          ],
+        ),
       ),
     );
   }

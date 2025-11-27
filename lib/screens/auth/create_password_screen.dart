@@ -1,7 +1,7 @@
-import 'package:unisinos_usp_app/controllers/user_controller.dart';
-import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
+import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class CreatePasswordScreen extends StatelessWidget {

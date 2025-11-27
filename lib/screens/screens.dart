@@ -1,7 +1,9 @@
-export 'package:unisinos_usp_app/screens/code_confirmation_screen.dart';
-export 'package:unisinos_usp_app/screens/create_account_screen.dart';
-export 'package:unisinos_usp_app/screens/create_password_screen.dart';
+export 'package:unisinos_usp_app/screens/auth/code_confirmation_screen.dart';
+export 'package:unisinos_usp_app/screens/auth/create_account_screen.dart';
+export 'package:unisinos_usp_app/screens/auth/create_password_screen.dart';
+export 'package:unisinos_usp_app/screens/auth/login_screen.dart';
+export 'package:unisinos_usp_app/screens/auth/password_recover_screen.dart';
+export 'package:unisinos_usp_app/screens/category/category_create_screen.dart';
+export 'package:unisinos_usp_app/screens/category/category_index_screen.dart';
 export 'package:unisinos_usp_app/screens/home_screen.dart';
-export 'package:unisinos_usp_app/screens/login_screen.dart';
-export 'package:unisinos_usp_app/screens/password_recover_screen.dart';
 export 'package:unisinos_usp_app/screens/splash_screen.dart';
