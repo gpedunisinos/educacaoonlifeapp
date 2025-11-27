@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:unisinos_usp_app/models/sample_detail_model.dart';
 import 'package:widgets_spo/utils.dart';
 
 class SampleModel {
@@ -12,6 +13,7 @@ class SampleModel {
   double sampleDouble;
   DateTime sampleDate;
   int orderNumber;
+  SampleDetailModel? sampleDetail;
   DateTime? createdAt;
   DateTime? updatedAt;
 
@@ -24,6 +26,7 @@ class SampleModel {
     required this.sampleDouble,
     required this.sampleDate,
     this.orderNumber = 0,
+    this.sampleDetail,
     this.createdAt,
     this.updatedAt,
     this.nullableString,
@@ -37,6 +40,8 @@ class SampleModel {
         sampleDetailId = json['sample_detail_id'] is int
             ? json['sample_detail_id']
             : int.parse(json['sample_detail_id'].toString()),
+        sampleDetail =
+            json['sample_detail'] != null ? SampleDetailModel.fromJson(json['sample_detail']) : null,
         nullableString = json['nullable_string'],
         sampleDouble = double.parse(json['sample_double'].toString()),
         sampleDate = DateTime.parse(json['sample_date']),

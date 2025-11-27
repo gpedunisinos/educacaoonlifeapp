@@ -68,4 +68,27 @@ Crie o arquivo lib/routes/auth.dart e mova todas as rotas relativas a autentica�
 
 Em lib/controllers/sample/sample_create_controller.dart e lib/controllers/sample/sample_update_controller.dart, altere para que os métodos, ao invés de receber os atributos já recebam o objeto estruturado para inserção. Os atributos devem ser atribuídos na screen.
 
-Crie um objeto SampleDetail. Integre ao lib/models/sample_model.dart. Em lib/screens/sample/sample_create_screen.dart e lib/screens/sample/sample_update_screen.dart utilize o componente input select para buscar estes registros da API e preencher
+Crie um objeto SampleDetail. Integre ao lib/models/sample_model.dart. Em lib/screens/sample/sample_create_screen.dart e lib/screens/sample/sample_update_screen.dart utilize o componente input select para buscar estes registros da API e preencher estes dados.
+Documentação no model na API
+"models.SampleDetail": {
+    "type": "object",
+    "required": [
+        "id",
+        "sample_string"
+    ],
+    "properties": {
+        "created_at": {
+            "type": "string"
+        },
+        "id": {
+            "type": "integer"
+        },
+        "sample_string": {
+            "type": "string"
+        },
+        "updated_at": {
+            "type": "string"
+        }
+    }
+},
+

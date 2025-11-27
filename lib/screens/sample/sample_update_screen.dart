@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:pvalidator/pvalidator.dart';
 import 'package:unisinos_usp_app/controllers/sample/sample_update_controller.dart';
 import 'package:unisinos_usp_app/models/sample_model.dart';
+import 'package:unisinos_usp_app/webclients/sample_detail_webclient.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
@@ -24,7 +25,7 @@ class _SampleUpdateScreenState extends State<SampleUpdateScreen> {
   final TextEditingController _sampleDoubleController = TextEditingController();
   final DateTimeController _sampleDateController = DateTimeController();
   final TextEditingController _orderNumberController = TextEditingController(text: '0');
-  final TextEditingController _sampleDetailIdController = TextEditingController();
+  final ItemSelectController _sampleDetailSelectController = ItemSelectController();
 
   bool _filledControllers = false;
 
@@ -37,7 +38,6 @@ class _SampleUpdateScreenState extends State<SampleUpdateScreen> {
     _sampleDoubleController.dispose();
     _sampleDateController.dispose();
     _orderNumberController.dispose();
-    _sampleDetailIdController.dispose();
     super.dispose();
   }
 
@@ -66,7 +66,10 @@ class _SampleUpdateScreenState extends State<SampleUpdateScreen> {
           _sampleStringController.text = sample.sampleString;
           _sampleUniqueController.text = sample.sampleUnique;
           _nullableStringController.text = sample.nullableString ?? '';
-          _sampleDetailIdController.text = sample.sampleDetailId.toString();
+          _sampleDetailSelectController.selectedItem = ItemSelect(
+            id: sample.sampleDetailId,
+            name: sample.sampleDetail?.sampleString ?? '',
+          );
           _sampleDoubleController.text = sample.sampleDouble.toString();
           _sampleDateController.value = sample.sampleDate;
           _orderNumberController.text = sample.orderNumber.toString();
@@ -117,13 +120,13 @@ class _SampleUpdateScreenState extends State<SampleUpdateScreen> {
                       ]).val(),
                     ),
                     Insets.large.height,
-                    InputNumber(
-                      label: 'Sample detail id',
-                      controller: _sampleDetailIdController,
+                    InputSelectApi(
+                      label: 'Sample detail',
+                      controller: _sampleDetailSelectController,
                       validator: (value) => PValidator([
                         PRuleRequired(value, message: 'Obrigatório'),
-                        PRuleInteger(value, message: 'Use um número inteiro'),
                       ]).val(),
+                      onFind: SampleDetailWebclient().select,
                     ),
                     Insets.large.height,
                     InputNumber(
@@ -186,7 +189,6 @@ class _SampleUpdateScreenState extends State<SampleUpdateScreen> {
 
     final double parsedDouble = double.parse(_sampleDoubleController.text.trim());
     final int parsedOrder = int.parse(_orderNumberController.text.trim());
-    final int parsedDetailId = int.parse(_sampleDetailIdController.text.trim());
 
     final model = SampleModel(
       id: _controller.sample.value?.id ?? _controller.sampleId ?? 0,
@@ -194,7 +196,7 @@ class _SampleUpdateScreenState extends State<SampleUpdateScreen> {
       sampleString: _sampleStringController.text.trim(),
       sampleUnique: _sampleUniqueController.text.trim(),
       nullableString: _nullableStringController.text.trim().isEmpty ? null : _nullableStringController.text.trim(),
-      sampleDetailId: parsedDetailId,
+      sampleDetailId: _sampleDetailSelectController.selectedItem!.id,
       sampleDouble: parsedDouble,
       sampleDate: _sampleDateController.value!,
       orderNumber: parsedOrder,

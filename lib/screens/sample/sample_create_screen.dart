@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:pvalidator/pvalidator.dart';
 import 'package:unisinos_usp_app/controllers/sample/sample_create_controller.dart';
 import 'package:unisinos_usp_app/models/sample_model.dart';
+import 'package:unisinos_usp_app/webclients/sample_detail_webclient.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
@@ -24,7 +25,19 @@ class _SampleCreateScreenState extends State<SampleCreateScreen> {
   final TextEditingController _sampleDoubleController = TextEditingController();
   final DateTimeController _sampleDateController = DateTimeController();
   final TextEditingController _orderNumberController = TextEditingController(text: '0');
-  final TextEditingController _sampleDetailIdController = TextEditingController();
+  final ItemSelectController _sampleDetailSelectController = ItemSelectController();
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _sampleStringController.dispose();
+    _sampleUniqueController.dispose();
+    _nullableStringController.dispose();
+    _sampleDoubleController.dispose();
+    _sampleDateController.dispose();
+    _orderNumberController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,13 +87,13 @@ class _SampleCreateScreenState extends State<SampleCreateScreen> {
                 ]).val(),
               ),
               Insets.large.height,
-              InputNumber(
-                label: 'Sample detail id',
-                controller: _sampleDetailIdController,
+              InputSelectApi(
+                label: 'Sample detail',
+                controller: _sampleDetailSelectController,
                 validator: (value) => PValidator([
                   PRuleRequired(value, message: 'Obrigatório'),
-                  PRuleInteger(value, message: 'Use um número inteiro'),
                 ]).val(),
+                onFind: SampleDetailWebclient().select,
               ),
               Insets.large.height,
               InputNumber(
@@ -132,17 +145,14 @@ class _SampleCreateScreenState extends State<SampleCreateScreen> {
 
     final double parsedDouble = double.parse(_sampleDoubleController.text.trim());
     final int parsedOrder = int.parse(_orderNumberController.text.trim());
-    final int parsedDetailId = int.parse(_sampleDetailIdController.text.trim());
 
     final model = SampleModel(
       id: 0,
       name: _nameController.text.trim(),
       sampleString: _sampleStringController.text.trim(),
       sampleUnique: _sampleUniqueController.text.trim(),
-      nullableString: _nullableStringController.text.trim().isEmpty
-          ? null
-          : _nullableStringController.text.trim(),
-      sampleDetailId: parsedDetailId,
+      nullableString: _nullableStringController.text.trim().isEmpty ? null : _nullableStringController.text.trim(),
+      sampleDetailId: _sampleDetailSelectController.selectedItem!.id,
       sampleDouble: parsedDouble,
       sampleDate: _sampleDateController.value!,
       orderNumber: parsedOrder,
