@@ -67,3 +67,5 @@ video_player_widget.dart
 Crie o arquivo lib/routes/auth.dart e mova todas as rotas relativas a autenticação para este arquivo.
 
 Em lib/controllers/sample/sample_create_controller.dart e lib/controllers/sample/sample_update_controller.dart, altere para que os métodos, ao invés de receber os atributos já recebam o objeto estruturado para inserção. Os atributos devem ser atribuídos na screen.
+
+Crie um objeto SampleDetail. Integre ao lib/models/sample_model.dart. Em lib/screens/sample/sample_create_screen.dart e lib/screens/sample/sample_update_screen.dart utilize o componente input select para buscar estes registros da API e preencher

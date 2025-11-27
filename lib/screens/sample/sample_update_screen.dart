@@ -185,7 +185,6 @@ class _SampleUpdateScreenState extends State<SampleUpdateScreen> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     final double parsedDouble = double.parse(_sampleDoubleController.text.trim());
-    final DateTime parsedDate = _sampleDateController.value!;
     final int parsedOrder = int.parse(_orderNumberController.text.trim());
     final int parsedDetailId = int.parse(_sampleDetailIdController.text.trim());
 
@@ -194,12 +193,10 @@ class _SampleUpdateScreenState extends State<SampleUpdateScreen> {
       name: _nameController.text.trim(),
       sampleString: _sampleStringController.text.trim(),
       sampleUnique: _sampleUniqueController.text.trim(),
-      nullableString: _nullableStringController.text.trim().isEmpty
-          ? null
-          : _nullableStringController.text.trim(),
+      nullableString: _nullableStringController.text.trim().isEmpty ? null : _nullableStringController.text.trim(),
       sampleDetailId: parsedDetailId,
       sampleDouble: parsedDouble,
-      sampleDate: parsedDate,
+      sampleDate: _sampleDateController.value!,
       orderNumber: parsedOrder,
     );
 
