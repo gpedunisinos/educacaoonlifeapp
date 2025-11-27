@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "419473345657",
+    "project_id": "efv-app-256d4",
+    "storage_bucket": "efv-app-256d4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:419473345657:android:266a3a9e87bd46969f58a8",
+        "android_client_info": {
+          "package_name": "com.br.spotecnologia.efvapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBo2JccKOcXq_n82-mHU9JzKq0g1OQt_jk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

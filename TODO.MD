@@ -1,0 +1,25 @@
+Remova os arquivos abaixo e todos os relacionamentos. Preciso que o projeto fique limpo para ser usado como base para outro projeto. Mantenha somente os fluxos relacionados a cadastro de usuário e uma tela principal após o login em branco
+assessment_answer_model.dart
+assessment_available_answer_model.dart
+assessment_completion_model.dart
+assessment_correction_model.dart
+assessment_correction_request_model.dart
+assessment_model.dart
+assessment_question_completion_model.dart
+assessment_question_model.dart
+category_model.dart
+certificate_model.dart
+class_completion_model.dart
+class_completions_model.dart
+class_model.dart
+configuration_model.dart
+course_model.dart
+deleted_at_model.dart
+file_cover_model.dart
+module_model.dart
+notification_model.dart
+report_teacher_score_model.dart
+report_trail_stats_model.dart
+trail_feedback_model.dart
+trail_model.dart
+user_model.dart

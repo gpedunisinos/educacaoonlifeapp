@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta name="google-signin-client_id"
+    content="375087330293-24elht18inrseh4raf72m8763pj5ikvb.apps.googleusercontent.com" />
+
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8" />
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible" />
+  <meta name="description" content="Aplicativo Unisinos USP - Web" />
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="apple-mobile-web-app-title" content="Unisinos USP" />
+  <link rel="apple-touch-icon" href="icons/Icon-192.png" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png" />
+
+  <!-- Manifest -->
+  <link rel="manifest" href="manifest.json" />
+
+  <!-- Desabilita cache apenas do index (garante sincronismo com main.dart.js) -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <title>Unisinos USP App</title>
+
+</head>
+
+<body>
+  <!-- PDF.js import seguro -->
+  <script defer type="module">
+    import * as pdfjsLib from "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.9.155/pdf.min.mjs";
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.9.155/pdf.worker.min.mjs";
+    window.pdfjsLib = pdfjsLib;
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/firebase-messaging-sw.js', { scope: '/firebase-cloud-messaging-push-scope' });
+      });
+    }
+  </script>
+
+  <!-- Bootstrap padrão do Flutter -->
+  <script src="flutter_bootstrap.js" defer></script>
+</body>
+
+</html>
