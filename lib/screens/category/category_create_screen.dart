@@ -14,6 +14,12 @@ class CategoryCreateScreen extends StatefulWidget {
 
 class _CategoryCreateScreenState extends State<CategoryCreateScreen> {
   final CategoryCreateController _controller = Get.find<CategoryCreateController>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _colorController = TextEditingController(text: '#');
+  final TextEditingController _iconController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -24,13 +30,13 @@ class _CategoryCreateScreenState extends State<CategoryCreateScreen> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
-          key: _controller.formKey,
+          key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               InputText(
                 hintText: 'Nome',
-                controller: _controller.nameController,
+                controller: _nameController,
                 validator: (value) => PValidator([
                   PRuleRequired(value, message: 'Obrigatório'),
                   PRuleMaxString(value, 255, message: 'Máximo de 255 caracteres'),
@@ -39,7 +45,7 @@ class _CategoryCreateScreenState extends State<CategoryCreateScreen> {
               Insets.large.height,
               InputText(
                 hintText: 'Cor em hex (ex: #FF5733)',
-                controller: _controller.colorController,
+                controller: _colorController,
                 validator: (value) => PValidator([
                   PRuleRequired(value, message: 'Obrigatório'),
                   PRuleRegex(value, r'^#([A-Fa-f0-9]{6})$', message: 'Use o formato #RRGGBB'),
@@ -48,12 +54,12 @@ class _CategoryCreateScreenState extends State<CategoryCreateScreen> {
               Insets.large.height,
               InputText(
                 hintText: 'Código do ícone (opcional)',
-                controller: _controller.iconController,
+                controller: _iconController,
               ),
               Insets.large.height,
               InputText(
                 hintText: 'Descrição (opcional)',
-                controller: _controller.descriptionController,
+                controller: _descriptionController,
                 maxLines: 4,
               ),
               Insets.extraLarge.height,
@@ -65,7 +71,7 @@ class _CategoryCreateScreenState extends State<CategoryCreateScreen> {
                   return ActionButton(
                     theme: ActionButtonTheme.blue,
                     title: buttonTitle,
-                    onPressed: loading ? null : _controller.save,
+                    onPressed: loading ? null : _save,
                   );
                 }),
               ),
@@ -74,5 +80,19 @@ class _CategoryCreateScreenState extends State<CategoryCreateScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _save() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
+    final bool saved = await _controller.save(
+      name: _nameController.text,
+      colorHex: _colorController.text,
+      iconCode: _iconController.text,
+      description: _descriptionController.text,
+    );
+    if (saved) {
+      Get.secureBack(result: true);
+    }
   }
 }

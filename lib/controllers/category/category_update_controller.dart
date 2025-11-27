@@ -1,57 +1,66 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:unisinos_usp_app/controllers/category/category_controller.dart';
 import 'package:unisinos_usp_app/models/category_model.dart';
+import 'package:unisinos_usp_app/webclients/category_webclient.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class CategoryUpdateController extends GetxController {
-  final CategoryController _categoryController = Get.find<CategoryController>();
+  final CategoryWebclient _webclient = CategoryWebclient();
 
-  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  final Rxn<CategoryModel> category = Rxn<CategoryModel>();
+  final RxBool isLoading = false.obs;
 
-  CategoryModel? category;
-
-  late final TextEditingController nameController;
-  late final TextEditingController colorController;
-  late final TextEditingController iconController;
-  late final TextEditingController descriptionController;
-
-  RxBool get isLoading => _categoryController.isLoading;
+  int? categoryId;
 
   @override
   void onInit() {
     super.onInit();
-    category = Get.arguments as CategoryModel?;
-    nameController = TextEditingController(text: category?.name ?? '');
-    colorController = TextEditingController(text: category?.colorHex ?? '#');
-    iconController = TextEditingController(text: category?.iconCode ?? '');
-    descriptionController = TextEditingController(text: category?.description ?? '');
+    categoryId = int.tryParse(Get.parameters['id'] ?? '');
+    if (categoryId != null) {
+      loadCategory(categoryId!);
+    }
   }
 
-  @override
-  void onClose() {
-    nameController.dispose();
-    colorController.dispose();
-    iconController.dispose();
-    descriptionController.dispose();
-    super.onClose();
+  Future<void> loadCategory(int id) async {
+    try {
+      isLoading.value = true;
+      final CategoryModel loaded = await _webclient.fetchById(id);
+      category.value = loaded;
+    } catch (error, stackTrace) {
+      Util.debug(exception: error, stackTrace: stackTrace);
+      Get.customSnackbar('Erro', 'Falha ao carregar categoria. $error');
+    } finally {
+      isLoading.value = false;
+    }
   }
 
-  Future<void> save() async {
-    if (!(formKey.currentState?.validate() ?? false)) return;
-    if (category == null) return;
+  Future<bool> save({
+    required String name,
+    required String colorHex,
+    String? iconCode,
+    String? description,
+  }) async {
+    final int? id = category.value?.id ?? categoryId;
+    if (id == null) return false;
 
     final categoryToSave = CategoryModel(
-      id: category!.id,
-      name: nameController.text.trim(),
-      colorHex: colorController.text.trim(),
-      iconCode: iconController.text.trim().isEmpty ? null : iconController.text.trim(),
-      description: descriptionController.text.trim().isEmpty ? null : descriptionController.text.trim(),
+      id: id,
+      name: name.trim(),
+      colorHex: colorHex.trim(),
+      iconCode: iconCode?.trim().isEmpty == true ? null : iconCode?.trim(),
+      description: description?.trim().isEmpty == true ? null : description?.trim(),
     );
 
-    final saved = await _categoryController.saveCategory(categoryToSave);
-    if (saved) {
-      Get.secureBack();
+    try {
+      isLoading.value = true;
+      await _webclient.update(categoryToSave);
+      Get.successSnackbar('Categoria salva com sucesso.');
+      return true;
+    } catch (error, stackTrace) {
+      Util.debug(exception: error, stackTrace: stackTrace);
+      Get.customSnackbar('Erro', 'Não foi possível salvar a categoria. $error');
+      return false;
+    } finally {
+      isLoading.value = false;
     }
   }
 }

@@ -16,7 +16,7 @@ class CategoryIndexScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => Get.toNamed('/categories/create'),
+            onPressed: _goToCreate,
             tooltip: 'Nova categoria',
           ),
         ],
@@ -30,36 +30,44 @@ class CategoryIndexScreen extends StatelessWidget {
           return const Center(child: Text('Nenhuma categoria cadastrada.'));
         }
 
-        return RefreshIndicator(
-          onRefresh: _controller.refreshCategories,
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: _controller.categories.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
-            itemBuilder: (_, index) {
-              final CategoryModel category = _controller.categories[index];
-              return ListTile(
-                leading: _ColorDot(colorHex: category.colorHex),
-                title: Text(category.name),
-                subtitle: category.description?.isNotEmpty == true ? Text(category.description!) : null,
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () => Get.toNamed('/categories/update', arguments: category),
-                      tooltip: 'Editar',
+        return Column(
+          children: [
+            Expanded(
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                itemCount: _controller.categories.length,
+                separatorBuilder: (_, __) => const Divider(height: 1),
+                itemBuilder: (_, index) {
+                  final CategoryModel category = _controller.categories[index];
+                  return ListTile(
+                    leading: _ColorDot(colorHex: category.colorHex),
+                    title: Text(category.name),
+                    subtitle: category.description?.isNotEmpty == true ? Text(category.description!) : null,
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          onPressed: _controller.isLoading.value ? null : () => _goToUpdate(category),
+                          tooltip: 'Editar',
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline),
+                          onPressed: _controller.isLoading.value ? null : () => _confirmDelete(category),
+                          tooltip: 'Excluir',
+                        ),
+                      ],
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.delete_outline),
-                      onPressed: () => _confirmDelete(category),
-                      tooltip: 'Excluir',
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
+                  );
+                },
+              ),
+            ),
+            if (_controller.isLoading.value)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: CircularProgressIndicator(),
+              ),
+          ],
         );
       }),
     );
@@ -77,6 +85,16 @@ class CategoryIndexScreen extends StatelessWidget {
         _controller.deleteCategory(category);
       },
     );
+  }
+
+  Future<void> _goToCreate() async {
+    await Get.toNamed('/categories/create');
+    await _controller.loadCategories();
+  }
+
+  Future<void> _goToUpdate(CategoryModel category) async {
+    await Get.toNamed('/categories/update', parameters: {'id': category.id.toString()});
+    await _controller.loadCategories();
   }
 }
 

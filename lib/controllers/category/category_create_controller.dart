@@ -1,53 +1,38 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:unisinos_usp_app/controllers/category/category_controller.dart';
 import 'package:unisinos_usp_app/models/category_model.dart';
+import 'package:unisinos_usp_app/webclients/category_webclient.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class CategoryCreateController extends GetxController {
-  final CategoryController _categoryController = Get.find<CategoryController>();
+  final CategoryWebclient _webclient = CategoryWebclient();
 
-  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  final RxBool isLoading = false.obs;
 
-  late final TextEditingController nameController;
-  late final TextEditingController colorController;
-  late final TextEditingController iconController;
-  late final TextEditingController descriptionController;
-
-  RxBool get isLoading => _categoryController.isLoading;
-
-  @override
-  void onInit() {
-    super.onInit();
-    nameController = TextEditingController(text: '');
-    colorController = TextEditingController(text: '#');
-    iconController = TextEditingController(text: '');
-    descriptionController = TextEditingController(text: '');
-  }
-
-  @override
-  void onClose() {
-    nameController.dispose();
-    colorController.dispose();
-    iconController.dispose();
-    descriptionController.dispose();
-    super.onClose();
-  }
-
-  Future<void> save() async {
-    if (!(formKey.currentState?.validate() ?? false)) return;
-
+  Future<bool> save({
+    required String name,
+    required String colorHex,
+    String? iconCode,
+    String? description,
+  }) async {
     final category = CategoryModel(
       id: 0,
-      name: nameController.text.trim(),
-      colorHex: colorController.text.trim(),
-      iconCode: iconController.text.trim().isEmpty ? null : iconController.text.trim(),
-      description: descriptionController.text.trim().isEmpty ? null : descriptionController.text.trim(),
+      name: name.trim(),
+      colorHex: colorHex.trim(),
+      iconCode: iconCode?.trim().isEmpty == true ? null : iconCode?.trim(),
+      description: description?.trim().isEmpty == true ? null : description?.trim(),
     );
 
-    final saved = await _categoryController.saveCategory(category);
-    if (saved) {
-      Get.secureBack();
+    try {
+      isLoading.value = true;
+      await _webclient.create(category);
+      Get.successSnackbar('Categoria salva com sucesso.');
+      return true;
+    } catch (error, stackTrace) {
+      Util.debug(exception: error, stackTrace: stackTrace);
+      Get.customSnackbar('Erro', 'Não foi possível salvar a categoria. $error');
+      return false;
+    } finally {
+      isLoading.value = false;
     }
   }
 }

@@ -1,14 +1,43 @@
 import 'package:get/get.dart';
-import 'package:unisinos_usp_app/controllers/category/category_controller.dart';
 import 'package:unisinos_usp_app/models/category_model.dart';
+import 'package:unisinos_usp_app/webclients/category_webclient.dart';
+import 'package:widgets_spo/widgets_spo.dart';
 
 class CategoryIndexController extends GetxController {
-  final CategoryController _categoryController = Get.find<CategoryController>();
+  final CategoryWebclient _webclient = CategoryWebclient();
 
-  RxList<CategoryModel> get categories => _categoryController.categories;
-  RxBool get isLoading => _categoryController.isLoading;
+  final RxList<CategoryModel> categories = <CategoryModel>[].obs;
+  final RxBool isLoading = false.obs;
 
-  Future<void> refreshCategories() => _categoryController.fetchCategories();
+  @override
+  void onInit() {
+    super.onInit();
+    loadCategories();
+  }
 
-  Future<void> deleteCategory(CategoryModel category) => _categoryController.deleteCategory(category.id);
+  Future<void> loadCategories() async {
+    try {
+      isLoading.value = true;
+      categories.assignAll(await _webclient.fetch());
+    } catch (error, stackTrace) {
+      Util.debug(exception: error, stackTrace: stackTrace);
+      Get.customSnackbar('Erro', 'Falha ao buscar categorias. $error');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> deleteCategory(CategoryModel category) async {
+    try {
+      isLoading.value = true;
+      await _webclient.delete(category.id);
+      categories.removeWhere((c) => c.id == category.id);
+      Get.successSnackbar('Categoria removida com sucesso.');
+    } catch (error, stackTrace) {
+      Util.debug(exception: error, stackTrace: stackTrace);
+      Get.customSnackbar('Erro', 'Falha ao remover categoria. $error');
+    } finally {
+      isLoading.value = false;
+    }
+  }
 }

@@ -24,6 +24,20 @@ class CategoryWebclient {
     return CategoryModel.fromJsonArray(jsonDecode(response.body));
   }
 
+  Future<CategoryModel> fetchById(int id) async {
+    final Response response = await webClient.get(
+      '/$endpoint/$id',
+      [
+        LoggingInterceptor(),
+        ApiInterceptor(),
+        TokenInterceptor(),
+      ],
+      {},
+    );
+
+    return CategoryModel.fromJson(jsonDecode(response.body));
+  }
+
   Future<CategoryModel> create(CategoryModel category) async {
     final Response response = await webClient.post(
       '/$endpoint',
