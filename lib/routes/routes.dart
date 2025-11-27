@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/routes/categories.dart';
+import 'package:unisinos_usp_app/routes/samples.dart';
 import 'package:unisinos_usp_app/screens/screens.dart';
 
 List<GetPage> appRoutes() => [
@@ -11,4 +12,5 @@ List<GetPage> appRoutes() => [
       GetPage(name: '/create_password', page: () => CreatePasswordScreen()),
       GetPage(name: '/home', page: () => HomeScreen()),
       ...categoryRoutes(),
+      ...sampleRoutes(),
     ];

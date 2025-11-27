@@ -5,5 +5,8 @@ export 'package:unisinos_usp_app/screens/auth/login_screen.dart';
 export 'package:unisinos_usp_app/screens/auth/password_recover_screen.dart';
 export 'package:unisinos_usp_app/screens/category/category_create_screen.dart';
 export 'package:unisinos_usp_app/screens/category/category_index_screen.dart';
+export 'package:unisinos_usp_app/screens/sample/sample_create_screen.dart';
+export 'package:unisinos_usp_app/screens/sample/sample_index_screen.dart';
+export 'package:unisinos_usp_app/screens/sample/sample_update_screen.dart';
 export 'package:unisinos_usp_app/screens/home_screen.dart';
 export 'package:unisinos_usp_app/screens/splash_screen.dart';

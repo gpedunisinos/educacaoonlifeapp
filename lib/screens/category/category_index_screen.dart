@@ -42,7 +42,7 @@ class CategoryIndexScreen extends StatelessWidget {
                   return ListTile(
                     leading: _ColorDot(colorHex: category.colorHex),
                     title: Text(category.name),
-                    subtitle: category.description?.isNotEmpty == true ? Text(category.description!) : null,
+                    subtitle: Text(category.description ?? ''),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
