@@ -1,5 +1,4 @@
 import 'package:unisinos_usp_app/controllers/user_controller.dart';
-import 'package:unisinos_usp_app/models/user_model.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -154,14 +153,14 @@ class CreateAccountScreen extends StatelessWidget {
   void _doCreateAccount(BuildContext context) {
     if (_formKey.currentState!.validate()) {
       if (isAcceptedTerms.value) {
-        UserModel model = UserModel(
-          id: 0,
-          name: _nameTextController.text,
-          email: _mailTextController.text,
-          password: _passwordTextController.text,
-          profileType: ProfileTypeEnum.student,
-        );
-        LoadingDialog.showFuture(context, _controller.createAccount(model)).then((created) {
+        LoadingDialog.showFuture(
+          context,
+          _controller.createAccount(
+            name: _nameTextController.text,
+            email: _mailTextController.text,
+            password: _passwordTextController.text,
+          ),
+        ).then((created) {
           if (created) {
             Get.secureBack();
           }

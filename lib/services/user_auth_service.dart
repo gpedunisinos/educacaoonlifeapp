@@ -1,29 +1,27 @@
-import 'package:unisinos_usp_app/controllers/controllers.dart';
-import 'package:unisinos_usp_app/models/user_model.dart';
+import 'package:unisinos_usp_app/services/auth_user.dart';
 import 'package:get/get.dart';
 import 'package:widgets_spo/services/auth_provider.dart';
 import 'package:widgets_spo/utils/util.dart';
 
 class UserAuthService implements AuthService {
-  UserModel? _user;
+  AuthUser? _user;
 
-  void setUser(UserModel user) {
+  void setUser(AuthUser user) {
     _user = user;
   }
 
   @override
   String getToken() {
-    if (_user == null || _user!.token == null || _user!.token!.isEmpty) {
+    if (_user == null || _user!.token.isEmpty) {
       throw Exception('Token inválido ou usuário não logado');
     }
-    return _user!.token!;
+    return _user!.token;
   }
 
   @override
   Future<void> logout() async {
     await Util.prefs.clear();
-
-    Get.delete<NotificationController>(force: true);
+    _user = null;
 
     if (Get.currentRoute != '/login') {
       await Get.offAllNamed('/login');

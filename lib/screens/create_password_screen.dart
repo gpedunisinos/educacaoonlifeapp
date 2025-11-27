@@ -1,5 +1,4 @@
 import 'package:unisinos_usp_app/controllers/user_controller.dart';
-import 'package:unisinos_usp_app/models/user_model.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -78,9 +77,10 @@ class CreatePasswordScreen extends StatelessWidget {
 
   Future<void> _doChangePassword() async {
     if (_formKey.currentState!.validate()) {
-      UserModel userModel = await _controller.recoverPassword(token, _passwordTextController.text);
+      final user = await _controller.recoverPassword(token, _passwordTextController.text);
 
-      await _controller.savePrefs(userModel);
+      await _controller.savePrefs(user);
+      Get.offAllNamed('/home');
     }
   }
 }
