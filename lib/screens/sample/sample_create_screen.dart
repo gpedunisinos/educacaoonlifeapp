@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pvalidator/pvalidator.dart';
 import 'package:unisinos_usp_app/controllers/sample/sample_create_controller.dart';
+import 'package:unisinos_usp_app/models/sample_model.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
@@ -133,16 +134,21 @@ class _SampleCreateScreenState extends State<SampleCreateScreen> {
     final int parsedOrder = int.parse(_orderNumberController.text.trim());
     final int parsedDetailId = int.parse(_sampleDetailIdController.text.trim());
 
-    final bool saved = await _controller.save(
-      name: _nameController.text,
-      sampleString: _sampleStringController.text,
-      sampleUnique: _sampleUniqueController.text,
-      nullableString: _nullableStringController.text,
+    final model = SampleModel(
+      id: 0,
+      name: _nameController.text.trim(),
+      sampleString: _sampleStringController.text.trim(),
+      sampleUnique: _sampleUniqueController.text.trim(),
+      nullableString: _nullableStringController.text.trim().isEmpty
+          ? null
+          : _nullableStringController.text.trim(),
       sampleDetailId: parsedDetailId,
       sampleDouble: parsedDouble,
       sampleDate: _sampleDateController.value!,
       orderNumber: parsedOrder,
     );
+
+    final bool saved = await _controller.save(model);
     if (saved) {
       Get.secureBack(result: true);
     }

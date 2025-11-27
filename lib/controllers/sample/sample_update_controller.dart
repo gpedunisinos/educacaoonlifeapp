@@ -32,31 +32,11 @@ class SampleUpdateController extends GetxController {
     }
   }
 
-  Future<bool> save({
-    required String name,
-    required String sampleString,
-    required String sampleUnique,
-    required int sampleDetailId,
-    required double sampleDouble,
-    required DateTime sampleDate,
-    int orderNumber = 0,
-    String? nullableString,
-  }) async {
-    final int? id = sample.value?.id ?? sampleId;
+  Future<bool> save(SampleModel model) async {
+    final int? id = model.id == 0 ? sample.value?.id ?? sampleId : model.id;
     if (id == null) return false;
 
-    final model = SampleModel(
-      id: id,
-      name: name.trim(),
-      sampleString: sampleString.trim(),
-      sampleUnique: sampleUnique.trim(),
-      sampleDetailId: sampleDetailId,
-      nullableString: nullableString?.trim().isEmpty == true ? null : nullableString?.trim(),
-      sampleDouble: sampleDouble,
-      sampleDate: sampleDate,
-      orderNumber: orderNumber,
-    );
-
+    model.id = id;
     try {
       isLoading.value = true;
       await _webclient.update(model);

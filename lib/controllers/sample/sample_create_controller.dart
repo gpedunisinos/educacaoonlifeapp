@@ -8,28 +8,7 @@ class SampleCreateController extends GetxController {
 
   final RxBool isLoading = false.obs;
 
-  Future<bool> save({
-    required String name,
-    required String sampleString,
-    required String sampleUnique,
-    required int sampleDetailId,
-    required double sampleDouble,
-    required DateTime sampleDate,
-    int orderNumber = 0,
-    String? nullableString,
-  }) async {
-    final model = SampleModel(
-      id: 0,
-      name: name.trim(),
-      sampleString: sampleString.trim(),
-      sampleUnique: sampleUnique.trim(),
-      sampleDetailId: sampleDetailId,
-      nullableString: nullableString?.trim().isEmpty == true ? null : nullableString?.trim(),
-      sampleDouble: sampleDouble,
-      sampleDate: sampleDate,
-      orderNumber: orderNumber,
-    );
-
+  Future<bool> save(SampleModel model) async {
     try {
       isLoading.value = true;
       await _webclient.create(model);

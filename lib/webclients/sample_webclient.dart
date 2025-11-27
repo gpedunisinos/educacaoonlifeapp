@@ -8,7 +8,7 @@ import 'package:widgets_spo/services/services.dart';
 class SampleWebclient {
   final WebClient webClient = WebClient.instance;
 
-  String get endpoint => 'sample-models';
+  String get endpoint => 'sample_models';
 
   Future<List<SampleModel>> fetch() async {
     final Response response = await webClient.get(

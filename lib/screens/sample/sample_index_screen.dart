@@ -33,7 +33,7 @@ class SampleIndexScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: _controller.isLoading.value ? null : _goToCreate,
+            onPressed: _goToCreate,
             tooltip: 'Novo',
           ),
         ],
