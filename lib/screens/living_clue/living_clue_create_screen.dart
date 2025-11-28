@@ -30,6 +30,12 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
   bool _isActive = true;
 
   @override
+  void initState() {
+    super.initState();
+    _prefillCoordinates();
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
@@ -38,6 +44,18 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
     _imageUrlController.dispose();
     _metadataController.dispose();
     super.dispose();
+  }
+
+  void _prefillCoordinates() {
+    final args = Get.arguments;
+    if (args is Map) {
+      final lat = args['latitude'];
+      final lng = args['longitude'];
+      if (lat != null && lng != null) {
+        _latitudeController.text = '$lat';
+        _longitudeController.text = '$lng';
+      }
+    }
   }
 
   @override
@@ -82,7 +100,6 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
                 controller: _latitudeController,
                 validator: (value) => PValidator([
                   PRuleRequired(value, message: 'Obrigatório'),
-                  PRuleNumeric(value, message: 'Use um número válido'),
                 ]).val(),
               ),
               Insets.large.height,
@@ -91,7 +108,6 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
                 controller: _longitudeController,
                 validator: (value) => PValidator([
                   PRuleRequired(value, message: 'Obrigatório'),
-                  PRuleNumeric(value, message: 'Use um número válido'),
                 ]).val(),
               ),
               Insets.large.height,

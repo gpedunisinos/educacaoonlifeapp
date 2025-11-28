@@ -47,6 +47,13 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mapa de pistas vivas'),
+        actions: [
+          IconButton(
+            tooltip: 'Criar pista por ponto',
+            icon: const Icon(Icons.add_location_alt),
+            onPressed: () => Get.toNamed('/living_clues/map/create'),
+          ),
+        ],
       ),
       body: Column(
         children: [
