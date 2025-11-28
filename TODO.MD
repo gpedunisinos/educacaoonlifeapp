@@ -50,6 +50,17 @@ Faça a mesma renderização para a tela lib/screens/living_clue/living_clue_upd
 
 Deixei a tela mais bonita lib/screens/living_clue/living_clue_show_screen.dart
 
-Deixe todas as telas, com exceção da lib/screens/home_screen.dart, e lib/screens/living_clue/living_clue_show_screen.dart que já foram feitas, mais bonitas.
 
-Considere a API https://api.uniusp.gpedu.com.br/api/swagger/doc.json, implemente o envio e visualização de arquivos nas telas que forem apropriadas. Implemente um perview destes links utilizando algum componente.
+
+
+Em lib/screens/living_clue/living_clue_index_screen.dart, adicione um botão para somente ver a pista viva.
+
+Em lib/screens/living_clue/living_clue_map_screen.dart, o icone deve ter a cor da categoria do living clue.
+
+Partindo de lib/screens/living_clue/living_clue_update_screen.dart, adicione uma tela para fazer o vínculo com outra living clue onde será selecionado o tipo de conexão através de um seletor lib/models/connection_type_model.dart e os demais dados necessários para criar lib/models/clue_connection_model.dart.
+
+Em lib/screens/living_clue/living_clue_map_screen.dart, quando living clue possuir conexões, trace um fio vermelho entre cada ponto no mapa demonstrando estas conexões.
+
+Considere a API https://api.uniusp.gpedu.com.br/api/swagger/doc.json, implemente o envio e visualização de arquivos nas telas que forem apropriadas. Implemente um perview destes links utilizando algum componente. Deixei tudo organizado, bonito e o mais pronto possível.
+
+Deixe todas as telas, com exceção da lib/screens/home_screen.dart, e lib/screens/living_clue/living_clue_show_screen.dart que já foram feitas, mais bonitas.

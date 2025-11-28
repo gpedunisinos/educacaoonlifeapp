@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pvalidator/pvalidator.dart';
 import 'package:unisinos_usp_app/controllers/living_clue/living_clue_update_controller.dart';
+import 'package:unisinos_usp_app/models/file_model.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
 import 'package:unisinos_usp_app/webclients/category_webclient.dart';
+import 'package:unisinos_usp_app/webclients/file_webclient.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
@@ -24,12 +26,17 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
   final TextEditingController _longitudeController = TextEditingController();
   final TextEditingController _imageUrlController = TextEditingController();
   final TextEditingController _categoryController = TextEditingController();
+  final TextEditingController _linkController = TextEditingController();
+  final MFileController _fileController = MFileController();
   final Map<String, TextEditingController> _metadataControllers = {};
+  final List<FileModel> _attachments = [];
   bool _filled = false;
   bool _isActive = true;
   bool _loadingCategory = false;
+  bool _loadingAttachments = false;
   bool _metadataLoaded = false;
-  String _categoryName = '';
+  bool _attachmentsLoaded = false;
+  bool _uploadingFile = false;
   int? _categoryId;
   List<String> _metadataTags = [];
   Map<String, dynamic> _initialMetadata = {};
@@ -42,6 +49,8 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
     _longitudeController.dispose();
     _imageUrlController.dispose();
     _categoryController.dispose();
+    _linkController.dispose();
+    _fileController.dispose();
     _metadataControllers.values.forEach((c) => c.dispose());
     super.dispose();
   }
@@ -74,6 +83,13 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
           });
         }
 
+        if (!_attachmentsLoaded && _controller.livingClue.value != null) {
+          _attachmentsLoaded = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _loadAttachments(_controller.livingClue.value!.id);
+          });
+        }
+
         return Stack(
           children: [
             SingleChildScrollView(
@@ -83,83 +99,37 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    InputText(
-                      hintText: 'Nome',
-                      controller: _nameController,
-                      validator: (value) => PValidator([
-                        PRuleRequired(value, message: 'Obrigatório'),
-                        PRuleMaxString(value, 255, message: 'Máximo de 255 caracteres'),
-                      ]).val(),
-                    ),
-                    Insets.large.height,
-                    InputText(
-                      hintText: 'Categoria',
-                      readOnly: true,
-                      controller: _categoryController,
-                      validator: (_) => _categoryId == null ? 'Categoria obrigatória' : null,
-                    ),
-                    Insets.large.height,
-                    InputText(
-                      hintText: 'Descrição (opcional)',
-                      controller: _descriptionController,
-                      maxLines: 3,
-                    ),
-                    Insets.large.height,
-                    InputNumber(
-                      label: 'Latitude',
-                      controller: _latitudeController,
-                      validator: (value) => PValidator([
-                        PRuleRequired(value, message: 'Obrigatório'),
-                        PRuleNumeric(value, message: 'Use um número válido'),
-                      ]).val(),
-                    ),
-                    Insets.large.height,
-                    InputNumber(
-                      label: 'Longitude',
-                      controller: _longitudeController,
-                      validator: (value) => PValidator([
-                        PRuleRequired(value, message: 'Obrigatório'),
-                        PRuleNumeric(value, message: 'Use um número válido'),
-                      ]).val(),
-                    ),
-                    Insets.large.height,
-                    InputText(
-                      hintText: 'URL da imagem (opcional)',
-                      controller: _imageUrlController,
-                    ),
-                    Insets.large.height,
-                    if (_metadataTags.isNotEmpty) ...[
-                      const Text('Metadata (opcional)'),
-                      const SizedBox(height: 8),
-                      ..._metadataTags.map(
-                        (tag) => Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: InputText(
-                            hintText: _formatTagLabel(tag),
-                            controller: _metadataControllers[tag]!,
-                          ),
+                    _buildInfoCard(context),
+                    const SizedBox(height: 12),
+                    _buildLocationCard(),
+                    const SizedBox(height: 12),
+                    _buildAttachmentsCard(),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Obx(() {
+                            final bool loading = _controller.isLoading.value;
+                            final String buttonTitle = loading ? 'Atualizando...' : 'Atualizar';
+                            return ActionButton(
+                              theme: ActionButtonTheme.blue,
+                              title: buttonTitle,
+                              onPressed: loading ? null : _save,
+                            );
+                          }),
                         ),
-                      ),
-                      Insets.large.height,
-                    ],
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text('Ativo'),
-                      value: _isActive,
-                      onChanged: (val) => setState(() => _isActive = val),
-                    ),
-                    Insets.extraLarge.height,
-                    SizedBox(
-                      width: double.infinity,
-                      child: Obx(() {
-                        final bool loading = _controller.isLoading.value;
-                        final String buttonTitle = loading ? 'Atualizando...' : 'Atualizar';
-                        return ActionButton(
-                          theme: ActionButtonTheme.blue,
-                          title: buttonTitle,
-                          onPressed: loading ? null : _save,
-                        );
-                      }),
+                        const SizedBox(width: 12),
+                        OutlinedButton.icon(
+                          onPressed: _controller.livingClue.value == null
+                              ? null
+                              : () => Get.toNamed(
+                                    '/living_clues/connect',
+                                    arguments: _controller.livingClue.value,
+                                  ),
+                          icon: const Icon(Icons.share),
+                          label: const Text('Vincular'),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -175,6 +145,229 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
           ],
         );
       }),
+    );
+  }
+
+  Widget _buildInfoCard(BuildContext context) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.badge_outlined, color: Colors.indigo),
+                const SizedBox(width: 8),
+                Text(
+                  'Informações principais',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                ),
+              ],
+            ),
+            Insets.large.height,
+            InputText(
+              hintText: 'Nome',
+              controller: _nameController,
+              validator: (value) => PValidator([
+                PRuleRequired(value, message: 'Obrigatório'),
+                PRuleMaxString(value, 255, message: 'Máximo de 255 caracteres'),
+              ]).val(),
+            ),
+            Insets.large.height,
+            InputText(
+              hintText: 'Categoria',
+              readOnly: true,
+              controller: _categoryController,
+              validator: (_) => _categoryId == null ? 'Categoria obrigatória' : null,
+            ),
+            Insets.large.height,
+            InputText(
+              hintText: 'Descrição (opcional)',
+              controller: _descriptionController,
+              maxLines: 3,
+            ),
+            Insets.large.height,
+            if (_metadataTags.isNotEmpty) ...[
+              const Text('Metadata (opcional)'),
+              const SizedBox(height: 8),
+              ..._metadataTags.map(
+                (tag) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: InputText(
+                    hintText: _formatTagLabel(tag),
+                    controller: _metadataControllers[tag]!,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLocationCard() {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.place_outlined, color: Colors.teal),
+                const SizedBox(width: 8),
+                const Text('Localização e status', style: TextStyle(fontWeight: FontWeight.w700)),
+              ],
+            ),
+            Insets.large.height,
+            InputNumber(
+              label: 'Latitude',
+              controller: _latitudeController,
+              validator: (value) => PValidator([
+                PRuleRequired(value, message: 'Obrigatório'),
+                PRuleNumeric(value, message: 'Use um número válido'),
+              ]).val(),
+            ),
+            Insets.large.height,
+            InputNumber(
+              label: 'Longitude',
+              controller: _longitudeController,
+              validator: (value) => PValidator([
+                PRuleRequired(value, message: 'Obrigatório'),
+                PRuleNumeric(value, message: 'Use um número válido'),
+              ]).val(),
+            ),
+            Insets.large.height,
+            InputText(
+              hintText: 'URL da imagem (opcional)',
+              controller: _imageUrlController,
+            ),
+            Insets.medium.height,
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Ativo'),
+              value: _isActive,
+              onChanged: (val) => setState(() => _isActive = val),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAttachmentsCard() {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.attachment_outlined, color: Colors.deepOrange),
+                const SizedBox(width: 8),
+                const Text('Arquivos e evidências', style: TextStyle(fontWeight: FontWeight.w700)),
+                const Spacer(),
+                if (_uploadingFile || _loadingAttachments)
+                  const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
+              ],
+            ),
+            const SizedBox(height: 10),
+            if (_loadingAttachments)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else if (_attachments.isEmpty)
+              Text(
+                'Nenhum arquivo vinculado ainda.',
+                style: TextStyle(color: Colors.grey.shade600),
+              )
+            else
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: _attachments
+                      .map(
+                        (file) => Padding(
+                          padding: const EdgeInsets.only(right: 12),
+                          child: Stack(
+                            alignment: Alignment.topRight,
+                            children: [
+                              Container(
+                                width: 200,
+                                constraints: const BoxConstraints(minHeight: 140),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade50,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: Colors.grey.shade200),
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: FilePreviewComponent(file),
+                                ),
+                              ),
+                              Positioned(
+                                top: 4,
+                                right: 4,
+                                child: Material(
+                                  color: Colors.black.withOpacity(0.55),
+                                  shape: const CircleBorder(),
+                                  child: IconButton(
+                                    icon: const Icon(Icons.close, color: Colors.white, size: 18),
+                                    onPressed: _uploadingFile ? null : () => _removeAttachment(file),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
+            const SizedBox(height: 12),
+            Text(
+              'Adicionar novo',
+              style: TextStyle(
+                color: Colors.grey.shade800,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                InputFile(mFileController: _fileController),
+                const SizedBox(width: 10),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.cloud_upload),
+                  label: Text(_uploadingFile ? 'Enviando...' : 'Enviar arquivo'),
+                  onPressed: _uploadingFile ? null : _uploadSelectedFile,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            InputText(
+              hintText: 'Ou cole um link público',
+              controller: _linkController,
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.send_outlined),
+                label: Text(_uploadingFile ? 'Enviando...' : 'Salvar link'),
+                onPressed: _uploadingFile ? null : _uploadLink,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -194,8 +387,7 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
     try {
       final category = await CategoryWebclient().fetchById(categoryId);
       _categoryId = category.id;
-      _categoryName = category.name;
-      _categoryController.text = _categoryName;
+      _categoryController.text = category.name;
       _metadataTags = category.metadataTags.split(',').map((t) => t.trim()).where((t) => t.isNotEmpty).toList();
       for (final tag in _metadataTags) {
         final initial = existingMetadata[tag]?.toString() ?? '';
@@ -207,6 +399,99 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
       Get.snackbar('Categoria', 'Falha ao carregar metadados da categoria.');
     } finally {
       if (mounted) setState(() => _loadingCategory = false);
+    }
+  }
+
+  Future<void> _loadAttachments(int livingClueId) async {
+    setState(() => _loadingAttachments = true);
+    try {
+      final files = await FileWebclient().fetch(livingClueId: livingClueId);
+      setState(() {
+        _attachments
+          ..clear()
+          ..addAll(files);
+        _attachmentsLoaded = true;
+      });
+    } catch (_) {
+      Get.customSnackbar('Arquivos', 'Falha ao carregar arquivos desta pista.');
+    } finally {
+      if (mounted) setState(() => _loadingAttachments = false);
+    }
+  }
+
+  Future<void> _uploadSelectedFile() async {
+    if (_controller.livingClue.value == null) return;
+    final file = _fileController.file;
+    if (file == null) {
+      Get.customSnackbar('Arquivos', 'Selecione um arquivo primeiro.');
+      return;
+    }
+
+    setState(() => _uploadingFile = true);
+    try {
+      final uploaded = await FileWebclient().upload(
+        FileModel(
+          id: 0,
+          extension: file.extension,
+          name: file.name ?? 'arquivo.${file.extension}',
+          path: file.path,
+          publicUrl: file.publicUrl,
+          bytes: file.bytes,
+          readStream: file.readStream,
+          size: file.size,
+          livingClueId: _controller.livingClue.value!.id,
+        ),
+      );
+      setState(() {
+        _attachments.insert(0, uploaded);
+        _fileController.clearFile();
+      });
+      Get.successSnackbar('Arquivo enviado com sucesso.');
+    } catch (_) {
+      Get.customSnackbar('Arquivos', 'Não foi possível enviar o arquivo.');
+    } finally {
+      if (mounted) setState(() => _uploadingFile = false);
+    }
+  }
+
+  Future<void> _uploadLink() async {
+    if (_controller.livingClue.value == null) return;
+    final link = _linkController.text.trim();
+    if (link.isEmpty) {
+      Get.customSnackbar('Arquivos', 'Cole um link público para salvar.');
+      return;
+    }
+
+    setState(() => _uploadingFile = true);
+    try {
+      final uploaded = await FileWebclient().upload(
+        FileModel(
+          id: 0,
+          extension: 'link',
+          name: link,
+          publicUrl: link,
+          livingClueId: _controller.livingClue.value!.id,
+        ),
+      );
+      setState(() {
+        _attachments.insert(0, uploaded);
+        _linkController.clear();
+      });
+      Get.successSnackbar('Link adicionado.');
+    } catch (_) {
+      Get.customSnackbar('Arquivos', 'Não foi possível salvar o link.');
+    } finally {
+      if (mounted) setState(() => _uploadingFile = false);
+    }
+  }
+
+  Future<void> _removeAttachment(FileModel file) async {
+    try {
+      await FileWebclient().delete(file.id);
+      setState(() => _attachments.removeWhere((item) => item.id == file.id));
+      Get.successSnackbar('Arquivo removido.');
+    } catch (_) {
+      Get.customSnackbar('Arquivos', 'Falha ao remover o arquivo.');
     }
   }
 

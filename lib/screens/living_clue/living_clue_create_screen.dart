@@ -73,90 +73,137 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
       appBar: AppBar(
         title: const Text('Nova pista viva'),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              InputText(
-                hintText: 'Nome',
-                controller: _nameController,
-                validator: (value) => PValidator([
-                  PRuleRequired(value, message: 'Obrigatório'),
-                  PRuleMaxString(value, 255, message: 'Máximo de 255 caracteres'),
-                ]).val(),
-              ),
-              Insets.large.height,
-              InputText(
-                hintText: 'Categoria',
-                readOnly: true,
-                controller: _categoryController,
-                validator: (_) => _categoryId == null ? 'Selecione uma categoria antes' : null,
-              ),
-              Insets.large.height,
-              InputText(
-                hintText: 'Descrição (opcional)',
-                controller: _descriptionController,
-                maxLines: 3,
-              ),
-              Insets.large.height,
-              InputNumber(
-                label: 'Latitude',
-                controller: _latitudeController,
-                validator: (value) => PValidator([
-                  PRuleRequired(value, message: 'Obrigatório'),
-                ]).val(),
-              ),
-              Insets.large.height,
-              InputNumber(
-                label: 'Longitude',
-                controller: _longitudeController,
-                validator: (value) => PValidator([
-                  PRuleRequired(value, message: 'Obrigatório'),
-                ]).val(),
-              ),
-              Insets.large.height,
-              InputText(
-                hintText: 'URL da imagem (opcional)',
-                controller: _imageUrlController,
-              ),
-              Insets.large.height,
-              if (_metadataTags.isNotEmpty) ...[
-                const Text('Metadata (opcional)'),
-                const SizedBox(height: 8),
-                ..._metadataTags.map(
-                  (tag) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: InputText(
-                      hintText: _formatTagLabel(tag),
-                      controller: _metadataControllers[tag]!,
+      body: Container(
+        color: Colors.grey.shade50,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Card(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.bolt_outlined, color: Colors.indigo),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Dados principais',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.w700),
+                            ),
+                          ],
+                        ),
+                        Insets.large.height,
+                        InputText(
+                          hintText: 'Nome',
+                          controller: _nameController,
+                          validator: (value) => PValidator([
+                            PRuleRequired(value, message: 'Obrigatório'),
+                            PRuleMaxString(value, 255, message: 'Máximo de 255 caracteres'),
+                          ]).val(),
+                        ),
+                        Insets.large.height,
+                        InputText(
+                          hintText: 'Categoria',
+                          readOnly: true,
+                          controller: _categoryController,
+                          validator: (_) => _categoryId == null ? 'Selecione uma categoria antes' : null,
+                        ),
+                        Insets.large.height,
+                        InputText(
+                          hintText: 'Descrição (opcional)',
+                          controller: _descriptionController,
+                          maxLines: 3,
+                        ),
+                        Insets.large.height,
+                        if (_metadataTags.isNotEmpty) ...[
+                          const Text('Metadata (opcional)'),
+                          const SizedBox(height: 8),
+                          ..._metadataTags.map(
+                            (tag) => Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: InputText(
+                                hintText: _formatTagLabel(tag),
+                                controller: _metadataControllers[tag]!,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                 ),
-                Insets.large.height,
+                const SizedBox(height: 12),
+                Card(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.place_outlined, color: Colors.teal),
+                            const SizedBox(width: 8),
+                            const Text('Localização', style: TextStyle(fontWeight: FontWeight.w700)),
+                          ],
+                        ),
+                        Insets.large.height,
+                        InputNumber(
+                          label: 'Latitude',
+                          controller: _latitudeController,
+                          validator: (value) => PValidator([
+                            PRuleRequired(value, message: 'Obrigatório'),
+                          ]).val(),
+                        ),
+                        Insets.large.height,
+                        InputNumber(
+                          label: 'Longitude',
+                          controller: _longitudeController,
+                          validator: (value) => PValidator([
+                            PRuleRequired(value, message: 'Obrigatório'),
+                          ]).val(),
+                        ),
+                        Insets.large.height,
+                        InputText(
+                          hintText: 'URL da imagem (opcional)',
+                          controller: _imageUrlController,
+                        ),
+                        Insets.medium.height,
+                        SwitchListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: const Text('Ativo'),
+                          value: _isActive,
+                          onChanged: (val) => setState(() => _isActive = val),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Insets.extraLarge.height,
+                SizedBox(
+                  width: double.infinity,
+                  child: Obx(() {
+                    final bool loading = _controller.isLoading.value;
+                    final String buttonTitle = loading ? 'Salvando...' : 'Salvar';
+                    return ActionButton(
+                      theme: ActionButtonTheme.blue,
+                      title: buttonTitle,
+                      onPressed: loading ? null : _save,
+                    );
+                  }),
+                ),
               ],
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Ativo'),
-                value: _isActive,
-                onChanged: (val) => setState(() => _isActive = val),
-              ),
-              Insets.extraLarge.height,
-              SizedBox(
-                width: double.infinity,
-                child: Obx(() {
-                  final bool loading = _controller.isLoading.value;
-                  final String buttonTitle = loading ? 'Salvando...' : 'Salvar';
-                  return ActionButton(
-                    theme: ActionButtonTheme.blue,
-                    title: buttonTitle,
-                    onPressed: loading ? null : _save,
-                  );
-                }),
-              ),
-            ],
+            ),
           ),
         ),
       ),

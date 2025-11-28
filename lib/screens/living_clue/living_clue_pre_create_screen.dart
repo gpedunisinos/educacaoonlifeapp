@@ -30,31 +30,64 @@ class _LivingCluePreCreateScreenState extends State<LivingCluePreCreateScreen> {
       appBar: AppBar(
         title: const Text('Escolha a categoria'),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              InputSelectApi(
-                label: 'Categoria',
-                controller: _categorySelectController,
-                validator: (value) => PValidator([
-                  PRuleRequired(value, message: 'Obrigatório'),
-                ]).val(),
-                onFind: (search, offset, params) => CategorySelectWebclient().select(search, offset),
-              ),
-              Insets.extraLarge.height,
-              SizedBox(
-                width: double.infinity,
-                child: ActionButton(
-                  theme: ActionButtonTheme.blue,
-                  title: _loading ? 'Carregando...' : 'Continuar',
-                  onPressed: _loading ? null : _continue,
+      body: Container(
+        color: Colors.grey.shade50,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Card(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.category_outlined, color: Colors.indigo),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Selecione a categoria base',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.w700),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Os campos dinâmicos e o visual da pista seguirão a categoria escolhida.',
+                          style: TextStyle(color: Colors.grey.shade700),
+                        ),
+                        Insets.large.height,
+                        InputSelectApi(
+                          label: 'Categoria',
+                          controller: _categorySelectController,
+                          validator: (value) => PValidator([
+                            PRuleRequired(value, message: 'Obrigatório'),
+                          ]).val(),
+                          onFind: (search, offset, params) => CategorySelectWebclient().select(search, offset),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ],
+                Insets.extraLarge.height,
+                SizedBox(
+                  width: double.infinity,
+                  child: ActionButton(
+                    theme: ActionButtonTheme.blue,
+                    title: _loading ? 'Carregando...' : 'Continuar',
+                    onPressed: _loading ? null : _continue,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

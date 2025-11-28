@@ -2,18 +2,23 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:unisinos_usp_app/models/clue_connection_model.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
+import 'package:unisinos_usp_app/webclients/clue_connection_webclient.dart';
 import 'package:unisinos_usp_app/webclients/living_clue_webclient.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class LivingClueMapController extends GetxController {
   final LivingClueWebclient _webclient = LivingClueWebclient();
+  final ClueConnectionWebclient _connectionWebclient = ClueConnectionWebclient();
 
   final RxList<LivingClueModel> livingClues = <LivingClueModel>[].obs;
+  final RxList<ClueConnectionModel> connections = <ClueConnectionModel>[].obs;
   final RxBool isLoading = false.obs;
   final RxnString errorMessage = RxnString();
   final Rxn<LatLng> sonarCenter = Rxn<LatLng>();
   final RxDouble sonarRadius = 500.0.obs; // metros
+  bool _loadingConnections = false;
 
   Future<void> loadByBounds(LatLngBounds bounds) async {
     errorMessage.value = null;
@@ -25,6 +30,7 @@ class LivingClueMapController extends GetxController {
         east: bounds.east,
         west: bounds.west,
       ));
+      await _loadConnections();
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
       errorMessage.value = 'Falha ao carregar pistas no mapa.';
@@ -44,6 +50,7 @@ class LivingClueMapController extends GetxController {
         longitude: center.longitude,
         radiusMeters: radiusMeters,
       ));
+      await _loadConnections();
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
       errorMessage.value = 'Falha ao buscar pelo raio informado.';
@@ -68,6 +75,18 @@ class LivingClueMapController extends GetxController {
       Util.debug(exception: error, stackTrace: stackTrace);
       errorMessage.value = 'Não foi possível obter sua localização.';
       return null;
+    }
+  }
+
+  Future<void> _loadConnections() async {
+    if (_loadingConnections) return;
+    _loadingConnections = true;
+    try {
+      connections.assignAll(await _connectionWebclient.fetch());
+    } catch (error, stackTrace) {
+      Util.debug(exception: error, stackTrace: stackTrace);
+    } finally {
+      _loadingConnections = false;
     }
   }
 }

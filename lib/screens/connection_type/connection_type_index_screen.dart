@@ -28,42 +28,84 @@ class ConnectionTypeIndexScreen extends StatelessWidget {
         if (_controller.connectionTypes.isEmpty) {
           return const Center(child: Text('Nenhum tipo cadastrado.'));
         }
-        return Column(
-          children: [
-            Expanded(
-              child: ListView.separated(
-                itemCount: _controller.connectionTypes.length,
-                separatorBuilder: (_, __) => const Divider(height: 1),
-                itemBuilder: (_, index) {
-                  final ConnectionTypeModel model = _controller.connectionTypes[index];
-                  return ListTile(
-                    title: Text(model.name),
-                    subtitle: Text('Estilo: ${model.strokeStyle} • Direcional: ${model.isDirectional ? "Sim" : "Não"}'),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: _controller.isLoading.value ? null : () => _goToUpdate(model),
-                          tooltip: 'Editar',
+        return Container(
+          color: Colors.grey.shade50,
+          child: Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
+                  itemCount: _controller.connectionTypes.length,
+                  itemBuilder: (_, index) {
+                    final ConnectionTypeModel model = _controller.connectionTypes[index];
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    model.name,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                Chip(
+                                  backgroundColor: Colors.blue.shade50,
+                                  label: Text(
+                                    model.isDirectional ? 'Direcional' : 'Bidirecional',
+                                    style: TextStyle(
+                                      color: Colors.blue.shade800,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Estilo: ${model.strokeStyle}',
+                              style: TextStyle(color: Colors.grey.shade700),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit),
+                                  onPressed: _controller.isLoading.value ? null : () => _goToUpdate(model),
+                                  tooltip: 'Editar',
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete_outline),
+                                  onPressed:
+                                      _controller.isLoading.value ? null : () => _confirmDelete(model),
+                                  tooltip: 'Excluir',
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline),
-                          onPressed: _controller.isLoading.value ? null : () => _confirmDelete(model),
-                          tooltip: 'Excluir',
-                        ),
-                      ],
-                    ),
-                  );
-                },
+                      ),
+                    );
+                  },
+                ),
               ),
-            ),
-            if (_controller.isLoading.value)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 12),
-                child: CircularProgressIndicator(),
-              ),
-          ],
+              if (_controller.isLoading.value)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: CircularProgressIndicator(),
+                ),
+            ],
+          ),
         );
       }),
     );

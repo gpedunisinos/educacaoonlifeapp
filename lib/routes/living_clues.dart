@@ -1,9 +1,11 @@
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/bindings/living_clue_binding.dart';
+import 'package:unisinos_usp_app/bindings/clue_connection_binding.dart';
 import 'package:unisinos_usp_app/screens/living_clue/living_clue_create_screen.dart';
 import 'package:unisinos_usp_app/screens/living_clue/living_clue_index_screen.dart';
 import 'package:unisinos_usp_app/screens/living_clue/living_clue_map_create_screen.dart';
 import 'package:unisinos_usp_app/screens/living_clue/living_clue_map_screen.dart';
+import 'package:unisinos_usp_app/screens/living_clue/living_clue_connect_screen.dart';
 import 'package:unisinos_usp_app/screens/living_clue/living_clue_pre_create_screen.dart';
 import 'package:unisinos_usp_app/screens/living_clue/living_clue_show_screen.dart';
 import 'package:unisinos_usp_app/screens/living_clue/living_clue_update_screen.dart';
@@ -40,5 +42,10 @@ List<GetPage> livingClueRoutes() => [
         name: '/living_clues/update',
         page: () => const LivingClueUpdateScreen(),
         binding: LivingClueUpdateBinding(),
+      ),
+      GetPage(
+        name: '/living_clues/connect',
+        page: () => const LivingClueConnectScreen(),
+        binding: ClueConnectionCreateBinding(),
       ),
     ];

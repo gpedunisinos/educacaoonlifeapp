@@ -69,17 +69,26 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          Container(
+            margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.blueGrey.shade50,
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: Row(
               children: [
                 Expanded(
                   child: Row(
                     children: [
-                      const Text('Raio:'),
+                      const Icon(Icons.radar, size: 18, color: Colors.indigo),
+                      const SizedBox(width: 6),
+                      const Text('Raio'),
+                      const SizedBox(width: 6),
                       Expanded(
                         child: Obx(() {
                           return Slider(
+                            activeColor: Colors.indigo,
                             value: _controller.sonarRadius.value,
                             min: 100,
                             max: 2000,
@@ -111,14 +120,38 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
                   .map(
                     (item) => Marker(
                       point: LatLng(item.latitude, item.longitude),
-                      width: 40,
-                      height: 40,
+                      width: 46,
+                      height: 46,
                       child: GestureDetector(
                         onTap: () => _showClueSheet(item),
-                        child: const Icon(Icons.location_on, color: Colors.red, size: 32),
+                        child: Icon(
+                          Icons.location_on,
+                          color: _categoryColor(item),
+                          size: 36,
+                        ),
                       ),
                     ),
                   )
+                  .toList();
+
+              final Map<int, LatLng> pointsById = {
+                for (final clue in _controller.livingClues)
+                  clue.id: LatLng(clue.latitude, clue.longitude),
+              };
+              final connectionLines = _controller.connections
+                  .map(
+                    (conn) {
+                      final start = pointsById[conn.sourceClueId];
+                      final end = pointsById[conn.targetClueId];
+                      if (start == null || end == null) return null;
+                      return Polyline(
+                        points: [start, end],
+                        color: Colors.red.shade600,
+                        strokeWidth: 3,
+                      );
+                    },
+                  )
+                  .whereType<Polyline>()
                   .toList();
 
               final circles = <CircleMarker>[];
@@ -157,6 +190,10 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
                         userAgentPackageName: 'com.br.spotecnologia.uniusp_app',
                       ),
                       if (circles.isNotEmpty) CircleLayer(circles: circles),
+                      if (connectionLines.isNotEmpty)
+                        PolylineLayer(
+                          polylines: connectionLines,
+                        ),
                       MarkerLayer(markers: markers),
                     ],
                   ),
@@ -199,6 +236,25 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
         ],
       ),
     );
+  }
+
+  Color _categoryColor(LivingClueModel model) {
+    final String? hex = model.category?.colorHex;
+    if (hex == null || hex.isEmpty) return Colors.redAccent;
+    try {
+      final buffer = StringBuffer();
+      if (!hex.startsWith('#')) buffer.write('#');
+      buffer.write(hex.replaceAll('#', ''));
+      final colorString = buffer.toString();
+      if (colorString.length == 7) {
+        return Color(int.parse('0xff${colorString.substring(1)}'));
+      } else if (colorString.length == 9) {
+        return Color(int.parse(colorString.replaceFirst('#', '0x')));
+      }
+    } catch (_) {
+      // fallback handled below
+    }
+    return Colors.redAccent;
   }
 
   void _showClueSheet(LivingClueModel model) {
