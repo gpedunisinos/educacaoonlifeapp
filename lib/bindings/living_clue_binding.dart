@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/living_clue/living_clue_create_controller.dart';
 import 'package:unisinos_usp_app/controllers/living_clue/living_clue_index_controller.dart';
+import 'package:unisinos_usp_app/controllers/living_clue/living_clue_map_controller.dart';
 import 'package:unisinos_usp_app/controllers/living_clue/living_clue_update_controller.dart';
 
 class LivingClueIndexBinding extends Bindings {
@@ -21,5 +22,12 @@ class LivingClueUpdateBinding extends Bindings {
   @override
   void dependencies() {
     Get.lazyPut<LivingClueUpdateController>(() => LivingClueUpdateController(), fenix: true);
+  }
+}
+
+class LivingClueMapBinding extends Bindings {
+  @override
+  void dependencies() {
+    Get.lazyPut<LivingClueMapController>(() => LivingClueMapController(), fenix: true);
   }
 }

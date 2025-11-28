@@ -51,7 +51,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '419473345657',
     projectId: 'efv-app-256d4',
     storageBucket: 'efv-app-256d4.firebasestorage.app',
-    iosBundleId: 'com.br.spotecnologia.efvapp',
+    iosBundleId: 'com.br.spotecnologia.uniusp_app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
@@ -69,6 +69,6 @@ class DefaultFirebaseOptions {
     iosClientId: '375087330293-i34sbetodktlfe3259pvfdn69u2idu4e.apps.googleusercontent.com',
     projectId: 'efv-app-256d4',
     storageBucket: 'efv-app-256d4.firebasestorage.app',
-    iosBundleId: 'com.br.spotecnologia.efvapp',
+    iosBundleId: 'com.br.spotecnologia.uniusp_app',
   );
 }

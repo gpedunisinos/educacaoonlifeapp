@@ -26,6 +26,56 @@ class LivingClueWebclient {
     return LivingClueModel.fromJsonArray(response.body);
   }
 
+  Future<List<LivingClueModel>> fetchByBounds({
+    required double north,
+    required double south,
+    required double east,
+    required double west,
+    int? limit,
+  }) async {
+    final Response response = await webClient.get(
+      '/$endpoint',
+      [
+        LoggingInterceptor(),
+        ApiInterceptor(),
+        TokenInterceptor(),
+      ],
+      {
+        'north': north.toString(),
+        'south': south.toString(),
+        'east': east.toString(),
+        'west': west.toString(),
+        'limit': (limit ?? webClient.defaultLimit).toString(),
+      },
+    );
+
+    return LivingClueModel.fromJsonArray(response.body);
+  }
+
+  Future<List<LivingClueModel>> searchByRadius({
+    required double latitude,
+    required double longitude,
+    required double radiusMeters,
+    int? limit,
+  }) async {
+    final Response response = await webClient.get(
+      '/$endpoint',
+      [
+        LoggingInterceptor(),
+        ApiInterceptor(),
+        TokenInterceptor(),
+      ],
+      {
+        'lat': latitude.toString(),
+        'lng': longitude.toString(),
+        'radius': radiusMeters.toString(),
+        'limit': (limit ?? webClient.defaultLimit).toString(),
+      },
+    );
+
+    return LivingClueModel.fromJsonArray(response.body);
+  }
+
   Future<LivingClueModel> fetchById(int id) async {
     final Response response = await webClient.get(
       '/$endpoint/$id',

@@ -43,6 +43,11 @@ class HomeScreen extends StatelessWidget {
             ),
             Insets.small.height,
             ElevatedButton(
+              onPressed: () => Get.toNamed('/living_clues/map'),
+              child: const Text('Mapa de pistas'),
+            ),
+            Insets.small.height,
+            ElevatedButton(
               onPressed: () => Get.toNamed('/connection_types'),
               child: const Text('Gerenciar tipos de conexão'),
             ),
