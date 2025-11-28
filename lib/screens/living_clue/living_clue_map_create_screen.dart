@@ -17,6 +17,24 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
   LatLng? _selected;
   bool _loadingLocation = false;
 
+  @override
+  void initState() {
+    super.initState();
+    _prefillFromArgs();
+  }
+
+  void _prefillFromArgs() {
+    final args = Get.arguments;
+    if (args is Map) {
+      final lat = args['latitude'];
+      final lng = args['longitude'];
+      if (lat is num && lng is num) {
+        _center = LatLng(lat.toDouble(), lng.toDouble());
+        _selected = _center;
+      }
+    }
+  }
+
   Future<void> _useCurrentLocation() async {
     try {
       setState(() => _loadingLocation = true);
@@ -57,13 +75,16 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
       Get.snackbar('Selecione um ponto', 'Pressione e segure no mapa para marcar a localização.');
       return;
     }
-    await Get.toNamed(
+    final result = await Get.toNamed(
       '/living_clues/create',
       arguments: {
         'latitude': _selected!.latitude,
         'longitude': _selected!.longitude,
       },
     );
+    if (result == true) {
+      Get.back(result: true);
+    }
   }
 
   @override

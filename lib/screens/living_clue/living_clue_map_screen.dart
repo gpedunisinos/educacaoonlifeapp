@@ -51,7 +51,19 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
           IconButton(
             tooltip: 'Criar pista por ponto',
             icon: const Icon(Icons.add_location_alt),
-            onPressed: () => Get.toNamed('/living_clues/map/create'),
+            onPressed: () async {
+              final center = _mapController.camera.center;
+              final created = await Get.toNamed(
+                '/living_clues/map/create',
+                arguments: {
+                  'latitude': center.latitude,
+                  'longitude': center.longitude,
+                },
+              );
+              if (created == true) {
+                _loadCurrentBounds();
+              }
+            },
           ),
         ],
       ),
@@ -204,6 +216,18 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
               Text(model.description ?? 'Sem descrição'),
               const SizedBox(height: 12),
               Text('Lat: ${model.latitude}  Lng: ${model.longitude}'),
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  icon: const Icon(Icons.visibility),
+                  label: const Text('Ver'),
+                  onPressed: () {
+                    Get.back(); // fecha o bottomSheet
+                    Get.toNamed('/living_clues/show', arguments: model);
+                  },
+                ),
+              ),
             ],
           ),
         );
