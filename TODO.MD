@@ -64,3 +64,69 @@ Em lib/screens/living_clue/living_clue_map_screen.dart, quando living clue possu
 Considere a API https://api.uniusp.gpedu.com.br/api/swagger/doc.json, implemente o envio e visualização de arquivos nas telas que forem apropriadas. Implemente um perview destes links utilizando algum componente. Deixei tudo organizado, bonito e o mais pronto possível.
 
 Deixe todas as telas, com exceção da lib/screens/home_screen.dart, e lib/screens/living_clue/living_clue_show_screen.dart que já foram feitas, mais bonitas.
+
+
+Implemente um chat que utiliza o endpoint https://agent.uniusp.gpedu.com.br/platform/chat
+O retorno vai seguir conforme o método que criei na API abaixo
+@api_bp.route("/platform/chat", methods=["POST"])
+def platform_chat():
+    body = request.get_json(silent=True) or {}
+
+    message = body.get("message")
+    if not message or not str(message).strip():
+        return jsonify({"error": "Campo 'message' é obrigatório."}), HTTPStatus.BAD_REQUEST
+
+    try:
+        reply = asyncio.run(
+            process_message(
+                message=str(message),
+                file_url=body.get("file_url"),
+                from_phone=body.get("from_phone"),
+                user_id=body.get("user_id"),
+                user_name=body.get("user_name"),
+                user_global_name=body.get("user_global_name"),
+                channel_id=body.get("channel_id"),
+            )
+        )
+    except Exception as exc:  # noqa: BLE001
+        return jsonify({"error": str(exc)}), HTTPStatus.INTERNAL_SERVER_ERROR
+
+    if reply is None:
+        return jsonify({"error": "Não foi possível gerar uma resposta."}), HTTPStatus.INTERNAL_SERVER_ERROR
+
+    return jsonify({"reply": reply}), HTTPStatus.OK
+
+
+O histórico do chat vai ser retornando por este método na API. Implemente isto
+@api_bp.route("/platform/chat/history", methods=["GET"])
+def platform_chat_history():
+    try:
+        limit = int(request.args.get("limit", 50))
+    except (TypeError, ValueError):
+        limit = 50
+
+    limit = max(1, min(limit, 200))
+
+    messages = (
+        Message.query.order_by(Message.id.desc())
+        .limit(limit)
+        .all()
+    )
+    messages = list(reversed(messages))
+
+    return (
+        jsonify(
+            {
+                "messages": [
+                    {
+                        "id": msg.id,
+                        "role": msg.role,
+                        "message": msg.message,
+                        "created_at": msg.created_at.isoformat(),
+                    }
+                    for msg in messages
+                ]
+            }
+        ),
+        HTTPStatus.OK,
+    )

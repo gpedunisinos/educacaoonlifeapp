@@ -49,6 +49,13 @@ class HomeScreen extends StatelessWidget {
         color: Colors.pink.shade600,
         onTap: () => Get.toNamed('/clue_connections'),
       ),
+      _HomeMenu(
+        title: 'Chat',
+        subtitle: 'Fale com o assistente',
+        icon: Icons.chat_bubble_outline,
+        color: Colors.deepPurple.shade500,
+        onTap: () => Get.toNamed('/chat'),
+      ),
     ];
 
     return Scaffold(
