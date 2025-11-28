@@ -21,6 +21,7 @@ class _CategoryCreateScreenState extends State<CategoryCreateScreen> {
   final TextEditingController _colorController = TextEditingController(text: '#');
   final TextEditingController _iconController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _metadataTagsController = TextEditingController();
 
   @override
   void initState() {
@@ -35,6 +36,7 @@ class _CategoryCreateScreenState extends State<CategoryCreateScreen> {
     _colorController.dispose();
     _iconController.dispose();
     _descriptionController.dispose();
+    _metadataTagsController.dispose();
     super.dispose();
   }
 
@@ -98,6 +100,19 @@ class _CategoryCreateScreenState extends State<CategoryCreateScreen> {
                 hintText: 'Descrição (opcional)',
                 controller: _descriptionController,
                 maxLines: 4,
+              ),
+              Insets.large.height,
+              InputText(
+                hintText: 'Metadata tags (ex: tag_teste,tag_other)',
+                controller: _metadataTagsController,
+                validator: (value) => PValidator([
+                  PRuleRequired(value, message: 'Obrigatório'),
+                  PRuleRegex(
+                    value,
+                    r'^[A-Za-z0-9_]+(,[A-Za-z0-9_]+)*$',
+                    message: 'Use somente letras/números/_ separados por vírgula, sem espaços',
+                  ),
+                ]).val(),
               ),
               Insets.extraLarge.height,
               SizedBox(
@@ -183,6 +198,7 @@ class _CategoryCreateScreenState extends State<CategoryCreateScreen> {
       colorHex: _colorController.text,
       iconCode: _iconController.text,
       description: _descriptionController.text,
+      metadataTags: _metadataTagsController.text,
     );
     if (saved) {
       Get.secureBack(result: true);

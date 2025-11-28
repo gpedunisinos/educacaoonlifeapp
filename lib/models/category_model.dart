@@ -4,6 +4,7 @@ class CategoryModel {
   final String colorHex;
   final String? iconCode;
   final String? description;
+  final String metadataTags;
 
   const CategoryModel({
     required this.id,
@@ -11,6 +12,7 @@ class CategoryModel {
     required this.colorHex,
     this.iconCode,
     this.description,
+    required this.metadataTags,
   });
 
   factory CategoryModel.fromJson(Map<String, dynamic> json) {
@@ -20,6 +22,7 @@ class CategoryModel {
       colorHex: json['color_hex'] ?? '',
       iconCode: json['icon_code'],
       description: json['description'],
+      metadataTags: json['metadata_tags'] ?? '',
     );
   }
 
@@ -30,6 +33,7 @@ class CategoryModel {
       'color_hex': colorHex,
       'icon_code': iconCode,
       'description': description,
+      'metadata_tags': metadataTags,
     };
   }
 
@@ -43,6 +47,7 @@ class CategoryModel {
     String? colorHex,
     String? iconCode,
     String? description,
+    String? metadataTags,
   }) {
     return CategoryModel(
       id: id ?? this.id,
@@ -50,6 +55,7 @@ class CategoryModel {
       colorHex: colorHex ?? this.colorHex,
       iconCode: iconCode ?? this.iconCode,
       description: description ?? this.description,
+      metadataTags: metadataTags ?? this.metadataTags,
     );
   }
 }

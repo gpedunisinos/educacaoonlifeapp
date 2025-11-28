@@ -13,6 +13,7 @@ class CategoryCreateController extends GetxController {
     required String colorHex,
     String? iconCode,
     String? description,
+    required String metadataTags,
   }) async {
     final category = CategoryModel(
       id: 0,
@@ -20,6 +21,7 @@ class CategoryCreateController extends GetxController {
       colorHex: colorHex.trim(),
       iconCode: iconCode?.trim().isEmpty == true ? null : iconCode?.trim(),
       description: description?.trim().isEmpty == true ? null : description?.trim(),
+      metadataTags: metadataTags.trim(),
     );
 
     try {
