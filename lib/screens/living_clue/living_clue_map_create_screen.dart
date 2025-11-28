@@ -76,7 +76,7 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
       return;
     }
     final result = await Get.toNamed(
-      '/living_clues/create',
+      '/living_clues/pre_create',
       arguments: {
         'latitude': _selected!.latitude,
         'longitude': _selected!.longitude,

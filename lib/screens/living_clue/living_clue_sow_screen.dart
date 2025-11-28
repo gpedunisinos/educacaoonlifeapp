@@ -13,11 +13,17 @@ class LivingClueShowScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Pista viva'),
+        actions: [
+          IconButton(
+            tooltip: 'Editar',
+            icon: const Icon(Icons.edit),
+            onPressed: () => Get.toNamed('/living_clues/update', parameters: {'id': model.id.toString()}),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: ListView(
           children: [
             Text(model.name, style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
@@ -35,11 +41,33 @@ class LivingClueShowScreen extends StatelessWidget {
             ],
             if (model.metadata != null && model.metadata!.isNotEmpty) ...[
               const SizedBox(height: 16),
-              Text('Metadata: ${model.metadata}'),
+              const Text('Metadata'),
+              const SizedBox(height: 8),
+              ...model.metadata!.entries.map(
+                (entry) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _formatTagLabel(entry.key),
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(entry.value?.toString() ?? ''),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ],
         ),
       ),
     );
+  }
+
+  String _formatTagLabel(String raw) {
+    final cleaned = raw.replaceAll('_', ' ');
+    return cleaned.split(' ').where((part) => part.isNotEmpty).map((part) => part[0].toUpperCase() + part.substring(1)).join(' ');
   }
 }

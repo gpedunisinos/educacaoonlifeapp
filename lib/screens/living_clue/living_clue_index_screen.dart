@@ -86,8 +86,10 @@ class LivingClueIndexScreen extends StatelessWidget {
   }
 
   Future<void> _goToCreate() async {
-    await Get.toNamed('/living_clues/create');
-    await _controller.loadLivingClues();
+    final result = await Get.toNamed('/living_clues/pre_create');
+    if (result == true) {
+      await _controller.loadLivingClues();
+    }
   }
 
   Future<void> _goToUpdate(LivingClueModel model) async {

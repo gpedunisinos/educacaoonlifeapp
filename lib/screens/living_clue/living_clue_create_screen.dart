@@ -1,11 +1,8 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pvalidator/pvalidator.dart';
 import 'package:unisinos_usp_app/controllers/living_clue/living_clue_create_controller.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
-import 'package:unisinos_usp_app/webclients/category_select_webclient.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
@@ -25,14 +22,17 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
   final TextEditingController _latitudeController = TextEditingController();
   final TextEditingController _longitudeController = TextEditingController();
   final TextEditingController _imageUrlController = TextEditingController();
-  final TextEditingController _metadataController = TextEditingController();
-  final ItemSelectController _categorySelectController = ItemSelectController();
+  final TextEditingController _categoryController = TextEditingController();
+  final Map<String, TextEditingController> _metadataControllers = {};
+  int? _categoryId;
+  String _categoryName = '';
+  List<String> _metadataTags = [];
   bool _isActive = true;
 
   @override
   void initState() {
     super.initState();
-    _prefillCoordinates();
+    _prefillFromArgs();
   }
 
   @override
@@ -42,11 +42,12 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
     _latitudeController.dispose();
     _longitudeController.dispose();
     _imageUrlController.dispose();
-    _metadataController.dispose();
+    _categoryController.dispose();
+    _metadataControllers.values.forEach((c) => c.dispose());
     super.dispose();
   }
 
-  void _prefillCoordinates() {
+  void _prefillFromArgs() {
     final args = Get.arguments;
     if (args is Map) {
       final lat = args['latitude'];
@@ -54,6 +55,14 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
       if (lat != null && lng != null) {
         _latitudeController.text = '$lat';
         _longitudeController.text = '$lng';
+      }
+      _categoryId = args['categoryId'] as int?;
+      _categoryName = (args['categoryName'] ?? '') as String;
+      _categoryController.text = _categoryName;
+      final tagsString = args['metadataTags'] as String? ?? '';
+      _metadataTags = tagsString.split(',').map((t) => t.trim()).where((t) => t.isNotEmpty).toList();
+      for (final tag in _metadataTags) {
+        _metadataControllers[tag] = TextEditingController();
       }
     }
   }
@@ -80,13 +89,11 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
                 ]).val(),
               ),
               Insets.large.height,
-              InputSelectApi(
-                label: 'Categoria',
-                controller: _categorySelectController,
-                validator: (value) => PValidator([
-                  PRuleRequired(value, message: 'Obrigatório'),
-                ]).val(),
-                onFind: (search, offset, params) => CategorySelectWebclient().select(search, offset),
+              InputText(
+                hintText: 'Categoria',
+                readOnly: true,
+                controller: _categoryController,
+                validator: (_) => _categoryId == null ? 'Selecione uma categoria antes' : null,
               ),
               Insets.large.height,
               InputText(
@@ -116,21 +123,20 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
                 controller: _imageUrlController,
               ),
               Insets.large.height,
-              InputText(
-                hintText: 'Metadata JSON (opcional)',
-                controller: _metadataController,
-                maxLines: 3,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) return null;
-                  try {
-                    jsonDecode(value);
-                    return null;
-                  } catch (_) {
-                    return 'JSON inválido';
-                  }
-                },
-              ),
-              Insets.large.height,
+              if (_metadataTags.isNotEmpty) ...[
+                const Text('Metadata (opcional)'),
+                const SizedBox(height: 8),
+                ..._metadataTags.map(
+                  (tag) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: InputText(
+                      hintText: _formatTagLabel(tag),
+                      controller: _metadataControllers[tag]!,
+                    ),
+                  ),
+                ),
+                Insets.large.height,
+              ],
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Ativo'),
@@ -161,23 +167,25 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     final double? latitude = double.tryParse(_latitudeController.text.trim());
     final double? longitude = double.tryParse(_longitudeController.text.trim());
-    final int? categoryId = _categorySelectController.selectedItem?.id;
-    if (latitude == null || longitude == null || categoryId == null) return;
+    if (latitude == null || longitude == null || _categoryId == null) return;
 
-    Map<String, dynamic>? metadata;
-    if (_metadataController.text.trim().isNotEmpty) {
-      metadata = jsonDecode(_metadataController.text.trim()) as Map<String, dynamic>;
+    final Map<String, dynamic> metadata = {};
+    for (final entry in _metadataControllers.entries) {
+      final value = entry.value.text.trim();
+      if (value.isNotEmpty) {
+        metadata[entry.key] = value;
+      }
     }
 
     final model = LivingClueModel(
       id: 0,
       name: _nameController.text.trim(),
-      categoryId: categoryId,
+      categoryId: _categoryId!,
       description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
       latitude: latitude,
       longitude: longitude,
       imageUrl: _imageUrlController.text.trim().isEmpty ? null : _imageUrlController.text.trim(),
-      metadata: metadata,
+      metadata: metadata.isEmpty ? null : metadata,
       isActive: _isActive,
     );
 
@@ -185,5 +193,10 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
     if (saved) {
       Get.secureBack(result: true);
     }
+  }
+
+  String _formatTagLabel(String raw) {
+    final cleaned = raw.replaceAll('_', ' ');
+    return cleaned.split(' ').where((part) => part.isNotEmpty).map((part) => part[0].toUpperCase() + part.substring(1)).join(' ');
   }
 }
