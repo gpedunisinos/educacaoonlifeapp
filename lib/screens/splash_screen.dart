@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 
@@ -25,12 +24,21 @@ class _SplashScreenState extends State<SplashScreen> {
     return SafeArea(
       top: false,
       child: Scaffold(
-        backgroundColor: Color(0xFF030da7),
+        backgroundColor: Colors.white,
         body: Center(
-          child: SvgPicture.asset(
-            'assets/logo.svg',
-            width: 100,
-            height: 100,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+                'assets/logo_unisinos.png',
+                width: 120,
+              ),
+              const SizedBox(width: 32),
+              Image.asset(
+                'assets/logo_usp.png',
+                width: 120,
+              ),
+            ],
           ),
         ),
       ),
