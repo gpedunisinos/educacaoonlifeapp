@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:get/get.dart';
 import 'package:pvalidator/pvalidator.dart';
 import 'package:unisinos_usp_app/controllers/category/category_create_controller.dart';
@@ -20,6 +21,22 @@ class _CategoryCreateScreenState extends State<CategoryCreateScreen> {
   final TextEditingController _colorController = TextEditingController(text: '#');
   final TextEditingController _iconController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _colorController.addListener(_onColorTextChanged);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _colorController.removeListener(_onColorTextChanged);
+    _colorController.dispose();
+    _iconController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +68,26 @@ class _CategoryCreateScreenState extends State<CategoryCreateScreen> {
                   PRuleRegex(value, r'^#([A-Fa-f0-9]{6})$', message: 'Use o formato #RRGGBB'),
                 ]).val(),
               ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: _selectedColor,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  TextButton.icon(
+                    onPressed: _openColorPicker,
+                    icon: const Icon(Icons.color_lens_outlined),
+                    label: const Text('Selecionar cor'),
+                  ),
+                ],
+              ),
               Insets.large.height,
               InputText(
                 hintText: 'Código do ícone (opcional)',
@@ -78,6 +115,62 @@ class _CategoryCreateScreenState extends State<CategoryCreateScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _onColorTextChanged() {
+    if (!mounted) return;
+    setState(() {});
+  }
+
+  Color get _selectedColor => _parseHexColor(_colorController.text);
+
+  Color _parseHexColor(String value) {
+    try {
+      final String sanitized = value.trim().replaceFirst('#', '');
+      if (sanitized.length == 6) {
+        return Color(int.parse('0xff$sanitized'));
+      }
+    } catch (_) {
+      // ignore parsing errors and fall back to blue
+    }
+    return Colors.blue;
+  }
+
+  String _colorToHex(Color color) {
+    final String hex = color.value.toRadixString(16).padLeft(8, '0').substring(2);
+    return '#${hex.toUpperCase()}';
+  }
+
+  Future<void> _openColorPicker() async {
+    Color tempColor = _selectedColor;
+
+    await showDialog<void>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Selecione uma cor'),
+        content: SingleChildScrollView(
+          child: ColorPicker(
+            pickerColor: tempColor,
+            onColorChanged: (color) => tempColor = color,
+            enableAlpha: false,
+            pickerAreaHeightPercent: 0.7,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () {
+              _colorController.text = _colorToHex(tempColor);
+              Navigator.of(context).pop();
+            },
+            child: const Text('Selecionar'),
+          ),
+        ],
       ),
     );
   }
