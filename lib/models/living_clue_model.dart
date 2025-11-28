@@ -1,0 +1,62 @@
+import 'dart:convert';
+
+class LivingClueModel {
+  int id;
+  String name;
+  int categoryId;
+  String? description;
+  double latitude;
+  double longitude;
+  String? imageUrl;
+  Map<String, dynamic>? metadata;
+  bool isActive;
+  DateTime? createdAt;
+  DateTime? updatedAt;
+
+  LivingClueModel({
+    required this.id,
+    required this.name,
+    required this.categoryId,
+    required this.latitude,
+    required this.longitude,
+    this.description,
+    this.imageUrl,
+    this.metadata,
+    this.isActive = true,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  LivingClueModel.fromJson(Map<String, dynamic> json)
+      : id = json['id'] is int ? json['id'] : int.parse(json['id'].toString()),
+        name = json['name'] ?? '',
+        categoryId = json['category_id'] is int
+            ? json['category_id']
+            : int.parse(json['category_id'].toString()),
+        description = json['description'],
+        latitude = double.parse(json['latitude'].toString()),
+        longitude = double.parse(json['longitude'].toString()),
+        imageUrl = json['image_url'],
+        metadata = json['metadata'],
+        isActive = json['is_active'] == null ? true : json['is_active'] == true,
+        createdAt = json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
+        updatedAt = json['updated_at'] != null ? DateTime.parse(json['updated_at']) : null;
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'category_id': categoryId,
+        'description': description,
+        'latitude': latitude,
+        'longitude': longitude,
+        'image_url': imageUrl,
+        'metadata': metadata,
+        'is_active': isActive,
+      };
+
+  static List<LivingClueModel> fromJsonArray(String str) {
+    return List<LivingClueModel>.from(
+      jsonDecode(str).map((map) => LivingClueModel.fromJson(map)),
+    );
+  }
+}

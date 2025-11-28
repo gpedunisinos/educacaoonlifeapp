@@ -2,6 +2,9 @@ import 'package:get/get.dart';
 import 'package:unisinos_usp_app/routes/auth.dart';
 import 'package:unisinos_usp_app/routes/categories.dart';
 import 'package:unisinos_usp_app/routes/samples.dart';
+import 'package:unisinos_usp_app/routes/living_clues.dart';
+import 'package:unisinos_usp_app/routes/clue_connections.dart';
+import 'package:unisinos_usp_app/routes/connection_types.dart';
 import 'package:unisinos_usp_app/screens/screens.dart';
 
 List<GetPage> appRoutes() => [
@@ -9,5 +12,8 @@ List<GetPage> appRoutes() => [
       ...authRoutes(),
       GetPage(name: '/home', page: () => HomeScreen()),
       ...categoryRoutes(),
+      ...livingClueRoutes(),
+      ...clueConnectionRoutes(),
+      ...connectionTypeRoutes(),
       ...sampleRoutes(),
     ];

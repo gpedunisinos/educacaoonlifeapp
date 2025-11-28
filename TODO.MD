@@ -1,94 +1,43 @@
-Revise todos os validators em sample considerando a documentação da API
-Date: test with DateTime.tryParse
-Email: email validate
-Max numeric: check max number
-Max string: check max string size
-Min numeric: check min number
-Min string: check min string size
-Numeric: check value is numeric
-Regexp: validate with regular expression
-Required: check if exist value
-RequiredDate: check if exist value
-Requiredif: check if exist value if
-Same: value must be same
-Size string: value size check
-Minimum date time: parse string and check is date is after the minimum
-maximum date time: parse string and check is date is before the maximum
-Size string: value size check
-Integer: check value is a integer
-Only one: check if only one value was entered
+Implemente todos estes cruds criando os arquivos que a estrutura do projeto atual preve
 
-Revise todos as screens sample considerando que na lib widgets_spo há os seguintes componentes
-Input_image.dart
-Input_images.dart
-button_back_component.dart
-button_default.dart
-button_new_component.dart
-button_outlined.dart
-button_rect_default.dart
-chip_dropdown_api.dart
-comment_card.dart
-custom_switch.dart
-error_alert.dart
-file_preview_component.dart
-file_selector.dart
-grid_files.dart
-grid_list_builder.dart
-input_base.dart
-input_checkbox.dart
-input_checkbox_multiple.dart
-input_currency.dart
-input_date.dart
-input_duration_picker.dart
-input_file.dart
-input_files.dart
-input_form_date.dart
-input_form_date_small.dart
-input_links.dart
-input_number.dart
-input_quill.dart
-input_search.dart
-input_select.dart
-input_select_api.dart
-input_select_api_multiple.dart
-input_select_multiple.dart
-input_text.dart
-item_select.dart
-items_dialog_api.dart
-loading_dialog.dart
-menu_item.dart
-paginated_listview.dart
-paginated_separated_listview.dart
-reordearble_paginated_listview.dart
-show_quill.dart
-sortable_data_table.dart
-video_player_widget.dart
-
-Crie o arquivo lib/routes/auth.dart e mova todas as rotas relativas a autenticação para este arquivo.
-
-Em lib/controllers/sample/sample_create_controller.dart e lib/controllers/sample/sample_update_controller.dart, altere para que os métodos, ao invés de receber os atributos já recebam o objeto estruturado para inserção. Os atributos devem ser atribuídos na screen.
-
-Crie um objeto SampleDetail. Integre ao lib/models/sample_model.dart. Em lib/screens/sample/sample_create_screen.dart e lib/screens/sample/sample_update_screen.dart utilize o componente input select para buscar estes registros da API e preencher estes dados.
-Documentação no model na API
-"models.SampleDetail": {
-    "type": "object",
-    "required": [
-        "id",
-        "sample_string"
-    ],
-    "properties": {
-        "created_at": {
-            "type": "string"
-        },
-        "id": {
-            "type": "integer"
-        },
-        "sample_string": {
-            "type": "string"
-        },
-        "updated_at": {
-            "type": "string"
-        }
-    }
-},
-
+2. Entidade: LivingClue (Pista Viva)
+A entidade principal (o Nó do grafo). Representa tanto humanos quanto não-humanos.
+CRUD LivingClue
+id: Tipo uint, Chave Primária, Auto-incremento.
+name: Tipo string, Max 255, Obrigatório. Nome da entidade (ex: "Dr. Rodrigo" ou "Rio dos Sinos").
+category_id: Tipo uint, Obrigatório. Chave Estrangeira para Category.
+description: Tipo text, Opcional. Resumo ou biografia da pista.
+latitude: Tipo float64 (double), Obrigatório. Coordenada geográfica.
+longitude: Tipo float64 (double), Obrigatório. Coordenada geográfica.
+image_url: Tipo string, Opcional. URL de uma foto de capa/avatar para o nó.
+metadata: Tipo json, Opcional.
+Objetivo: Armazenar dados específicos que variam por categoria sem criar novas tabelas.
+Exemplo para Pesquisador: {"lattes": "http://...", "titulacao": "Doutor"}
+Exemplo para Rio: {"extensao_km": 200, "nivel_poluicao": "alto"}
+is_active: Tipo bool, Default true. Para "soft delete" ou aprovação de cadastro.
+3. Entidade: ConnectionType (Tipo de Conexão)
+Define a semântica da relação (o verbo).
+CRUD ConnectionType
+id: Tipo uint, Chave Primária, Auto-incremento.
+name: Tipo string, Max 100, Obrigatório. O verbo ou nome da relação (ex: "Monitora", "Habita", "Financia", "Contamina").
+stroke_style: Tipo string, Default "solid". Define como a linha aparece no Flutter (ex: solid, dashed, dotted).
+is_directional: Tipo bool, Default true. Define se a seta tem ponta (A afeta B) ou se é mútua (A é colega de B).
+4. Entidade: ClueConnection (Conexão)
+A tabela associativa que cria as arestas do grafo (Edge List).
+CRUD ClueConnection
+id: Tipo uint, Chave Primária, Auto-incremento.
+source_clue_id: Tipo uint, Obrigatório. FK para LivingClue (Origem da seta).
+target_clue_id: Tipo uint, Obrigatório. FK para LivingClue (Destino da seta).
+connection_type_id: Tipo uint, Obrigatório. FK para ConnectionType.
+strength: Tipo int, Default 1. Peso da conexão (usado na visualização D3/ForceGraph para atrair os nós mais fortes para perto).
+evidence: Tipo text, Opcional. Campo de texto para justificar a conexão (ex: "Link para o artigo que prova essa relação").
+Constraint: Deve existir um índice composto ou verificação no código para evitar duplicidade exata (A -> B do tipo X) repetida.
+5. Entidade: Attachment (Biblioteca/Anexo)
+Realiza o conceito de "Biblioteca Viva", permitindo anexar arquivos às pistas.
+CRUD Attachment
+id: Tipo uint, Chave Primária, Auto-incremento.
+living_clue_id: Tipo uint, Obrigatório. FK para LivingClue.
+title: Tipo string, Max 255, Obrigatório. Nome amigável do arquivo.
+file_type: Tipo string, Max 50, Obrigatório. Ex: pdf, audio, video, link.
+url: Tipo text, Obrigatório. Caminho do arquivo no S3/MinIO ou link externo.
+created_at: Tipo datetime.
