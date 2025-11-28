@@ -205,6 +205,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
     showModalBottomSheet(
       context: context,
       builder: (context) {
+        final categoryName = model.category?.name ?? 'Categoria: ${model.categoryId}';
         return Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -213,9 +214,9 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
             children: [
               Text(model.name, style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
+              Text(categoryName, style: const TextStyle(fontWeight: FontWeight.w600)),
+              const SizedBox(height: 6),
               Text(model.description ?? 'Sem descrição'),
-              const SizedBox(height: 12),
-              Text('Lat: ${model.latitude}  Lng: ${model.longitude}'),
               const SizedBox(height: 12),
               Align(
                 alignment: Alignment.centerRight,

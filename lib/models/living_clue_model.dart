@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:unisinos_usp_app/models/category_model.dart';
+
 class LivingClueModel {
   int id;
   String name;
@@ -12,6 +14,7 @@ class LivingClueModel {
   bool isActive;
   DateTime? createdAt;
   DateTime? updatedAt;
+  CategoryModel? category;
 
   LivingClueModel({
     required this.id,
@@ -25,6 +28,7 @@ class LivingClueModel {
     this.isActive = true,
     this.createdAt,
     this.updatedAt,
+    this.category,
   });
 
   LivingClueModel.fromJson(Map<String, dynamic> json)
@@ -40,7 +44,8 @@ class LivingClueModel {
         metadata = json['metadata'],
         isActive = json['is_active'] == null ? true : json['is_active'] == true,
         createdAt = json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
-        updatedAt = json['updated_at'] != null ? DateTime.parse(json['updated_at']) : null;
+        updatedAt = json['updated_at'] != null ? DateTime.parse(json['updated_at']) : null,
+        category = json['category'] != null ? CategoryModel.fromJson(json['category']) : null;
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -52,6 +57,7 @@ class LivingClueModel {
         'image_url': imageUrl,
         'metadata': metadata,
         'is_active': isActive,
+        // categoria é enviada apenas por id
       };
 
   static List<LivingClueModel> fromJsonArray(String str) {

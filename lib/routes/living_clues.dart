@@ -5,7 +5,7 @@ import 'package:unisinos_usp_app/screens/living_clue/living_clue_index_screen.da
 import 'package:unisinos_usp_app/screens/living_clue/living_clue_map_create_screen.dart';
 import 'package:unisinos_usp_app/screens/living_clue/living_clue_map_screen.dart';
 import 'package:unisinos_usp_app/screens/living_clue/living_clue_pre_create_screen.dart';
-import 'package:unisinos_usp_app/screens/living_clue/living_clue_sow_screen.dart';
+import 'package:unisinos_usp_app/screens/living_clue/living_clue_show_screen.dart';
 import 'package:unisinos_usp_app/screens/living_clue/living_clue_update_screen.dart';
 
 List<GetPage> livingClueRoutes() => [

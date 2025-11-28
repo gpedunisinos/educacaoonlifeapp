@@ -47,3 +47,9 @@ nome_social_alcunha,instituicao_vinculo,genero,minibio,instituicao_vinculo,nivel
 
 Crie uma nova tela para ser aberta antes de lib/screens/living_clue/living_clue_create_screen.dart. Esta tela deve conter apenas o seletor category. Uma vez selecionado, o id do seletor é enviado para a próxima tela. Deve ser bucado na api para então utilizar o campo metadataTags a fim de renderizar os campos metadata. Os campos serão todos opcionais tipo texto. Ao salvar, estes campos devem ser colocados em metadata para serem persistidos na API. Na tela lib/screens/living_clue/living_clue_create_screen.dart o campo category deve ser somente leitura.
 Faça a mesma renderização para a tela lib/screens/living_clue/living_clue_update_screen.dart em que o campo caetgory também é somente leitura e os campos de metadata são renderizados.
+
+Deixei a tela mais bonita lib/screens/living_clue/living_clue_show_screen.dart
+
+Deixe todas as telas, com exceção da lib/screens/home_screen.dart, e lib/screens/living_clue/living_clue_show_screen.dart que já foram feitas, mais bonitas.
+
+Considere a API https://api.uniusp.gpedu.com.br/api/swagger/doc.json, implemente o envio e visualização de arquivos nas telas que forem apropriadas. Implemente um perview destes links utilizando algum componente.
