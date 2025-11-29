@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/chat/chat_controller.dart';
 import 'package:unisinos_usp_app/models/chat_message_model.dart';
+import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -40,6 +41,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
+        leading: const SafeBackButton(),
         title: const Text('Assistente UNIUSP'),
       ),
       body: Container(

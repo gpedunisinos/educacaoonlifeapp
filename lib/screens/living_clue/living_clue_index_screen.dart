@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/living_clue/living_clue_index_controller.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
+import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 
 class LivingClueIndexScreen extends StatelessWidget {
   LivingClueIndexScreen({super.key});
@@ -12,6 +13,7 @@ class LivingClueIndexScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const SafeBackButton(),
         title: const Text('Pistas vivas'),
         actions: [
           IconButton(

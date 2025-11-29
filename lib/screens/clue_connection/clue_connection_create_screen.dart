@@ -6,6 +6,7 @@ import 'package:unisinos_usp_app/models/clue_connection_model.dart';
 import 'package:unisinos_usp_app/webclients/connection_type_webclient.dart';
 import 'package:unisinos_usp_app/webclients/living_clue_webclient.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
+import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class ClueConnectionCreateScreen extends StatefulWidget {
@@ -36,6 +37,7 @@ class _ClueConnectionCreateScreenState extends State<ClueConnectionCreateScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const SafeBackButton(),
         title: const Text('Nova conexão'),
       ),
       body: SingleChildScrollView(

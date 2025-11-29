@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:pvalidator/pvalidator.dart';
 import 'package:unisinos_usp_app/controllers/category/category_update_controller.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
+import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class CategoryUpdateScreen extends StatefulWidget {
@@ -46,6 +47,7 @@ class _CategoryUpdateScreenState extends State<CategoryUpdateScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const SafeBackButton(),
         title: const Text('Editar categoria'),
       ),
       body: Obx(() {

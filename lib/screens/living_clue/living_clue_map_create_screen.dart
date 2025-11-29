@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 
 class LivingClueMapCreateScreen extends StatefulWidget {
   const LivingClueMapCreateScreen({super.key});
@@ -95,6 +96,7 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: const SafeBackButton(),
         title: const Text('Escolher local da pista'),
         actions: [
           IconButton(

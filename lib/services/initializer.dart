@@ -1,6 +1,6 @@
-import 'package:dynamic_path_url_strategy/dynamic_path_url_strategy.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 import 'package:unisinos_usp_app/firebase_options.dart';
@@ -10,7 +10,10 @@ import 'package:widgets_spo/utils.dart';
 
 class Initializer {
   static Future<void> init() async {
-    setPathUrlStrategy();
+    if (kIsWeb) {
+      // Keep hash-based routing on web so direct refreshes work without server rewrite rules.
+      setUrlStrategy(const HashUrlStrategy());
+    }
 
     await Util.initPrefs();
     AuthProvider.register(UserAuthService());

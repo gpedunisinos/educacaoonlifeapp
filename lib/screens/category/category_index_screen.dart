@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/category/category_index_controller.dart';
 import 'package:unisinos_usp_app/models/category_model.dart';
+import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 
 class CategoryIndexScreen extends StatelessWidget {
   CategoryIndexScreen({super.key});
@@ -12,6 +13,7 @@ class CategoryIndexScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const SafeBackButton(),
         title: const Text('Categorias'),
         actions: [
           IconButton(

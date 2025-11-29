@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:unisinos_usp_app/controllers/living_clue/living_clue_map_controller.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
+import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 
 class LivingClueMapScreen extends StatefulWidget {
   const LivingClueMapScreen({super.key});
@@ -46,6 +47,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const SafeBackButton(),
         title: const Text('Mapa de pistas vivas'),
         actions: [
           IconButton(

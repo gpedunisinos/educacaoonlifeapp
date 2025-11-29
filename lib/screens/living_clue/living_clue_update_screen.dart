@@ -7,6 +7,7 @@ import 'package:unisinos_usp_app/models/living_clue_model.dart';
 import 'package:unisinos_usp_app/webclients/category_webclient.dart';
 import 'package:unisinos_usp_app/webclients/file_webclient.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
+import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class LivingClueUpdateScreen extends StatefulWidget {
@@ -59,6 +60,7 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const SafeBackButton(),
         title: const Text('Editar pista viva'),
       ),
       body: Obx(() {

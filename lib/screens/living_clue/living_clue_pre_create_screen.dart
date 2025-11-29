@@ -5,6 +5,7 @@ import 'package:unisinos_usp_app/models/category_model.dart';
 import 'package:unisinos_usp_app/webclients/category_select_webclient.dart';
 import 'package:unisinos_usp_app/webclients/category_webclient.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
+import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class LivingCluePreCreateScreen extends StatefulWidget {
@@ -28,6 +29,7 @@ class _LivingCluePreCreateScreenState extends State<LivingCluePreCreateScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const SafeBackButton(),
         title: const Text('Escolha a categoria'),
       ),
       body: Container(

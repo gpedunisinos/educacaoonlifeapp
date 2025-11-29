@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/sample/sample_index_controller.dart';
 import 'package:unisinos_usp_app/models/sample_model.dart';
+import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 
 class SampleIndexScreen extends StatelessWidget {
   SampleIndexScreen({super.key});
@@ -29,6 +30,7 @@ class SampleIndexScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const SafeBackButton(),
         title: const Text('Samples'),
         actions: [
           IconButton(

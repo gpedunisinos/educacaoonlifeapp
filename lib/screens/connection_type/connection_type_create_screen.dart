@@ -4,6 +4,7 @@ import 'package:pvalidator/pvalidator.dart';
 import 'package:unisinos_usp_app/controllers/connection_type/connection_type_create_controller.dart';
 import 'package:unisinos_usp_app/models/connection_type_model.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
+import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class ConnectionTypeCreateScreen extends StatefulWidget {
@@ -32,6 +33,7 @@ class _ConnectionTypeCreateScreenState extends State<ConnectionTypeCreateScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const SafeBackButton(),
         title: const Text('Novo tipo de conexão'),
       ),
       body: SingleChildScrollView(

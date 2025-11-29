@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:pvalidator/pvalidator.dart';
 import 'package:unisinos_usp_app/controllers/category/category_create_controller.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
+import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class CategoryCreateScreen extends StatefulWidget {
@@ -44,6 +45,7 @@ class _CategoryCreateScreenState extends State<CategoryCreateScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const SafeBackButton(),
         title: const Text('Nova categoria'),
       ),
       body: SingleChildScrollView(

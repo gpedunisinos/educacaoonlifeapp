@@ -5,6 +5,7 @@ import 'package:unisinos_usp_app/controllers/sample/sample_create_controller.dar
 import 'package:unisinos_usp_app/models/sample_model.dart';
 import 'package:unisinos_usp_app/webclients/sample_detail_webclient.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
+import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class SampleCreateScreen extends StatefulWidget {
@@ -43,6 +44,7 @@ class _SampleCreateScreenState extends State<SampleCreateScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const SafeBackButton(),
         title: const Text('Novo sample'),
       ),
       body: SingleChildScrollView(

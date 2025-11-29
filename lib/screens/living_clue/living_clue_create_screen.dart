@@ -4,6 +4,7 @@ import 'package:pvalidator/pvalidator.dart';
 import 'package:unisinos_usp_app/controllers/living_clue/living_clue_create_controller.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
+import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class LivingClueCreateScreen extends StatefulWidget {
@@ -71,6 +72,7 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const SafeBackButton(),
         title: const Text('Nova pista viva'),
       ),
       body: Container(

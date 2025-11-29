@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
+import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 
 class LivingClueShowScreen extends StatelessWidget {
   const LivingClueShowScreen({super.key});
@@ -14,6 +15,7 @@ class LivingClueShowScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: const SafeBackButton(),
         title: const Text('Pista viva'),
         actions: [
           IconButton(
