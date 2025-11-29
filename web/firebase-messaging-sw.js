@@ -7,7 +7,7 @@ const firebaseConfig = {
     messagingSenderId: '419473345657',
     projectId: 'efv-app-256d4',
     storageBucket: 'efv-app-256d4.firebasestorage.app',
-    iosBundleId: 'com.br.spotecnologia.efvapp',
+    iosBundleId: 'com.br.spotecnologia.uniuspapp',
 };
 
 firebase.initializeApp(firebaseConfig);

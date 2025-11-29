@@ -124,7 +124,7 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
             children: [
               TileLayer(
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.br.spotecnologia.efvapp',
+                userAgentPackageName: 'com.br.spotecnologia.uniuspapp',
               ),
               if (_selected != null)
                 CircleLayer(

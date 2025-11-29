@@ -19,11 +19,12 @@ class Initializer {
     AuthProvider.register(UserAuthService());
     Get.put<UserController>(UserController(), permanent: true);
 
-    if (_supportsFirebaseCore()) {
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      );
-    }
+    // Temporarily disable Firebase initialization.
+    // if (_supportsFirebaseCore()) {
+    //   await Firebase.initializeApp(
+    //     options: DefaultFirebaseOptions.currentPlatform,
+    //   );
+    // }
 
     NavigationObserver.initialize(homeResolver: () {
       final controller = Get.find<UserController>();
