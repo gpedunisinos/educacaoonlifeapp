@@ -100,6 +100,7 @@ class HomeScreen extends StatelessWidget {
                 children: [
                   Card(
                     elevation: 4,
+                    color: Colors.black.withValues(alpha: 0.62),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     child: Padding(
                       padding: const EdgeInsets.all(16),
@@ -107,10 +108,13 @@ class HomeScreen extends StatelessWidget {
                         children: [
                           CircleAvatar(
                             radius: 26,
-                            backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                            backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
                             child: Text(
                               userName.isNotEmpty ? userName.characters.first.toUpperCase() : '?',
-                              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                           Insets.medium.width,
@@ -120,12 +124,15 @@ class HomeScreen extends StatelessWidget {
                               children: [
                                 Text(
                                   userName,
-                                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   'Selecione uma área para começar',
-                                  style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                                  style: theme.textTheme.bodySmall?.copyWith(color: Colors.white70),
                                 ),
                               ],
                             ),
@@ -181,7 +188,7 @@ class _HomeCard extends StatelessWidget {
     return SizedBox(
       width: 170,
       child: Material(
-        color: Colors.white,
+        color: Colors.black.withValues(alpha: 0.58),
         elevation: 3,
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
@@ -195,7 +202,7 @@ class _HomeCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: menu.color.withOpacity(0.12),
+                    color: menu.color.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(menu.icon, color: menu.color, size: 24),
@@ -203,12 +210,15 @@ class _HomeCard extends StatelessWidget {
                 const SizedBox(height: 12),
                 Text(
                   menu.title,
-                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   menu.subtitle,
-                  style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                  style: theme.textTheme.bodySmall?.copyWith(color: Colors.white70),
                 ),
               ],
             ),
