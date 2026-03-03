@@ -11,8 +11,14 @@ class CategoryIndexScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final backgroundImageWidth = screenWidth < 400 ? screenWidth : 400.0;
+
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Categorias'),
         actions: [
@@ -23,55 +29,82 @@ class CategoryIndexScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Obx(() {
-        if (_controller.isLoading.value && _controller.categories.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (_controller.categories.isEmpty) {
-          return const Center(child: Text('Nenhuma categoria cadastrada.'));
-        }
-
-        return Column(
-          children: [
-            Expanded(
-              child: ListView.separated(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                itemCount: _controller.categories.length,
-                separatorBuilder: (_, __) => const Divider(height: 1),
-                itemBuilder: (_, index) {
-                  final CategoryModel category = _controller.categories[index];
-                  return ListTile(
-                    leading: _ColorDot(colorHex: category.colorHex),
-                    title: Text(category.name),
-                    subtitle: Text(category.description ?? ''),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: _controller.isLoading.value ? null : () => _goToUpdate(category),
-                          tooltip: 'Editar',
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline),
-                          onPressed: _controller.isLoading.value ? null : () => _confirmDelete(category),
-                          tooltip: 'Excluir',
-                        ),
-                      ],
-                    ),
-                  );
-                },
+      body: Stack(
+        children: [
+          const Positioned.fill(child: ColoredBox(color: Colors.black)),
+          Positioned(
+            right: 0,
+            bottom: 0,
+            child: IgnorePointer(
+              child: Image.asset(
+                'assets/rieonlife/hub_controladora.png',
+                width: backgroundImageWidth,
+                fit: BoxFit.contain,
+                alignment: Alignment.bottomRight,
               ),
             ),
-            if (_controller.isLoading.value)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 12),
-                child: CircularProgressIndicator(),
-              ),
-          ],
-        );
-      }),
+          ),
+          Obx(() {
+            if (_controller.isLoading.value && _controller.categories.isEmpty) {
+              return const Center(child: CircularProgressIndicator(color: Colors.white));
+            }
+
+            if (_controller.categories.isEmpty) {
+              return const Center(
+                child: Text(
+                  'Nenhuma categoria cadastrada.',
+                  style: TextStyle(color: Colors.white),
+                ),
+              );
+            }
+
+            return Column(
+              children: [
+                Expanded(
+                  child: ListView.separated(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    itemCount: _controller.categories.length,
+                    separatorBuilder: (_, __) => const Divider(height: 1, color: Colors.white24),
+                    itemBuilder: (_, index) {
+                      final CategoryModel category = _controller.categories[index];
+                      return ListTile(
+                        leading: _ColorDot(colorHex: category.colorHex),
+                        title: Text(category.name, style: const TextStyle(color: Colors.white)),
+                        subtitle: Text(
+                          category.description ?? '',
+                          style: const TextStyle(color: Colors.white70),
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              color: Colors.white,
+                              icon: const Icon(Icons.edit),
+                              onPressed: _controller.isLoading.value ? null : () => _goToUpdate(category),
+                              tooltip: 'Editar',
+                            ),
+                            IconButton(
+                              color: Colors.white,
+                              icon: const Icon(Icons.delete_outline),
+                              onPressed: _controller.isLoading.value ? null : () => _confirmDelete(category),
+                              tooltip: 'Excluir',
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                if (_controller.isLoading.value)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    child: CircularProgressIndicator(color: Colors.white),
+                  ),
+              ],
+            );
+          }),
+        ],
+      ),
     );
   }
 

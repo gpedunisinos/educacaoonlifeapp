@@ -11,6 +11,8 @@ List<GetPage> categoryRoutes() => [
         name: '/categories',
         page: () => CategoryIndexScreen(),
         binding: CategoryIndexBinding(),
+        transition: Transition.downToUp,
+        transitionDuration: const Duration(milliseconds: 300),
       ),
       GetPage(
         name: '/categories/create',
