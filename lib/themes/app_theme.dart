@@ -14,7 +14,7 @@ class AppTheme {
       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFFf2f2f2))),
       disabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFFf2f2f2))),
     ),
-    dialogTheme: DialogTheme(
+    dialogTheme: DialogThemeData(
       surfaceTintColor: Colors.white,
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(

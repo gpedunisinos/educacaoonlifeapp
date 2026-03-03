@@ -36,7 +36,7 @@ dependencies:
   widgets_spo:
     git:
       url: https://bitbucket.org/spotecnologia/widgets_spo.git
-      ref: v1.2.3
+      ref: v1.2.4
 
   cupertino_icons: ^1.0.8
   path_provider: ^2.1.5
@@ -70,6 +70,11 @@ flutter:
     - assets/charts.png
     - assets/logo_unisinos.png
     - assets/logo_usp.png
+    - assets/rieonlife/hub_conectakat.jpeg
+    - assets/rieonlife/hub_controladora.png
+    - assets/rieonlife/hub_educacao_corporativa.png
+    - assets/rieonlife/hub_empreendedorismo.png
+    - assets/rieonlife/hero.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

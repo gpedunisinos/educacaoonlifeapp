@@ -11,7 +11,9 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final screenWidth = MediaQuery.sizeOf(context).width;
     final userName = _controller.user.value?.name ?? 'Bem-vindo';
+    final backgroundImageWidth = screenWidth < 900 ? screenWidth : 900.0;
 
     final menuItems = [
       _HomeMenu(
@@ -59,8 +61,10 @@ class HomeScreen extends StatelessWidget {
     ];
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: Colors.black,
       appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
         title: const Text('Home'),
         actions: [
           IconButton(
@@ -71,14 +75,20 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
       body: Stack(
+        clipBehavior: Clip.none,
         children: [
-          Container(
-            height: 220,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF0D47A1), Color(0xFF42A5F5)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+          const Positioned.fill(
+            child: ColoredBox(color: Colors.black),
+          ),
+          Positioned(
+            top: 0,
+            right: 0,
+            child: IgnorePointer(
+              child: Image.asset(
+                'assets/rieonlife/hub_conectakat.jpeg',
+                width: backgroundImageWidth,
+                fit: BoxFit.contain,
+                alignment: Alignment.topRight,
               ),
             ),
           ),
