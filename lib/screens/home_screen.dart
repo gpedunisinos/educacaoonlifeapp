@@ -158,7 +158,7 @@ class HomeScreen extends StatelessWidget {
                           .toList(),
                     )
                   else
-                    _CurvedMenuFlow(menus: menuItems),
+                    _TwoColumnMenuFlow(menus: menuItems),
                 ],
               ),
             ),
@@ -237,8 +237,8 @@ class _HomeCard extends StatelessWidget {
   }
 }
 
-class _CurvedMenuFlow extends StatelessWidget {
-  const _CurvedMenuFlow({required this.menus});
+class _TwoColumnMenuFlow extends StatelessWidget {
+  const _TwoColumnMenuFlow({required this.menus});
 
   final List<_HomeMenu> menus;
 
@@ -254,16 +254,11 @@ class _CurvedMenuFlow extends StatelessWidget {
         final rows = List<Widget>.generate(totalRows, (rowIndex) {
           final start = rowIndex * cardsPerRow;
           final rowMenus = menus.skip(start).take(cardsPerRow).toList();
-          final progress = totalRows <= 1 ? 0.0 : rowIndex / (totalRows - 1);
-          final maxInset = constraints.maxWidth * 0.36;
-          final minInset = constraints.maxWidth * 0.08;
-          final rightInset = minInset + (maxInset - minInset) * math.pow(1 - progress, 1.35);
 
           return SizedBox(
             width: constraints.maxWidth,
             child: Padding(
               padding: EdgeInsets.only(
-                right: rightInset,
                 bottom: rowIndex < totalRows - 1 ? rowSpacing : 0,
               ),
               child: Align(
