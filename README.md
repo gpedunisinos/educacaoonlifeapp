@@ -10,4 +10,4 @@ Senha em key.properties
 
 ### Deploy app 
 flutter build web
-scp -i /home/odair/Documentos/chaves/aws_spo.pem -r build/web/* ubuntu@18.230.235.236:/var/www/unisinos_usp_app
+scp -o IdentitiesOnly=yes -o IdentityAgent=none -i ~/.ssh/aws_spo.pem -i /home/odair/Documentos/chaves/aws_spo.pem -r build/web/* ubuntu@18.230.235.236:/var/www/unisinos_usp_app

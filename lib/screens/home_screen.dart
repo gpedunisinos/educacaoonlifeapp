@@ -1,8 +1,9 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 import 'package:widgets_spo/widgets_spo.dart';
-import 'dart:math' as math;
 
 class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
@@ -13,8 +14,9 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final screenWidth = MediaQuery.sizeOf(context).width;
+    final isMobile = screenWidth < 900;
     final userName = _controller.user.value?.name ?? 'Bem-vindo';
-    final backgroundImageWidth = screenWidth < 900 ? screenWidth : 900.0;
+    final backgroundImageWidth = isMobile ? screenWidth : 900.0;
 
     final menuItems = [
       _HomeMenu(
@@ -145,15 +147,18 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Wrap(
-                    spacing: 16,
-                    runSpacing: 16,
-                    children: menuItems
-                        .map(
-                          (item) => _HomeCard(menu: item),
-                        )
-                        .toList(),
-                  ),
+                  if (isMobile)
+                    Wrap(
+                      spacing: 16,
+                      runSpacing: 16,
+                      children: menuItems
+                          .map(
+                            (item) => _HomeCard(menu: item),
+                          )
+                          .toList(),
+                    )
+                  else
+                    _CurvedMenuFlow(menus: menuItems),
                 ],
               ),
             ),
@@ -228,6 +233,64 @@ class _HomeCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _CurvedMenuFlow extends StatelessWidget {
+  const _CurvedMenuFlow({required this.menus});
+
+  final List<_HomeMenu> menus;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const cardsPerRow = 2;
+        const spacing = 16.0;
+        const rowSpacing = 16.0;
+        final totalRows = (menus.length / cardsPerRow).ceil();
+
+        final rows = List<Widget>.generate(totalRows, (rowIndex) {
+          final start = rowIndex * cardsPerRow;
+          final rowMenus = menus.skip(start).take(cardsPerRow).toList();
+          final progress = totalRows <= 1 ? 0.0 : rowIndex / (totalRows - 1);
+          final maxInset = constraints.maxWidth * 0.36;
+          final minInset = constraints.maxWidth * 0.08;
+          final rightInset = minInset + (maxInset - minInset) * math.pow(1 - progress, 1.35);
+
+          return SizedBox(
+            width: constraints.maxWidth,
+            child: Padding(
+              padding: EdgeInsets.only(
+                right: rightInset,
+                bottom: rowIndex < totalRows - 1 ? rowSpacing : 0,
+              ),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: rowMenus
+                      .asMap()
+                      .entries
+                      .map(
+                        (entry) => Padding(
+                          padding: EdgeInsets.only(right: entry.key < rowMenus.length - 1 ? spacing : 0),
+                          child: _HomeCard(menu: entry.value),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
+            ),
+          );
+        });
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: rows,
+        );
+      },
     );
   }
 }
