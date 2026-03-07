@@ -5,6 +5,7 @@ import 'package:unisinos_usp_app/controllers/connection_type/connection_type_upd
 import 'package:unisinos_usp_app/models/connection_type_model.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class ConnectionTypeUpdateScreen extends StatefulWidget {
@@ -33,36 +34,42 @@ class _ConnectionTypeUpdateScreenState extends State<ConnectionTypeUpdateScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Editar tipo de conexão'),
       ),
-      body: Obx(() {
-        if (_controller.connectionTypeId == null) {
-          return const Center(child: Text('Tipo não informado.'));
-        }
-        if (_controller.isLoading.value && _controller.connectionType.value == null) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (_controller.connectionType.value == null) {
-          return const Center(child: Text('Tipo não encontrado.'));
-        }
+      body: Stack(
+        children: [
+          const Positioned.fill(child: StarfieldBackground()),
+          Obx(() {
+            if (_controller.connectionTypeId == null) {
+              return const Center(child: Text('Tipo não informado.', style: TextStyle(color: Colors.white)));
+            }
+            if (_controller.isLoading.value && _controller.connectionType.value == null) {
+              return const Center(child: CircularProgressIndicator(color: Colors.white));
+            }
+            if (_controller.connectionType.value == null) {
+              return const Center(child: Text('Tipo não encontrado.', style: TextStyle(color: Colors.white)));
+            }
 
-        if (!_filled && _controller.connectionType.value != null) {
-          final ConnectionTypeModel model = _controller.connectionType.value!;
-          _nameController.text = model.name;
-          _strokeStyleController.text = model.strokeStyle;
-          _isDirectional = model.isDirectional;
-          _filled = true;
-        }
+            if (!_filled && _controller.connectionType.value != null) {
+              final ConnectionTypeModel model = _controller.connectionType.value!;
+              _nameController.text = model.name;
+              _strokeStyleController.text = model.strokeStyle;
+              _isDirectional = model.isDirectional;
+              _filled = true;
+            }
 
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                 InputText(
                   hintText: 'Nome',
                   controller: _nameController,
@@ -96,11 +103,13 @@ class _ConnectionTypeUpdateScreenState extends State<ConnectionTypeUpdateScreen>
                     );
                   }),
                 ),
-              ],
-            ),
-          ),
-        );
-      }),
+                  ],
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
     );
   }
 

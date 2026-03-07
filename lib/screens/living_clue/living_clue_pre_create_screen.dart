@@ -6,6 +6,7 @@ import 'package:unisinos_usp_app/webclients/category_select_webclient.dart';
 import 'package:unisinos_usp_app/webclients/category_webclient.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class LivingCluePreCreateScreen extends StatefulWidget {
@@ -28,19 +29,23 @@ class _LivingCluePreCreateScreenState extends State<LivingCluePreCreateScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Escolha a categoria'),
       ),
-      body: Container(
-        color: Colors.grey.shade50,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+      body: Stack(
+        children: [
+          const Positioned.fill(child: StarfieldBackground()),
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                 Card(
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   child: Padding(
@@ -88,10 +93,11 @@ class _LivingCluePreCreateScreenState extends State<LivingCluePreCreateScreen> {
                     onPressed: _loading ? null : _continue,
                   ),
                 ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

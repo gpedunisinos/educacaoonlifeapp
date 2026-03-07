@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/clue_connection/clue_connection_index_controller.dart';
 import 'package:unisinos_usp_app/models/clue_connection_model.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 
 class ClueConnectionIndexScreen extends StatelessWidget {
   ClueConnectionIndexScreen({super.key});
@@ -12,7 +13,10 @@ class ClueConnectionIndexScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Conexões'),
         actions: [
@@ -23,90 +27,91 @@ class ClueConnectionIndexScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Obx(() {
-        if (_controller.isLoading.value && _controller.connections.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (_controller.connections.isEmpty) {
-          return const Center(child: Text('Nenhuma conexão cadastrada.'));
-        }
+      body: Stack(
+        children: [
+          const Positioned.fill(child: StarfieldBackground()),
+          Obx(() {
+            if (_controller.isLoading.value && _controller.connections.isEmpty) {
+              return const Center(child: CircularProgressIndicator(color: Colors.white));
+            }
+            if (_controller.connections.isEmpty) {
+              return const Center(child: Text('Nenhuma conexão cadastrada.', style: TextStyle(color: Colors.white)));
+            }
 
-        return Container(
-          color: Colors.grey.shade50,
-          child: Column(
-            children: [
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
-                  itemCount: _controller.connections.length,
-                  itemBuilder: (_, index) {
-                    final ClueConnectionModel model = _controller.connections[index];
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      child: Padding(
-                        padding: const EdgeInsets.all(14),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    'Origem ${model.sourceClueId} → Destino ${model.targetClueId}',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium
-                                        ?.copyWith(fontWeight: FontWeight.bold),
+            return Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
+                    itemCount: _controller.connections.length,
+                    itemBuilder: (_, index) {
+                      final ClueConnectionModel model = _controller.connections[index];
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        color: Colors.black.withValues(alpha: 0.58),
+                        child: Padding(
+                          padding: const EdgeInsets.all(14),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      'Origem ${model.sourceClueId} → Destino ${model.targetClueId}',
+                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
+                                    ),
                                   ),
-                                ),
-                                Chip(
-                                  backgroundColor: Colors.orange.shade50,
-                                  label: Text(
-                                    'Tipo ${model.connectionTypeId}',
-                                    style: TextStyle(color: Colors.orange.shade800),
+                                  Chip(
+                                    backgroundColor: Colors.orange.withValues(alpha: 0.2),
+                                    label: Text(
+                                      'Tipo ${model.connectionTypeId}',
+                                      style: TextStyle(color: Colors.orange.shade900),
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Força ${model.strength}${model.evidence != null ? " • Evidência: ${model.evidence}" : ""}',
-                              style: TextStyle(color: Colors.grey.shade700),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit),
-                                  onPressed: _controller.isLoading.value ? null : () => _goToUpdate(model),
-                                  tooltip: 'Editar',
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete_outline),
-                                  onPressed:
-                                      _controller.isLoading.value ? null : () => _confirmDelete(model),
-                                  tooltip: 'Excluir',
-                                ),
-                              ],
-                            ),
-                          ],
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'Força ${model.strength}${model.evidence != null ? " • Evidência: ${model.evidence}" : ""}',
+                                style: const TextStyle(color: Colors.white70),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  IconButton(
+                                    color: Colors.white,
+                                    icon: const Icon(Icons.edit),
+                                    onPressed: _controller.isLoading.value ? null : () => _goToUpdate(model),
+                                    tooltip: 'Editar',
+                                  ),
+                                  IconButton(
+                                    color: Colors.white,
+                                    icon: const Icon(Icons.delete_outline),
+                                    onPressed: _controller.isLoading.value ? null : () => _confirmDelete(model),
+                                    tooltip: 'Excluir',
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
-              ),
-              if (_controller.isLoading.value)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  child: CircularProgressIndicator(),
-                ),
-            ],
-          ),
-        );
-      }),
+                if (_controller.isLoading.value)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    child: CircularProgressIndicator(),
+                  ),
+              ],
+            );
+          }),
+        ],
+      ),
     );
   }
 

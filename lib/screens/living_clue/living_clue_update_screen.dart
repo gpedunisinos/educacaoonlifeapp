@@ -8,6 +8,7 @@ import 'package:unisinos_usp_app/webclients/category_webclient.dart';
 import 'package:unisinos_usp_app/webclients/file_webclient.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class LivingClueUpdateScreen extends StatefulWidget {
@@ -59,48 +60,54 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Editar pista viva'),
       ),
-      body: Obx(() {
-        if (_controller.livingClueId == null) {
-          return const Center(child: Text('Pista não informada.'));
-        }
-        if (_controller.isLoading.value && _controller.livingClue.value == null) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (_controller.livingClue.value == null) {
-          return const Center(child: Text('Pista não encontrada.'));
-        }
+      body: Stack(
+        children: [
+          const Positioned.fill(child: StarfieldBackground()),
+          Obx(() {
+            if (_controller.livingClueId == null) {
+              return const Center(child: Text('Pista não informada.', style: TextStyle(color: Colors.white)));
+            }
+            if (_controller.isLoading.value && _controller.livingClue.value == null) {
+              return const Center(child: CircularProgressIndicator(color: Colors.white));
+            }
+            if (_controller.livingClue.value == null) {
+              return const Center(child: Text('Pista não encontrada.', style: TextStyle(color: Colors.white)));
+            }
 
-        if (!_filled && _controller.livingClue.value != null) {
-          _fillFromModel(_controller.livingClue.value!);
-          _filled = true;
-        }
+            if (!_filled && _controller.livingClue.value != null) {
+              _fillFromModel(_controller.livingClue.value!);
+              _filled = true;
+            }
 
-        if (!_metadataLoaded && !_loadingCategory && _categoryId != null) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _loadCategoryMetadata(_categoryId!, _initialMetadata);
-          });
-        }
+            if (!_metadataLoaded && !_loadingCategory && _categoryId != null) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _loadCategoryMetadata(_categoryId!, _initialMetadata);
+              });
+            }
 
-        if (!_attachmentsLoaded && _controller.livingClue.value != null) {
-          _attachmentsLoaded = true;
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _loadAttachments(_controller.livingClue.value!.id);
-          });
-        }
+            if (!_attachmentsLoaded && _controller.livingClue.value != null) {
+              _attachmentsLoaded = true;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _loadAttachments(_controller.livingClue.value!.id);
+              });
+            }
 
-        return Stack(
-          children: [
-            SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+            return Stack(
+              children: [
+                SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                     _buildInfoCard(context),
                     const SizedBox(height: 12),
                     _buildLocationCard(),
@@ -133,20 +140,22 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
                         ),
                       ],
                     ),
-                  ],
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            if (_controller.isLoading.value || _loadingCategory)
-              const Positioned(
-                left: 0,
-                right: 0,
-                top: 0,
-                child: LinearProgressIndicator(),
-              ),
-          ],
-        );
-      }),
+                if (_controller.isLoading.value || _loadingCategory)
+                  const Positioned(
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    child: LinearProgressIndicator(),
+                  ),
+              ],
+            );
+          }),
+        ],
+      ),
     );
   }
 

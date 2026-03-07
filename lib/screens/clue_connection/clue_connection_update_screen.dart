@@ -7,6 +7,7 @@ import 'package:unisinos_usp_app/webclients/connection_type_webclient.dart';
 import 'package:unisinos_usp_app/webclients/living_clue_webclient.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class ClueConnectionUpdateScreen extends StatefulWidget {
@@ -37,38 +38,53 @@ class _ClueConnectionUpdateScreenState extends State<ClueConnectionUpdateScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Editar conexão'),
       ),
-      body: Obx(() {
-        if (_controller.connectionId == null) {
-          return const Center(child: Text('Conexão não informada.'));
-        }
-        if (_controller.isLoading.value && _controller.connection.value == null) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (_controller.connection.value == null) {
-          return const Center(child: Text('Conexão não encontrada.'));
-        }
+      body: Stack(
+        children: [
+          const Positioned.fill(child: StarfieldBackground()),
+          Obx(() {
+            if (_controller.connectionId == null) {
+              return const Center(child: Text('Conexão não informada.', style: TextStyle(color: Colors.white)));
+            }
+            if (_controller.isLoading.value && _controller.connection.value == null) {
+              return const Center(child: CircularProgressIndicator(color: Colors.white));
+            }
+            if (_controller.connection.value == null) {
+              return const Center(child: Text('Conexão não encontrada.', style: TextStyle(color: Colors.white)));
+            }
 
-        if (!_filled && _controller.connection.value != null) {
-          final ClueConnectionModel model = _controller.connection.value!;
-          _sourceSelectController.selectedItem = ItemSelect(id: model.sourceClueId, name: model.sourceClueId.toString());
-          _targetSelectController.selectedItem = ItemSelect(id: model.targetClueId, name: model.targetClueId.toString());
-          _typeSelectController.selectedItem = ItemSelect(id: model.connectionTypeId, name: model.connectionTypeId.toString());
-          _strengthController.text = model.strength.toString();
-          _evidenceController.text = model.evidence ?? '';
-          _filled = true;
-        }
+            if (!_filled && _controller.connection.value != null) {
+              final ClueConnectionModel model = _controller.connection.value!;
+              _sourceSelectController.selectedItem = ItemSelect(
+                id: model.sourceClueId,
+                name: model.sourceClueId.toString(),
+              );
+              _targetSelectController.selectedItem = ItemSelect(
+                id: model.targetClueId,
+                name: model.targetClueId.toString(),
+              );
+              _typeSelectController.selectedItem = ItemSelect(
+                id: model.connectionTypeId,
+                name: model.connectionTypeId.toString(),
+              );
+              _strengthController.text = model.strength.toString();
+              _evidenceController.text = model.evidence ?? '';
+              _filled = true;
+            }
 
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                 InputSelectApi(
                   label: 'Pista origem',
                   controller: _sourceSelectController,
@@ -122,11 +138,13 @@ class _ClueConnectionUpdateScreenState extends State<ClueConnectionUpdateScreen>
                     );
                   }),
                 ),
-              ],
-            ),
-          ),
-        );
-      }),
+                  ],
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
     );
   }
 

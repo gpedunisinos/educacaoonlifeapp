@@ -5,6 +5,7 @@ import 'package:pvalidator/pvalidator.dart';
 import 'package:unisinos_usp_app/controllers/category/category_create_controller.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class CategoryCreateScreen extends StatefulWidget {
@@ -44,17 +45,23 @@ class _CategoryCreateScreenState extends State<CategoryCreateScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Nova categoria'),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+      body: Stack(
+        children: [
+          const Positioned.fill(child: StarfieldBackground()),
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
               InputText(
                 hintText: 'Nome',
                 controller: _nameController,
@@ -129,9 +136,11 @@ class _CategoryCreateScreenState extends State<CategoryCreateScreen> {
                   );
                 }),
               ),
-            ],
+                ],
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

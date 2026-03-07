@@ -5,6 +5,7 @@ import 'package:unisinos_usp_app/controllers/connection_type/connection_type_cre
 import 'package:unisinos_usp_app/models/connection_type_model.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class ConnectionTypeCreateScreen extends StatefulWidget {
@@ -32,17 +33,23 @@ class _ConnectionTypeCreateScreenState extends State<ConnectionTypeCreateScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Novo tipo de conexão'),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+      body: Stack(
+        children: [
+          const Positioned.fill(child: StarfieldBackground()),
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
               InputText(
                 hintText: 'Nome',
                 controller: _nameController,
@@ -76,9 +83,11 @@ class _ConnectionTypeCreateScreenState extends State<ConnectionTypeCreateScreen>
                   );
                 }),
               ),
-            ],
+                ],
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

@@ -5,6 +5,7 @@ import 'package:pvalidator/pvalidator.dart';
 import 'package:unisinos_usp_app/controllers/category/category_update_controller.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class CategoryUpdateScreen extends StatefulWidget {
@@ -46,42 +47,48 @@ class _CategoryUpdateScreenState extends State<CategoryUpdateScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Editar categoria'),
       ),
-      body: Obx(() {
-        if (_controller.categoryId == null) {
-          return const Center(child: Text('Categoria não informada.'));
-        }
+      body: Stack(
+        children: [
+          const Positioned.fill(child: StarfieldBackground()),
+          Obx(() {
+            if (_controller.categoryId == null) {
+              return const Center(child: Text('Categoria não informada.', style: TextStyle(color: Colors.white)));
+            }
 
-        if (_controller.isLoading.value && _controller.category.value == null) {
-          return const Center(child: CircularProgressIndicator());
-        }
+            if (_controller.isLoading.value && _controller.category.value == null) {
+              return const Center(child: CircularProgressIndicator(color: Colors.white));
+            }
 
-        if (_controller.category.value == null) {
-          return const Center(child: Text('Categoria não encontrada.'));
-        }
+            if (_controller.category.value == null) {
+              return const Center(child: Text('Categoria não encontrada.', style: TextStyle(color: Colors.white)));
+            }
 
-        if (!_filledControllers && _controller.category.value != null) {
-          final category = _controller.category.value!;
-          _nameController.text = category.name;
-          _colorController.text = category.colorHex;
-          _iconController.text = category.iconCode ?? '';
-          _descriptionController.text = category.description ?? '';
-          _metadataTagsController.text = category.metadataTags;
-          _filledControllers = true;
-        }
+            if (!_filledControllers && _controller.category.value != null) {
+              final category = _controller.category.value!;
+              _nameController.text = category.name;
+              _colorController.text = category.colorHex;
+              _iconController.text = category.iconCode ?? '';
+              _descriptionController.text = category.description ?? '';
+              _metadataTagsController.text = category.metadataTags;
+              _filledControllers = true;
+            }
 
-        return Stack(
-          children: [
-            SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+            return Stack(
+              children: [
+                SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                     InputText(
                       hintText: 'Nome',
                       controller: _nameController,
@@ -156,20 +163,22 @@ class _CategoryUpdateScreenState extends State<CategoryUpdateScreen> {
                         );
                       }),
                     ),
-                  ],
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            if (_controller.isLoading.value)
-              const Positioned(
-                left: 0,
-                right: 0,
-                top: 0,
-                child: LinearProgressIndicator(),
-              ),
-          ],
-        );
-      }),
+                if (_controller.isLoading.value)
+                  const Positioned(
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    child: LinearProgressIndicator(),
+                  ),
+              ],
+            );
+          }),
+        ],
+      ),
     );
   }
 

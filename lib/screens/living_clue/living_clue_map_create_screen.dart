@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 
 class LivingClueMapCreateScreen extends StatefulWidget {
   const LivingClueMapCreateScreen({super.key});
@@ -95,7 +96,10 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
         : 'Ponto selecionado: ${_selected!.latitude.toStringAsFixed(6)}, ${_selected!.longitude.toStringAsFixed(6)}';
 
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Escolher local da pista'),
         actions: [
@@ -114,6 +118,7 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
       ),
       body: Stack(
         children: [
+          const Positioned.fill(child: StarfieldBackground()),
           FlutterMap(
             mapController: _mapController,
             options: MapOptions(

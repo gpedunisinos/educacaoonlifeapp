@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/connection_type/connection_type_index_controller.dart';
 import 'package:unisinos_usp_app/models/connection_type_model.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 
 class ConnectionTypeIndexScreen extends StatelessWidget {
   ConnectionTypeIndexScreen({super.key});
@@ -12,7 +13,10 @@ class ConnectionTypeIndexScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Tipos de conexão'),
         actions: [
@@ -23,17 +27,18 @@ class ConnectionTypeIndexScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Obx(() {
-        if (_controller.isLoading.value && _controller.connectionTypes.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (_controller.connectionTypes.isEmpty) {
-          return const Center(child: Text('Nenhum tipo cadastrado.'));
-        }
-        return Container(
-          color: Colors.grey.shade50,
-          child: Column(
-            children: [
+      body: Stack(
+        children: [
+          const Positioned.fill(child: StarfieldBackground()),
+          Obx(() {
+            if (_controller.isLoading.value && _controller.connectionTypes.isEmpty) {
+              return const Center(child: CircularProgressIndicator(color: Colors.white));
+            }
+            if (_controller.connectionTypes.isEmpty) {
+              return const Center(child: Text('Nenhum tipo cadastrado.', style: TextStyle(color: Colors.white)));
+            }
+            return Column(
+              children: [
               Expanded(
                 child: ListView.builder(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
@@ -43,6 +48,7 @@ class ConnectionTypeIndexScreen extends StatelessWidget {
                     return Card(
                       margin: const EdgeInsets.only(bottom: 12),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      color: Colors.black.withValues(alpha: 0.58),
                       child: Padding(
                         padding: const EdgeInsets.all(14),
                         child: Column(
@@ -56,15 +62,15 @@ class ConnectionTypeIndexScreen extends StatelessWidget {
                                     style: Theme.of(context)
                                         .textTheme
                                         .titleMedium
-                                        ?.copyWith(fontWeight: FontWeight.bold),
+                                        ?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
                                   ),
                                 ),
                                 Chip(
-                                  backgroundColor: Colors.blue.shade50,
+                                  backgroundColor: Colors.blue.withValues(alpha: 0.2),
                                   label: Text(
                                     model.isDirectional ? 'Direcional' : 'Bidirecional',
                                     style: TextStyle(
-                                      color: Colors.blue.shade800,
+                                      color: Colors.blue.shade900,
                                       fontSize: 12,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -75,18 +81,20 @@ class ConnectionTypeIndexScreen extends StatelessWidget {
                             const SizedBox(height: 6),
                             Text(
                               'Estilo: ${model.strokeStyle}',
-                              style: TextStyle(color: Colors.grey.shade700),
+                              style: const TextStyle(color: Colors.white70),
                             ),
                             const SizedBox(height: 8),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 IconButton(
+                                  color: Colors.white,
                                   icon: const Icon(Icons.edit),
                                   onPressed: _controller.isLoading.value ? null : () => _goToUpdate(model),
                                   tooltip: 'Editar',
                                 ),
                                 IconButton(
+                                  color: Colors.white,
                                   icon: const Icon(Icons.delete_outline),
                                   onPressed:
                                       _controller.isLoading.value ? null : () => _confirmDelete(model),
@@ -106,10 +114,11 @@ class ConnectionTypeIndexScreen extends StatelessWidget {
                   padding: EdgeInsets.symmetric(vertical: 12),
                   child: CircularProgressIndicator(),
                 ),
-            ],
-          ),
-        );
-      }),
+              ],
+            );
+          }),
+        ],
+      ),
     );
   }
 

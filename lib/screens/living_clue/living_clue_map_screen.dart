@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:unisinos_usp_app/controllers/living_clue/living_clue_map_controller.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 
 class LivingClueMapScreen extends StatefulWidget {
   const LivingClueMapScreen({super.key});
@@ -46,7 +47,10 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Mapa de pistas vivas'),
         actions: [
@@ -69,13 +73,16 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
           ),
         ],
       ),
-      body: Column(
+      body: Stack(
         children: [
+          const Positioned.fill(child: StarfieldBackground()),
+          Column(
+            children: [
           Container(
             margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.blueGrey.shade50,
+              color: Colors.black.withValues(alpha: 0.55),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Row(
@@ -85,7 +92,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
                     children: [
                       const Icon(Icons.radar, size: 18, color: Colors.indigo),
                       const SizedBox(width: 6),
-                      const Text('Raio'),
+                      const Text('Raio', style: TextStyle(color: Colors.white)),
                       const SizedBox(width: 6),
                       Expanded(
                         child: Obx(() {
@@ -104,11 +111,13 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
                   ),
                 ),
                 IconButton(
+                  color: Colors.white,
                   icon: const Icon(Icons.my_location),
                   tooltip: 'Usar minha localização',
                   onPressed: _useCurrentLocation,
                 ),
                 IconButton(
+                  color: Colors.white,
                   icon: const Icon(Icons.refresh),
                   tooltip: 'Atualizar área',
                   onPressed: _loadCurrentBounds,
@@ -234,6 +243,8 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
                 ],
               );
             }),
+          ),
+            ],
           ),
         ],
       ),

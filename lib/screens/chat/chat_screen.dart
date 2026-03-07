@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/chat/chat_controller.dart';
 import 'package:unisinos_usp_app/models/chat_message_model.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -40,25 +41,23 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Assistente UNIUSP'),
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.blueGrey.shade50, Colors.blue.shade50],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Column(
-          children: [
+      body: Stack(
+        children: [
+          const Positioned.fill(child: StarfieldBackground()),
+          Column(
+            children: [
             Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(16, 18, 16, 12),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
                 boxShadow: const [
                   BoxShadow(
                     color: Colors.black12,
@@ -94,7 +93,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       return Center(
                         child: Text(
                           'Comece uma conversa com o assistente.',
-                          style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey.shade700),
+                          style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white70),
                         ),
                       );
                     }
@@ -109,8 +108,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
               ),
             _buildComposer(theme),
-          ],
-        ),
+            ],
+          ),
+        ],
       ),
     );
   }

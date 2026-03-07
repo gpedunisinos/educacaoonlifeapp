@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 
 class LivingClueShowScreen extends StatelessWidget {
   const LivingClueShowScreen({super.key});
@@ -14,7 +15,10 @@ class LivingClueShowScreen extends StatelessWidget {
     final categoryName = model.category?.name ?? 'Categoria ${model.categoryId}';
 
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Pista viva'),
         actions: [
@@ -27,16 +31,7 @@ class LivingClueShowScreen extends StatelessWidget {
       ),
       body: Stack(
         children: [
-          Container(
-            height: 220,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF0D47A1), Color(0xFF42A5F5)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-          ),
+          const Positioned.fill(child: StarfieldBackground()),
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
