@@ -13,15 +13,16 @@ class NodeGraphScreen extends StatefulWidget {
 }
 
 class _NodeGraphScreenState extends State<NodeGraphScreen> {
+  static const Size _graphCanvasSize = Size(1800, 1400);
   final NodeGraphController _controller = Get.find<NodeGraphController>();
-  final TransformationController _transformationController = TransformationController();
+  final TransformationController _transformationController =
+      TransformationController();
+  bool _didCenterGraph = false;
 
   @override
   void initState() {
     super.initState();
-    _transformationController.value = Matrix4.identity()
-      ..translate(500.0, 420.0)
-      ..scale(0.85);
+    _transformationController.value = Matrix4.identity();
   }
 
   @override
@@ -52,7 +53,8 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
           const Positioned.fill(child: StarfieldBackground()),
           Obx(() {
             if (_controller.isLoading.value && _controller.graphNodes.isEmpty) {
-              return const Center(child: CircularProgressIndicator(color: Colors.white));
+              return const Center(
+                  child: CircularProgressIndicator(color: Colors.white));
             }
 
             final nodes = _controller.visibleNodes;
@@ -77,64 +79,179 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
                     ),
                   ),
                 Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(18),
-                      child: Container(
-                        color: Colors.black.withValues(alpha: 0.45),
-                        child: InteractiveViewer(
-                          transformationController: _transformationController,
-                          constrained: false,
-                          minScale: 0.2,
-                          maxScale: 3.5,
-                          boundaryMargin: const EdgeInsets.all(600),
-                          child: SizedBox(
-                            width: 1800,
-                            height: 1400,
-                            child: Stack(
-                              children: [
-                                Positioned.fill(
-                                  child: CustomPaint(
-                                    painter: _GraphLinkPainter(
-                                      nodes: nodes,
-                                      links: links,
-                                      selectedNodeId: _controller.selectedNodeId.value,
-                                      neighborNodeIds: neighbors,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      if (nodes.isNotEmpty) {
+                        _centerGraphIfNeeded(
+                          Size(constraints.maxWidth, constraints.maxHeight),
+                        );
+                      }
+
+                      return Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(18),
+                          child: Container(
+                            color: Colors.black.withValues(alpha: 0.45),
+                            child: nodes.isEmpty
+                                ? _GraphEmptyState(
+                                    hasLoadedNodes:
+                                        _controller.graphNodes.isNotEmpty,
+                                    hasActiveFilters:
+                                        _controller.minimumDegree.value > 0 ||
+                                            _controller
+                                                    .selectedTypeIds.length !=
+                                                _controller.nodeTypes.length,
+                                  )
+                                : InteractiveViewer(
+                                    transformationController:
+                                        _transformationController,
+                                    constrained: false,
+                                    minScale: 0.2,
+                                    maxScale: 3.5,
+                                    boundaryMargin: const EdgeInsets.all(600),
+                                    child: SizedBox(
+                                      width: _graphCanvasSize.width,
+                                      height: _graphCanvasSize.height,
+                                      child: Stack(
+                                        children: [
+                                          Positioned.fill(
+                                            child: CustomPaint(
+                                              painter: _GraphLinkPainter(
+                                                nodes: nodes,
+                                                links: links,
+                                                selectedNodeId: _controller
+                                                    .selectedNodeId.value,
+                                                neighborNodeIds: neighbors,
+                                              ),
+                                            ),
+                                          ),
+                                          for (final node in nodes)
+                                            Positioned(
+                                              left: node.position.dx +
+                                                  (_graphCanvasSize.width / 2) -
+                                                  node.radius,
+                                              top: node.position.dy +
+                                                  (_graphCanvasSize.height /
+                                                      2) -
+                                                  node.radius,
+                                              child: _GraphNodeWidget(
+                                                node: node,
+                                                isSelected: _controller
+                                                        .selectedNodeId.value ==
+                                                    node.node.id,
+                                                isNeighbor: neighbors
+                                                    .contains(node.node.id),
+                                                onTap: () => _controller
+                                                    .selectNode(node.node.id),
+                                                onDragUpdate: (details) {
+                                                  final double scale =
+                                                      _transformationController
+                                                          .value
+                                                          .getMaxScaleOnAxis();
+                                                  _controller
+                                                      .updateNodePosition(
+                                                    node.node.id,
+                                                    node.position +
+                                                        details.delta / scale,
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                                for (final node in nodes)
-                                  Positioned(
-                                    left: node.position.dx + 900 - node.radius,
-                                    top: node.position.dy + 700 - node.radius,
-                                    child: _GraphNodeWidget(
-                                      node: node,
-                                      isSelected: _controller.selectedNodeId.value == node.node.id,
-                                      isNeighbor: neighbors.contains(node.node.id),
-                                      onTap: () => _controller.selectNode(node.node.id),
-                                      onDragUpdate: (details) {
-                                        final double scale =
-                                            _transformationController.value.getMaxScaleOnAxis();
-                                        _controller.updateNodePosition(
-                                          node.node.id,
-                                          node.position + details.delta / scale,
-                                        );
-                                      },
-                                    ),
-                                  ),
-                              ],
-                            ),
                           ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   ),
                 ),
               ],
             );
           }),
         ],
+      ),
+    );
+  }
+
+  void _centerGraphIfNeeded(Size viewportSize) {
+    if (_didCenterGraph || viewportSize.isEmpty) return;
+    _didCenterGraph = true;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
+      const double initialScale = 0.85;
+      final double dx = (viewportSize.width / 2) -
+          (_graphCanvasSize.width * initialScale / 2);
+      final double dy = (viewportSize.height / 2) -
+          (_graphCanvasSize.height * initialScale / 2);
+
+      _transformationController.value = Matrix4.identity()
+        ..translate(dx, dy)
+        ..scale(initialScale);
+    });
+  }
+}
+
+class _GraphEmptyState extends StatelessWidget {
+  const _GraphEmptyState({
+    required this.hasLoadedNodes,
+    required this.hasActiveFilters,
+  });
+
+  final bool hasLoadedNodes;
+  final bool hasActiveFilters;
+
+  @override
+  Widget build(BuildContext context) {
+    final String title =
+        hasLoadedNodes ? 'Nenhum no visivel' : 'Nenhum no carregado';
+    final String message = hasLoadedNodes
+        ? 'Os filtros atuais esconderam todos os nos do grafo.'
+        : 'A API nao retornou nos para o mapa. Verifique o payload de /nodes/map.';
+
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 420),
+        child: Card(
+          color: Colors.white.withValues(alpha: 0.08),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.hub_outlined, color: Colors.white70, size: 38),
+                const SizedBox(height: 12),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.78)),
+                ),
+                if (hasActiveFilters) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    'Tente limpar os filtros de tipo e grau minimo.',
+                    textAlign: TextAlign.center,
+                    style:
+                        TextStyle(color: Colors.white.withValues(alpha: 0.62)),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -166,11 +283,13 @@ class _GraphFilters extends StatelessWidget {
                     (type) => FilterChip(
                       label: Text(type.name),
                       selected: controller.selectedTypeIds.contains(type.id),
-                      selectedColor: _parseHexColor(type.color).withValues(alpha: 0.25),
+                      selectedColor:
+                          _parseHexColor(type.color).withValues(alpha: 0.25),
                       backgroundColor: Colors.white.withValues(alpha: 0.08),
                       labelStyle: const TextStyle(color: Colors.white),
                       side: BorderSide(color: _parseHexColor(type.color)),
-                      onSelected: (selected) => controller.toggleType(type.id, selected),
+                      onSelected: (selected) =>
+                          controller.toggleType(type.id, selected),
                     ),
                   )
                   .toList(),
@@ -180,7 +299,8 @@ class _GraphFilters extends StatelessWidget {
               children: [
                 const Icon(Icons.tune, color: Colors.white70, size: 18),
                 const SizedBox(width: 8),
-                const Text('Grau mínimo', style: TextStyle(color: Colors.white)),
+                const Text('Grau mínimo',
+                    style: TextStyle(color: Colors.white)),
                 Expanded(
                   child: Slider(
                     value: controller.minimumDegree.value.toDouble(),
@@ -322,10 +442,12 @@ class _GraphLinkPainter extends CustomPainter {
       if (source == null || target == null) continue;
 
       final bool highlighted = selectedNodeId != null &&
-          (link.sourceNodeId == selectedNodeId || link.targetNodeId == selectedNodeId);
+          (link.sourceNodeId == selectedNodeId ||
+              link.targetNodeId == selectedNodeId);
 
       final Paint paint = Paint()
-        ..color = highlighted ? Colors.white : Colors.white.withValues(alpha: 0.25)
+        ..color =
+            highlighted ? Colors.white : Colors.white.withValues(alpha: 0.25)
         ..strokeWidth = highlighted ? 3.2 : 1.4
         ..style = PaintingStyle.stroke;
 

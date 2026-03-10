@@ -20,14 +20,15 @@ class NodeMapModel {
       return NodeMapModel(nodes: const [], links: const []);
     }
 
-    final List<NodeGraphNode> parsedNodes = (decoded['nodes'] as List<dynamic>? ?? const [])
-        .whereType<Map<String, dynamic>>()
-        .map(NodeGraphNode.fromJson)
-        .toList();
-    final List<NodeLinkModel> parsedLinks = (decoded['links'] as List<dynamic>? ?? const [])
-        .whereType<Map<String, dynamic>>()
-        .map(NodeLinkModel.fromJson)
-        .toList();
+    final Map<String, dynamic> root = _extractRoot(decoded);
+    final List<NodeGraphNode> parsedNodes = _extractCollection(
+      root,
+      keys: const ['nodes', 'data', 'items', 'vertices'],
+    ).whereType<Map<String, dynamic>>().map(NodeGraphNode.fromJson).toList();
+    final List<NodeLinkModel> parsedLinks = _extractCollection(
+      root,
+      keys: const ['links', 'edges', 'connections', 'node_links'],
+    ).whereType<Map<String, dynamic>>().map(NodeLinkModel.fromJson).toList();
 
     return NodeMapModel(
       nodes: _withFallbackPositions(parsedNodes),
@@ -53,6 +54,23 @@ class NodeMapModel {
     }
     return nodes;
   }
+
+  static Map<String, dynamic> _extractRoot(Map<String, dynamic> decoded) {
+    for (final key in const ['graph', 'map']) {
+      final value = decoded[key];
+      if (value is Map<String, dynamic>) return value;
+    }
+    return decoded;
+  }
+
+  static List<dynamic> _extractCollection(Map<String, dynamic> decoded,
+      {required List<String> keys}) {
+    for (final key in keys) {
+      final value = decoded[key];
+      if (value is List<dynamic>) return value;
+    }
+    return const [];
+  }
 }
 
 class NodeGraphNode {
@@ -65,8 +83,14 @@ class NodeGraphNode {
   final Offset? position;
 
   factory NodeGraphNode.fromJson(Map<String, dynamic> json) {
+    final Map<String, dynamic> nodeJson = json['node'] is Map<String, dynamic>
+        ? json['node'] as Map<String, dynamic>
+        : json['data'] is Map<String, dynamic>
+            ? json['data'] as Map<String, dynamic>
+            : json;
+
     return NodeGraphNode(
-      node: NodeModel.fromJson(json),
+      node: NodeModel.fromJson(nodeJson),
       position: _parseOffset(json),
     );
   }
@@ -82,8 +106,14 @@ class NodeGraphNode {
   }
 
   static Offset? _parseOffset(Map<String, dynamic> json) {
-    final dynamic xRaw = json['x'] ?? json['position_x'] ?? json['px'];
-    final dynamic yRaw = json['y'] ?? json['position_y'] ?? json['py'];
+    final Map<String, dynamic>? position =
+        json['position'] is Map<String, dynamic>
+            ? json['position'] as Map<String, dynamic>
+            : null;
+    final dynamic xRaw =
+        json['x'] ?? json['position_x'] ?? json['px'] ?? position?['x'];
+    final dynamic yRaw =
+        json['y'] ?? json['position_y'] ?? json['py'] ?? position?['y'];
     final double? x = _parseDouble(xRaw);
     final double? y = _parseDouble(yRaw);
     if (x == null || y == null) return null;

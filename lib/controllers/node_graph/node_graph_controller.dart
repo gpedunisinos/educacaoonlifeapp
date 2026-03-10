@@ -54,11 +54,14 @@ class NodeGraphController extends GetxController {
     }
   }
 
-  List<NodeGraphNodeState> _buildNodeStates(List<NodeGraphNode> nodes, List<NodeLinkModel> links) {
+  List<NodeGraphNodeState> _buildNodeStates(
+      List<NodeGraphNode> nodes, List<NodeLinkModel> links) {
     final Map<int, int> degreeById = <int, int>{};
     for (final link in links) {
-      degreeById.update(link.sourceNodeId, (value) => value + 1, ifAbsent: () => 1);
-      degreeById.update(link.targetNodeId, (value) => value + 1, ifAbsent: () => 1);
+      degreeById.update(link.sourceNodeId, (value) => value + 1,
+          ifAbsent: () => 1);
+      degreeById.update(link.targetNodeId, (value) => value + 1,
+          ifAbsent: () => 1);
     }
 
     final List<NodeGraphNodeState> states = nodes
@@ -95,7 +98,8 @@ class NodeGraphController extends GetxController {
   List<NodeLinkModel> get visibleLinks {
     final Set<int> ids = visibleNodes.map((item) => item.node.id).toSet();
     return graphLinks
-        .where((link) => ids.contains(link.sourceNodeId) && ids.contains(link.targetNodeId))
+        .where((link) =>
+            ids.contains(link.sourceNodeId) && ids.contains(link.targetNodeId))
         .toList();
   }
 
@@ -142,7 +146,8 @@ class NodeGraphController extends GetxController {
   void _ensureSelectedNodeVisible() {
     final int? selected = selectedNodeId.value;
     if (selected == null) return;
-    final bool stillVisible = visibleNodes.any((node) => node.node.id == selected);
+    final bool stillVisible =
+        visibleNodes.any((node) => node.node.id == selected);
     if (!stillVisible) selectedNodeId.value = null;
   }
 }
@@ -158,7 +163,7 @@ class NodeGraphNodeState {
   final Offset position;
   final int degree;
 
-  double get radius => 24 + math.min(degree, 10) * 4.0;
+  double get radius => 34 + math.min(degree, 10) * 4.0;
 
   NodeGraphNodeState copyWith({
     NodeModel? node,
