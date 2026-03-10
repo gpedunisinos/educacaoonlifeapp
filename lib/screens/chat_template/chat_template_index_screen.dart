@@ -125,6 +125,7 @@ class _ChatTemplateIndexScreenState extends State<ChatTemplateIndexScreen> {
     final dynamic result = await Get.toNamed(
       '/chat_templates/update',
       parameters: {'id': template.id.toString()},
+      arguments: template,
     );
     if (result == true) {
       await _controller.loadInitial();
@@ -135,6 +136,7 @@ class _ChatTemplateIndexScreenState extends State<ChatTemplateIndexScreen> {
     Get.toNamed(
       '/chat_templates/chat',
       parameters: {'id': template.id.toString()},
+      arguments: template,
     );
   }
 

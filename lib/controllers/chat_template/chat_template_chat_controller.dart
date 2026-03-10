@@ -27,6 +27,10 @@ class ChatTemplateChatController extends GetxController {
   void onInit() {
     super.onInit();
     templateId = int.tryParse(Get.parameters['id'] ?? '');
+    final dynamic args = Get.arguments;
+    if (args is ChatTemplateModel) {
+      template.value = args;
+    }
     if (templateId != null) {
       loadInitial();
     }
@@ -38,13 +42,7 @@ class ChatTemplateChatController extends GetxController {
 
     try {
       isLoading.value = true;
-      final List<dynamic> results = await Future.wait<dynamic>([
-        _webclient.fetchById(id),
-        _webclient.fetchMessages(id, limit: pageSize, offset: 0),
-      ]);
-
-      template.value = results[0] as ChatTemplateModel;
-      final List<ChatMessageModel> fetchedMessages = results[1] as List<ChatMessageModel>;
+      final List<ChatMessageModel> fetchedMessages = await _webclient.fetchMessages(id, limit: pageSize, offset: 0);
       messages.assignAll(fetchedMessages);
       hasMore.value = fetchedMessages.length == pageSize;
       _notifyMutation('replace');

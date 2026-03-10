@@ -32,24 +32,12 @@ class ChatTemplateWebclient {
   }
 
   Future<ChatTemplateModel> fetchById(int id) async {
-    final Response response = await webClient.get(
-      '/$endpoint/$id',
-      [
-        LoggingInterceptor(),
-        ApiInterceptor(),
-        TokenInterceptor(),
-      ],
-      {},
-    );
-
-    final dynamic decoded = jsonDecode(response.body);
-    if (decoded is Map<String, dynamic>) {
-      final Map<String, dynamic> payload =
-          (decoded['chat_template'] is Map<String, dynamic>) ? decoded['chat_template'] as Map<String, dynamic> : decoded;
-      return ChatTemplateModel.fromJson(payload);
+    final List<ChatTemplateModel> templates = await fetch(limit: 200, offset: 0);
+    try {
+      return templates.firstWhere((item) => item.id == id);
+    } catch (_) {
+      throw Exception('Template não encontrado.');
     }
-
-    throw Exception('Resposta inválida ao carregar template.');
   }
 
   Future<ChatTemplateModel> create(ChatTemplateModel model) async {

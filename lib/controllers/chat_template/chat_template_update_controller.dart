@@ -14,8 +14,13 @@ class ChatTemplateUpdateController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    final dynamic args = Get.arguments;
+    if (args is ChatTemplateModel) {
+      template.value = args;
+    }
+
     templateId = int.tryParse(Get.parameters['id'] ?? '');
-    if (templateId != null) {
+    if (templateId != null && template.value == null) {
       loadTemplate(templateId!);
     }
   }
