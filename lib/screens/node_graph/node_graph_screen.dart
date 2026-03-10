@@ -699,7 +699,7 @@ class _NodeConnectionSheetState extends State<_NodeConnectionSheet> {
     if (targetNodeId == null) return;
     final NodeLinkModel? link = await widget.onSubmit(targetNodeId);
     if (link != null && mounted) {
-      Get.back();
+      Navigator.of(context).pop(link);
     }
   }
 }
@@ -912,7 +912,7 @@ class _NodeEditorSheetState extends State<_NodeEditorSheet> {
       ),
     );
     if (node != null && mounted) {
-      Get.back();
+      Navigator.of(context).pop(node);
     }
   }
 
