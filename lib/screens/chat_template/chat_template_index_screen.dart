@@ -97,11 +97,27 @@ class _ChatTemplateIndexScreenState extends State<ChatTemplateIndexScreen> {
                         style: const TextStyle(color: Colors.white70),
                       ),
                       onTap: () => _goToChat(template),
-                      trailing: IconButton(
-                        color: Colors.white,
-                        icon: const Icon(Icons.edit),
-                        onPressed: () => _goToUpdate(template),
-                        tooltip: 'Editar template',
+                      trailing: PopupMenuButton<String>(
+                        icon: const Icon(Icons.more_vert, color: Colors.white),
+                        onSelected: (value) async {
+                          if (value == 'edit') {
+                            await _goToUpdate(template);
+                            return;
+                          }
+                          if (value == 'delete') {
+                            await _confirmDelete(template);
+                          }
+                        },
+                        itemBuilder: (_) => const [
+                          PopupMenuItem<String>(
+                            value: 'edit',
+                            child: Text('Editar'),
+                          ),
+                          PopupMenuItem<String>(
+                            value: 'delete',
+                            child: Text('Excluir'),
+                          ),
+                        ],
                       ),
                     ),
                   );
@@ -138,6 +154,29 @@ class _ChatTemplateIndexScreenState extends State<ChatTemplateIndexScreen> {
       parameters: {'id': template.id.toString()},
       arguments: template,
     );
+  }
+
+  Future<void> _confirmDelete(ChatTemplateModel template) async {
+    final bool? confirmed = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('Excluir template'),
+        content: Text('Deseja excluir o template "${template.name}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Get.back(result: true),
+            child: const Text('Excluir'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await _controller.deleteTemplate(template);
+    }
   }
 
   void _onScroll() {

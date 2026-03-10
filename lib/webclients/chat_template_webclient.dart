@@ -78,6 +78,17 @@ class ChatTemplateWebclient {
     return ChatTemplateModel.fromJson(payload);
   }
 
+  Future<void> delete(int id) async {
+    await webClient.delete(
+      '/$endpoint/$id',
+      [
+        LoggingInterceptor(),
+        ApiInterceptor(),
+        TokenInterceptor(),
+      ],
+    );
+  }
+
   Future<List<ChatMessageModel>> fetchMessages(
     int templateId, {
     int limit = 50,

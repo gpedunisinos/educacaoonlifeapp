@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/models/chat_template_model.dart';
+import 'package:unisinos_usp_app/utils/safe_get_snackbar.dart';
 import 'package:unisinos_usp_app/webclients/chat_template_webclient.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
@@ -27,7 +28,7 @@ class ChatTemplateIndexController extends GetxController {
       hasMore.value = items.length == pageSize;
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Falha ao buscar templates. $error');
+      SafeGetSnackbar.error('Erro', 'Falha ao buscar templates. $error');
     } finally {
       isLoading.value = false;
     }
@@ -46,9 +47,23 @@ class ChatTemplateIndexController extends GetxController {
       hasMore.value = items.length == pageSize;
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Falha ao carregar mais templates. $error');
+      SafeGetSnackbar.error('Erro', 'Falha ao carregar mais templates. $error');
     } finally {
       isLoadingMore.value = false;
+    }
+  }
+
+  Future<void> deleteTemplate(ChatTemplateModel model) async {
+    try {
+      isLoading.value = true;
+      await _webclient.delete(model.id);
+      templates.removeWhere((item) => item.id == model.id);
+      SafeGetSnackbar.success('Template excluído com sucesso.');
+    } catch (error, stackTrace) {
+      Util.debug(exception: error, stackTrace: stackTrace);
+      SafeGetSnackbar.error('Erro', 'Não foi possível excluir o template. $error');
+    } finally {
+      isLoading.value = false;
     }
   }
 }
