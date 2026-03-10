@@ -183,6 +183,7 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
                   _SelectedNodePanel(
                     controller: _controller,
                     onCreateNear: _openCreateNodeSheet,
+                    onConnect: _openConnectSelectedNodeSheet,
                     onEdit: _openEditSelectedNodeSheet,
                     onDelete: _confirmDeleteSelectedNode,
                   ),
@@ -253,6 +254,25 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
           name: draft.name,
           color: draft.color,
           nodeTypeId: draft.nodeTypeId,
+        ),
+      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+    );
+  }
+
+  Future<void> _openConnectSelectedNodeSheet() async {
+    final NodeModel? sourceNode = _selectedNode;
+    if (sourceNode == null) return;
+
+    await Get.bottomSheet<void>(
+      _NodeConnectionSheet(
+        sourceNode: sourceNode,
+        availableTargets: _controller.availableTargetsFor(sourceNode.id),
+        isSaving: _controller.isSavingLink,
+        onSubmit: (targetNodeId) => _controller.createLink(
+          sourceNodeId: sourceNode.id,
+          targetNodeId: targetNodeId,
         ),
       ),
       isScrollControlled: true,
@@ -362,12 +382,14 @@ class _SelectedNodePanel extends StatelessWidget {
   const _SelectedNodePanel({
     required this.controller,
     required this.onCreateNear,
+    required this.onConnect,
     required this.onEdit,
     required this.onDelete,
   });
 
   final NodeGraphController controller;
   final VoidCallback onCreateNear;
+  final VoidCallback onConnect;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -454,6 +476,11 @@ class _SelectedNodePanel extends StatelessWidget {
                         icon: const Icon(Icons.add_link),
                         label: const Text('Novo nó próximo'),
                       ),
+                      OutlinedButton.icon(
+                        onPressed: onConnect,
+                        icon: const Icon(Icons.hub_outlined),
+                        label: const Text('Conectar'),
+                      ),
                       FilledButton.icon(
                         onPressed: onEdit,
                         icon: const Icon(Icons.edit_outlined),
@@ -537,6 +564,144 @@ class _NodeEditorSheet extends StatefulWidget {
 
   @override
   State<_NodeEditorSheet> createState() => _NodeEditorSheetState();
+}
+
+class _NodeConnectionSheet extends StatefulWidget {
+  const _NodeConnectionSheet({
+    required this.sourceNode,
+    required this.availableTargets,
+    required this.isSaving,
+    required this.onSubmit,
+  });
+
+  final NodeModel sourceNode;
+  final List<NodeModel> availableTargets;
+  final RxBool isSaving;
+  final Future<NodeLinkModel?> Function(int targetNodeId) onSubmit;
+
+  @override
+  State<_NodeConnectionSheet> createState() => _NodeConnectionSheetState();
+}
+
+class _NodeConnectionSheetState extends State<_NodeConnectionSheet> {
+  int? _targetNodeId;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.availableTargets.isNotEmpty) {
+      _targetNodeId = widget.availableTargets.first.id;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final double bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(16, 16, 16, bottomInset + 16),
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF10151D),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Conectar nó',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Origem: ${widget.sourceNode.name}',
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.72)),
+                ),
+                const SizedBox(height: 20),
+                if (widget.availableTargets.isEmpty)
+                  Text(
+                    'Todos os outros nós já estão conectados a este nó.',
+                    style:
+                        TextStyle(color: Colors.white.withValues(alpha: 0.78)),
+                  )
+                else
+                  DropdownButtonFormField<int>(
+                    initialValue: _targetNodeId,
+                    dropdownColor: const Color(0xFF10151D),
+                    decoration: InputDecoration(
+                      labelText: 'Nó de destino',
+                      labelStyle: const TextStyle(color: Colors.white70),
+                      filled: true,
+                      fillColor: Colors.white.withValues(alpha: 0.08),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    style: const TextStyle(color: Colors.white),
+                    items: widget.availableTargets
+                        .map(
+                          (node) => DropdownMenuItem<int>(
+                            value: node.id,
+                            child: Text(node.name),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      setState(() => _targetNodeId = value);
+                    },
+                  ),
+                const SizedBox(height: 20),
+                Obx(() {
+                  final bool saving = widget.isSaving.value;
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: saving ? null : Get.back,
+                          child: const Text('Cancelar'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: FilledButton(
+                          onPressed: saving ||
+                                  _targetNodeId == null ||
+                                  widget.availableTargets.isEmpty
+                              ? null
+                              : _submit,
+                          child:
+                              Text(saving ? 'Conectando...' : 'Criar ligação'),
+                        ),
+                      ),
+                    ],
+                  );
+                }),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _submit() async {
+    final int? targetNodeId = _targetNodeId;
+    if (targetNodeId == null) return;
+    final NodeLinkModel? link = await widget.onSubmit(targetNodeId);
+    if (link != null && mounted) {
+      Get.back();
+    }
+  }
 }
 
 class _NodeEditorSheetState extends State<_NodeEditorSheet> {

@@ -7,12 +7,14 @@ import 'package:unisinos_usp_app/models/node_map_model.dart';
 import 'package:unisinos_usp_app/models/node_model.dart';
 import 'package:unisinos_usp_app/models/node_type_model.dart';
 import 'package:unisinos_usp_app/utils/safe_get_snackbar.dart';
+import 'package:unisinos_usp_app/webclients/node_link_webclient.dart';
 import 'package:unisinos_usp_app/webclients/node_type_webclient.dart';
 import 'package:unisinos_usp_app/webclients/node_webclient.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class NodeGraphController extends GetxController {
   final NodeWebclient _nodeWebclient = NodeWebclient();
+  final NodeLinkWebclient _nodeLinkWebclient = NodeLinkWebclient();
   final NodeTypeWebclient _nodeTypeWebclient = NodeTypeWebclient();
 
   final RxList<NodeGraphNodeState> graphNodes = <NodeGraphNodeState>[].obs;
@@ -24,6 +26,7 @@ class NodeGraphController extends GetxController {
   final RxBool isLoading = false.obs;
   final RxBool isSavingNode = false.obs;
   final RxBool isDeletingNode = false.obs;
+  final RxBool isSavingLink = false.obs;
   final Rxn<String> errorMessage = Rxn<String>();
 
   @override
@@ -243,8 +246,7 @@ class NodeGraphController extends GetxController {
       graphLinks.removeWhere(
           (link) => link.sourceNodeId == id || link.targetNodeId == id);
       if (selectedNodeId.value == id) selectedNodeId.value = null;
-      graphNodes.refresh();
-      graphLinks.refresh();
+      _syncNodeDegrees();
       SafeGetSnackbar.success('Nó removido com sucesso.');
       return true;
     } catch (error, stackTrace) {
@@ -257,12 +259,57 @@ class NodeGraphController extends GetxController {
           graphLinks.add(link);
         }
       }
-      graphNodes.refresh();
-      graphLinks.refresh();
+      _syncNodeDegrees();
       SafeGetSnackbar.error('Erro', 'Não foi possível remover o nó.');
       return false;
     } finally {
       isDeletingNode.value = false;
+    }
+  }
+
+  Future<NodeLinkModel?> createLink({
+    required int sourceNodeId,
+    required int targetNodeId,
+  }) async {
+    if (sourceNodeId == targetNodeId) {
+      SafeGetSnackbar.error(
+          'Erro', 'Escolha nós diferentes para criar a ligação.');
+      return null;
+    }
+
+    final bool exists = graphLinks.any(
+      (item) =>
+          (item.sourceNodeId == sourceNodeId &&
+              item.targetNodeId == targetNodeId) ||
+          (item.sourceNodeId == targetNodeId &&
+              item.targetNodeId == sourceNodeId),
+    );
+    if (exists) {
+      SafeGetSnackbar.error('Erro', 'Esses nós já estão conectados.');
+      return null;
+    }
+
+    try {
+      isSavingLink.value = true;
+      final NodeLinkModel created = await _nodeLinkWebclient.create(
+        NodeLinkModel(
+          id: 0,
+          sourceNodeId: sourceNodeId,
+          targetNodeId: targetNodeId,
+        ),
+      );
+
+      graphLinks.add(created);
+      _syncNodeDegrees();
+      selectedNodeId.value = sourceNodeId;
+      SafeGetSnackbar.success('Ligação criada com sucesso.');
+      return created;
+    } catch (error, stackTrace) {
+      Util.debug(exception: error, stackTrace: stackTrace);
+      SafeGetSnackbar.error('Erro', 'Não foi possível criar a ligação.');
+      return null;
+    } finally {
+      isSavingLink.value = false;
     }
   }
 
@@ -283,6 +330,43 @@ class NodeGraphController extends GetxController {
     final double angle = (2 * math.pi * index) / math.max(index + 1, 1);
     final double radius = math.max(120, index * 18).toDouble();
     return Offset(math.cos(angle) * radius, math.sin(angle) * radius);
+  }
+
+  List<NodeModel> availableTargetsFor(int sourceNodeId) {
+    final Set<int> connectedIds = graphLinks
+        .where((item) =>
+            item.sourceNodeId == sourceNodeId ||
+            item.targetNodeId == sourceNodeId)
+        .map((item) => item.sourceNodeId == sourceNodeId
+            ? item.targetNodeId
+            : item.sourceNodeId)
+        .toSet();
+
+    return graphNodes
+        .map((item) => item.node)
+        .where((node) =>
+            node.id != sourceNodeId && !connectedIds.contains(node.id))
+        .toList()
+      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+  }
+
+  void _syncNodeDegrees() {
+    final Map<int, int> degreeById = <int, int>{};
+    for (final link in graphLinks) {
+      degreeById.update(link.sourceNodeId, (value) => value + 1,
+          ifAbsent: () => 1);
+      degreeById.update(link.targetNodeId, (value) => value + 1,
+          ifAbsent: () => 1);
+    }
+
+    for (int index = 0; index < graphNodes.length; index++) {
+      final NodeGraphNodeState current = graphNodes[index];
+      graphNodes[index] =
+          current.copyWith(degree: degreeById[current.node.id] ?? 0);
+    }
+    graphNodes.refresh();
+    graphLinks.refresh();
+    _ensureSelectedNodeVisible();
   }
 
   void _ensureSelectedNodeVisible() {
