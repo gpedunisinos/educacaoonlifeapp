@@ -61,7 +61,15 @@ class ChatTemplateIndexController extends GetxController {
       SafeGetSnackbar.success('Template excluído com sucesso.');
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      SafeGetSnackbar.error('Erro', 'Não foi possível excluir o template. $error');
+      final message = error.toString().toLowerCase();
+      if (message.contains('404') || message.contains('page not found')) {
+        SafeGetSnackbar.error(
+          'Ação indisponível',
+          'A API atual não possui endpoint para excluir chat template.',
+        );
+      } else {
+        SafeGetSnackbar.error('Erro', 'Não foi possível excluir o template.');
+      }
     } finally {
       isLoading.value = false;
     }
