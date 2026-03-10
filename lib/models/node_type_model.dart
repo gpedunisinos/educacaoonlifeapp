@@ -19,7 +19,7 @@ class NodeTypeModel {
     return NodeTypeModel(
       id: _parseInt(json['id']),
       name: (json['name'] ?? '').toString(),
-      color: _normalizeColor((json['color'] ?? '#64748B').toString()),
+      color: _normalizeColor((json['color'] ?? json['color_hex'] ?? '#64748B').toString()),
       createdAt: _parseDate(json['created_at']),
       updatedAt: _parseDate(json['updated_at']),
     );

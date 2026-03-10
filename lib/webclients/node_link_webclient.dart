@@ -34,13 +34,26 @@ class NodeLinkWebclient {
   }
 
   Future<NodeLinkModel> create(NodeLinkModel model) async {
-    final Response response = await webClient.post('/$endpoint', jsonEncode(model.toJson()), _interceptors);
+    final Response response = await webClient.post(
+      '/$endpoint',
+      jsonEncode({
+        'source_node_id': model.sourceNodeId,
+        'target_node_id': model.targetNodeId,
+      }),
+      _interceptors,
+    );
     return NodeLinkModel.fromJson(_extractObject(jsonDecode(response.body), 'node_link'));
   }
 
   Future<NodeLinkModel> update(NodeLinkModel model) async {
-    final Response response =
-        await webClient.put('/$endpoint/${model.id}', jsonEncode(model.toJson()), _interceptors);
+    final Response response = await webClient.put(
+      '/$endpoint/${model.id}',
+      jsonEncode({
+        'source_node_id': model.sourceNodeId,
+        'target_node_id': model.targetNodeId,
+      }),
+      _interceptors,
+    );
     return NodeLinkModel.fromJson(_extractObject(jsonDecode(response.body), 'node_link'));
   }
 

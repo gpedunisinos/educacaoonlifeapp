@@ -35,12 +35,26 @@ class NodeTypeWebclient {
   }
 
   Future<NodeTypeModel> create(NodeTypeModel model) async {
-    final Response response = await webClient.post('/$endpoint', jsonEncode(model.toJson()), _interceptors);
+    final Response response = await webClient.post(
+      '/$endpoint',
+      jsonEncode({
+        'name': model.name.trim(),
+        'color': model.color.trim(),
+      }),
+      _interceptors,
+    );
     return NodeTypeModel.fromJson(_extractObject(jsonDecode(response.body), 'node_type'));
   }
 
   Future<NodeTypeModel> update(NodeTypeModel model) async {
-    final Response response = await webClient.put('/$endpoint/${model.id}', jsonEncode(model.toJson()), _interceptors);
+    final Response response = await webClient.put(
+      '/$endpoint/${model.id}',
+      jsonEncode({
+        'name': model.name.trim(),
+        'color': model.color.trim(),
+      }),
+      _interceptors,
+    );
     return NodeTypeModel.fromJson(_extractObject(jsonDecode(response.body), 'node_type'));
   }
 

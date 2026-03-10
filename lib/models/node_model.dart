@@ -25,7 +25,7 @@ class NodeModel {
     return NodeModel(
       id: _parseInt(json['id']),
       name: (json['name'] ?? '').toString(),
-      color: _normalizeColor((json['color'] ?? '#38BDF8').toString()),
+      color: _normalizeColor((json['color'] ?? json['color_hex'] ?? '#38BDF8').toString()),
       nodeTypeId: _parseInt(json['node_type_id'] ?? json['node_type']?['id']),
       nodeType: json['node_type'] is Map<String, dynamic>
           ? NodeTypeModel.fromJson(json['node_type'] as Map<String, dynamic>)
