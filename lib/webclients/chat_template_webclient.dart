@@ -119,7 +119,7 @@ class ChatTemplateWebclient {
     return messages;
   }
 
-  Future<ChatMessageModel> sendMessage(int templateId, String content) async {
+  Future<List<ChatMessageModel>> sendMessage(int templateId, String content) async {
     final Response response = await webClient.post(
       '/$endpoint/$templateId/messages',
       jsonEncode({'message': content}),
@@ -133,20 +133,24 @@ class ChatTemplateWebclient {
     final dynamic decoded = jsonDecode(response.body);
 
     if (decoded is List<dynamic>) {
-      final List<Map<String, dynamic>> items = decoded.whereType<Map<String, dynamic>>().toList();
-      if (items.isNotEmpty) {
-        final Map<String, dynamic> assistant = items.lastWhere(
-          (item) => (item['role']?.toString() ?? '') == 'assistant',
-          orElse: () => items.last,
-        );
-        return ChatMessageModel.fromHistoryJson(assistant);
+      final List<ChatMessageModel> sentMessages = decoded
+          .whereType<Map<String, dynamic>>()
+          .map(ChatMessageModel.fromHistoryJson)
+          .toList();
+      if (sentMessages.isNotEmpty) {
+        sentMessages.sort((a, b) {
+          final int timestampComparison = a.timestamp.compareTo(b.timestamp);
+          if (timestampComparison != 0) return timestampComparison;
+          return (a.id ?? 0).compareTo(b.id ?? 0);
+        });
+        return sentMessages;
       }
     }
 
     if (decoded is Map<String, dynamic>) {
       final Map<String, dynamic> payload =
           (decoded['message'] is Map<String, dynamic>) ? decoded['message'] as Map<String, dynamic> : decoded;
-      return ChatMessageModel.fromHistoryJson(payload);
+      return <ChatMessageModel>[ChatMessageModel.fromHistoryJson(payload)];
     }
 
     throw Exception('Resposta inválida ao enviar mensagem.');

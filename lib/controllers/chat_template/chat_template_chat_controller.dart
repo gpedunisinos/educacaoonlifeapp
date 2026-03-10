@@ -92,9 +92,11 @@ class ChatTemplateChatController extends GetxController {
 
     try {
       isSending.value = true;
-      final ChatMessageModel sentMessage = await _webclient.sendMessage(id, sanitized);
-      messages.add(sentMessage);
-      _notifyMutation('append');
+      final List<ChatMessageModel> sentMessages = await _webclient.sendMessage(id, sanitized);
+      if (sentMessages.isNotEmpty) {
+        messages.addAll(sentMessages);
+        _notifyMutation('append');
+      }
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
       if (Get.overlayContext != null || Get.context != null) {
