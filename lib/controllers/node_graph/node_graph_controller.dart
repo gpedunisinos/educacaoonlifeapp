@@ -27,6 +27,7 @@ class NodeGraphController extends GetxController {
   final RxBool isSavingNode = false.obs;
   final RxBool isDeletingNode = false.obs;
   final RxBool isSavingLink = false.obs;
+  final RxBool isDeletingLink = false.obs;
   final Rxn<String> errorMessage = Rxn<String>();
 
   @override
@@ -313,6 +314,31 @@ class NodeGraphController extends GetxController {
     }
   }
 
+  Future<bool> deleteLink(int linkId) async {
+    final int linkIndex = graphLinks.indexWhere((item) => item.id == linkId);
+    if (linkIndex == -1) return false;
+
+    final NodeLinkModel removedLink = graphLinks[linkIndex];
+    try {
+      isDeletingLink.value = true;
+      await _nodeLinkWebclient.delete(linkId);
+      graphLinks.removeAt(linkIndex);
+      _syncNodeDegrees();
+      SafeGetSnackbar.success('Ligação removida com sucesso.');
+      return true;
+    } catch (error, stackTrace) {
+      Util.debug(exception: error, stackTrace: stackTrace);
+      if (!graphLinks.any((item) => item.id == linkId)) {
+        graphLinks.insert(linkIndex, removedLink);
+      }
+      _syncNodeDegrees();
+      SafeGetSnackbar.error('Erro', 'Não foi possível remover a ligação.');
+      return false;
+    } finally {
+      isDeletingLink.value = false;
+    }
+  }
+
   Offset _nextNewNodePosition() {
     final int? selectedId = selectedNodeId.value;
     if (selectedId != null) {
@@ -348,6 +374,30 @@ class NodeGraphController extends GetxController {
             node.id != sourceNodeId && !connectedIds.contains(node.id))
         .toList()
       ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+  }
+
+  List<NodeLinkModel> connectionsFor(int nodeId) {
+    final List<NodeLinkModel> connections = graphLinks
+        .where((item) =>
+            item.sourceNodeId == nodeId || item.targetNodeId == nodeId)
+        .toList();
+    connections.sort((a, b) {
+      final String aName =
+          otherNodeForLink(a, nodeId)?.name.toLowerCase() ?? '';
+      final String bName =
+          otherNodeForLink(b, nodeId)?.name.toLowerCase() ?? '';
+      return aName.compareTo(bName);
+    });
+    return connections;
+  }
+
+  NodeModel? otherNodeForLink(NodeLinkModel link, int referenceNodeId) {
+    final int otherId = link.sourceNodeId == referenceNodeId
+        ? link.targetNodeId
+        : link.sourceNodeId;
+    final NodeGraphNodeState? state =
+        graphNodes.firstWhereOrNull((item) => item.node.id == otherId);
+    return state?.node;
   }
 
   void _syncNodeDegrees() {

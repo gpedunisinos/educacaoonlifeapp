@@ -184,6 +184,7 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
                     controller: _controller,
                     onCreateNear: _openCreateNodeSheet,
                     onConnect: _openConnectSelectedNodeSheet,
+                    onConnections: _openSelectedNodeConnectionsSheet,
                     onEdit: _openEditSelectedNodeSheet,
                     onDelete: _confirmDeleteSelectedNode,
                   ),
@@ -274,6 +275,20 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
           sourceNodeId: sourceNode.id,
           targetNodeId: targetNodeId,
         ),
+      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+    );
+  }
+
+  Future<void> _openSelectedNodeConnectionsSheet() async {
+    final NodeModel? node = _selectedNode;
+    if (node == null) return;
+
+    await Get.bottomSheet<void>(
+      _NodeConnectionsSheet(
+        controller: _controller,
+        sourceNode: node,
       ),
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -383,6 +398,7 @@ class _SelectedNodePanel extends StatelessWidget {
     required this.controller,
     required this.onCreateNear,
     required this.onConnect,
+    required this.onConnections,
     required this.onEdit,
     required this.onDelete,
   });
@@ -390,6 +406,7 @@ class _SelectedNodePanel extends StatelessWidget {
   final NodeGraphController controller;
   final VoidCallback onCreateNear;
   final VoidCallback onConnect;
+  final VoidCallback onConnections;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -480,6 +497,11 @@ class _SelectedNodePanel extends StatelessWidget {
                         onPressed: onConnect,
                         icon: const Icon(Icons.hub_outlined),
                         label: const Text('Conectar'),
+                      ),
+                      OutlinedButton.icon(
+                        onPressed: onConnections,
+                        icon: const Icon(Icons.link_off_outlined),
+                        label: const Text('Conexões'),
                       ),
                       FilledButton.icon(
                         onPressed: onEdit,
@@ -701,6 +723,135 @@ class _NodeConnectionSheetState extends State<_NodeConnectionSheet> {
     if (link != null && mounted) {
       Navigator.of(context).pop(link);
     }
+  }
+}
+
+class _NodeConnectionsSheet extends StatelessWidget {
+  const _NodeConnectionsSheet({
+    required this.controller,
+    required this.sourceNode,
+  });
+
+  final NodeGraphController controller;
+  final NodeModel sourceNode;
+
+  @override
+  Widget build(BuildContext context) {
+    final double bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(16, 16, 16, bottomInset + 16),
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF10151D),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            padding: const EdgeInsets.all(20),
+            child: Obx(() {
+              final List<NodeLinkModel> connections =
+                  controller.connectionsFor(sourceNode.id);
+
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Conexões de ${sourceNode.name}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Remova vínculos sem sair do mapa.',
+                    style:
+                        TextStyle(color: Colors.white.withValues(alpha: 0.72)),
+                  ),
+                  const SizedBox(height: 16),
+                  if (connections.isEmpty)
+                    Text(
+                      'Este nó ainda não possui conexões.',
+                      style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.78)),
+                    )
+                  else
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 360),
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        itemCount: connections.length,
+                        separatorBuilder: (_, __) => Divider(
+                          color: Colors.white.withValues(alpha: 0.08),
+                          height: 1,
+                        ),
+                        itemBuilder: (_, index) {
+                          final NodeLinkModel link = connections[index];
+                          final NodeModel? otherNode =
+                              controller.otherNodeForLink(link, sourceNode.id);
+                          final String label = otherNode?.name ??
+                              'Nó #${link.sourceNodeId == sourceNode.id ? link.targetNodeId : link.sourceNodeId}';
+
+                          return ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(
+                              label,
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            subtitle: Text(
+                              'Ligação #${link.id}',
+                              style: const TextStyle(color: Colors.white70),
+                            ),
+                            trailing: TextButton.icon(
+                              onPressed: controller.isDeletingLink.value
+                                  ? null
+                                  : () =>
+                                      _confirmDeleteLink(context, link, label),
+                              icon: const Icon(Icons.delete_outline),
+                              label: Text(
+                                controller.isDeletingLink.value
+                                    ? 'Removendo...'
+                                    : 'Remover',
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  const SizedBox(height: 20),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Fechar'),
+                    ),
+                  ),
+                ],
+              );
+            }),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _confirmDeleteLink(
+      BuildContext context, NodeLinkModel link, String otherNodeName) {
+    Get.defaultDialog(
+      title: 'Remover conexão',
+      middleText: 'Deseja remover a conexão com "$otherNodeName"?',
+      textCancel: 'Cancelar',
+      textConfirm: 'Remover',
+      confirmTextColor: Colors.white,
+      onConfirm: () async {
+        Get.back();
+        await controller.deleteLink(link.id);
+      },
+    );
   }
 }
 
