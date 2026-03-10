@@ -97,25 +97,20 @@ class _ChatTemplateIndexScreenState extends State<ChatTemplateIndexScreen> {
                         style: const TextStyle(color: Colors.white70),
                       ),
                       onTap: () => _goToChat(template),
-                      trailing: PopupMenuButton<String>(
-                        icon: const Icon(Icons.more_vert, color: Colors.white),
-                        onSelected: (value) async {
-                          if (value == 'edit') {
-                            await _goToUpdate(template);
-                            return;
-                          }
-                          if (value == 'delete') {
-                            await _confirmDelete(template);
-                          }
-                        },
-                        itemBuilder: (_) => const [
-                          PopupMenuItem<String>(
-                            value: 'edit',
-                            child: Text('Editar'),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            color: Colors.white,
+                            icon: const Icon(Icons.edit),
+                            onPressed: () => _goToUpdate(template),
+                            tooltip: 'Editar template',
                           ),
-                          PopupMenuItem<String>(
-                            value: 'delete',
-                            child: Text('Excluir'),
+                          IconButton(
+                            color: Colors.red.shade300,
+                            icon: const Icon(Icons.delete_outline),
+                            onPressed: () => _confirmDelete(template),
+                            tooltip: 'Excluir template',
                           ),
                         ],
                       ),
