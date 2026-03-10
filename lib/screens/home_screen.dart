@@ -61,6 +61,13 @@ class HomeScreen extends StatelessWidget {
         color: Colors.deepPurple.shade500,
         onTap: () => Get.toNamed('/chat'),
       ),
+      _HomeMenu(
+        title: 'Chat Templates',
+        subtitle: 'Templates e conversas',
+        icon: Icons.forum_outlined,
+        color: Colors.cyan.shade700,
+        onTap: () => Get.toNamed('/chat_templates'),
+      ),
     ];
 
     return Scaffold(
