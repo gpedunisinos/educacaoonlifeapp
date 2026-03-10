@@ -90,14 +90,33 @@ class ChatTemplateChatController extends GetxController {
     final String sanitized = content.trim();
     if (id == null || sanitized.isEmpty || isSending.value) return;
 
+    final ChatMessageModel optimisticUserMessage = ChatMessageModel(
+      text: sanitized,
+      isUser: true,
+      timestamp: DateTime.now(),
+      role: 'user',
+    );
+
+    messages.add(optimisticUserMessage);
+    _notifyMutation('append');
+
     try {
       isSending.value = true;
       final List<ChatMessageModel> sentMessages = await _webclient.sendMessage(id, sanitized);
+
+      messages.remove(optimisticUserMessage);
+
       if (sentMessages.isNotEmpty) {
-        messages.addAll(sentMessages);
+        for (final ChatMessageModel msg in sentMessages) {
+          final bool alreadyExists = messages.any((item) => item.id != null && item.id == msg.id);
+          if (!alreadyExists) {
+            messages.add(msg);
+          }
+        }
         _notifyMutation('append');
       }
     } catch (error, stackTrace) {
+      messages.remove(optimisticUserMessage);
       Util.debug(exception: error, stackTrace: stackTrace);
       if (Get.overlayContext != null || Get.context != null) {
         Get.customSnackbar('Erro', 'Falha ao enviar mensagem. $error');
