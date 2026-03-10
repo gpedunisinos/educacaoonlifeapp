@@ -6,6 +6,7 @@ import 'package:unisinos_usp_app/models/node_link_model.dart';
 import 'package:unisinos_usp_app/models/node_map_model.dart';
 import 'package:unisinos_usp_app/models/node_model.dart';
 import 'package:unisinos_usp_app/models/node_type_model.dart';
+import 'package:unisinos_usp_app/utils/safe_get_snackbar.dart';
 import 'package:unisinos_usp_app/webclients/node_type_webclient.dart';
 import 'package:unisinos_usp_app/webclients/node_webclient.dart';
 import 'package:widgets_spo/widgets_spo.dart';
@@ -21,6 +22,8 @@ class NodeGraphController extends GetxController {
   final Rxn<int> selectedNodeId = Rxn<int>();
   final RxInt minimumDegree = 0.obs;
   final RxBool isLoading = false.obs;
+  final RxBool isSavingNode = false.obs;
+  final RxBool isDeletingNode = false.obs;
   final Rxn<String> errorMessage = Rxn<String>();
 
   @override
@@ -141,6 +144,145 @@ class NodeGraphController extends GetxController {
     if (index == -1) return;
     graphNodes[index] = graphNodes[index].copyWith(position: position);
     graphNodes.refresh();
+  }
+
+  Future<NodeModel?> createNode({
+    required String name,
+    required String color,
+    required int nodeTypeId,
+  }) async {
+    try {
+      isSavingNode.value = true;
+      final NodeModel created = await _nodeWebclient.create(
+        NodeModel(
+          id: 0,
+          name: name.trim(),
+          color: color.trim(),
+          nodeTypeId: nodeTypeId,
+        ),
+      );
+
+      final NodeTypeModel? type =
+          nodeTypes.firstWhereOrNull((item) => item.id == created.nodeTypeId);
+      if (type != null) created.nodeType = type;
+
+      final NodeGraphNodeState state = NodeGraphNodeState(
+        node: created,
+        position: _nextNewNodePosition(),
+        degree: 0,
+      );
+
+      graphNodes.add(state);
+      selectedTypeIds.add(created.nodeTypeId);
+      selectedNodeId.value = created.id;
+      graphNodes.refresh();
+      SafeGetSnackbar.success('Nó criado com sucesso.');
+      return created;
+    } catch (error, stackTrace) {
+      Util.debug(exception: error, stackTrace: stackTrace);
+      SafeGetSnackbar.error('Erro', 'Não foi possível criar o nó.');
+      return null;
+    } finally {
+      isSavingNode.value = false;
+    }
+  }
+
+  Future<NodeModel?> updateNode({
+    required int id,
+    required String name,
+    required String color,
+    required int nodeTypeId,
+  }) async {
+    final int index = graphNodes.indexWhere((item) => item.node.id == id);
+    if (index == -1) return null;
+
+    final NodeModel current = graphNodes[index].node;
+    final NodeModel updatedModel = NodeModel(
+      id: id,
+      name: name.trim(),
+      color: color.trim(),
+      nodeTypeId: nodeTypeId,
+    );
+
+    try {
+      isSavingNode.value = true;
+      final NodeModel saved = await _nodeWebclient.update(updatedModel);
+      final NodeTypeModel? type =
+          nodeTypes.firstWhereOrNull((item) => item.id == saved.nodeTypeId);
+      if (type != null) saved.nodeType = type;
+
+      graphNodes[index] = graphNodes[index].copyWith(node: saved);
+      selectedTypeIds.add(saved.nodeTypeId);
+      graphNodes.refresh();
+      SafeGetSnackbar.success('Nó atualizado com sucesso.');
+      return saved;
+    } catch (error, stackTrace) {
+      Util.debug(exception: error, stackTrace: stackTrace);
+      graphNodes[index] = graphNodes[index].copyWith(node: current);
+      graphNodes.refresh();
+      SafeGetSnackbar.error('Erro', 'Não foi possível atualizar o nó.');
+      return null;
+    } finally {
+      isSavingNode.value = false;
+    }
+  }
+
+  Future<bool> deleteNode(int id) async {
+    final int nodeIndex = graphNodes.indexWhere((item) => item.node.id == id);
+    if (nodeIndex == -1) return false;
+
+    final NodeGraphNodeState removedNode = graphNodes[nodeIndex];
+    final List<NodeLinkModel> removedLinks = graphLinks
+        .where((link) => link.sourceNodeId == id || link.targetNodeId == id)
+        .toList();
+
+    try {
+      isDeletingNode.value = true;
+      await _nodeWebclient.delete(id);
+      graphNodes.removeAt(nodeIndex);
+      graphLinks.removeWhere(
+          (link) => link.sourceNodeId == id || link.targetNodeId == id);
+      if (selectedNodeId.value == id) selectedNodeId.value = null;
+      graphNodes.refresh();
+      graphLinks.refresh();
+      SafeGetSnackbar.success('Nó removido com sucesso.');
+      return true;
+    } catch (error, stackTrace) {
+      Util.debug(exception: error, stackTrace: stackTrace);
+      if (!graphNodes.any((item) => item.node.id == id)) {
+        graphNodes.insert(nodeIndex, removedNode);
+      }
+      for (final link in removedLinks) {
+        if (!graphLinks.any((item) => item.id == link.id)) {
+          graphLinks.add(link);
+        }
+      }
+      graphNodes.refresh();
+      graphLinks.refresh();
+      SafeGetSnackbar.error('Erro', 'Não foi possível remover o nó.');
+      return false;
+    } finally {
+      isDeletingNode.value = false;
+    }
+  }
+
+  Offset _nextNewNodePosition() {
+    final int? selectedId = selectedNodeId.value;
+    if (selectedId != null) {
+      final NodeGraphNodeState? anchor =
+          graphNodes.firstWhereOrNull((item) => item.node.id == selectedId);
+      if (anchor != null) {
+        final double angle = (graphNodes.length % 8) * (math.pi / 4);
+        return anchor.position +
+            Offset(math.cos(angle) * 140, math.sin(angle) * 140);
+      }
+    }
+
+    final int index = graphNodes.length;
+    if (index == 0) return Offset.zero;
+    final double angle = (2 * math.pi * index) / math.max(index + 1, 1);
+    final double radius = math.max(120, index * 18).toDouble();
+    return Offset(math.cos(angle) * radius, math.sin(angle) * radius);
   }
 
   void _ensureSelectedNodeVisible() {

@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:get/get.dart';
+import 'package:pvalidator/pvalidator.dart';
 import 'package:unisinos_usp_app/controllers/node_graph/node_graph_controller.dart';
 import 'package:unisinos_usp_app/models/node_link_model.dart';
+import 'package:unisinos_usp_app/models/node_model.dart';
+import 'package:unisinos_usp_app/models/node_type_model.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
+import 'package:widgets_spo/widgets_spo.dart';
 
 class NodeGraphScreen extends StatefulWidget {
   const NodeGraphScreen({super.key});
@@ -41,6 +46,11 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
         leading: const SafeBackButton(),
         title: const Text('Grafo de nós'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.add_circle_outline),
+            onPressed: _openCreateNodeSheet,
+            tooltip: 'Novo nó',
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _controller.loadGraph,
@@ -102,6 +112,7 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
                                             _controller
                                                     .selectedTypeIds.length !=
                                                 _controller.nodeTypes.length,
+                                    onCreatePressed: _openCreateNodeSheet,
                                   )
                                 : InteractiveViewer(
                                     transformationController:
@@ -168,6 +179,13 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
                     },
                   ),
                 ),
+                if (_controller.selectedNodeId.value != null)
+                  _SelectedNodePanel(
+                    controller: _controller,
+                    onCreateNear: _openCreateNodeSheet,
+                    onEdit: _openEditSelectedNodeSheet,
+                    onDelete: _confirmDeleteSelectedNode,
+                  ),
               ],
             );
           }),
@@ -194,16 +212,91 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
         ..scale(initialScale);
     });
   }
+
+  Future<void> _openCreateNodeSheet() async {
+    if (_controller.nodeTypes.isEmpty) {
+      Get.customSnackbar('Erro', 'Cadastre um tipo de nó antes de criar nós.');
+      return;
+    }
+
+    await Get.bottomSheet<void>(
+      _NodeEditorSheet(
+        title: 'Novo nó',
+        submitLabel: 'Criar nó',
+        nodeTypes: _controller.nodeTypes.toList(),
+        isSaving: _controller.isSavingNode,
+        initialColor: '#0EA5E9',
+        onSubmit: (draft) => _controller.createNode(
+          name: draft.name,
+          color: draft.color,
+          nodeTypeId: draft.nodeTypeId,
+        ),
+      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+    );
+  }
+
+  Future<void> _openEditSelectedNodeSheet() async {
+    final NodeModel? node = _selectedNode;
+    if (node == null) return;
+
+    await Get.bottomSheet<void>(
+      _NodeEditorSheet(
+        title: 'Editar nó',
+        submitLabel: 'Salvar alterações',
+        nodeTypes: _controller.nodeTypes.toList(),
+        isSaving: _controller.isSavingNode,
+        initialNode: node,
+        onSubmit: (draft) => _controller.updateNode(
+          id: node.id,
+          name: draft.name,
+          color: draft.color,
+          nodeTypeId: draft.nodeTypeId,
+        ),
+      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+    );
+  }
+
+  Future<void> _confirmDeleteSelectedNode() async {
+    final NodeModel? node = _selectedNode;
+    if (node == null) return;
+
+    Get.defaultDialog(
+      title: 'Excluir nó',
+      middleText: 'Deseja realmente excluir "${node.name}"?',
+      textCancel: 'Cancelar',
+      textConfirm: 'Excluir',
+      confirmTextColor: Colors.white,
+      onConfirm: () async {
+        Get.back();
+        await _controller.deleteNode(node.id);
+      },
+    );
+  }
+
+  NodeModel? get _selectedNode {
+    final int? selectedId = _controller.selectedNodeId.value;
+    if (selectedId == null) return null;
+    for (final item in _controller.graphNodes) {
+      if (item.node.id == selectedId) return item.node;
+    }
+    return null;
+  }
 }
 
 class _GraphEmptyState extends StatelessWidget {
   const _GraphEmptyState({
     required this.hasLoadedNodes,
     required this.hasActiveFilters,
+    required this.onCreatePressed,
   });
 
   final bool hasLoadedNodes;
   final bool hasActiveFilters;
+  final VoidCallback onCreatePressed;
 
   @override
   Widget build(BuildContext context) {
@@ -239,6 +332,14 @@ class _GraphEmptyState extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Colors.white.withValues(alpha: 0.78)),
                 ),
+                const SizedBox(height: 16),
+                FilledButton.icon(
+                  onPressed: onCreatePressed,
+                  icon: const Icon(Icons.add),
+                  label: Text(
+                    hasLoadedNodes ? 'Criar novo nó' : 'Criar primeiro nó',
+                  ),
+                ),
                 if (hasActiveFilters) ...[
                   const SizedBox(height: 12),
                   Text(
@@ -254,6 +355,422 @@ class _GraphEmptyState extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _SelectedNodePanel extends StatelessWidget {
+  const _SelectedNodePanel({
+    required this.controller,
+    required this.onCreateNear,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  final NodeGraphController controller;
+  final VoidCallback onCreateNear;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final int? selectedId = controller.selectedNodeId.value;
+    if (selectedId == null) return const SizedBox.shrink();
+
+    NodeGraphNodeState? state;
+    for (final item in controller.graphNodes) {
+      if (item.node.id == selectedId) {
+        state = item;
+        break;
+      }
+    }
+    if (state == null) return const SizedBox.shrink();
+
+    final NodeModel node = state.node;
+    final int connections = controller.graphLinks
+        .where((link) =>
+            link.sourceNodeId == node.id || link.targetNodeId == node.id)
+        .length;
+
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 720),
+          child: Card(
+            color: Colors.black.withValues(alpha: 0.74),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 14,
+                        height: 14,
+                        decoration: BoxDecoration(
+                          color: _parseHexColor(node.color),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          node.name,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => controller.selectNode(null),
+                        icon: const Icon(Icons.close, color: Colors.white70),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _MetaChip(
+                          label: node.nodeType?.name ??
+                              'Tipo #${node.nodeTypeId}'),
+                      _MetaChip(label: '$connections conexões'),
+                      _MetaChip(label: 'Grau ${state.degree}'),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: onCreateNear,
+                        icon: const Icon(Icons.add_link),
+                        label: const Text('Novo nó próximo'),
+                      ),
+                      FilledButton.icon(
+                        onPressed: onEdit,
+                        icon: const Icon(Icons.edit_outlined),
+                        label: const Text('Editar'),
+                      ),
+                      TextButton.icon(
+                        onPressed:
+                            controller.isDeletingNode.value ? null : onDelete,
+                        icon: const Icon(Icons.delete_outline),
+                        label: Text(
+                          controller.isDeletingNode.value
+                              ? 'Excluindo...'
+                              : 'Excluir',
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Color _parseHexColor(String value) {
+    final String hex = value.replaceAll('#', '').padLeft(6, '0');
+    return Color(int.parse('FF$hex', radix: 16));
+  }
+}
+
+class _MetaChip extends StatelessWidget {
+  const _MetaChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(label, style: const TextStyle(color: Colors.white70)),
+    );
+  }
+}
+
+class _NodeDraft {
+  _NodeDraft({
+    required this.name,
+    required this.color,
+    required this.nodeTypeId,
+  });
+
+  final String name;
+  final String color;
+  final int nodeTypeId;
+}
+
+class _NodeEditorSheet extends StatefulWidget {
+  const _NodeEditorSheet({
+    required this.title,
+    required this.submitLabel,
+    required this.nodeTypes,
+    required this.isSaving,
+    required this.onSubmit,
+    this.initialNode,
+    this.initialColor,
+  });
+
+  final String title;
+  final String submitLabel;
+  final List<NodeTypeModel> nodeTypes;
+  final RxBool isSaving;
+  final Future<NodeModel?> Function(_NodeDraft draft) onSubmit;
+  final NodeModel? initialNode;
+  final String? initialColor;
+
+  @override
+  State<_NodeEditorSheet> createState() => _NodeEditorSheetState();
+}
+
+class _NodeEditorSheetState extends State<_NodeEditorSheet> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  late final TextEditingController _nameController;
+  late final TextEditingController _colorController;
+  late int _nodeTypeId;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController =
+        TextEditingController(text: widget.initialNode?.name ?? '');
+    _colorController = TextEditingController(
+      text: widget.initialNode?.color ?? widget.initialColor ?? '#0EA5E9',
+    );
+    _nodeTypeId = widget.initialNode?.nodeTypeId ?? widget.nodeTypes.first.id;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _colorController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final double bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(16, 16, 16, bottomInset + 16),
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF10151D),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            padding: const EdgeInsets.all(20),
+            child: Form(
+              key: _formKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Preencha o essencial para colocar o nó no mapa.',
+                      style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.72)),
+                    ),
+                    const SizedBox(height: 20),
+                    InputText(
+                      hintText: 'Nome do nó',
+                      controller: _nameController,
+                      validator: (value) => PValidator([
+                        PRuleRequired(value, message: 'Obrigatório'),
+                        PRuleMaxString(value, 120,
+                            message: 'Máximo de 120 caracteres'),
+                      ]).val(),
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<int>(
+                      initialValue: _nodeTypeId,
+                      dropdownColor: const Color(0xFF10151D),
+                      decoration: InputDecoration(
+                        labelText: 'Tipo de nó',
+                        labelStyle: const TextStyle(color: Colors.white70),
+                        filled: true,
+                        fillColor: Colors.white.withValues(alpha: 0.08),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      style: const TextStyle(color: Colors.white),
+                      items: widget.nodeTypes
+                          .map(
+                            (type) => DropdownMenuItem<int>(
+                              value: type.id,
+                              child: Text(type.name),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() => _nodeTypeId = value);
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    InputText(
+                      hintText: 'Cor hexadecimal',
+                      controller: _colorController,
+                      validator: _validateColor,
+                    ),
+                    const SizedBox(height: 12),
+                    InkWell(
+                      onTap: _pickColor,
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.06),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 34,
+                              height: 34,
+                              decoration: BoxDecoration(
+                                color: _parseHexColor(_colorController.text),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            const Expanded(
+                              child: Text(
+                                'Escolher cor',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                            Text(
+                              _normalizedHex(_colorController.text),
+                              style: const TextStyle(color: Colors.white70),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Obx(() {
+                      final bool saving = widget.isSaving.value;
+                      return Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: saving ? null : Get.back,
+                              child: const Text('Cancelar'),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: FilledButton(
+                              onPressed: saving ? null : _submit,
+                              child: Text(
+                                  saving ? 'Salvando...' : widget.submitLabel),
+                            ),
+                          ),
+                        ],
+                      );
+                    }),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickColor() async {
+    Color tempColor = _parseHexColor(_colorController.text);
+    await Get.dialog(
+      AlertDialog(
+        title: const Text('Selecionar cor'),
+        content: SingleChildScrollView(
+          child: ColorPicker(
+            pickerColor: tempColor,
+            onColorChanged: (color) => tempColor = color,
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: Get.back, child: const Text('Cancelar')),
+          ElevatedButton(
+            onPressed: () {
+              _colorController.text = _colorToHex(tempColor);
+              setState(() {});
+              Get.back();
+            },
+            child: const Text('Usar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _submit() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
+    final NodeModel? node = await widget.onSubmit(
+      _NodeDraft(
+        name: _nameController.text.trim(),
+        color: _normalizedHex(_colorController.text),
+        nodeTypeId: _nodeTypeId,
+      ),
+    );
+    if (node != null && mounted) {
+      Get.back();
+    }
+  }
+
+  String? _validateColor(String? value) {
+    final String text = value?.trim() ?? '';
+    final RegExp regex = RegExp(r'^#?[0-9A-Fa-f]{6}$');
+    if (text.isEmpty) return 'Obrigatório';
+    if (!regex.hasMatch(text)) return 'Informe uma cor HEX válida';
+    return null;
+  }
+
+  String _normalizedHex(String value) {
+    final String raw = value.trim().replaceAll('#', '');
+    return '#${raw.padLeft(6, '0').toUpperCase()}';
+  }
+
+  Color _parseHexColor(String value) {
+    final String hex = _normalizedHex(value).replaceAll('#', '');
+    return Color(int.parse('FF$hex', radix: 16));
+  }
+
+  String _colorToHex(Color color) {
+    return '#${color.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
   }
 }
 
