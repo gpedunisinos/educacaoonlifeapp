@@ -219,7 +219,8 @@ class _ChatTemplateChatScreenState extends State<ChatTemplateChatScreen> {
                 child: TextField(
                   controller: _textController,
                   minLines: 1,
-                  maxLines: 4,
+                  maxLines: 1,
+                  textInputAction: TextInputAction.send,
                   onSubmitted: (_) => _handleSend(),
                   decoration: const InputDecoration.collapsed(
                     hintText: 'Digite a mensagem do template...',
