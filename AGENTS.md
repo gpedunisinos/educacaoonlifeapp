@@ -16,6 +16,7 @@ Use este fluxo para executar tarefas com Jira neste projeto.
 4. **Implementar somente o escopo da tarefa**
    - Não incluir refactors não solicitados.
    - Manter compatibilidade quando possível.
+   - Rodar `dart analyze`e realizar as correções do que for error
 
 5. **Publicar entrega técnica**
    - Fazer commit no formato abaixo
