@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:unisinos_usp_app/models/node_link_model.dart';
 import 'package:unisinos_usp_app/webclients/node_link_webclient.dart';
 import 'package:widgets_spo/widgets_spo.dart';
+import 'package:unisinos_usp_app/utils/safe_get_snackbar.dart';
 
 class NodeLinkIndexController extends GetxController {
   final NodeLinkWebclient _webclient = NodeLinkWebclient();
@@ -28,7 +29,7 @@ class NodeLinkIndexController extends GetxController {
       hasMore.value = items.length == pageSize;
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Não foi possível carregar as ligações agora.');
+      SafeGetSnackbar.error('Erro', 'Não foi possível carregar as ligações agora.');
     } finally {
       isLoading.value = false;
     }
@@ -47,7 +48,7 @@ class NodeLinkIndexController extends GetxController {
       hasMore.value = items.length == pageSize;
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Não foi possível carregar mais ligações.');
+      SafeGetSnackbar.error('Erro', 'Não foi possível carregar mais ligações.');
     } finally {
       isLoadingMore.value = false;
     }
@@ -63,10 +64,10 @@ class NodeLinkIndexController extends GetxController {
       isLoading.value = true;
       await _webclient.delete(model.id);
       nodeLinks.removeWhere((item) => item.id == model.id);
-      Get.successSnackbar('Ligação removida com sucesso.');
+      SafeGetSnackbar.success('Ligação removida com sucesso.');
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Não foi possível remover a ligação.');
+      SafeGetSnackbar.error('Erro', 'Não foi possível remover a ligação.');
     } finally {
       isLoading.value = false;
     }

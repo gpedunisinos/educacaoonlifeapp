@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:unisinos_usp_app/models/node_type_model.dart';
 import 'package:unisinos_usp_app/webclients/node_type_webclient.dart';
 import 'package:widgets_spo/widgets_spo.dart';
+import 'package:unisinos_usp_app/utils/safe_get_snackbar.dart';
 
 class NodeTypeIndexController extends GetxController {
   final NodeTypeWebclient _webclient = NodeTypeWebclient();
@@ -28,7 +29,7 @@ class NodeTypeIndexController extends GetxController {
       hasMore.value = items.length == pageSize;
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Não foi possível carregar os tipos de nó agora.');
+      SafeGetSnackbar.error('Erro', 'Não foi possível carregar os tipos de nó agora.');
     } finally {
       isLoading.value = false;
     }
@@ -47,7 +48,7 @@ class NodeTypeIndexController extends GetxController {
       hasMore.value = items.length == pageSize;
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Não foi possível carregar mais tipos de nó.');
+      SafeGetSnackbar.error('Erro', 'Não foi possível carregar mais tipos de nó.');
     } finally {
       isLoadingMore.value = false;
     }
@@ -63,10 +64,10 @@ class NodeTypeIndexController extends GetxController {
       isLoading.value = true;
       await _webclient.delete(model.id);
       nodeTypes.removeWhere((item) => item.id == model.id);
-      Get.successSnackbar('Tipo de nó removido com sucesso.');
+      SafeGetSnackbar.success('Tipo de nó removido com sucesso.');
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Não foi possível remover o tipo de nó.');
+      SafeGetSnackbar.error('Erro', 'Não foi possível remover o tipo de nó.');
     } finally {
       isLoading.value = false;
     }

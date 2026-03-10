@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:unisinos_usp_app/models/node_type_model.dart';
 import 'package:unisinos_usp_app/webclients/node_type_webclient.dart';
 import 'package:widgets_spo/widgets_spo.dart';
+import 'package:unisinos_usp_app/utils/safe_get_snackbar.dart';
 
 class NodeTypeUpdateController extends GetxController {
   final NodeTypeWebclient _webclient = NodeTypeWebclient();
@@ -26,7 +27,7 @@ class NodeTypeUpdateController extends GetxController {
       nodeType.value = await _webclient.fetchById(id);
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Não foi possível carregar o tipo de nó.');
+      SafeGetSnackbar.error('Erro', 'Não foi possível carregar o tipo de nó.');
     } finally {
       isLoading.value = false;
     }
@@ -39,11 +40,11 @@ class NodeTypeUpdateController extends GetxController {
     try {
       isLoading.value = true;
       await _webclient.update(model);
-      Get.successSnackbar('Tipo de nó atualizado com sucesso.');
+      SafeGetSnackbar.success('Tipo de nó atualizado com sucesso.');
       return true;
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Não foi possível atualizar o tipo de nó.');
+      SafeGetSnackbar.error('Erro', 'Não foi possível atualizar o tipo de nó.');
       return false;
     } finally {
       isLoading.value = false;
