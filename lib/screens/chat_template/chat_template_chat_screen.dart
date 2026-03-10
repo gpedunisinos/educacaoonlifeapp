@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:unisinos_usp_app/controllers/chat_template/chat_template_chat_controller.dart';
 import 'package:unisinos_usp_app/models/chat_message_model.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 
 class ChatTemplateChatScreen extends StatefulWidget {
   const ChatTemplateChatScreen({super.key});
@@ -51,68 +52,76 @@ class _ChatTemplateChatScreenState extends State<ChatTemplateChatScreen> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: Obx(() => Text(_controller.template.value?.name ?? 'Chat Template')),
       ),
-      body: Column(
+      body: Stack(
         children: [
-          Obx(() {
-            final template = _controller.template.value;
-            if (template == null) return const SizedBox.shrink();
-            return Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-              color: theme.colorScheme.primary.withValues(alpha: 0.06),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    template.name,
-                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          const Positioned.fill(child: StarfieldBackground()),
+          Column(
+            children: [
+              Obx(() {
+                final template = _controller.template.value;
+                if (template == null) return const SizedBox.shrink();
+                return Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                  color: Colors.black.withValues(alpha: 0.35),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        template.name,
+                        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                      if (template.description?.isNotEmpty == true) ...[
+                        const SizedBox(height: 6),
+                        Text(template.description!, style: const TextStyle(color: Colors.white70)),
+                      ],
+                    ],
                   ),
-                  if (template.description?.isNotEmpty == true) ...[
-                    const SizedBox(height: 6),
-                    Text(template.description!),
-                  ],
-                ],
-              ),
-            );
-          }),
-          Expanded(
-            child: Obx(() {
-              if (_controller.isLoading.value && _controller.messages.isEmpty) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              if (_controller.template.value == null && _controller.templateId == null) {
-                return const Center(child: Text('Template não informado.'));
-              }
-
-              if (_controller.messages.isEmpty) {
-                return const Center(child: Text('Nenhuma mensagem neste template.'));
-              }
-
-              return ListView.builder(
-                controller: _scrollController,
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-                itemCount: _controller.messages.length + (_controller.isLoadingMore.value ? 1 : 0),
-                itemBuilder: (_, index) {
-                  if (_controller.isLoadingMore.value && index == 0) {
-                    return const Padding(
-                      padding: EdgeInsets.only(bottom: 12),
-                      child: Center(child: CircularProgressIndicator()),
-                    );
+                );
+              }),
+              Expanded(
+                child: Obx(() {
+                  if (_controller.isLoading.value && _controller.messages.isEmpty) {
+                    return const Center(child: CircularProgressIndicator(color: Colors.white));
                   }
 
-                  final int messageIndex = _controller.isLoadingMore.value ? index - 1 : index;
-                  final ChatMessageModel message = _controller.messages[messageIndex];
-                  return _buildMessageBubble(message, theme);
-                },
-              );
-            }),
+                  if (_controller.template.value == null && _controller.templateId == null) {
+                    return const Center(child: Text('Template não informado.', style: TextStyle(color: Colors.white)));
+                  }
+
+                  if (_controller.messages.isEmpty) {
+                    return const Center(child: Text('Nenhuma mensagem neste template.', style: TextStyle(color: Colors.white)));
+                  }
+
+                  return ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                    itemCount: _controller.messages.length + (_controller.isLoadingMore.value ? 1 : 0),
+                    itemBuilder: (_, index) {
+                      if (_controller.isLoadingMore.value && index == 0) {
+                        return const Padding(
+                          padding: EdgeInsets.only(bottom: 12),
+                          child: Center(child: CircularProgressIndicator(color: Colors.white)),
+                        );
+                      }
+
+                      final int messageIndex = _controller.isLoadingMore.value ? index - 1 : index;
+                      final ChatMessageModel message = _controller.messages[messageIndex];
+                      return _buildMessageBubble(message, theme);
+                    },
+                  );
+                }),
+              ),
+              _buildComposer(theme),
+            ],
           ),
-          _buildComposer(theme),
         ],
       ),
     );

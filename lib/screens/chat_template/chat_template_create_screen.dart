@@ -4,6 +4,7 @@ import 'package:unisinos_usp_app/controllers/chat_template/chat_template_create_
 import 'package:unisinos_usp_app/models/chat_template_model.dart';
 import 'package:unisinos_usp_app/screens/chat_template/chat_template_form.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 
 class ChatTemplateCreateScreen extends StatelessWidget {
   const ChatTemplateCreateScreen({super.key});
@@ -12,32 +13,40 @@ class ChatTemplateCreateScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final ChatTemplateCreateController controller = Get.find<ChatTemplateCreateController>();
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Novo chat template'),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Obx(() {
-          return ChatTemplateForm(
-            submitLabel: 'Salvar',
-            isLoading: controller.isLoading.value,
-            onSubmit: (value) async {
-              final bool saved = await controller.save(
-                ChatTemplateModel(
-                  id: 0,
-                  name: value.name,
-                  description: value.description,
-                  systemInstruction: value.systemInstruction,
-                  files: value.files,
-                ),
+      body: Stack(
+        children: [
+          const Positioned.fill(child: StarfieldBackground()),
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Obx(() {
+              return ChatTemplateForm(
+                submitLabel: 'Salvar',
+                isLoading: controller.isLoading.value,
+                onSubmit: (value) async {
+                  final bool saved = await controller.save(
+                    ChatTemplateModel(
+                      id: 0,
+                      name: value.name,
+                      description: value.description,
+                      systemInstruction: value.systemInstruction,
+                      files: value.files,
+                    ),
+                  );
+                  if (saved) {
+                    Get.back(result: true);
+                  }
+                },
               );
-              if (saved) {
-                Get.back(result: true);
-              }
-            },
-          );
-        }),
+            }),
+          ),
+        ],
       ),
     );
   }
