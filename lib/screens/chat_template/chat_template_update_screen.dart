@@ -56,8 +56,8 @@ class ChatTemplateUpdateScreen extends StatelessWidget {
                           files: value.files,
                         ),
                       );
-                      if (saved) {
-                        Get.back(result: true);
+                      if (saved && context.mounted) {
+                        Navigator.of(context).pop(true);
                       }
                     },
                   ),
