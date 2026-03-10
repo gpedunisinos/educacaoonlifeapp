@@ -97,7 +97,9 @@ class ChatTemplateChatController extends GetxController {
       _notifyMutation('append');
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Falha ao enviar mensagem. $error');
+      if (Get.overlayContext != null || Get.context != null) {
+        Get.customSnackbar('Erro', 'Falha ao enviar mensagem. $error');
+      }
     } finally {
       isSending.value = false;
     }

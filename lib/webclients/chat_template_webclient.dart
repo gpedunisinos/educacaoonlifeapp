@@ -122,7 +122,7 @@ class ChatTemplateWebclient {
   Future<ChatMessageModel> sendMessage(int templateId, String content) async {
     final Response response = await webClient.post(
       '/$endpoint/$templateId/messages',
-      jsonEncode({'content': content}),
+      jsonEncode({'message': content}),
       [
         LoggingInterceptor(),
         ApiInterceptor(),
@@ -131,6 +131,18 @@ class ChatTemplateWebclient {
     );
 
     final dynamic decoded = jsonDecode(response.body);
+
+    if (decoded is List<dynamic>) {
+      final List<Map<String, dynamic>> items = decoded.whereType<Map<String, dynamic>>().toList();
+      if (items.isNotEmpty) {
+        final Map<String, dynamic> assistant = items.lastWhere(
+          (item) => (item['role']?.toString() ?? '') == 'assistant',
+          orElse: () => items.last,
+        );
+        return ChatMessageModel.fromHistoryJson(assistant);
+      }
+    }
+
     if (decoded is Map<String, dynamic>) {
       final Map<String, dynamic> payload =
           (decoded['message'] is Map<String, dynamic>) ? decoded['message'] as Map<String, dynamic> : decoded;
