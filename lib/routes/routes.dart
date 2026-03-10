@@ -7,6 +7,9 @@ import 'package:unisinos_usp_app/routes/clue_connections.dart';
 import 'package:unisinos_usp_app/routes/connection_types.dart';
 import 'package:unisinos_usp_app/routes/chat.dart';
 import 'package:unisinos_usp_app/routes/chat_templates.dart';
+import 'package:unisinos_usp_app/routes/node_links.dart';
+import 'package:unisinos_usp_app/routes/node_types.dart';
+import 'package:unisinos_usp_app/routes/nodes.dart';
 import 'package:unisinos_usp_app/screens/screens.dart';
 
 List<GetPage> appRoutes() => [
@@ -20,4 +23,7 @@ List<GetPage> appRoutes() => [
       ...sampleRoutes(),
       ...chatRoutes(),
       ...chatTemplateRoutes(),
+      ...nodeTypeRoutes(),
+      ...nodeRoutes(),
+      ...nodeLinkRoutes(),
     ];
