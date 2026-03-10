@@ -50,7 +50,7 @@ class ChatTemplateUpdateScreen extends StatelessWidget {
                     ),
                   );
                   if (saved) {
-                    Get.secureBack(result: true);
+                    Get.back(result: true);
                   }
                 },
               ),
