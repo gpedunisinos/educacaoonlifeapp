@@ -50,9 +50,7 @@ class _ChatTemplateFormState extends State<ChatTemplateForm> {
     _nameController = TextEditingController(text: initialValue?.name ?? '');
     _descriptionController = TextEditingController(text: initialValue?.description ?? '');
     _systemInstructionController = TextEditingController(text: initialValue?.systemInstruction ?? '');
-    _fileEntries = (initialValue?.files ?? const <ChatTemplateFileModel>[])
-        .map((file) => _ChatTemplateFileFormEntry.fromModel(file))
-        .toList();
+    _fileEntries = (initialValue?.files ?? const <ChatTemplateFileModel>[]).map((file) => _ChatTemplateFileFormEntry.fromModel(file)).toList();
   }
 
   @override
@@ -217,7 +215,7 @@ class _ChatTemplateFormState extends State<ChatTemplateForm> {
                 border: OutlineInputBorder(),
               ),
               validator: (value) => PValidator([
-                PRuleMaxString(value, 50000, message: 'Máximo de 50000 caracteres'),
+                PRuleMaxString(value, 80000, message: 'Máximo de 80000 caracteres'),
               ]).val(),
             ),
           ],
@@ -252,8 +250,7 @@ class _ChatTemplateFormState extends State<ChatTemplateForm> {
       ChatTemplateFormValue(
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
-        systemInstruction:
-            _systemInstructionController.text.trim().isEmpty ? null : _systemInstructionController.text.trim(),
+        systemInstruction: _systemInstructionController.text.trim().isEmpty ? null : _systemInstructionController.text.trim(),
         files: files,
       ),
     );

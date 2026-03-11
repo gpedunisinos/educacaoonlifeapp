@@ -18,7 +18,7 @@ class ChatTemplateCreateScreen extends StatelessWidget {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
-        title: const Text('Novo chat template'),
+        title: const Text('Novo Agente'),
       ),
       body: Stack(
         children: [

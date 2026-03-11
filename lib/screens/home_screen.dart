@@ -62,8 +62,8 @@ class HomeScreen extends StatelessWidget {
         onTap: () => Get.toNamed('/chat'),
       ),
       _HomeMenu(
-        title: 'Chat Templates',
-        subtitle: 'Templates e conversas',
+        title: 'Agentes',
+        subtitle: 'Agentes de IA',
         icon: Icons.forum_outlined,
         color: Colors.cyan.shade700,
         onTap: () => Get.toNamed('/chat_templates'),

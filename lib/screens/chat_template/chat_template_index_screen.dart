@@ -38,12 +38,12 @@ class _ChatTemplateIndexScreenState extends State<ChatTemplateIndexScreen> {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
-        title: const Text('Chat Templates'),
+        title: const Text('Agentes'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: _goToCreate,
-            tooltip: 'Novo template',
+            tooltip: 'Novo agente',
           ),
         ],
       ),

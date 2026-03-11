@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 import 'package:unisinos_usp_app/controllers/chat_template/chat_template_chat_controller.dart';
 import 'package:unisinos_usp_app/models/chat_message_model.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class ChatTemplateChatScreen extends StatefulWidget {
   const ChatTemplateChatScreen({super.key});
@@ -60,7 +59,7 @@ class _ChatTemplateChatScreenState extends State<ChatTemplateChatScreen> {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
-        title: Obx(() => Text(_controller.template.value?.name ?? 'Chat Template')),
+        title: Obx(() => Text(_controller.template.value?.name ?? 'Agentes')),
       ),
       body: Stack(
         children: [

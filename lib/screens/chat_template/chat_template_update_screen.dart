@@ -18,14 +18,14 @@ class ChatTemplateUpdateScreen extends StatelessWidget {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
-        title: const Text('Editar chat template'),
+        title: const Text('Editar agente'),
       ),
       body: Stack(
         children: [
           const Positioned.fill(child: StarfieldBackground()),
           Obx(() {
             if (controller.templateId == null) {
-              return const Center(child: Text('Template não informado.', style: TextStyle(color: Colors.white)));
+              return const Center(child: Text('Agente não informado.', style: TextStyle(color: Colors.white)));
             }
 
             if (controller.isLoading.value && controller.template.value == null) {
