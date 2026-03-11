@@ -75,6 +75,13 @@ class HomeScreen extends StatelessWidget {
         color: Colors.deepOrange.shade600,
         onTap: () => Get.toNamed('/nodes/graph'),
       ),
+      _HomeMenu(
+        title: 'Usuários',
+        subtitle: 'Cadastro e gestão',
+        icon: Icons.people_outline,
+        color: Colors.green.shade600,
+        onTap: () => Get.toNamed('/users'),
+      ),
     ];
 
     return Scaffold(
@@ -120,16 +127,20 @@ class HomeScreen extends StatelessWidget {
                   Card(
                     elevation: 4,
                     color: Colors.black.withValues(alpha: 0.62),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Row(
                         children: [
                           CircleAvatar(
                             radius: 26,
-                            backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
+                            backgroundColor: theme.colorScheme.primary
+                                .withValues(alpha: 0.2),
                             child: Text(
-                              userName.isNotEmpty ? userName.characters.first.toUpperCase() : '?',
+                              userName.isNotEmpty
+                                  ? userName.characters.first.toUpperCase()
+                                  : '?',
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
@@ -151,7 +162,8 @@ class HomeScreen extends StatelessWidget {
                                 const SizedBox(height: 4),
                                 Text(
                                   'Selecione uma área para começar',
-                                  style: theme.textTheme.bodySmall?.copyWith(color: Colors.white70),
+                                  style: theme.textTheme.bodySmall
+                                      ?.copyWith(color: Colors.white70),
                                 ),
                               ],
                             ),
@@ -240,7 +252,8 @@ class _HomeCard extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   menu.subtitle,
-                  style: theme.textTheme.bodySmall?.copyWith(color: Colors.white70),
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: Colors.white70),
                 ),
               ],
             ),
@@ -284,7 +297,10 @@ class _TwoColumnMenuFlow extends StatelessWidget {
                       .entries
                       .map(
                         (entry) => Padding(
-                          padding: EdgeInsets.only(right: entry.key < rowMenus.length - 1 ? spacing : 0),
+                          padding: EdgeInsets.only(
+                              right: entry.key < rowMenus.length - 1
+                                  ? spacing
+                                  : 0),
                           child: _HomeCard(menu: entry.value),
                         ),
                       )

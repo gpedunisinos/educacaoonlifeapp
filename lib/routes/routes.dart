@@ -10,6 +10,7 @@ import 'package:unisinos_usp_app/routes/chat_templates.dart';
 import 'package:unisinos_usp_app/routes/node_links.dart';
 import 'package:unisinos_usp_app/routes/node_types.dart';
 import 'package:unisinos_usp_app/routes/nodes.dart';
+import 'package:unisinos_usp_app/routes/users.dart';
 import 'package:unisinos_usp_app/screens/screens.dart';
 
 List<GetPage> appRoutes() => [
@@ -26,4 +27,5 @@ List<GetPage> appRoutes() => [
       ...nodeTypeRoutes(),
       ...nodeRoutes(),
       ...nodeLinkRoutes(),
+      ...userRoutes(),
     ];

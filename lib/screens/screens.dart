@@ -35,3 +35,6 @@ export 'package:unisinos_usp_app/screens/sample/sample_index_screen.dart';
 export 'package:unisinos_usp_app/screens/sample/sample_update_screen.dart';
 export 'package:unisinos_usp_app/screens/home_screen.dart';
 export 'package:unisinos_usp_app/screens/splash_screen.dart';
+export 'package:unisinos_usp_app/screens/user/user_create_screen.dart';
+export 'package:unisinos_usp_app/screens/user/user_index_screen.dart';
+export 'package:unisinos_usp_app/screens/user/user_update_screen.dart';

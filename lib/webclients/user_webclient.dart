@@ -1,8 +1,9 @@
 import 'dart:convert';
 
+import 'package:http_interceptor/http_interceptor.dart';
+import 'package:unisinos_usp_app/models/user_model.dart';
 import 'package:unisinos_usp_app/services/auth_user.dart';
 import 'package:unisinos_usp_app/webclients/webclient.dart';
-import 'package:http_interceptor/http_interceptor.dart';
 import 'package:widgets_spo/services/services.dart';
 
 class UserWebclient {
@@ -107,5 +108,68 @@ class UserWebclient {
     );
 
     return response.statusCode == 200;
+  }
+
+  Future<List<UserModel>> fetchUsers({
+    int? limit,
+    int offset = 0,
+    String? search,
+  }) async {
+    final Response response = await webClient.get(
+      '/$endpoint',
+      _authInterceptors,
+      {
+        if (limit != null) 'limit': limit.toString(),
+        'offset': offset.toString(),
+        if (search != null) 'search': search,
+      },
+    );
+
+    return UserModel.fromResponseBody(response.body);
+  }
+
+  Future<UserModel> fetchUserById(int id) async {
+    final Response response =
+        await webClient.get('/$endpoint/$id', _authInterceptors, {});
+    return UserModel.fromJson(
+        _extractObject(jsonDecode(response.body), 'user'));
+  }
+
+  Future<UserModel> createUser(UserModel model) async {
+    final Response response = await webClient.post(
+        '/$endpoint', jsonEncode(model.toCreateJson()), _authInterceptors);
+    return UserModel.fromJson(
+        _extractObject(jsonDecode(response.body), 'user'));
+  }
+
+  Future<UserModel> updateUser(UserModel model) async {
+    final Response response = await webClient.put(
+      '/$endpoint/${model.id}',
+      jsonEncode(model.toUpdateJson()),
+      _authInterceptors,
+    );
+    return UserModel.fromJson(
+        _extractObject(jsonDecode(response.body), 'user'));
+  }
+
+  Future<void> deleteUser(int id) async {
+    await webClient.delete('/$endpoint/$id', _authInterceptors);
+  }
+
+  List<InterceptorContract> get _authInterceptors => [
+        LoggingInterceptor(),
+        ApiInterceptor(),
+        TokenInterceptor(),
+      ];
+
+  Map<String, dynamic> _extractObject(Object? decoded, String key) {
+    if (decoded is Map<String, dynamic>) {
+      if (decoded[key] is Map<String, dynamic>) {
+        return decoded[key] as Map<String, dynamic>;
+      }
+      return decoded;
+    }
+
+    throw Exception('Resposta inválida ao processar usuário.');
   }
 }
