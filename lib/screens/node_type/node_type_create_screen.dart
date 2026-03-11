@@ -18,11 +18,13 @@ class NodeTypeCreateScreen extends StatefulWidget {
 }
 
 class _NodeTypeCreateScreenState extends State<NodeTypeCreateScreen> {
-  final NodeTypeCreateController _controller = Get.find<NodeTypeCreateController>();
+  final NodeTypeCreateController _controller =
+      Get.find<NodeTypeCreateController>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _colorController = TextEditingController(text: '#2563EB');
+  final TextEditingController _colorController =
+      TextEditingController(text: '#2563EB');
 
   @override
   void dispose() {
@@ -56,7 +58,8 @@ class _NodeTypeCreateScreenState extends State<NodeTypeCreateScreen> {
                     controller: _nameController,
                     validator: (value) => PValidator([
                       PRuleRequired(value, message: 'Obrigatório'),
-                      PRuleMaxString(value, 100, message: 'Máximo de 100 caracteres'),
+                      PRuleMaxString(value, 100,
+                          message: 'Máximo de 100 caracteres'),
                     ]).val(),
                   ),
                   Insets.large.height,
