@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pvalidator/pvalidator.dart';
 import 'package:unisinos_usp_app/controllers/living_clue/living_clue_create_controller.dart';
+import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
+import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
@@ -16,6 +18,7 @@ class LivingClueCreateScreen extends StatefulWidget {
 }
 
 class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
+  static const String _screenName = 'Cadastro de pista';
   final LivingClueCreateController _controller = Get.find<LivingClueCreateController>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
@@ -71,6 +74,10 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Get.find<AiAssistantContextService>().registerProvider(
+      Get.currentRoute,
+      _buildAiContext,
+    );
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -89,132 +96,162 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                Card(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.bolt_outlined, color: Colors.indigo),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Dados principais',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleMedium
-                                  ?.copyWith(fontWeight: FontWeight.w700),
-                            ),
-                          ],
-                        ),
-                        Insets.large.height,
-                        InputText(
-                          hintText: 'Nome',
-                          controller: _nameController,
-                          validator: (value) => PValidator([
-                            PRuleRequired(value, message: 'Obrigatório'),
-                            PRuleMaxString(value, 255, message: 'Máximo de 255 caracteres'),
-                          ]).val(),
-                        ),
-                        Insets.large.height,
-                        InputText(
-                          hintText: 'Categoria',
-                          readOnly: true,
-                          controller: _categoryController,
-                          validator: (_) => _categoryId == null ? 'Selecione uma categoria antes' : null,
-                        ),
-                        Insets.large.height,
-                        InputText(
-                          hintText: 'Descrição (opcional)',
-                          controller: _descriptionController,
-                          maxLines: 3,
-                        ),
-                        Insets.large.height,
-                        if (_metadataTags.isNotEmpty) ...[
-                          const Text('Metadata (opcional)'),
-                          const SizedBox(height: 8),
-                          ..._metadataTags.map(
-                            (tag) => Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: InputText(
-                                hintText: _formatTagLabel(tag),
-                                controller: _metadataControllers[tag]!,
+                  Card(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.bolt_outlined, color: Colors.indigo),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Dados principais',
+                                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                              ),
+                            ],
+                          ),
+                          Insets.large.height,
+                          InputText(
+                            hintText: 'Nome',
+                            controller: _nameController,
+                            validator: (value) => PValidator([
+                              PRuleRequired(value, message: 'Obrigatório'),
+                              PRuleMaxString(value, 255, message: 'Máximo de 255 caracteres'),
+                            ]).val(),
+                          ),
+                          Insets.large.height,
+                          InputText(
+                            hintText: 'Categoria',
+                            readOnly: true,
+                            controller: _categoryController,
+                            validator: (_) => _categoryId == null ? 'Selecione uma categoria antes' : null,
+                          ),
+                          Insets.large.height,
+                          InputText(
+                            hintText: 'Descrição (opcional)',
+                            controller: _descriptionController,
+                            maxLines: 3,
+                          ),
+                          Insets.large.height,
+                          if (_metadataTags.isNotEmpty) ...[
+                            const Text('Metadata (opcional)'),
+                            const SizedBox(height: 8),
+                            ..._metadataTags.map(
+                              (tag) => Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: InputText(
+                                  hintText: _formatTagLabel(tag),
+                                  controller: _metadataControllers[tag]!,
+                                ),
                               ),
                             ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Card(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.place_outlined, color: Colors.teal),
+                              const SizedBox(width: 8),
+                              const Text('Localização', style: TextStyle(fontWeight: FontWeight.w700)),
+                            ],
+                          ),
+                          Insets.large.height,
+                          InputNumber(
+                            label: 'Latitude',
+                            controller: _latitudeController,
+                            validator: (value) => PValidator([
+                              PRuleRequired(value, message: 'Obrigatório'),
+                            ]).val(),
+                          ),
+                          Insets.large.height,
+                          InputNumber(
+                            label: 'Longitude',
+                            controller: _longitudeController,
+                            validator: (value) => PValidator([
+                              PRuleRequired(value, message: 'Obrigatório'),
+                            ]).val(),
+                          ),
+                          Insets.large.height,
+                          InputText(
+                            hintText: 'URL da imagem (opcional)',
+                            controller: _imageUrlController,
+                          ),
+                          Insets.medium.height,
+                          SwitchListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: const Text('Ativo'),
+                            value: _isActive,
+                            onChanged: (val) => setState(() => _isActive = val),
                           ),
                         ],
-                      ],
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                Card(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.place_outlined, color: Colors.teal),
-                            const SizedBox(width: 8),
-                            const Text('Localização', style: TextStyle(fontWeight: FontWeight.w700)),
-                          ],
-                        ),
-                        Insets.large.height,
-                        InputNumber(
-                          label: 'Latitude',
-                          controller: _latitudeController,
-                          validator: (value) => PValidator([
-                            PRuleRequired(value, message: 'Obrigatório'),
-                          ]).val(),
-                        ),
-                        Insets.large.height,
-                        InputNumber(
-                          label: 'Longitude',
-                          controller: _longitudeController,
-                          validator: (value) => PValidator([
-                            PRuleRequired(value, message: 'Obrigatório'),
-                          ]).val(),
-                        ),
-                        Insets.large.height,
-                        InputText(
-                          hintText: 'URL da imagem (opcional)',
-                          controller: _imageUrlController,
-                        ),
-                        Insets.medium.height,
-                        SwitchListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: const Text('Ativo'),
-                          value: _isActive,
-                          onChanged: (val) => setState(() => _isActive = val),
-                        ),
-                      ],
-                    ),
+                  Insets.extraLarge.height,
+                  SizedBox(
+                    width: double.infinity,
+                    child: Obx(() {
+                      final bool loading = _controller.isLoading.value;
+                      final String buttonTitle = loading ? 'Salvando...' : 'Salvar';
+                      return ActionButton(
+                        theme: ActionButtonTheme.blue,
+                        title: buttonTitle,
+                        onPressed: loading ? null : _save,
+                      );
+                    }),
                   ),
-                ),
-                Insets.extraLarge.height,
-                SizedBox(
-                  width: double.infinity,
-                  child: Obx(() {
-                    final bool loading = _controller.isLoading.value;
-                    final String buttonTitle = loading ? 'Salvando...' : 'Salvar';
-                    return ActionButton(
-                      theme: ActionButtonTheme.blue,
-                      title: buttonTitle,
-                      onPressed: loading ? null : _save,
-                    );
-                  }),
-                ),
                 ],
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  AiAssistantScreenContext _buildAiContext() {
+    return AiAssistantScreenContext(
+      screenName: _screenName,
+      route: Get.currentRoute,
+      stage: 'preenchimento do formulário',
+      goal: 'registrar uma pista viva com localização, categoria e dados principais',
+      visibleFields: <String>[
+        'nome',
+        'categoria',
+        'descrição',
+        ..._metadataTags.map(_formatTagLabel),
+        'latitude',
+        'longitude',
+        'URL da imagem',
+        'ativo',
+      ],
+      filledFields: <String, String>{
+        if (_nameController.text.trim().isNotEmpty) 'nome': _nameController.text.trim(),
+        if (_categoryController.text.trim().isNotEmpty) 'categoria': _categoryController.text.trim(),
+        if (_descriptionController.text.trim().isNotEmpty) 'descrição': _descriptionController.text.trim(),
+        if (_latitudeController.text.trim().isNotEmpty) 'latitude': _latitudeController.text.trim(),
+        if (_longitudeController.text.trim().isNotEmpty) 'longitude': _longitudeController.text.trim(),
+        if (_imageUrlController.text.trim().isNotEmpty) 'url da imagem': _imageUrlController.text.trim(),
+        'ativo': _isActive ? 'sim' : 'não',
+        for (final entry in _metadataControllers.entries)
+          if (entry.value.text.trim().isNotEmpty) _formatTagLabel(entry.key): entry.value.text.trim(),
+      },
+      notes: const <String>[
+        'Os dados desta tela são usados para criar o ponto definitivo no mapa.',
+      ],
     );
   }
 

@@ -3,6 +3,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
+import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 
@@ -10,10 +12,12 @@ class LivingClueMapCreateScreen extends StatefulWidget {
   const LivingClueMapCreateScreen({super.key});
 
   @override
-  State<LivingClueMapCreateScreen> createState() => _LivingClueMapCreateScreenState();
+  State<LivingClueMapCreateScreen> createState() =>
+      _LivingClueMapCreateScreenState();
 }
 
 class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
+  static const String _screenName = 'Escolha do local da pista';
   final MapController _mapController = MapController();
   LatLng _center = const LatLng(-29.718, -51.143);
   LatLng? _selected;
@@ -44,8 +48,10 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
       }
-      if (permission == LocationPermission.deniedForever || permission == LocationPermission.denied) {
-        Get.snackbar('Permissão necessária', 'Habilite a localização para usar sua posição atual.');
+      if (permission == LocationPermission.deniedForever ||
+          permission == LocationPermission.denied) {
+        Get.snackbar('Permissão necessária',
+            'Habilite a localização para usar sua posição atual.');
         return;
       }
       final Position position = await Geolocator.getCurrentPosition();
@@ -74,7 +80,8 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
 
   Future<void> _goToCreate() async {
     if (_selected == null) {
-      Get.snackbar('Selecione um ponto', 'Pressione e segure no mapa para marcar a localização.');
+      Get.snackbar('Selecione um ponto',
+          'Pressione e segure no mapa para marcar a localização.');
       return;
     }
     final result = await Get.toNamed(
@@ -91,6 +98,10 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Get.find<AiAssistantContextService>().registerProvider(
+      Get.currentRoute,
+      _buildAiContext,
+    );
     final selectedText = _selected == null
         ? 'Nenhum ponto selecionado'
         : 'Ponto selecionado: ${_selected!.latitude.toStringAsFixed(6)}, ${_selected!.longitude.toStringAsFixed(6)}';
@@ -150,7 +161,8 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
                       point: _selected!,
                       width: 40,
                       height: 40,
-                      child: const Icon(Icons.location_on, color: Colors.blue, size: 36),
+                      child: const Icon(Icons.location_on,
+                          color: Colors.blue, size: 36),
                     ),
                   ],
                 ),
@@ -166,11 +178,13 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Segure no mapa para marcar a latitude/longitude.'),
+                    const Text(
+                        'Segure no mapa para marcar a latitude/longitude.'),
                     const SizedBox(height: 6),
                     Text(
                       selectedText,
-                      style: const TextStyle(fontSize: 12, color: Colors.blueGrey),
+                      style:
+                          const TextStyle(fontSize: 12, color: Colors.blueGrey),
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
@@ -199,6 +213,31 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  AiAssistantScreenContext _buildAiContext() {
+    return AiAssistantScreenContext(
+      screenName: _screenName,
+      route: Get.currentRoute,
+      stage: 'seleção do ponto no mapa',
+      goal: 'marcar o local exato onde a pista viva será criada',
+      visibleFields: const <String>[
+        'mapa',
+        'usar minha localização',
+        'remover ponto',
+        'continuar com este ponto',
+      ],
+      filledFields: <String, String>{
+        'centro do mapa':
+            '${_center.latitude.toStringAsFixed(5)}, ${_center.longitude.toStringAsFixed(5)}',
+        'ponto selecionado': _selected == null
+            ? 'nenhum'
+            : '${_selected!.latitude.toStringAsFixed(5)}, ${_selected!.longitude.toStringAsFixed(5)}',
+      },
+      notes: <String>[
+        'O usuário deve pressionar e segurar no mapa para marcar a localização.',
+      ],
     );
   }
 }

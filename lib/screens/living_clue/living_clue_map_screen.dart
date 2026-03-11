@@ -3,7 +3,9 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:unisinos_usp_app/controllers/living_clue/living_clue_map_controller.dart';
+import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
+import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 
@@ -15,7 +17,9 @@ class LivingClueMapScreen extends StatefulWidget {
 }
 
 class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
-  final LivingClueMapController _controller = Get.find<LivingClueMapController>();
+  static const String _screenName = 'Mapa de pistas vivas';
+  final LivingClueMapController _controller =
+      Get.find<LivingClueMapController>();
   final MapController _mapController = MapController();
   LatLng _tapCenter = const LatLng(-29.718, -51.143);
 
@@ -46,6 +50,10 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Get.find<AiAssistantContextService>().registerProvider(
+      Get.currentRoute,
+      _buildAiContext,
+    );
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -78,176 +86,212 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
           const Positioned.fill(child: StarfieldBackground()),
           Column(
             children: [
-          Container(
-            margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.55),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      const Icon(Icons.radar, size: 18, color: Colors.indigo),
-                      const SizedBox(width: 6),
-                      const Text('Raio', style: TextStyle(color: Colors.white)),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Obx(() {
-                          return Slider(
-                            activeColor: Colors.indigo,
-                            value: _controller.sonarRadius.value,
-                            min: 100,
-                            max: 2000,
-                            divisions: 19,
-                            label: '${_controller.sonarRadius.value.toInt()} m',
-                            onChanged: (value) => _controller.sonarRadius.value = value,
-                          );
-                        }),
-                      ),
-                    ],
-                  ),
+              Container(
+                margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.55),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                IconButton(
-                  color: Colors.white,
-                  icon: const Icon(Icons.my_location),
-                  tooltip: 'Usar minha localização',
-                  onPressed: _useCurrentLocation,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          const Icon(Icons.radar,
+                              size: 18, color: Colors.indigo),
+                          const SizedBox(width: 6),
+                          const Text('Raio',
+                              style: TextStyle(color: Colors.white)),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Obx(() {
+                              return Slider(
+                                activeColor: Colors.indigo,
+                                value: _controller.sonarRadius.value,
+                                min: 100,
+                                max: 2000,
+                                divisions: 19,
+                                label:
+                                    '${_controller.sonarRadius.value.toInt()} m',
+                                onChanged: (value) =>
+                                    _controller.sonarRadius.value = value,
+                              );
+                            }),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      color: Colors.white,
+                      icon: const Icon(Icons.my_location),
+                      tooltip: 'Usar minha localização',
+                      onPressed: _useCurrentLocation,
+                    ),
+                    IconButton(
+                      color: Colors.white,
+                      icon: const Icon(Icons.refresh),
+                      tooltip: 'Atualizar área',
+                      onPressed: _loadCurrentBounds,
+                    ),
+                  ],
                 ),
-                IconButton(
-                  color: Colors.white,
-                  icon: const Icon(Icons.refresh),
-                  tooltip: 'Atualizar área',
-                  onPressed: _loadCurrentBounds,
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: Obx(() {
-              final markers = _controller.livingClues
-                  .map(
-                    (item) => Marker(
-                      point: LatLng(item.latitude, item.longitude),
-                      width: 46,
-                      height: 46,
-                      child: GestureDetector(
-                        onTap: () => _showClueSheet(item),
-                        child: Icon(
-                          Icons.location_on,
-                          color: _categoryColor(item),
-                          size: 36,
-                        ),
-                      ),
-                    ),
-                  )
-                  .toList();
-
-              final Map<int, LatLng> pointsById = {
-                for (final clue in _controller.livingClues)
-                  clue.id: LatLng(clue.latitude, clue.longitude),
-              };
-              final connectionLines = _controller.connections
-                  .map(
-                    (conn) {
-                      final start = pointsById[conn.sourceClueId];
-                      final end = pointsById[conn.targetClueId];
-                      if (start == null || end == null) return null;
-                      return Polyline(
-                        points: [start, end],
-                        color: Colors.red.shade600,
-                        strokeWidth: 3,
-                      );
-                    },
-                  )
-                  .whereType<Polyline>()
-                  .toList();
-
-              final circles = <CircleMarker>[];
-              if (_controller.sonarCenter.value != null) {
-                circles.add(
-                  CircleMarker(
-                    point: _controller.sonarCenter.value!,
-                    color: Colors.blue.withOpacity(0.2),
-                    borderStrokeWidth: 1,
-                    borderColor: Colors.blue,
-                    radius: _controller.sonarRadius.value,
-                  ),
-                );
-              }
-
-              return Stack(
-                children: [
-                  FlutterMap(
-                    mapController: _mapController,
-                    options: MapOptions(
-                      initialCenter: _tapCenter,
-                      initialZoom: 13,
-                      onMapEvent: (event) {
-                        if (event is MapEventMoveEnd) {
-                          _loadCurrentBounds();
-                        }
-                      },
-                      onLongPress: (tapPos, latLng) {
-                        setState(() => _tapCenter = latLng);
-                        _controller.sonarCenter.value = latLng;
-                      },
-                    ),
-                    children: [
-                      TileLayer(
-                        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        userAgentPackageName: 'com.br.spotecnologia.uniusp_app',
-                      ),
-                      if (circles.isNotEmpty) CircleLayer(circles: circles),
-                      if (connectionLines.isNotEmpty)
-                        PolylineLayer(
-                          polylines: connectionLines,
-                        ),
-                      MarkerLayer(markers: markers),
-                    ],
-                  ),
-                  if (_controller.isLoading.value)
-                    const Positioned.fill(
-                      child: IgnorePointer(
-                        child: Center(child: CircularProgressIndicator()),
-                      ),
-                    ),
-                  Positioned(
-                    bottom: 16,
-                    left: 16,
-                    right: 16,
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Icons.radar),
-                      label: const Text('Buscar por raio (tap longo para escolher o ponto)'),
-                      onPressed: _searchByTap,
-                    ),
-                  ),
-                  if (_controller.errorMessage.value != null)
-                    Positioned(
-                      top: 12,
-                      left: 16,
-                      right: 16,
-                      child: Card(
-                        color: Colors.red.shade50,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: Text(
-                            _controller.errorMessage.value!,
-                            style: TextStyle(color: Colors.red.shade800),
+              ),
+              Expanded(
+                child: Obx(() {
+                  final markers = _controller.livingClues
+                      .map(
+                        (item) => Marker(
+                          point: LatLng(item.latitude, item.longitude),
+                          width: 46,
+                          height: 46,
+                          child: GestureDetector(
+                            onTap: () => _showClueSheet(item),
+                            child: Icon(
+                              Icons.location_on,
+                              color: _categoryColor(item),
+                              size: 36,
+                            ),
                           ),
                         ),
+                      )
+                      .toList();
+
+                  final Map<int, LatLng> pointsById = {
+                    for (final clue in _controller.livingClues)
+                      clue.id: LatLng(clue.latitude, clue.longitude),
+                  };
+                  final connectionLines = _controller.connections
+                      .map(
+                        (conn) {
+                          final start = pointsById[conn.sourceClueId];
+                          final end = pointsById[conn.targetClueId];
+                          if (start == null || end == null) return null;
+                          return Polyline(
+                            points: [start, end],
+                            color: Colors.red.shade600,
+                            strokeWidth: 3,
+                          );
+                        },
+                      )
+                      .whereType<Polyline>()
+                      .toList();
+
+                  final circles = <CircleMarker>[];
+                  if (_controller.sonarCenter.value != null) {
+                    circles.add(
+                      CircleMarker(
+                        point: _controller.sonarCenter.value!,
+                        color: Colors.blue.withOpacity(0.2),
+                        borderStrokeWidth: 1,
+                        borderColor: Colors.blue,
+                        radius: _controller.sonarRadius.value,
                       ),
-                    ),
-                ],
-              );
-            }),
-          ),
+                    );
+                  }
+
+                  return Stack(
+                    children: [
+                      FlutterMap(
+                        mapController: _mapController,
+                        options: MapOptions(
+                          initialCenter: _tapCenter,
+                          initialZoom: 13,
+                          onMapEvent: (event) {
+                            if (event is MapEventMoveEnd) {
+                              _loadCurrentBounds();
+                            }
+                          },
+                          onLongPress: (tapPos, latLng) {
+                            setState(() => _tapCenter = latLng);
+                            _controller.sonarCenter.value = latLng;
+                          },
+                        ),
+                        children: [
+                          TileLayer(
+                            urlTemplate:
+                                'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                            userAgentPackageName:
+                                'com.br.spotecnologia.uniusp_app',
+                          ),
+                          if (circles.isNotEmpty) CircleLayer(circles: circles),
+                          if (connectionLines.isNotEmpty)
+                            PolylineLayer(
+                              polylines: connectionLines,
+                            ),
+                          MarkerLayer(markers: markers),
+                        ],
+                      ),
+                      if (_controller.isLoading.value)
+                        const Positioned.fill(
+                          child: IgnorePointer(
+                            child: Center(child: CircularProgressIndicator()),
+                          ),
+                        ),
+                      Positioned(
+                        bottom: 16,
+                        left: 16,
+                        right: 16,
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.radar),
+                          label: const Text(
+                              'Buscar por raio (tap longo para escolher o ponto)'),
+                          onPressed: _searchByTap,
+                        ),
+                      ),
+                      if (_controller.errorMessage.value != null)
+                        Positioned(
+                          top: 12,
+                          left: 16,
+                          right: 16,
+                          child: Card(
+                            color: Colors.red.shade50,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8),
+                              child: Text(
+                                _controller.errorMessage.value!,
+                                style: TextStyle(color: Colors.red.shade800),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                }),
+              ),
             ],
           ),
         ],
       ),
+    );
+  }
+
+  AiAssistantScreenContext _buildAiContext() {
+    return AiAssistantScreenContext(
+      screenName: _screenName,
+      route: Get.currentRoute,
+      stage: 'exploração do mapa',
+      goal: 'buscar pistas próximas e iniciar o cadastro de um novo ponto',
+      visibleFields: const <String>[
+        'mapa',
+        'raio do sonar',
+        'buscar por raio',
+        'usar minha localização',
+        'criar pista por ponto',
+      ],
+      filledFields: <String, String>{
+        'raio do sonar': '${_controller.sonarRadius.value.toInt()} m',
+        'centro selecionado':
+            '${_tapCenter.latitude.toStringAsFixed(5)}, ${_tapCenter.longitude.toStringAsFixed(5)}',
+        'pistas carregadas': _controller.livingClues.length.toString(),
+        'conexões visíveis': _controller.connections.length.toString(),
+      },
+      notes: <String>[
+        if (_controller.sonarCenter.value != null)
+          'O usuário definiu um centro para busca por raio.',
+        'Tap longo no mapa escolhe o ponto de referência do sonar.',
+      ],
     );
   }
 
@@ -274,7 +318,8 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
     showModalBottomSheet(
       context: context,
       builder: (context) {
-        final categoryName = model.category?.name ?? 'Categoria: ${model.categoryId}';
+        final categoryName =
+            model.category?.name ?? 'Categoria: ${model.categoryId}';
         return Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -283,7 +328,8 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
             children: [
               Text(model.name, style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
-              Text(categoryName, style: const TextStyle(fontWeight: FontWeight.w600)),
+              Text(categoryName,
+                  style: const TextStyle(fontWeight: FontWeight.w600)),
               const SizedBox(height: 6),
               Text(model.description ?? 'Sem descrição'),
               const SizedBox(height: 12),

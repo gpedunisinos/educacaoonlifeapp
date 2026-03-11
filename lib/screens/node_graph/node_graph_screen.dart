@@ -1,11 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:get/get.dart';
 import 'package:pvalidator/pvalidator.dart';
 import 'package:unisinos_usp_app/controllers/node_graph/node_graph_controller.dart';
+import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
 import 'package:unisinos_usp_app/models/node_link_model.dart';
 import 'package:unisinos_usp_app/models/node_model.dart';
 import 'package:unisinos_usp_app/models/node_type_model.dart';
+import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
@@ -18,10 +22,10 @@ class NodeGraphScreen extends StatefulWidget {
 }
 
 class _NodeGraphScreenState extends State<NodeGraphScreen> {
+  static const String _screenName = 'Problemáticas';
   static const Size _graphCanvasSize = Size(1800, 1400);
   final NodeGraphController _controller = Get.find<NodeGraphController>();
-  final TransformationController _transformationController =
-      TransformationController();
+  final TransformationController _transformationController = TransformationController();
   bool _didCenterGraph = false;
 
   @override
@@ -38,6 +42,10 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Get.find<AiAssistantContextService>().registerProvider(
+      Get.currentRoute,
+      _buildAiContext,
+    );
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -63,8 +71,7 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
           const Positioned.fill(child: StarfieldBackground()),
           Obx(() {
             if (_controller.isLoading.value && _controller.graphNodes.isEmpty) {
-              return const Center(
-                  child: CircularProgressIndicator(color: Colors.white));
+              return const Center(child: CircularProgressIndicator(color: Colors.white));
             }
 
             final nodes = _controller.visibleNodes;
@@ -105,18 +112,13 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
                             color: Colors.black.withValues(alpha: 0.45),
                             child: nodes.isEmpty
                                 ? _GraphEmptyState(
-                                    hasLoadedNodes:
-                                        _controller.graphNodes.isNotEmpty,
+                                    hasLoadedNodes: _controller.graphNodes.isNotEmpty,
                                     hasActiveFilters:
-                                        _controller.minimumDegree.value > 0 ||
-                                            _controller
-                                                    .selectedTypeIds.length !=
-                                                _controller.nodeTypes.length,
+                                        _controller.minimumDegree.value > 0 || _controller.selectedTypeIds.length != _controller.nodeTypes.length,
                                     onCreatePressed: _openCreateNodeSheet,
                                   )
                                 : InteractiveViewer(
-                                    transformationController:
-                                        _transformationController,
+                                    transformationController: _transformationController,
                                     constrained: false,
                                     minScale: 0.2,
                                     maxScale: 3.5,
@@ -131,45 +133,28 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
                                               painter: _GraphLinkPainter(
                                                 nodes: nodes,
                                                 links: links,
-                                                selectedNodeId: _controller
-                                                    .selectedNodeId.value,
+                                                selectedNodeId: _controller.selectedNodeId.value,
                                                 neighborNodeIds: neighbors,
                                               ),
                                             ),
                                           ),
                                           for (final node in nodes)
                                             Positioned(
-                                              left: node.position.dx +
-                                                  (_graphCanvasSize.width / 2) -
-                                                  node.radius,
-                                              top: node.position.dy +
-                                                  (_graphCanvasSize.height /
-                                                      2) -
-                                                  node.radius,
+                                              left: node.position.dx + (_graphCanvasSize.width / 2) - node.radius,
+                                              top: node.position.dy + (_graphCanvasSize.height / 2) - node.radius,
                                               child: _GraphNodeWidget(
                                                 node: node,
-                                                isSelected: _controller
-                                                        .selectedNodeId.value ==
-                                                    node.node.id,
-                                                isNeighbor: neighbors
-                                                    .contains(node.node.id),
-                                                onTap: () => _controller
-                                                    .selectNode(node.node.id),
+                                                isSelected: _controller.selectedNodeId.value == node.node.id,
+                                                isNeighbor: neighbors.contains(node.node.id),
+                                                onTap: () => _controller.selectNode(node.node.id),
                                                 onDragUpdate: (details) {
-                                                  final double scale =
-                                                      _transformationController
-                                                          .value
-                                                          .getMaxScaleOnAxis();
-                                                  _controller
-                                                      .updateNodePosition(
+                                                  final double scale = _transformationController.value.getMaxScaleOnAxis();
+                                                  _controller.updateNodePosition(
                                                     node.node.id,
-                                                    node.position +
-                                                        details.delta / scale,
+                                                    node.position + details.delta / scale,
                                                   );
                                                 },
-                                                onDragEnd: () => _controller
-                                                    .persistNodePosition(
-                                                        node.node.id),
+                                                onDragEnd: () => _controller.persistNodePosition(node.node.id),
                                               ),
                                             ),
                                         ],
@@ -207,15 +192,44 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
       if (!mounted) return;
 
       const double initialScale = 0.85;
-      final double dx = (viewportSize.width / 2) -
-          (_graphCanvasSize.width * initialScale / 2);
-      final double dy = (viewportSize.height / 2) -
-          (_graphCanvasSize.height * initialScale / 2);
+      final double dx = (viewportSize.width / 2) - (_graphCanvasSize.width * initialScale / 2);
+      final double dy = (viewportSize.height / 2) - (_graphCanvasSize.height * initialScale / 2);
 
       _transformationController.value = Matrix4.identity()
         ..translate(dx, dy)
         ..scale(initialScale);
     });
+  }
+
+  AiAssistantScreenContext _buildAiContext() {
+    debugPrint(jsonEncode(_controller.graphLinks));
+    final NodeModel? selectedNode = _selectedNode;
+    return AiAssistantScreenContext(
+      screenName: _screenName,
+      route: Get.currentRoute,
+      stage: 'mapeamento e análise de nós',
+      goal: 'criar, conectar, editar e organizar entidades no grafo',
+      visibleFields: const <String>[
+        'tipos de nó',
+        'grau mínimo',
+        'grafo interativo',
+        'painel do nó selecionado',
+      ],
+      filledFields: <String, String>{
+        'nós carregados': _controller.graphNodes.length.toString(),
+        'ligações carregadas': _controller.graphLinks.length.toString(),
+        'tipos de nó carregados': _controller.nodeTypes.length.toString(),
+        'grau mínimo': _controller.minimumDegree.value.toString(),
+        'tipos ativos': _controller.selectedTypeIds.length.toString(),
+        if (selectedNode != null) 'nó selecionado': selectedNode.name,
+        if (selectedNode != null) 'tipo do nó selecionado': selectedNode.nodeType?.name ?? 'Tipo #${selectedNode.nodeTypeId}',
+      },
+      notes: <String>[
+        if (_controller.selectedNodeId.value != null) 'Há um nó selecionado e o painel contextual está disponível.',
+        if (_controller.visibleNodes.isEmpty) 'Os filtros atuais podem estar escondendo todos os nós visíveis.',
+        'O usuário pode arrastar nós, criar conexões e editar o grafo sem sair da tela.',
+      ],
+    );
   }
 
   Future<void> _openCreateNodeSheet() async {
@@ -347,8 +361,7 @@ class _GraphEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String title =
-        hasLoadedNodes ? 'Nenhum no visivel' : 'Nenhum no carregado';
+    final String title = hasLoadedNodes ? 'Nenhum no visivel' : 'Nenhum no carregado';
     final String message = hasLoadedNodes
         ? 'Os filtros atuais esconderam todos os nos do grafo.'
         : 'A API nao retornou nos para o mapa. Verifique o payload de /nodes/map.';
@@ -392,8 +405,7 @@ class _GraphEmptyState extends StatelessWidget {
                   Text(
                     'Tente limpar os filtros de tipo e grau minimo.',
                     textAlign: TextAlign.center,
-                    style:
-                        TextStyle(color: Colors.white.withValues(alpha: 0.62)),
+                    style: TextStyle(color: Colors.white.withValues(alpha: 0.62)),
                   ),
                 ],
               ],
@@ -437,10 +449,7 @@ class _SelectedNodePanel extends StatelessWidget {
     if (state == null) return const SizedBox.shrink();
 
     final NodeModel node = state.node;
-    final int connections = controller.graphLinks
-        .where((link) =>
-            link.sourceNodeId == node.id || link.targetNodeId == node.id)
-        .length;
+    final int connections = controller.graphLinks.where((link) => link.sourceNodeId == node.id || link.targetNodeId == node.id).length;
 
     return Align(
       alignment: Alignment.bottomCenter,
@@ -488,9 +497,7 @@ class _SelectedNodePanel extends StatelessWidget {
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      _MetaChip(
-                          label: node.nodeType?.name ??
-                              'Tipo #${node.nodeTypeId}'),
+                      _MetaChip(label: node.nodeType?.name ?? 'Tipo #${node.nodeTypeId}'),
                       _MetaChip(label: '$connections conexões'),
                       _MetaChip(label: 'Grau ${state.degree}'),
                     ],
@@ -521,13 +528,10 @@ class _SelectedNodePanel extends StatelessWidget {
                         label: const Text('Editar'),
                       ),
                       TextButton.icon(
-                        onPressed:
-                            controller.isDeletingNode.value ? null : onDelete,
+                        onPressed: controller.isDeletingNode.value ? null : onDelete,
                         icon: const Icon(Icons.delete_outline),
                         label: Text(
-                          controller.isDeletingNode.value
-                              ? 'Excluindo...'
-                              : 'Excluir',
+                          controller.isDeletingNode.value ? 'Excluindo...' : 'Excluir',
                         ),
                       ),
                     ],
@@ -664,8 +668,7 @@ class _NodeConnectionSheetState extends State<_NodeConnectionSheet> {
                 if (widget.availableTargets.isEmpty)
                   Text(
                     'Todos os outros nós já estão conectados a este nó.',
-                    style:
-                        TextStyle(color: Colors.white.withValues(alpha: 0.78)),
+                    style: TextStyle(color: Colors.white.withValues(alpha: 0.78)),
                   )
                 else
                   DropdownButtonFormField<int>(
@@ -701,21 +704,15 @@ class _NodeConnectionSheetState extends State<_NodeConnectionSheet> {
                     children: [
                       Expanded(
                         child: OutlinedButton(
-                          onPressed:
-                              saving ? null : () => Navigator.of(context).pop(),
+                          onPressed: saving ? null : () => Navigator.of(context).pop(),
                           child: const Text('Cancelar'),
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: FilledButton(
-                          onPressed: saving ||
-                                  _targetNodeId == null ||
-                                  widget.availableTargets.isEmpty
-                              ? null
-                              : _submit,
-                          child:
-                              Text(saving ? 'Conectando...' : 'Criar ligação'),
+                          onPressed: saving || _targetNodeId == null || widget.availableTargets.isEmpty ? null : _submit,
+                          child: Text(saving ? 'Conectando...' : 'Criar ligação'),
                         ),
                       ),
                     ],
@@ -764,8 +761,7 @@ class _NodeConnectionsSheet extends StatelessWidget {
             ),
             padding: const EdgeInsets.all(20),
             child: Obx(() {
-              final List<NodeLinkModel> connections =
-                  controller.connectionsFor(sourceNode.id);
+              final List<NodeLinkModel> connections = controller.connectionsFor(sourceNode.id);
 
               return Column(
                 mainAxisSize: MainAxisSize.min,
@@ -782,15 +778,13 @@ class _NodeConnectionsSheet extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     'Remova vínculos sem sair do mapa.',
-                    style:
-                        TextStyle(color: Colors.white.withValues(alpha: 0.72)),
+                    style: TextStyle(color: Colors.white.withValues(alpha: 0.72)),
                   ),
                   const SizedBox(height: 16),
                   if (connections.isEmpty)
                     Text(
                       'Este nó ainda não possui conexões.',
-                      style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.78)),
+                      style: TextStyle(color: Colors.white.withValues(alpha: 0.78)),
                     )
                   else
                     ConstrainedBox(
@@ -804,10 +798,8 @@ class _NodeConnectionsSheet extends StatelessWidget {
                         ),
                         itemBuilder: (_, index) {
                           final NodeLinkModel link = connections[index];
-                          final NodeModel? otherNode =
-                              controller.otherNodeForLink(link, sourceNode.id);
-                          final String label = otherNode?.name ??
-                              'Nó #${link.sourceNodeId == sourceNode.id ? link.targetNodeId : link.sourceNodeId}';
+                          final NodeModel? otherNode = controller.otherNodeForLink(link, sourceNode.id);
+                          final String label = otherNode?.name ?? 'Nó #${link.sourceNodeId == sourceNode.id ? link.targetNodeId : link.sourceNodeId}';
 
                           return ListTile(
                             contentPadding: EdgeInsets.zero,
@@ -820,15 +812,10 @@ class _NodeConnectionsSheet extends StatelessWidget {
                               style: const TextStyle(color: Colors.white70),
                             ),
                             trailing: TextButton.icon(
-                              onPressed: controller.isDeletingLink.value
-                                  ? null
-                                  : () =>
-                                      _confirmDeleteLink(context, link, label),
+                              onPressed: controller.isDeletingLink.value ? null : () => _confirmDeleteLink(context, link, label),
                               icon: const Icon(Icons.delete_outline),
                               label: Text(
-                                controller.isDeletingLink.value
-                                    ? 'Removendo...'
-                                    : 'Remover',
+                                controller.isDeletingLink.value ? 'Removendo...' : 'Remover',
                               ),
                             ),
                           );
@@ -852,8 +839,7 @@ class _NodeConnectionsSheet extends StatelessWidget {
     );
   }
 
-  void _confirmDeleteLink(
-      BuildContext context, NodeLinkModel link, String otherNodeName) {
+  void _confirmDeleteLink(BuildContext context, NodeLinkModel link, String otherNodeName) {
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -886,8 +872,7 @@ class _NodeEditorSheetState extends State<_NodeEditorSheet> {
   @override
   void initState() {
     super.initState();
-    _nameController =
-        TextEditingController(text: widget.initialNode?.name ?? '');
+    _nameController = TextEditingController(text: widget.initialNode?.name ?? '');
     _colorController = TextEditingController(
       text: widget.initialNode?.color ?? widget.initialColor ?? '#0EA5E9',
     );
@@ -934,8 +919,7 @@ class _NodeEditorSheetState extends State<_NodeEditorSheet> {
                     const SizedBox(height: 8),
                     Text(
                       'Preencha o essencial para colocar o nó no mapa.',
-                      style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.72)),
+                      style: TextStyle(color: Colors.white.withValues(alpha: 0.72)),
                     ),
                     const SizedBox(height: 20),
                     InputText(
@@ -943,8 +927,7 @@ class _NodeEditorSheetState extends State<_NodeEditorSheet> {
                       controller: _nameController,
                       validator: (value) => PValidator([
                         PRuleRequired(value, message: 'Obrigatório'),
-                        PRuleMaxString(value, 120,
-                            message: 'Máximo de 120 caracteres'),
+                        PRuleMaxString(value, 120, message: 'Máximo de 120 caracteres'),
                       ]).val(),
                     ),
                     const SizedBox(height: 16),
@@ -1023,9 +1006,7 @@ class _NodeEditorSheetState extends State<_NodeEditorSheet> {
                         children: [
                           Expanded(
                             child: OutlinedButton(
-                              onPressed: saving
-                                  ? null
-                                  : () => Navigator.of(context).pop(),
+                              onPressed: saving ? null : () => Navigator.of(context).pop(),
                               child: const Text('Cancelar'),
                             ),
                           ),
@@ -1033,8 +1014,7 @@ class _NodeEditorSheetState extends State<_NodeEditorSheet> {
                           Expanded(
                             child: FilledButton(
                               onPressed: saving ? null : _submit,
-                              child: Text(
-                                  saving ? 'Salvando...' : widget.submitLabel),
+                              child: Text(saving ? 'Salvando...' : widget.submitLabel),
                             ),
                           ),
                         ],
@@ -1139,46 +1119,37 @@ class _GraphFilters extends StatelessWidget {
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: controller.nodeTypes
-                  .map((type) {
-                    final Color accentColor = _parseHexColor(type.color);
-                    final bool isSelected =
-                        controller.selectedTypeIds.contains(type.id);
-                    final Color selectedBackground = Color.alphaBlend(
-                      accentColor.withValues(alpha: 0.28),
-                      const Color(0xFF10151D),
-                    );
+              children: controller.nodeTypes.map((type) {
+                final Color accentColor = _parseHexColor(type.color);
+                final bool isSelected = controller.selectedTypeIds.contains(type.id);
+                final Color selectedBackground = Color.alphaBlend(
+                  accentColor.withValues(alpha: 0.28),
+                  const Color(0xFF10151D),
+                );
 
-                    return FilterChip(
-                      label: Text(type.name),
-                      selected: isSelected,
-                      selectedColor: selectedBackground,
-                      backgroundColor: const Color(0xFF161C24),
-                      labelStyle: TextStyle(
-                        color: isSelected
-                            ? _contrastingTextColor(selectedBackground)
-                            : Colors.white.withValues(alpha: 0.92),
-                        fontWeight: FontWeight.w600,
-                      ),
-                      side: BorderSide(
-                        color: isSelected
-                            ? accentColor.withValues(alpha: 0.95)
-                            : accentColor.withValues(alpha: 0.55),
-                      ),
-                      checkmarkColor: _contrastingTextColor(selectedBackground),
-                      onSelected: (selected) =>
-                          controller.toggleType(type.id, selected),
-                    );
-                  })
-                  .toList(),
+                return FilterChip(
+                  label: Text(type.name),
+                  selected: isSelected,
+                  selectedColor: selectedBackground,
+                  backgroundColor: const Color(0xFF161C24),
+                  labelStyle: TextStyle(
+                    color: isSelected ? _contrastingTextColor(selectedBackground) : Colors.white.withValues(alpha: 0.92),
+                    fontWeight: FontWeight.w600,
+                  ),
+                  side: BorderSide(
+                    color: isSelected ? accentColor.withValues(alpha: 0.95) : accentColor.withValues(alpha: 0.55),
+                  ),
+                  checkmarkColor: _contrastingTextColor(selectedBackground),
+                  onSelected: (selected) => controller.toggleType(type.id, selected),
+                );
+              }).toList(),
             ),
             const SizedBox(height: 12),
             Row(
               children: [
                 const Icon(Icons.tune, color: Colors.white70, size: 18),
                 const SizedBox(width: 8),
-                const Text('Grau mínimo',
-                    style: TextStyle(color: Colors.white)),
+                const Text('Grau mínimo', style: TextStyle(color: Colors.white)),
                 Expanded(
                   child: Slider(
                     value: controller.minimumDegree.value.toDouble(),
@@ -1326,13 +1297,10 @@ class _GraphLinkPainter extends CustomPainter {
       final target = nodesById[link.targetNodeId];
       if (source == null || target == null) continue;
 
-      final bool highlighted = selectedNodeId != null &&
-          (link.sourceNodeId == selectedNodeId ||
-              link.targetNodeId == selectedNodeId);
+      final bool highlighted = selectedNodeId != null && (link.sourceNodeId == selectedNodeId || link.targetNodeId == selectedNodeId);
 
       final Paint paint = Paint()
-        ..color =
-            highlighted ? Colors.white : Colors.white.withValues(alpha: 0.25)
+        ..color = highlighted ? Colors.white : Colors.white.withValues(alpha: 0.25)
         ..strokeWidth = highlighted ? 3.2 : 1.4
         ..style = PaintingStyle.stroke;
 

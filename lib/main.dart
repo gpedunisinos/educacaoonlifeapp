@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:unisinos_usp_app/routes/routes.dart';
 import 'package:unisinos_usp_app/services/initializer.dart';
 import 'package:unisinos_usp_app/themes/app_theme.dart';
+import 'package:unisinos_usp_app/widgets/ai_assistant_launcher.dart';
 import 'package:widgets_spo/screens/not_found_screen.dart';
 import 'package:widgets_spo/utils.dart';
 
@@ -39,6 +40,9 @@ Future<void> main() async {
             Locale('en', 'US'),
           ],
           locale: const Locale('pt', 'BR'),
+          builder: (context, child) => AiAssistantLauncher(
+            child: child ?? const SizedBox.shrink(),
+          ),
         ),
       );
     },

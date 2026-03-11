@@ -2,8 +2,10 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:get/get.dart';
+import 'package:unisinos_usp_app/controllers/ai_assistant/ai_assistant_controller.dart';
 import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 import 'package:unisinos_usp_app/firebase_options.dart';
+import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
 import 'package:unisinos_usp_app/services/user_auth_service.dart';
 import 'package:widgets_spo/services/auth_provider.dart';
 import 'package:widgets_spo/utils.dart';
@@ -18,6 +20,9 @@ class Initializer {
     await Util.initPrefs();
     AuthProvider.register(UserAuthService());
     Get.put<UserController>(UserController(), permanent: true);
+    Get.put<AiAssistantContextService>(AiAssistantContextService(),
+        permanent: true);
+    Get.put<AiAssistantController>(AiAssistantController(), permanent: true);
 
     // Temporarily disable Firebase initialization.
     // if (_supportsFirebaseCore()) {
@@ -35,5 +40,6 @@ class Initializer {
 
 bool _supportsFirebaseCore() {
   if (kIsWeb) return true;
-  return defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS;
+  return defaultTargetPlatform == TargetPlatform.android ||
+      defaultTargetPlatform == TargetPlatform.iOS;
 }
