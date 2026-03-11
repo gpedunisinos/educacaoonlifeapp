@@ -1140,19 +1140,36 @@ class _GraphFilters extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: controller.nodeTypes
-                  .map(
-                    (type) => FilterChip(
+                  .map((type) {
+                    final Color accentColor = _parseHexColor(type.color);
+                    final bool isSelected =
+                        controller.selectedTypeIds.contains(type.id);
+                    final Color selectedBackground = Color.alphaBlend(
+                      accentColor.withValues(alpha: 0.28),
+                      const Color(0xFF10151D),
+                    );
+
+                    return FilterChip(
                       label: Text(type.name),
-                      selected: controller.selectedTypeIds.contains(type.id),
-                      selectedColor:
-                          _parseHexColor(type.color).withValues(alpha: 0.25),
-                      backgroundColor: Colors.white.withValues(alpha: 0.08),
-                      labelStyle: const TextStyle(color: Colors.white),
-                      side: BorderSide(color: _parseHexColor(type.color)),
+                      selected: isSelected,
+                      selectedColor: selectedBackground,
+                      backgroundColor: const Color(0xFF161C24),
+                      labelStyle: TextStyle(
+                        color: isSelected
+                            ? _contrastingTextColor(selectedBackground)
+                            : Colors.white.withValues(alpha: 0.92),
+                        fontWeight: FontWeight.w600,
+                      ),
+                      side: BorderSide(
+                        color: isSelected
+                            ? accentColor.withValues(alpha: 0.95)
+                            : accentColor.withValues(alpha: 0.55),
+                      ),
+                      checkmarkColor: _contrastingTextColor(selectedBackground),
                       onSelected: (selected) =>
                           controller.toggleType(type.id, selected),
-                    ),
-                  )
+                    );
+                  })
                   .toList(),
             ),
             const SizedBox(height: 12),
@@ -1193,6 +1210,10 @@ class _GraphFilters extends StatelessWidget {
   Color _parseHexColor(String value) {
     final String hex = value.replaceAll('#', '').padLeft(6, '0');
     return Color(int.parse('FF$hex', radix: 16));
+  }
+
+  Color _contrastingTextColor(Color color) {
+    return color.computeLuminance() > 0.55 ? Colors.black : Colors.white;
   }
 }
 
