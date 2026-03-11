@@ -76,20 +76,6 @@ class HomeScreen extends StatelessWidget {
         onTap: () => Get.toNamed('/node_types'),
       ),
       _HomeMenu(
-        title: 'Nós',
-        subtitle: 'Gerencie entidades do grafo',
-        icon: Icons.hub_outlined,
-        color: Colors.lightBlue.shade600,
-        onTap: () => Get.toNamed('/nodes'),
-      ),
-      _HomeMenu(
-        title: 'Ligações',
-        subtitle: 'Conecte nós',
-        icon: Icons.device_hub_outlined,
-        color: Colors.green.shade600,
-        onTap: () => Get.toNamed('/node_links'),
-      ),
-      _HomeMenu(
         title: 'Grafo',
         subtitle: 'Visualização estilo Onodo',
         icon: Icons.account_tree_outlined,
