@@ -299,16 +299,25 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
     final NodeModel? node = _selectedNode;
     if (node == null) return;
 
-    Get.defaultDialog(
-      title: 'Excluir nó',
-      middleText: 'Deseja realmente excluir "${node.name}"?',
-      textCancel: 'Cancelar',
-      textConfirm: 'Excluir',
-      confirmTextColor: Colors.white,
-      onConfirm: () async {
-        Get.back();
-        await _controller.deleteNode(node.id);
-      },
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Excluir nó'),
+        content: Text('Deseja realmente excluir "${node.name}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(dialogContext).pop();
+              await _controller.deleteNode(node.id);
+            },
+            child: const Text('Excluir'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -689,7 +698,8 @@ class _NodeConnectionSheetState extends State<_NodeConnectionSheet> {
                     children: [
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: saving ? null : Get.back,
+                          onPressed:
+                              saving ? null : () => Navigator.of(context).pop(),
                           child: const Text('Cancelar'),
                         ),
                       ),
@@ -841,16 +851,25 @@ class _NodeConnectionsSheet extends StatelessWidget {
 
   void _confirmDeleteLink(
       BuildContext context, NodeLinkModel link, String otherNodeName) {
-    Get.defaultDialog(
-      title: 'Remover conexão',
-      middleText: 'Deseja remover a conexão com "$otherNodeName"?',
-      textCancel: 'Cancelar',
-      textConfirm: 'Remover',
-      confirmTextColor: Colors.white,
-      onConfirm: () async {
-        Get.back();
-        await controller.deleteLink(link.id);
-      },
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Remover conexão'),
+        content: Text('Deseja remover a conexão com "$otherNodeName"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(dialogContext).pop();
+              await controller.deleteLink(link.id);
+            },
+            child: const Text('Remover'),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -1001,7 +1020,9 @@ class _NodeEditorSheetState extends State<_NodeEditorSheet> {
                         children: [
                           Expanded(
                             child: OutlinedButton(
-                              onPressed: saving ? null : Get.back,
+                              onPressed: saving
+                                  ? null
+                                  : () => Navigator.of(context).pop(),
                               child: const Text('Cancelar'),
                             ),
                           ),
@@ -1028,8 +1049,9 @@ class _NodeEditorSheetState extends State<_NodeEditorSheet> {
 
   Future<void> _pickColor() async {
     Color tempColor = _parseHexColor(_colorController.text);
-    await Get.dialog(
-      AlertDialog(
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Selecionar cor'),
         content: SingleChildScrollView(
           child: ColorPicker(
@@ -1038,12 +1060,15 @@ class _NodeEditorSheetState extends State<_NodeEditorSheet> {
           ),
         ),
         actions: [
-          TextButton(onPressed: Get.back, child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancelar'),
+          ),
           ElevatedButton(
             onPressed: () {
               _colorController.text = _colorToHex(tempColor);
               setState(() {});
-              Get.back();
+              Navigator.of(dialogContext).pop();
             },
             child: const Text('Usar'),
           ),
