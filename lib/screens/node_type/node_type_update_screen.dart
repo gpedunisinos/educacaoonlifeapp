@@ -113,22 +113,27 @@ class _NodeTypeUpdateScreenState extends State<NodeTypeUpdateScreen> {
 
   Future<void> _pickColor() async {
     Color tempColor = _parseHexColor(_colorController.text);
-    await Get.dialog(
-      AlertDialog(
+    await showDialog<void>(
+      context: context,
+      builder: (_) => AlertDialog(
         title: const Text('Selecionar cor'),
         content: SingleChildScrollView(
           child: ColorPicker(
             pickerColor: tempColor,
             onColorChanged: (color) => tempColor = color,
+            enableAlpha: false,
           ),
         ),
         actions: [
-          TextButton(onPressed: Get.back, child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancelar'),
+          ),
           ElevatedButton(
             onPressed: () {
               _colorController.text = _colorToHex(tempColor);
               setState(() {});
-              Get.back();
+              Navigator.of(context).pop();
             },
             child: const Text('Usar'),
           ),
