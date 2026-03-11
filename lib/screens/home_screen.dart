@@ -76,7 +76,7 @@ class HomeScreen extends StatelessWidget {
         onTap: () => Get.toNamed('/node_types'),
       ),
       _HomeMenu(
-        title: 'Grafo',
+        title: 'Problemáticas',
         subtitle: 'Visualização estilo Onodo',
         icon: Icons.account_tree_outlined,
         color: Colors.deepOrange.shade600,
