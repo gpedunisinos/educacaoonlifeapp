@@ -33,8 +33,10 @@ class NodeWebclient {
   }
 
   Future<NodeModel> fetchById(int id) async {
-    final Response response = await webClient.get('/$endpoint/$id', _interceptors, {});
-    return NodeModel.fromJson(_extractObject(jsonDecode(response.body), 'node'));
+    final Response response =
+        await webClient.get('/$endpoint/$id', _interceptors, {});
+    return NodeModel.fromJson(
+        _extractObject(jsonDecode(response.body), 'node'));
   }
 
   Future<NodeModel> create(NodeModel model) async {
@@ -44,10 +46,13 @@ class NodeWebclient {
         'name': model.name.trim(),
         'color': model.color.trim(),
         'node_type_id': model.nodeTypeId,
+        'x': model.x,
+        'y': model.y,
       }),
       _interceptors,
     );
-    return NodeModel.fromJson(_extractObject(jsonDecode(response.body), 'node'));
+    return NodeModel.fromJson(
+        _extractObject(jsonDecode(response.body), 'node'));
   }
 
   Future<NodeModel> update(NodeModel model) async {
@@ -57,10 +62,13 @@ class NodeWebclient {
         'name': model.name.trim(),
         'color': model.color.trim(),
         'node_type_id': model.nodeTypeId,
+        'x': model.x,
+        'y': model.y,
       }),
       _interceptors,
     );
-    return NodeModel.fromJson(_extractObject(jsonDecode(response.body), 'node'));
+    return NodeModel.fromJson(
+        _extractObject(jsonDecode(response.body), 'node'));
   }
 
   Future<void> delete(int id) async {
@@ -68,7 +76,8 @@ class NodeWebclient {
   }
 
   Future<NodeMapModel> fetchMap() async {
-    final Response response = await webClient.get('/$endpoint/map', _interceptors, {});
+    final Response response =
+        await webClient.get('/$endpoint/map', _interceptors, {});
     return NodeMapModel.fromResponseBody(response.body);
   }
 
@@ -79,7 +88,9 @@ class NodeWebclient {
       limit: webClient.defaultLimit,
     );
     if (items.isEmpty) return null;
-    return items.map((item) => ItemSelect(id: item.id, name: item.name)).toList();
+    return items
+        .map((item) => ItemSelect(id: item.id, name: item.name))
+        .toList();
   }
 
   List<InterceptorContract> get _interceptors => [
@@ -90,7 +101,9 @@ class NodeWebclient {
 
   Map<String, dynamic> _extractObject(dynamic decoded, String key) {
     if (decoded is Map<String, dynamic>) {
-      if (decoded[key] is Map<String, dynamic>) return decoded[key] as Map<String, dynamic>;
+      if (decoded[key] is Map<String, dynamic>) {
+        return decoded[key] as Map<String, dynamic>;
+      }
       return decoded;
     }
     throw Exception('Resposta inválida ao processar nó.');

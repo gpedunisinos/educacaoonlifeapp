@@ -8,6 +8,8 @@ class NodeModel {
     required this.name,
     required this.color,
     required this.nodeTypeId,
+    this.x,
+    this.y,
     this.nodeType,
     this.createdAt,
     this.updatedAt,
@@ -17,6 +19,8 @@ class NodeModel {
   String name;
   String color;
   int nodeTypeId;
+  double? x;
+  double? y;
   NodeTypeModel? nodeType;
   DateTime? createdAt;
   DateTime? updatedAt;
@@ -25,8 +29,11 @@ class NodeModel {
     return NodeModel(
       id: _parseInt(json['id']),
       name: (json['name'] ?? '').toString(),
-      color: _normalizeColor((json['color'] ?? json['color_hex'] ?? '#38BDF8').toString()),
+      color: _normalizeColor(
+          (json['color'] ?? json['color_hex'] ?? '#38BDF8').toString()),
       nodeTypeId: _parseInt(json['node_type_id'] ?? json['node_type']?['id']),
+      x: _parseDouble(json['x']),
+      y: _parseDouble(json['y']),
       nodeType: json['node_type'] is Map<String, dynamic>
           ? NodeTypeModel.fromJson(json['node_type'] as Map<String, dynamic>)
           : null,
@@ -40,15 +47,22 @@ class NodeModel {
         'name': name,
         'color': _normalizeColor(color),
         'node_type_id': nodeTypeId,
+        'x': x,
+        'y': y,
       };
 
   static List<NodeModel> fromResponseBody(String body) {
     final dynamic decoded = jsonDecode(body);
-    final List<dynamic> items = _extractCollection(decoded, keys: const ['nodes', 'data', 'items']);
-    return items.whereType<Map<String, dynamic>>().map(NodeModel.fromJson).toList();
+    final List<dynamic> items =
+        _extractCollection(decoded, keys: const ['nodes', 'data', 'items']);
+    return items
+        .whereType<Map<String, dynamic>>()
+        .map(NodeModel.fromJson)
+        .toList();
   }
 
-  static List<dynamic> _extractCollection(dynamic decoded, {required List<String> keys}) {
+  static List<dynamic> _extractCollection(dynamic decoded,
+      {required List<String> keys}) {
     if (decoded is List<dynamic>) return decoded;
     if (decoded is Map<String, dynamic>) {
       for (final key in keys) {
@@ -67,6 +81,11 @@ class NodeModel {
   static DateTime? _parseDate(dynamic value) {
     if (value == null) return null;
     return DateTime.tryParse(value.toString());
+  }
+
+  static double? _parseDouble(dynamic value) {
+    if (value is num) return value.toDouble();
+    return double.tryParse(value?.toString() ?? '');
   }
 
   static String _normalizeColor(String value) {

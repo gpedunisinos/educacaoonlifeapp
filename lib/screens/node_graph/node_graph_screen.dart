@@ -167,6 +167,9 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
                                                         details.delta / scale,
                                                   );
                                                 },
+                                                onDragEnd: () => _controller
+                                                    .persistNodePosition(
+                                                        node.node.id),
                                               ),
                                             ),
                                         ],
@@ -1200,6 +1203,7 @@ class _GraphNodeWidget extends StatelessWidget {
     required this.isNeighbor,
     required this.onTap,
     required this.onDragUpdate,
+    required this.onDragEnd,
   });
 
   final NodeGraphNodeState node;
@@ -1207,6 +1211,7 @@ class _GraphNodeWidget extends StatelessWidget {
   final bool isNeighbor;
   final VoidCallback onTap;
   final ValueChanged<DragUpdateDetails> onDragUpdate;
+  final VoidCallback onDragEnd;
 
   @override
   Widget build(BuildContext context) {
@@ -1217,6 +1222,7 @@ class _GraphNodeWidget extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       onPanUpdate: onDragUpdate,
+      onPanEnd: (_) => onDragEnd(),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         width: size,

@@ -157,12 +157,15 @@ class NodeGraphController extends GetxController {
   }) async {
     try {
       isSavingNode.value = true;
+      final Offset initialPosition = _nextNewNodePosition();
       final NodeModel created = await _nodeWebclient.create(
         NodeModel(
           id: 0,
           name: name.trim(),
           color: color.trim(),
           nodeTypeId: nodeTypeId,
+          x: initialPosition.dx,
+          y: initialPosition.dy,
         ),
       );
 
@@ -172,7 +175,8 @@ class NodeGraphController extends GetxController {
 
       final NodeGraphNodeState state = NodeGraphNodeState(
         node: created,
-        position: _nextNewNodePosition(),
+        position: Offset(
+            created.x ?? initialPosition.dx, created.y ?? initialPosition.dy),
         degree: 0,
       );
 
@@ -206,6 +210,8 @@ class NodeGraphController extends GetxController {
       name: name.trim(),
       color: color.trim(),
       nodeTypeId: nodeTypeId,
+      x: graphNodes[index].position.dx,
+      y: graphNodes[index].position.dy,
     );
 
     try {
@@ -265,6 +271,33 @@ class NodeGraphController extends GetxController {
       return false;
     } finally {
       isDeletingNode.value = false;
+    }
+  }
+
+  Future<void> persistNodePosition(int nodeId) async {
+    final int index = graphNodes.indexWhere((item) => item.node.id == nodeId);
+    if (index == -1) return;
+
+    final NodeGraphNodeState state = graphNodes[index];
+    final NodeModel current = state.node;
+
+    try {
+      final NodeModel saved = await _nodeWebclient.update(
+        NodeModel(
+          id: current.id,
+          name: current.name,
+          color: current.color,
+          nodeTypeId: current.nodeTypeId,
+          x: state.position.dx,
+          y: state.position.dy,
+        ),
+      );
+      saved.nodeType = current.nodeType;
+      graphNodes[index] = graphNodes[index].copyWith(node: saved);
+      graphNodes.refresh();
+    } catch (error, stackTrace) {
+      Util.debug(exception: error, stackTrace: stackTrace);
+      SafeGetSnackbar.error('Erro', 'Não foi possível salvar a posição do nó.');
     }
   }
 
