@@ -3,6 +3,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
+import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
+import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -12,6 +14,10 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Get.find<AiAssistantContextService>().registerProvider(
+      Get.currentRoute,
+      _buildAiContext,
+    );
     final theme = Theme.of(context);
     final screenWidth = MediaQuery.sizeOf(context).width;
     final isMobile = screenWidth < 900;
@@ -191,6 +197,32 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  AiAssistantScreenContext _buildAiContext() {
+    return AiAssistantScreenContext(
+      screenName: 'Home',
+      route: Get.currentRoute,
+      stage: 'navegação principal',
+      goal: 'acessar uma das áreas principais do sistema',
+      visibleFields: const <String>[
+        'categorias',
+        'pistas',
+        'mapa de pistas',
+        'tipos de conexão',
+        'conexões',
+        'agentes',
+        'tipos de nó',
+        'problemáticas',
+        'usuários',
+      ],
+      filledFields: <String, String>{
+        'usuário': _controller.user.value?.name ?? 'não identificado',
+      },
+      notes: const <String>[
+        'A tela inicial funciona como atalho para os módulos principais.',
+      ],
     );
   }
 }

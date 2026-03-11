@@ -26,8 +26,7 @@ class _AiAssistantPanelState extends State<AiAssistantPanel> {
       (_) => _scrollToBottom(),
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _controller.ensureHistoryLoaded();
-      _scrollToBottom();
+      _initializePanel();
     });
   }
 
@@ -177,15 +176,24 @@ class _AiAssistantPanelState extends State<AiAssistantPanel> {
     _controller.sendMessage(value);
   }
 
-  void _scrollToBottom() {
-    if (!_scrollController.hasClients) return;
+  Future<void> _initializePanel() async {
+    await _controller.ensureHistoryLoaded();
+    _scrollToBottom(animated: false);
+  }
+
+  void _scrollToBottom({bool animated = true}) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_scrollController.hasClients) return;
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeOut,
-      );
+      if (!mounted || !_scrollController.hasClients) return;
+      final double offset = _scrollController.position.maxScrollExtent;
+      if (animated) {
+        _scrollController.animateTo(
+          offset,
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOut,
+        );
+        return;
+      }
+      _scrollController.jumpTo(offset);
     });
   }
 }
