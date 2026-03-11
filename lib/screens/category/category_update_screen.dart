@@ -3,6 +3,7 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:get/get.dart';
 import 'package:pvalidator/pvalidator.dart';
 import 'package:unisinos_usp_app/controllers/category/category_update_controller.dart';
+import 'package:unisinos_usp_app/models/category_model.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
@@ -24,6 +25,7 @@ class _CategoryUpdateScreenState extends State<CategoryUpdateScreen> {
   final TextEditingController _iconController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _metadataTagsController = TextEditingController();
+  String? _selectedType;
 
   bool _filledControllers = false;
 
@@ -73,6 +75,7 @@ class _CategoryUpdateScreenState extends State<CategoryUpdateScreen> {
             if (!_filledControllers && _controller.category.value != null) {
               final category = _controller.category.value!;
               _nameController.text = category.name;
+              _selectedType = category.type;
               _colorController.text = category.colorHex;
               _iconController.text = category.iconCode ?? '';
               _descriptionController.text = category.description ?? '';
@@ -95,6 +98,26 @@ class _CategoryUpdateScreenState extends State<CategoryUpdateScreen> {
                       validator: (value) => PValidator([
                         PRuleRequired(value, message: 'Obrigatório'),
                         PRuleMaxString(value, 255, message: 'Máximo de 255 caracteres'),
+                      ]).val(),
+                    ),
+                    Insets.large.height,
+                    DropdownButtonFormField<String>(
+                      value: _selectedType,
+                      decoration: const InputDecoration(
+                        labelText: 'Tipo',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: CategoryType.values
+                          .map(
+                            (type) => DropdownMenuItem<String>(
+                              value: type,
+                              child: Text(type),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) => setState(() => _selectedType = value),
+                      validator: (value) => PValidator([
+                        PRuleRequired(value, message: 'Obrigatório'),
                       ]).val(),
                     ),
                     Insets.large.height,
@@ -243,6 +266,7 @@ class _CategoryUpdateScreenState extends State<CategoryUpdateScreen> {
 
     final bool saved = await _controller.save(
       name: _nameController.text,
+      type: _selectedType ?? '',
       colorHex: _colorController.text,
       iconCode: _iconController.text,
       description: _descriptionController.text,

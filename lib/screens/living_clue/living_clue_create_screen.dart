@@ -31,6 +31,7 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
   final Map<String, TextEditingController> _metadataControllers = {};
   int? _categoryId;
   String _categoryName = '';
+  String _categoryType = '';
   List<String> _metadataTags = [];
   bool _isActive = true;
 
@@ -63,6 +64,7 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
       }
       _categoryId = args['categoryId'] as int?;
       _categoryName = (args['categoryName'] ?? '') as String;
+      _categoryType = (args['categoryType'] ?? '') as String;
       _categoryController.text = _categoryName;
       final tagsString = args['metadataTags'] as String? ?? '';
       _metadataTags = tagsString.split(',').map((t) => t.trim()).where((t) => t.isNotEmpty).toList();
@@ -231,6 +233,7 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
       visibleFields: <String>[
         'nome',
         'categoria',
+        if (_categoryType.isNotEmpty) 'tipo da categoria',
         'descrição',
         ..._metadataTags.map(_formatTagLabel),
         'latitude',
@@ -241,6 +244,7 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
       filledFields: <String, String>{
         if (_nameController.text.trim().isNotEmpty) 'nome': _nameController.text.trim(),
         if (_categoryController.text.trim().isNotEmpty) 'categoria': _categoryController.text.trim(),
+        if (_categoryType.trim().isNotEmpty) 'tipo da categoria': _categoryType.trim(),
         if (_descriptionController.text.trim().isNotEmpty) 'descrição': _descriptionController.text.trim(),
         if (_latitudeController.text.trim().isNotEmpty) 'latitude': _latitudeController.text.trim(),
         if (_longitudeController.text.trim().isNotEmpty) 'longitude': _longitudeController.text.trim(),

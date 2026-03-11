@@ -35,6 +35,7 @@ class CategoryUpdateController extends GetxController {
 
   Future<bool> save({
     required String name,
+    required String type,
     required String colorHex,
     String? iconCode,
     String? description,
@@ -46,6 +47,7 @@ class CategoryUpdateController extends GetxController {
     final categoryToSave = CategoryModel(
       id: id,
       name: name.trim(),
+      type: type.trim(),
       colorHex: colorHex.trim(),
       iconCode: iconCode?.trim().isEmpty == true ? null : iconCode?.trim(),
       description: description?.trim().isEmpty == true ? null : description?.trim(),

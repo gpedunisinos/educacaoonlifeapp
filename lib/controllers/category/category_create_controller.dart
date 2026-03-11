@@ -10,6 +10,7 @@ class CategoryCreateController extends GetxController {
 
   Future<bool> save({
     required String name,
+    required String type,
     required String colorHex,
     String? iconCode,
     String? description,
@@ -18,6 +19,7 @@ class CategoryCreateController extends GetxController {
     final category = CategoryModel(
       id: 0,
       name: name.trim(),
+      type: type.trim(),
       colorHex: colorHex.trim(),
       iconCode: iconCode?.trim().isEmpty == true ? null : iconCode?.trim(),
       description: description?.trim().isEmpty == true ? null : description?.trim(),

@@ -21,7 +21,7 @@ class LivingClueIndexScreen extends StatelessWidget {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
-        title: const Text('Pistas vivas'),
+        title: const Text('Pistas'),
         actions: [
           IconButton(
             icon: const Icon(Icons.map_outlined),
@@ -90,10 +90,7 @@ class LivingClueIndexScreen extends StatelessWidget {
                                   Expanded(
                                     child: Text(
                                       model.name,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium
-                                          ?.copyWith(
+                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                             fontWeight: FontWeight.bold,
                                             color: Colors.white,
                                           ),
@@ -103,8 +100,7 @@ class LivingClueIndexScreen extends StatelessWidget {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: (model.isActive ? Colors.green : Colors.grey.shade500)
-                                          .withValues(alpha: 0.12),
+                                      color: (model.isActive ? Colors.green : Colors.grey.shade500).withValues(alpha: 0.12),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Text(
@@ -121,10 +117,7 @@ class LivingClueIndexScreen extends StatelessWidget {
                               const SizedBox(height: 4),
                               Text(
                                 model.description?.isNotEmpty == true ? model.description! : 'Sem descrição',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.copyWith(color: Colors.white70),
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70),
                               ),
                               const SizedBox(height: 12),
                               Row(
@@ -147,15 +140,13 @@ class LivingClueIndexScreen extends StatelessWidget {
                                   IconButton(
                                     color: Colors.white,
                                     icon: const Icon(Icons.edit),
-                                    onPressed:
-                                        _controller.isLoading.value ? null : () => _goToUpdate(model),
+                                    onPressed: _controller.isLoading.value ? null : () => _goToUpdate(model),
                                     tooltip: 'Editar',
                                   ),
                                   IconButton(
                                     color: Colors.white,
                                     icon: const Icon(Icons.delete_outline),
-                                    onPressed:
-                                        _controller.isLoading.value ? null : () => _confirmDelete(model),
+                                    onPressed: _controller.isLoading.value ? null : () => _confirmDelete(model),
                                     tooltip: 'Excluir',
                                   ),
                                 ],
@@ -195,7 +186,7 @@ class LivingClueIndexScreen extends StatelessWidget {
   }
 
   Future<void> _goToCreate() async {
-    final result = await Get.toNamed('/living_clues/pre_create');
+    final result = await Get.toNamed('/living_clues/type_select');
     if (result == true) {
       await _controller.loadLivingClues();
     }

@@ -8,6 +8,7 @@ import 'package:unisinos_usp_app/screens/living_clue/living_clue_map_create_scre
 import 'package:unisinos_usp_app/screens/living_clue/living_clue_map_screen.dart';
 import 'package:unisinos_usp_app/screens/living_clue/living_clue_pre_create_screen.dart';
 import 'package:unisinos_usp_app/screens/living_clue/living_clue_show_screen.dart';
+import 'package:unisinos_usp_app/screens/living_clue/living_clue_type_select_screen.dart';
 import 'package:unisinos_usp_app/screens/living_clue/living_clue_update_screen.dart';
 
 List<GetPage> livingClueRoutes() => [
@@ -22,6 +23,10 @@ List<GetPage> livingClueRoutes() => [
         name: '/living_clues/map',
         page: () => const LivingClueMapScreen(),
         binding: LivingClueMapBinding(),
+      ),
+      GetPage(
+        name: '/living_clues/type_select',
+        page: () => const LivingClueTypeSelectScreen(),
       ),
       GetPage(
         name: '/living_clues/pre_create',

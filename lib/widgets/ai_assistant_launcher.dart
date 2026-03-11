@@ -17,8 +17,7 @@ class AiAssistantLauncher extends StatelessWidget {
   Widget build(BuildContext context) {
     final UserController userController = Get.find<UserController>();
     final AiAssistantController controller = Get.find<AiAssistantController>();
-    final AiAssistantContextService contextService =
-        Get.find<AiAssistantContextService>();
+    final AiAssistantContextService contextService = Get.find<AiAssistantContextService>();
 
     return Obx(() {
       final String route = Get.currentRoute;
@@ -45,8 +44,7 @@ class AiAssistantLauncher extends StatelessWidget {
                 foregroundColor: Colors.white,
                 onPressed: () {
                   controller.logCurrentContext();
-                  final BuildContext? navigatorContext =
-                      Get.key.currentContext ?? Get.overlayContext;
+                  final BuildContext? navigatorContext = Get.key.currentContext ?? Get.overlayContext;
                   if (navigatorContext == null) return;
                   showModalBottomSheet<void>(
                     context: navigatorContext,
@@ -56,11 +54,7 @@ class AiAssistantLauncher extends StatelessWidget {
                   );
                   controller.ensureHistoryLoaded();
                 },
-                icon: Image.asset(
-                  'assets/yaraete sem fundo.png',
-                  width: 24,
-                  height: 24,
-                ),
+                icon: const Icon(Icons.auto_awesome),
                 label: const Text('Assistente'),
               ),
             ),

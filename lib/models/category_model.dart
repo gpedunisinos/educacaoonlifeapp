@@ -1,6 +1,19 @@
+class CategoryType {
+  static const String living = 'Pista Viva';
+  static const String online = 'Pista Online';
+  static const String geographic = 'Pista Geográfica';
+
+  static const List<String> values = <String>[
+    living,
+    online,
+    geographic,
+  ];
+}
+
 class CategoryModel {
   final int id;
   final String name;
+  final String type;
   final String colorHex;
   final String? iconCode;
   final String? description;
@@ -9,6 +22,7 @@ class CategoryModel {
   const CategoryModel({
     required this.id,
     required this.name,
+    required this.type,
     required this.colorHex,
     this.iconCode,
     this.description,
@@ -19,6 +33,7 @@ class CategoryModel {
     return CategoryModel(
       id: json['id'] is int ? json['id'] : int.tryParse(json['id']?.toString() ?? ''),
       name: json['name'] ?? '',
+      type: json['type'] ?? '',
       colorHex: json['color_hex'] ?? '',
       iconCode: json['icon_code'],
       description: json['description'],
@@ -30,6 +45,7 @@ class CategoryModel {
     return {
       if (id != null) 'id': id,
       'name': name,
+      'type': type,
       'color_hex': colorHex,
       'icon_code': iconCode,
       'description': description,
@@ -44,6 +60,7 @@ class CategoryModel {
   CategoryModel copyWith({
     int? id,
     String? name,
+    String? type,
     String? colorHex,
     String? iconCode,
     String? description,
@@ -52,6 +69,7 @@ class CategoryModel {
     return CategoryModel(
       id: id ?? this.id,
       name: name ?? this.name,
+      type: type ?? this.type,
       colorHex: colorHex ?? this.colorHex,
       iconCode: iconCode ?? this.iconCode,
       description: description ?? this.description,

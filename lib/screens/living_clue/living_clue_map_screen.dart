@@ -17,9 +17,8 @@ class LivingClueMapScreen extends StatefulWidget {
 }
 
 class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
-  static const String _screenName = 'Mapa de pistas vivas';
-  final LivingClueMapController _controller =
-      Get.find<LivingClueMapController>();
+  static const String _screenName = 'Mapa de pistas';
+  final LivingClueMapController _controller = Get.find<LivingClueMapController>();
   final MapController _mapController = MapController();
   LatLng _tapCenter = const LatLng(-29.718, -51.143);
 
@@ -60,7 +59,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
-        title: const Text('Mapa de pistas vivas'),
+        title: const Text('Mapa de pistas'),
         actions: [
           IconButton(
             tooltip: 'Criar pista por ponto',
@@ -88,8 +87,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
             children: [
               Container(
                 margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.55),
                   borderRadius: BorderRadius.circular(16),
@@ -99,11 +97,9 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
                     Expanded(
                       child: Row(
                         children: [
-                          const Icon(Icons.radar,
-                              size: 18, color: Colors.indigo),
+                          const Icon(Icons.radar, size: 18, color: Colors.indigo),
                           const SizedBox(width: 6),
-                          const Text('Raio',
-                              style: TextStyle(color: Colors.white)),
+                          const Text('Raio', style: TextStyle(color: Colors.white)),
                           const SizedBox(width: 6),
                           Expanded(
                             child: Obx(() {
@@ -113,10 +109,8 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
                                 min: 100,
                                 max: 2000,
                                 divisions: 19,
-                                label:
-                                    '${_controller.sonarRadius.value.toInt()} m',
-                                onChanged: (value) =>
-                                    _controller.sonarRadius.value = value,
+                                label: '${_controller.sonarRadius.value.toInt()} m',
+                                onChanged: (value) => _controller.sonarRadius.value = value,
                               );
                             }),
                           ),
@@ -159,8 +153,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
                       .toList();
 
                   final Map<int, LatLng> pointsById = {
-                    for (final clue in _controller.livingClues)
-                      clue.id: LatLng(clue.latitude, clue.longitude),
+                    for (final clue in _controller.livingClues) clue.id: LatLng(clue.latitude, clue.longitude),
                   };
                   final connectionLines = _controller.connections
                       .map(
@@ -210,10 +203,8 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
                         ),
                         children: [
                           TileLayer(
-                            urlTemplate:
-                                'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                            userAgentPackageName:
-                                'com.br.spotecnologia.uniusp_app',
+                            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                            userAgentPackageName: 'com.br.spotecnologia.uniusp_app',
                           ),
                           if (circles.isNotEmpty) CircleLayer(circles: circles),
                           if (connectionLines.isNotEmpty)
@@ -235,8 +226,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
                         right: 16,
                         child: ElevatedButton.icon(
                           icon: const Icon(Icons.radar),
-                          label: const Text(
-                              'Buscar por raio (tap longo para escolher o ponto)'),
+                          label: const Text('Buscar por raio (tap longo para escolher o ponto)'),
                           onPressed: _searchByTap,
                         ),
                       ),
@@ -282,14 +272,12 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
       ],
       filledFields: <String, String>{
         'raio do sonar': '${_controller.sonarRadius.value.toInt()} m',
-        'centro selecionado':
-            '${_tapCenter.latitude.toStringAsFixed(5)}, ${_tapCenter.longitude.toStringAsFixed(5)}',
+        'centro selecionado': '${_tapCenter.latitude.toStringAsFixed(5)}, ${_tapCenter.longitude.toStringAsFixed(5)}',
         'pistas carregadas': _controller.livingClues.length.toString(),
         'conexões visíveis': _controller.connections.length.toString(),
       },
       notes: <String>[
-        if (_controller.sonarCenter.value != null)
-          'O usuário definiu um centro para busca por raio.',
+        if (_controller.sonarCenter.value != null) 'O usuário definiu um centro para busca por raio.',
         'Tap longo no mapa escolhe o ponto de referência do sonar.',
       ],
     );
@@ -318,8 +306,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
     showModalBottomSheet(
       context: context,
       builder: (context) {
-        final categoryName =
-            model.category?.name ?? 'Categoria: ${model.categoryId}';
+        final categoryName = model.category?.name ?? 'Categoria: ${model.categoryId}';
         return Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -328,8 +315,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
             children: [
               Text(model.name, style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
-              Text(categoryName,
-                  style: const TextStyle(fontWeight: FontWeight.w600)),
+              Text(categoryName, style: const TextStyle(fontWeight: FontWeight.w600)),
               const SizedBox(height: 6),
               Text(model.description ?? 'Sem descrição'),
               const SizedBox(height: 12),

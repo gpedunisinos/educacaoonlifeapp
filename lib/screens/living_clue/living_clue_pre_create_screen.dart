@@ -23,7 +23,17 @@ class _LivingCluePreCreateScreenState extends State<LivingCluePreCreateScreen> {
   static const String _screenName = 'Escolha da categoria';
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final ItemSelectController _categorySelectController = ItemSelectController();
+  String? _selectedType;
   bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final args = Get.arguments;
+    if (args is Map) {
+      _selectedType = args['type'] as String?;
+    }
+  }
 
   @override
   void dispose() {
@@ -68,7 +78,9 @@ class _LivingCluePreCreateScreenState extends State<LivingCluePreCreateScreen> {
                                   color: Colors.indigo),
                               const SizedBox(width: 8),
                               Text(
-                                'Selecione a categoria base',
+                                _selectedType == null
+                                    ? 'Selecione a categoria base'
+                                    : 'Selecione a categoria base de $_selectedType',
                                 style: Theme.of(context)
                                     .textTheme
                                     .titleMedium
@@ -78,7 +90,9 @@ class _LivingCluePreCreateScreenState extends State<LivingCluePreCreateScreen> {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            'Os campos dinâmicos e o visual da pista seguirão a categoria escolhida.',
+                            _selectedType == null
+                                ? 'Os campos dinâmicos e o visual da pista seguirão a categoria escolhida.'
+                                : 'Serão exibidas apenas categorias do tipo $_selectedType.',
                             style: TextStyle(color: Colors.grey.shade700),
                           ),
                           Insets.large.height,
@@ -90,7 +104,7 @@ class _LivingCluePreCreateScreenState extends State<LivingCluePreCreateScreen> {
                             ]).val(),
                             onFind: (search, offset, params) =>
                                 CategorySelectWebclient()
-                                    .select(search, offset),
+                                    .select(search, offset, type: _selectedType),
                           ),
                         ],
                       ),
@@ -122,9 +136,11 @@ class _LivingCluePreCreateScreenState extends State<LivingCluePreCreateScreen> {
       goal: 'selecionar a categoria base para definir os campos do formulário',
       visibleFields: const <String>[
         'categoria',
+        'tipo',
         'continuar',
       ],
       filledFields: <String, String>{
+        'tipo selecionado': _selectedType ?? 'nenhum',
         'categoria selecionada':
             _categorySelectController.selectedItem?.name ?? 'nenhuma',
       },
@@ -150,6 +166,7 @@ class _LivingCluePreCreateScreenState extends State<LivingCluePreCreateScreen> {
         arguments: {
           'categoryId': category.id,
           'categoryName': category.name,
+          'categoryType': category.type,
           'metadataTags': category.metadataTags,
           if (args is Map && args['latitude'] != null)
             'latitude': args['latitude'],

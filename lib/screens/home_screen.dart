@@ -27,7 +27,7 @@ class HomeScreen extends StatelessWidget {
         onTap: () => Get.toNamed('/categories'),
       ),
       _HomeMenu(
-        title: 'Pistas vivas',
+        title: 'Pistas',
         subtitle: 'Lista e gestão',
         icon: Icons.radar_outlined,
         color: Colors.teal.shade700,
@@ -53,13 +53,6 @@ class HomeScreen extends StatelessWidget {
         icon: Icons.timeline_outlined,
         color: Colors.pink.shade600,
         onTap: () => Get.toNamed('/clue_connections'),
-      ),
-      _HomeMenu(
-        title: 'Chat',
-        subtitle: 'Fale com o assistente',
-        icon: Icons.chat_bubble_outline,
-        color: Colors.deepPurple.shade500,
-        onTap: () => Get.toNamed('/chat'),
       ),
       _HomeMenu(
         title: 'Agentes',
