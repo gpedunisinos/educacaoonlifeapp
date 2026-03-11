@@ -11,7 +11,8 @@ class ChatTemplateUpdateScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ChatTemplateUpdateController controller = Get.find<ChatTemplateUpdateController>();
+    final ChatTemplateUpdateController controller =
+        Get.find<ChatTemplateUpdateController>();
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -25,41 +26,69 @@ class ChatTemplateUpdateScreen extends StatelessWidget {
           const Positioned.fill(child: StarfieldBackground()),
           Obx(() {
             if (controller.templateId == null) {
-              return const Center(child: Text('Agente não informado.', style: TextStyle(color: Colors.white)));
+              return const Center(
+                  child: Text('Agente não informado.',
+                      style: TextStyle(color: Colors.white)));
             }
 
-            if (controller.isLoading.value && controller.template.value == null) {
-              return const Center(child: CircularProgressIndicator(color: Colors.white));
+            if (controller.isLoading.value &&
+                controller.template.value == null) {
+              return const Center(
+                  child: CircularProgressIndicator(color: Colors.white));
             }
 
             if (controller.template.value == null) {
-              return const Center(child: Text('Template não encontrado.', style: TextStyle(color: Colors.white)));
+              return const Center(
+                  child: Text('Template não encontrado.',
+                      style: TextStyle(color: Colors.white)));
             }
 
             return Stack(
               children: [
                 SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
-                  child: ChatTemplateForm(
-                    key: ValueKey<int>(controller.template.value!.id),
-                    initialValue: controller.template.value,
-                    submitLabel: 'Atualizar',
-                    isLoading: controller.isLoading.value,
-                    onSubmit: (value) async {
-                      final ChatTemplateModel current = controller.template.value!;
-                      final bool saved = await controller.save(
-                        ChatTemplateModel(
-                          id: current.id,
-                          name: value.name,
-                          description: value.description,
-                          systemInstruction: value.systemInstruction,
-                          files: value.files,
+                  child: Column(
+                    children: [
+                      ChatTemplateForm(
+                        key: ValueKey<int>(controller.template.value!.id),
+                        initialValue: controller.template.value,
+                        submitLabel: 'Atualizar',
+                        isLoading: controller.isLoading.value,
+                        onSubmit: (value) async {
+                          final ChatTemplateModel current =
+                              controller.template.value!;
+                          final bool saved = await controller.save(
+                            ChatTemplateModel(
+                              id: current.id,
+                              name: value.name,
+                              description: value.description,
+                              systemInstruction: value.systemInstruction,
+                              files: value.files,
+                            ),
+                          );
+                          if (saved && context.mounted) {
+                            Navigator.of(context).pop(true);
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: controller.isLoading.value
+                              ? null
+                              : () =>
+                                  _confirmDeleteMessages(context, controller),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.red.shade300,
+                            side: BorderSide(color: Colors.red.shade400),
+                          ),
+                          icon: const Icon(Icons.delete_sweep_outlined),
+                          label: const Text(
+                              'Excluir todas as mensagens do template'),
                         ),
-                      );
-                      if (saved && context.mounted) {
-                        Navigator.of(context).pop(true);
-                      }
-                    },
+                      ),
+                    ],
                   ),
                 ),
                 if (controller.isLoading.value)
@@ -75,5 +104,35 @@ class ChatTemplateUpdateScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _confirmDeleteMessages(
+    BuildContext context,
+    ChatTemplateUpdateController controller,
+  ) async {
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Confirmar exclusão'),
+        content: const Text(
+          'Tem certeza que deseja excluir todas as mensagens deste template? Esta ação não pode ser desfeita.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Excluir tudo'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    await controller.deleteAllMessages();
   }
 }

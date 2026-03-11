@@ -32,7 +32,8 @@ class ChatTemplateWebclient {
   }
 
   Future<ChatTemplateModel> fetchById(int id) async {
-    final List<ChatTemplateModel> templates = await fetch(limit: 200, offset: 0);
+    final List<ChatTemplateModel> templates =
+        await fetch(limit: 200, offset: 0);
     try {
       return templates.firstWhere((item) => item.id == id);
     } catch (_) {
@@ -52,10 +53,10 @@ class ChatTemplateWebclient {
     );
 
     final dynamic decoded = jsonDecode(response.body);
-    final Map<String, dynamic> payload =
-        (decoded is Map<String, dynamic> && decoded['chat_template'] is Map<String, dynamic>)
-            ? decoded['chat_template'] as Map<String, dynamic>
-            : decoded as Map<String, dynamic>;
+    final Map<String, dynamic> payload = (decoded is Map<String, dynamic> &&
+            decoded['chat_template'] is Map<String, dynamic>)
+        ? decoded['chat_template'] as Map<String, dynamic>
+        : decoded as Map<String, dynamic>;
     return ChatTemplateModel.fromJson(payload);
   }
 
@@ -71,10 +72,10 @@ class ChatTemplateWebclient {
     );
 
     final dynamic decoded = jsonDecode(response.body);
-    final Map<String, dynamic> payload =
-        (decoded is Map<String, dynamic> && decoded['chat_template'] is Map<String, dynamic>)
-            ? decoded['chat_template'] as Map<String, dynamic>
-            : decoded as Map<String, dynamic>;
+    final Map<String, dynamic> payload = (decoded is Map<String, dynamic> &&
+            decoded['chat_template'] is Map<String, dynamic>)
+        ? decoded['chat_template'] as Map<String, dynamic>
+        : decoded as Map<String, dynamic>;
     return ChatTemplateModel.fromJson(payload);
   }
 
@@ -112,7 +113,9 @@ class ChatTemplateWebclient {
     if (decoded is List<dynamic>) {
       items = decoded;
     } else if (decoded is Map<String, dynamic>) {
-      items = decoded['messages'] as List<dynamic>? ?? decoded['data'] as List<dynamic>? ?? const [];
+      items = decoded['messages'] as List<dynamic>? ??
+          decoded['data'] as List<dynamic>? ??
+          const [];
     } else {
       items = const [];
     }
@@ -130,7 +133,19 @@ class ChatTemplateWebclient {
     return messages;
   }
 
-  Future<List<ChatMessageModel>> sendMessage(int templateId, String content) async {
+  Future<void> deleteAllMessages(int templateId) async {
+    await webClient.delete(
+      '/$endpoint/$templateId/messages',
+      [
+        LoggingInterceptor(),
+        ApiInterceptor(),
+        TokenInterceptor(),
+      ],
+    );
+  }
+
+  Future<List<ChatMessageModel>> sendMessage(
+      int templateId, String content) async {
     final Response response = await webClient.post(
       '/$endpoint/$templateId/messages',
       jsonEncode({'message': content}),
@@ -160,7 +175,9 @@ class ChatTemplateWebclient {
 
     if (decoded is Map<String, dynamic>) {
       final Map<String, dynamic> payload =
-          (decoded['message'] is Map<String, dynamic>) ? decoded['message'] as Map<String, dynamic> : decoded;
+          (decoded['message'] is Map<String, dynamic>)
+              ? decoded['message'] as Map<String, dynamic>
+              : decoded;
       return <ChatMessageModel>[ChatMessageModel.fromHistoryJson(payload)];
     }
 
