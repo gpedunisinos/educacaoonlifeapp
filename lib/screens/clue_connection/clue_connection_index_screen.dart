@@ -59,14 +59,17 @@ class ClueConnectionIndexScreen extends StatelessWidget {
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      'Origem ${model.sourceClueId} → Destino ${model.targetClueId}',
-                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
+                                      '${_controller.clueLabel(model.sourceClueId)} → ${_controller.clueLabel(model.targetClueId)}',
+                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
                                     ),
                                   ),
                                   Chip(
                                     backgroundColor: Colors.orange.withValues(alpha: 0.2),
                                     label: Text(
-                                      'Tipo ${model.connectionTypeId}',
+                                      _controller.connectionTypeLabel(model.connectionTypeId),
                                       style: TextStyle(color: Colors.orange.shade900),
                                     ),
                                   ),
