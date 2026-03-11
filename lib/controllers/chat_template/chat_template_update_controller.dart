@@ -37,6 +37,25 @@ class ChatTemplateUpdateController extends GetxController {
     }
   }
 
+  Future<bool> deleteAllMessages() async {
+    final int? id = template.value?.id ?? templateId;
+    if (id == null) return false;
+
+    try {
+      isLoading.value = true;
+      await _webclient.deleteAllMessages(id);
+      Get.successSnackbar('Todas as mensagens foram excluídas com sucesso.');
+      return true;
+    } catch (error, stackTrace) {
+      Util.debug(exception: error, stackTrace: stackTrace);
+      Get.customSnackbar(
+          'Erro', 'Não foi possível excluir as mensagens. $error');
+      return false;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   Future<bool> save(ChatTemplateModel model) async {
     final int? id = model.id == 0 ? template.value?.id ?? templateId : model.id;
     if (id == null) return false;
