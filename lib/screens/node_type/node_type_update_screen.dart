@@ -18,7 +18,8 @@ class NodeTypeUpdateScreen extends StatefulWidget {
 }
 
 class _NodeTypeUpdateScreenState extends State<NodeTypeUpdateScreen> {
-  final NodeTypeUpdateController _controller = Get.find<NodeTypeUpdateController>();
+  final NodeTypeUpdateController _controller =
+      Get.find<NodeTypeUpdateController>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final TextEditingController _nameController = TextEditingController();
@@ -47,13 +48,19 @@ class _NodeTypeUpdateScreenState extends State<NodeTypeUpdateScreen> {
           const Positioned.fill(child: StarfieldBackground()),
           Obx(() {
             if (_controller.nodeTypeId == null) {
-              return const Center(child: Text('Tipo de nó não informado.', style: TextStyle(color: Colors.white)));
+              return const Center(
+                  child: Text('Tipo de nó não informado.',
+                      style: TextStyle(color: Colors.white)));
             }
-            if (_controller.isLoading.value && _controller.nodeType.value == null) {
-              return const Center(child: CircularProgressIndicator(color: Colors.white));
+            if (_controller.isLoading.value &&
+                _controller.nodeType.value == null) {
+              return const Center(
+                  child: CircularProgressIndicator(color: Colors.white));
             }
             if (_controller.nodeType.value == null) {
-              return const Center(child: Text('Tipo de nó não encontrado.', style: TextStyle(color: Colors.white)));
+              return const Center(
+                  child: Text('Tipo de nó não encontrado.',
+                      style: TextStyle(color: Colors.white)));
             }
 
             if (!_filled) {
@@ -75,7 +82,8 @@ class _NodeTypeUpdateScreenState extends State<NodeTypeUpdateScreen> {
                       controller: _nameController,
                       validator: (value) => PValidator([
                         PRuleRequired(value, message: 'Obrigatório'),
-                        PRuleMaxString(value, 100, message: 'Máximo de 100 caracteres'),
+                        PRuleMaxString(value, 100,
+                            message: 'Máximo de 100 caracteres'),
                       ]).val(),
                     ),
                     Insets.large.height,
