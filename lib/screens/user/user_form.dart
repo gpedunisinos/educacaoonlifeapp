@@ -49,9 +49,7 @@ class _UserFormState extends State<UserForm> {
   late int _selectedProfile;
 
   static const List<MapEntry<int, String>> _profiles = [
-    MapEntry(10, 'Professor'),
-    MapEntry(20, 'Gestor'),
-    MapEntry(30, 'Secretário'),
+    MapEntry(10, 'Usuário'),
     MapEntry(40, 'Administrador'),
   ];
 
@@ -63,8 +61,7 @@ class _UserFormState extends State<UserForm> {
     _emailController = TextEditingController(text: initial?.email ?? '');
     _phoneController = TextEditingController(text: initial?.phone ?? '');
     _passwordController = TextEditingController();
-    _selectedProfile =
-        _profiles.any((p) => p.key == initial?.profile) ? initial!.profile : 10;
+    _selectedProfile = _profiles.any((p) => p.key == initial?.profile) ? initial!.profile : 10;
   }
 
   @override
@@ -103,7 +100,7 @@ class _UserFormState extends State<UserForm> {
           DropdownButtonFormField<int>(
             initialValue: _selectedProfile,
             decoration: const InputDecoration(
-              labelText: 'Perfil',
+              labelText: '',
               border: OutlineInputBorder(),
             ),
             items: _profiles
@@ -146,9 +143,7 @@ class _UserFormState extends State<UserForm> {
             width: double.infinity,
             child: ActionButton(
               theme: ActionButtonTheme.blue,
-              title: widget.isLoading
-                  ? '${widget.submitLabel}...'
-                  : widget.submitLabel,
+              title: widget.isLoading ? '${widget.submitLabel}...' : widget.submitLabel,
               onPressed: widget.isLoading ? null : _submit,
             ),
           ),
@@ -165,12 +160,8 @@ class _UserFormState extends State<UserForm> {
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),
         profile: _selectedProfile,
-        phone: _phoneController.text.trim().isEmpty
-            ? null
-            : _phoneController.text.trim(),
-        password: _passwordController.text.trim().isEmpty
-            ? null
-            : _passwordController.text.trim(),
+        phone: _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
+        password: _passwordController.text.trim().isEmpty ? null : _passwordController.text.trim(),
       ),
     );
   }
