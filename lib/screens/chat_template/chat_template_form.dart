@@ -102,9 +102,8 @@ class _ChatTemplateFormState extends State<ChatTemplateForm> {
             minLines: 3,
             maxLines: 5,
             decoration: const InputDecoration(
-              labelText: 'Descrição',
+              hintText: 'Descrição',
               border: OutlineInputBorder(),
-              alignLabelWithHint: true,
             ),
             validator: (value) => PValidator([
               PRuleMaxString(value, 2000, message: 'Máximo de 2000 caracteres'),
@@ -116,9 +115,8 @@ class _ChatTemplateFormState extends State<ChatTemplateForm> {
             minLines: 5,
             maxLines: 8,
             decoration: const InputDecoration(
-              labelText: 'System instruction',
+              hintText: 'System instruction',
               border: OutlineInputBorder(),
-              alignLabelWithHint: true,
             ),
             validator: (value) => PValidator([
               PRuleMaxString(value, 10000, message: 'Máximo de 10000 caracteres'),
@@ -215,9 +213,8 @@ class _ChatTemplateFormState extends State<ChatTemplateForm> {
               minLines: 4,
               maxLines: 8,
               decoration: const InputDecoration(
-                labelText: 'Conteúdo',
+                hintText: 'Conteúdo',
                 border: OutlineInputBorder(),
-                alignLabelWithHint: true,
               ),
               validator: (value) => PValidator([
                 PRuleMaxString(value, 50000, message: 'Máximo de 50000 caracteres'),
