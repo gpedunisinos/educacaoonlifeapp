@@ -37,6 +37,10 @@ class ChatTemplateForm extends StatefulWidget {
 }
 
 class _ChatTemplateFormState extends State<ChatTemplateForm> {
+  static const List<String> _availableMimeTypes = <String>[
+    'text/plain',
+  ];
+
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
   late final TextEditingController _descriptionController;
@@ -206,12 +210,14 @@ class _ChatTemplateFormState extends State<ChatTemplateForm> {
                 labelText: 'Tipo de arquivo',
                 border: OutlineInputBorder(),
               ),
-              items: const [
-                DropdownMenuItem<String>(
-                  value: 'text/plain',
-                  child: Text('text/plain'),
-                ),
-              ],
+              items: _availableMimeTypes
+                  .map(
+                    (mimeType) => DropdownMenuItem<String>(
+                      value: mimeType,
+                      child: Text(mimeType),
+                    ),
+                  )
+                  .toList(),
               onChanged: widget.isLoading
                   ? null
                   : (value) {
@@ -288,7 +294,7 @@ class _ChatTemplateFileFormEntry {
     return _ChatTemplateFileFormEntry(
       id: null,
       nameController: TextEditingController(),
-      selectedMimeType: 'text/plain',
+      selectedMimeType: _normalizeMimeType(null),
       contentController: TextEditingController(),
     );
   }
@@ -297,7 +303,7 @@ class _ChatTemplateFileFormEntry {
     return _ChatTemplateFileFormEntry(
       id: model.id,
       nameController: TextEditingController(text: model.name),
-      selectedMimeType: model.mimeType.isEmpty ? 'text/plain' : model.mimeType,
+      selectedMimeType: _normalizeMimeType(model.mimeType),
       contentController: TextEditingController(text: model.content),
     );
   }
@@ -314,5 +320,12 @@ class _ChatTemplateFileFormEntry {
   void dispose() {
     nameController.dispose();
     contentController.dispose();
+  }
+
+  static String _normalizeMimeType(String? mimeType) {
+    const String fallbackMimeType = 'text/plain';
+    if (mimeType == null || mimeType.isEmpty) return fallbackMimeType;
+
+    return _ChatTemplateFormState._availableMimeTypes.contains(mimeType) ? mimeType : fallbackMimeType;
   }
 }
