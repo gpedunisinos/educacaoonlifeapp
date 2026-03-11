@@ -48,8 +48,10 @@ class _ChatTemplateFormState extends State<ChatTemplateForm> {
     super.initState();
     final ChatTemplateModel? initialValue = widget.initialValue;
     _nameController = TextEditingController(text: initialValue?.name ?? '');
-    _descriptionController = TextEditingController(text: initialValue?.description ?? '');
-    _systemInstructionController = TextEditingController(text: initialValue?.systemInstruction ?? '');
+    _descriptionController =
+        TextEditingController(text: initialValue?.description ?? '');
+    _systemInstructionController =
+        TextEditingController(text: initialValue?.systemInstruction ?? '');
     _fileEntries = (initialValue?.files ?? const <ChatTemplateFileModel>[])
         .map((file) => _ChatTemplateFileFormEntry.fromModel(file))
         .toList();
@@ -58,7 +60,10 @@ class _ChatTemplateFormState extends State<ChatTemplateForm> {
   @override
   void didUpdateWidget(covariant ChatTemplateForm oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.initialValue == widget.initialValue || widget.initialValue == null) return;
+    if (oldWidget.initialValue == widget.initialValue ||
+        widget.initialValue == null) {
+      return;
+    }
 
     final ChatTemplateModel initialValue = widget.initialValue!;
     _nameController.text = initialValue.name;
@@ -67,7 +72,9 @@ class _ChatTemplateFormState extends State<ChatTemplateForm> {
     for (final entry in _fileEntries) {
       entry.dispose();
     }
-    _fileEntries = initialValue.files.map((file) => _ChatTemplateFileFormEntry.fromModel(file)).toList();
+    _fileEntries = initialValue.files
+        .map((file) => _ChatTemplateFileFormEntry.fromModel(file))
+        .toList();
   }
 
   @override
@@ -121,7 +128,8 @@ class _ChatTemplateFormState extends State<ChatTemplateForm> {
               alignLabelWithHint: true,
             ),
             validator: (value) => PValidator([
-              PRuleMaxString(value, 10000, message: 'Máximo de 10000 caracteres'),
+              PRuleMaxString(value, 10000,
+                  message: 'Máximo de 10000 caracteres'),
             ]).val(),
           ),
           Insets.extraLarge.height,
@@ -130,7 +138,10 @@ class _ChatTemplateFormState extends State<ChatTemplateForm> {
               Expanded(
                 child: Text(
                   'Arquivos do template',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ),
               TextButton.icon(
@@ -160,7 +171,9 @@ class _ChatTemplateFormState extends State<ChatTemplateForm> {
             width: double.infinity,
             child: ActionButton(
               theme: ActionButtonTheme.blue,
-              title: widget.isLoading ? '${widget.submitLabel}...' : widget.submitLabel,
+              title: widget.isLoading
+                  ? '${widget.submitLabel}...'
+                  : widget.submitLabel,
               onPressed: widget.isLoading ? null : _submit,
             ),
           ),
@@ -183,11 +196,15 @@ class _ChatTemplateFormState extends State<ChatTemplateForm> {
                 Expanded(
                   child: Text(
                     'Arquivo ${index + 1}',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleSmall
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                 ),
                 IconButton(
-                  onPressed: widget.isLoading ? null : () => _removeFileEntry(index),
+                  onPressed:
+                      widget.isLoading ? null : () => _removeFileEntry(index),
                   icon: const Icon(Icons.delete_outline),
                   tooltip: 'Remover arquivo',
                 ),
@@ -202,12 +219,26 @@ class _ChatTemplateFormState extends State<ChatTemplateForm> {
               ]).val(),
             ),
             Insets.medium.height,
-            InputText(
-              hintText: 'Mime type',
-              controller: entry.mimeTypeController,
-              validator: (value) => PValidator([
-                PRuleMaxString(value, 255, message: 'Máximo de 255 caracteres'),
-              ]).val(),
+            DropdownButtonFormField<String>(
+              initialValue: entry.selectedMimeType,
+              decoration: const InputDecoration(
+                labelText: 'Tipo de arquivo',
+                border: OutlineInputBorder(),
+              ),
+              items: const [
+                DropdownMenuItem<String>(
+                  value: 'text/plain',
+                  child: Text('text/plain'),
+                ),
+              ],
+              onChanged: widget.isLoading
+                  ? null
+                  : (value) {
+                      if (value == null) return;
+                      setState(() {
+                        entry.selectedMimeType = value;
+                      });
+                    },
             ),
             Insets.medium.height,
             TextFormField(
@@ -220,7 +251,8 @@ class _ChatTemplateFormState extends State<ChatTemplateForm> {
                 alignLabelWithHint: true,
               ),
               validator: (value) => PValidator([
-                PRuleMaxString(value, 50000, message: 'Máximo de 50000 caracteres'),
+                PRuleMaxString(value, 50000,
+                    message: 'Máximo de 50000 caracteres'),
               ]).val(),
             ),
           ],
@@ -248,15 +280,18 @@ class _ChatTemplateFormState extends State<ChatTemplateForm> {
 
     final List<ChatTemplateFileModel> files = _fileEntries
         .map((entry) => entry.toModel())
-        .where((file) => file.name.isNotEmpty || file.mimeType.isNotEmpty || file.content.isNotEmpty)
+        .where((file) => file.name.isNotEmpty || file.content.isNotEmpty)
         .toList();
 
     await widget.onSubmit(
       ChatTemplateFormValue(
         name: _nameController.text.trim(),
-        description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
-        systemInstruction:
-            _systemInstructionController.text.trim().isEmpty ? null : _systemInstructionController.text.trim(),
+        description: _descriptionController.text.trim().isEmpty
+            ? null
+            : _descriptionController.text.trim(),
+        systemInstruction: _systemInstructionController.text.trim().isEmpty
+            ? null
+            : _systemInstructionController.text.trim(),
         files: files,
       ),
     );
@@ -267,20 +302,20 @@ class _ChatTemplateFileFormEntry {
   _ChatTemplateFileFormEntry({
     required this.id,
     required this.nameController,
-    required this.mimeTypeController,
+    required this.selectedMimeType,
     required this.contentController,
   });
 
   final int? id;
   final TextEditingController nameController;
-  final TextEditingController mimeTypeController;
+  String selectedMimeType;
   final TextEditingController contentController;
 
   factory _ChatTemplateFileFormEntry.empty() {
     return _ChatTemplateFileFormEntry(
       id: null,
       nameController: TextEditingController(),
-      mimeTypeController: TextEditingController(),
+      selectedMimeType: 'text/plain',
       contentController: TextEditingController(),
     );
   }
@@ -289,7 +324,7 @@ class _ChatTemplateFileFormEntry {
     return _ChatTemplateFileFormEntry(
       id: model.id,
       nameController: TextEditingController(text: model.name),
-      mimeTypeController: TextEditingController(text: model.mimeType),
+      selectedMimeType: model.mimeType.isEmpty ? 'text/plain' : model.mimeType,
       contentController: TextEditingController(text: model.content),
     );
   }
@@ -298,14 +333,13 @@ class _ChatTemplateFileFormEntry {
     return ChatTemplateFileModel(
       id: id,
       name: nameController.text.trim(),
-      mimeType: mimeTypeController.text.trim(),
+      mimeType: selectedMimeType,
       content: contentController.text,
     );
   }
 
   void dispose() {
     nameController.dispose();
-    mimeTypeController.dispose();
     contentController.dispose();
   }
 }
