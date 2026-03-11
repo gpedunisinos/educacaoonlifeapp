@@ -18,6 +18,7 @@ dependencies:
   intl: any
   http: any
   flutter_svg: ^1.1.6
+  flutter_markdown: ^0.7.7+1
   flutter_colorpicker: ^1.0.3
   http_interceptor: ^2.0.0
   package_info_plus: ^8.3.1

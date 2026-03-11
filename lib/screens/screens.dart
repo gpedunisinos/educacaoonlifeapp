@@ -20,6 +20,16 @@ export 'package:unisinos_usp_app/screens/chat_template/chat_template_chat_screen
 export 'package:unisinos_usp_app/screens/chat_template/chat_template_create_screen.dart';
 export 'package:unisinos_usp_app/screens/chat_template/chat_template_index_screen.dart';
 export 'package:unisinos_usp_app/screens/chat_template/chat_template_update_screen.dart';
+export 'package:unisinos_usp_app/screens/node/node_create_screen.dart';
+export 'package:unisinos_usp_app/screens/node/node_index_screen.dart';
+export 'package:unisinos_usp_app/screens/node/node_update_screen.dart';
+export 'package:unisinos_usp_app/screens/node_graph/node_graph_screen.dart';
+export 'package:unisinos_usp_app/screens/node_link/node_link_create_screen.dart';
+export 'package:unisinos_usp_app/screens/node_link/node_link_index_screen.dart';
+export 'package:unisinos_usp_app/screens/node_link/node_link_update_screen.dart';
+export 'package:unisinos_usp_app/screens/node_type/node_type_create_screen.dart';
+export 'package:unisinos_usp_app/screens/node_type/node_type_index_screen.dart';
+export 'package:unisinos_usp_app/screens/node_type/node_type_update_screen.dart';
 export 'package:unisinos_usp_app/screens/sample/sample_create_screen.dart';
 export 'package:unisinos_usp_app/screens/sample/sample_index_screen.dart';
 export 'package:unisinos_usp_app/screens/sample/sample_update_screen.dart';

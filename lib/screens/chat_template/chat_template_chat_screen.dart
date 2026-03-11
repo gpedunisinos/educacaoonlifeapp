@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import 'package:unisinos_usp_app/controllers/chat_template/chat_template_chat_controller.dart';
 import 'package:unisinos_usp_app/models/chat_message_model.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
@@ -168,10 +171,7 @@ class _ChatTemplateChatScreenState extends State<ChatTemplateChatScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      message.text,
-                      style: theme.textTheme.bodyMedium?.copyWith(color: textColor, height: 1.35),
-                    ),
+                    _buildMarkdownMessage(theme, message.text, textColor),
                     const SizedBox(height: 6),
                     Text(
                       DateFormat('dd/MM HH:mm').format(message.timestamp.toLocal()),
@@ -193,6 +193,35 @@ class _ChatTemplateChatScreenState extends State<ChatTemplateChatScreen> {
             ),
         ],
       ),
+    );
+  }
+
+  Widget _buildMarkdownMessage(ThemeData theme, String text, Color textColor) {
+    final baseStyle = theme.textTheme.bodyMedium?.copyWith(color: textColor, height: 1.35);
+    return MarkdownBody(
+      data: text,
+      selectable: false,
+      styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
+        p: baseStyle,
+        a: baseStyle?.copyWith(
+          color: Colors.blue.shade700,
+          decoration: TextDecoration.underline,
+        ),
+        code: TextStyle(
+          color: textColor,
+          backgroundColor: Colors.black.withValues(alpha: 0.08),
+          fontFamily: 'monospace',
+        ),
+        codeblockDecoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        blockquote: baseStyle,
+      ),
+      onTapLink: (text, href, title) async {
+        if (href == null || href.isEmpty) return;
+        await launchUrlString(href, mode: LaunchMode.platformDefault);
+      },
     );
   }
 
@@ -219,7 +248,8 @@ class _ChatTemplateChatScreenState extends State<ChatTemplateChatScreen> {
                 child: TextField(
                   controller: _textController,
                   minLines: 1,
-                  maxLines: 4,
+                  maxLines: 1,
+                  textInputAction: TextInputAction.send,
                   onSubmitted: (_) => _handleSend(),
                   decoration: const InputDecoration.collapsed(
                     hintText: 'Digite a mensagem do template...',
