@@ -43,7 +43,7 @@ class CategoryModel {
 
   Map<String, dynamic> toJson() {
     return {
-      if (id != null) 'id': id,
+      'id': id,
       'name': name,
       'type': type,
       'color_hex': colorHex,
