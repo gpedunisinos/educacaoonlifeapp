@@ -51,7 +51,7 @@ void main() {
   const password =
       String.fromEnvironment('E2E_PASSWORD', defaultValue: 'uu2admin');
 
-  testWidgets('login and capture first screen after login', (tester) async {
+  testWidgets('login, navegar até Nova conexão e gerar print', (tester) async {
     app.main();
     await tester.pumpAndSettle(const Duration(seconds: 8));
 
@@ -76,8 +76,28 @@ void main() {
     expect(find.text('Home'), findsWidgets,
         reason: 'Não detectou tela inicial após login/redirect.');
 
-    const out =
-        '/home/odair/.openclaw/workspace/unisinos_usp_first_screen_after_login.png';
+    final conexoesCard = find.text('Conexões');
+    expect(conexoesCard, findsWidgets,
+        reason: 'Card de Conexões não encontrado na Home.');
+    await tester.tap(conexoesCard.first);
+    await tester.pumpAndSettle(const Duration(seconds: 12));
+
+    expect(find.text('Conexões'), findsWidgets,
+        reason: 'Tela de Conexões não abriu.');
+
+    final addButton = find.byTooltip('Nova conexão');
+    expect(addButton, findsWidgets,
+        reason: 'Botão Nova conexão não encontrado.');
+    await tester.tap(addButton.first);
+    await tester.pumpAndSettle(const Duration(seconds: 12));
+
+    expect(find.text('Nova conexão'), findsWidgets,
+        reason: 'Tela Nova conexão não abriu.');
+    expect(find.text('Pista origem'), findsWidgets);
+    expect(find.text('Pista destino'), findsWidgets);
+    expect(find.text('Tipo de conexão'), findsWidgets);
+
+    const out = '/home/odair/.openclaw/workspace/unisinos_usp_nova_conexao.png';
     try {
       await _saveCurrentScreenPng(tester, out);
     } catch (e) {
