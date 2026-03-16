@@ -11,3 +11,36 @@ Senha em key.properties
 ### Deploy app 
 flutter build web
 scp -o IdentitiesOnly=yes -o IdentityAgent=none -i ~/.ssh/aws_spo.pem -i /home/odair/Documentos/chaves/aws_spo.pem -r build/web/* ubuntu@18.230.235.236:/var/www/unisinos_usp_app
+
+## Integration tests (with screenshot)
+
+### Login + print da primeira tela
+
+Credenciais padrão de teste (vindas do `config/database.go` da API):
+- email: `admin@admin.com`
+- senha: `uu2admin`
+
+Com valores padrão:
+
+```bash
+flutter test integration_test/login_screenshot_test.dart -d linux
+```
+
+Com credenciais explícitas:
+
+```bash
+flutter test integration_test/login_screenshot_test.dart -d linux \
+  --dart-define=E2E_EMAIL=admin@admin.com \
+  --dart-define=E2E_PASSWORD=uu2admin
+```
+
+Saída esperada da imagem:
+- `/home/odair/.openclaw/workspace/unisinos_usp_first_screen_after_login.png`
+
+### Teste de integração de API
+
+```bash
+flutter test integration_test/api_integration_test.dart -d linux \
+  --dart-define=E2E_EMAIL=admin@admin.com \
+  --dart-define=E2E_PASSWORD=uu2admin
+```

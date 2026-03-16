@@ -2,7 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:unisinos_usp_app/main.dart' as app;
+import 'package:unisinos_usp_app/models/user_model.dart';
 import 'package:unisinos_usp_app/services/auth_user.dart';
 import 'package:unisinos_usp_app/webclients/user_webclient.dart';
 import 'package:widgets_spo/widgets_spo.dart';
@@ -17,17 +18,37 @@ void main() {
 
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  Future<AuthUser> _apiLogin() async {
-    String? userPref = Util.prefs.getString('user');
+  const String email =
+      String.fromEnvironment('E2E_EMAIL', defaultValue: 'admin@admin.com');
+  const String password =
+      String.fromEnvironment('E2E_PASSWORD', defaultValue: 'uu2admin');
 
-    if (userPref != null) {
-      AuthUser localUser = AuthUser.fromJson(jsonDecode(userPref));
-      return localUser;
+  Future<AuthUser> _apiLogin() async {
+    final String? userPref = Util.prefs.getString('user');
+
+    if (userPref != null && userPref.isNotEmpty) {
+      return AuthUser.fromJson(jsonDecode(userPref));
     }
 
-    UserWebclient webClient = UserWebclient();
-    AuthUser user = await webClient.login(mail: 'aluno@efv.com.br', password: 'efv@164962');
-    SharedPreferences.setMockInitialValues({'user': jsonEncode(user.toJson())});
+    final UserWebclient webClient = UserWebclient();
+    final AuthUser user =
+        await webClient.login(mail: email, password: password);
+    await Util.prefs.setString('user', jsonEncode(user.toJson()));
     return user;
   }
+
+  testWidgets('user api tests (login + list)', (WidgetTester tester) async {
+    app.main();
+
+    await tester.pumpAndSettle(const Duration(seconds: 6));
+    await _apiLogin();
+
+    final UserWebclient webClient = UserWebclient();
+
+    final List<UserModel> users =
+        await webClient.fetchUsers(limit: 10, offset: 0);
+    expect(users, isA<List<UserModel>>(),
+        reason: 'fetchUsers não retornou lista válida');
+    expect(users.isNotEmpty, true, reason: 'fetchUsers retornou lista vazia');
+  });
 }

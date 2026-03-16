@@ -98,7 +98,8 @@ class _LivingClueConnectScreenState extends State<LivingClueConnectScreen> {
                             ),
                             const SizedBox(height: 12),
                             InputSelectApi(
-                              label: 'Pista destino',
+                              label: '',
+                              hint: 'Pista destino',
                               controller: _targetSelectController,
                               validator: (value) => PValidator([
                                 PRuleRequired(value, message: 'Obrigatório'),
@@ -108,7 +109,8 @@ class _LivingClueConnectScreenState extends State<LivingClueConnectScreen> {
                             ),
                             Insets.large.height,
                             InputSelectApi(
-                              label: 'Tipo de conexão',
+                              label: '',
+                              hint: 'Tipo de conexão',
                               controller: _typeSelectController,
                               validator: (value) => PValidator([
                                 PRuleRequired(value, message: 'Obrigatório'),
@@ -119,7 +121,7 @@ class _LivingClueConnectScreenState extends State<LivingClueConnectScreen> {
                             ),
                             Insets.large.height,
                             InputNumber(
-                              label: 'Força (1-10)',
+                              label: '',
                               controller: _strengthController,
                               validator: (value) => PValidator([
                                 PRuleInteger(value,
