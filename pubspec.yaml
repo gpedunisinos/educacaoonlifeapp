@@ -37,7 +37,7 @@ dependencies:
   widgets_spo:
     git:
       url: https://bitbucket.org/spotecnologia/widgets_spo.git
-      ref: v1.2.4
+      ref: main
 
   cupertino_icons: ^1.0.8
   path_provider: ^2.1.5
