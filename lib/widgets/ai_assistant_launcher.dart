@@ -55,7 +55,7 @@ class AiAssistantLauncher extends StatelessWidget {
                   controller.ensureHistoryLoaded();
                 },
                 icon: const Icon(Icons.auto_awesome),
-                label: const Text('Assistente'),
+                label: const Text('IAraeté'),
               ),
             ),
         ],

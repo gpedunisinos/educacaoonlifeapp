@@ -22,7 +22,6 @@ class HomeScreen extends StatelessWidget {
     final screenWidth = MediaQuery.sizeOf(context).width;
     final isMobile = screenWidth < 900;
     final userName = _controller.user.value?.name ?? 'Bem-vindo';
-    final backgroundImageWidth = isMobile ? screenWidth : 900.0;
 
     final menuItems = [
       _HomeMenu(
@@ -110,18 +109,6 @@ class HomeScreen extends StatelessWidget {
           const Positioned.fill(
             child: CustomPaint(
               painter: _StarfieldPainter(),
-            ),
-          ),
-          Positioned(
-            top: 0,
-            right: 0,
-            child: IgnorePointer(
-              child: Image.asset(
-                'assets/rieonlife/hub_conectakat.jpeg',
-                width: backgroundImageWidth,
-                fit: BoxFit.contain,
-                alignment: Alignment.topRight,
-              ),
             ),
           ),
           SafeArea(
