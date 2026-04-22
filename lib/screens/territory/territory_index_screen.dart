@@ -172,7 +172,13 @@ class TerritoryIndexScreen extends StatelessWidget {
             ),
             onPressed: () {
               Get.back();
-
+              _controller.deleteTerritory(model);
+            },
+            child: const Text('Excluir'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _goToCreate() async {

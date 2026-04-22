@@ -130,7 +130,13 @@ class BiomeIndexScreen extends StatelessWidget {
             ),
             onPressed: () {
               Get.back();
-
+              _controller.deleteBiome(model);
+            },
+            child: const Text('Excluir'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _goToCreate() async {
