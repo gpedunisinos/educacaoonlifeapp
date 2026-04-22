@@ -19,7 +19,8 @@ class LivingClueCreateScreen extends StatefulWidget {
 
 class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
   static const String _screenName = 'Cadastro de pista';
-  final LivingClueCreateController _controller = Get.find<LivingClueCreateController>();
+  final LivingClueCreateController _controller =
+      Get.find<LivingClueCreateController>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final TextEditingController _nameController = TextEditingController();
@@ -67,7 +68,11 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
       _categoryType = (args['categoryType'] ?? '') as String;
       _categoryController.text = _categoryName;
       final tagsString = args['metadataTags'] as String? ?? '';
-      _metadataTags = tagsString.split(',').map((t) => t.trim()).where((t) => t.isNotEmpty).toList();
+      _metadataTags = tagsString
+          .split(',')
+          .map((t) => t.trim())
+          .where((t) => t.isNotEmpty)
+          .toList();
       for (final tag in _metadataTags) {
         _metadataControllers[tag] = TextEditingController();
       }
@@ -99,7 +104,13 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Card(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: const BorderSide(
+                        color: Color(0x8A46B6EC),
+                        width: 1.2,
+                      ),
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Column(
@@ -107,11 +118,15 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
                         children: [
                           Row(
                             children: [
-                              const Icon(Icons.bolt_outlined, color: Colors.indigo),
+                              const Icon(Icons.bolt_outlined,
+                                  color: Colors.indigo),
                               const SizedBox(width: 8),
                               Text(
                                 'Dados principais',
-                                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.w700),
                               ),
                             ],
                           ),
@@ -121,7 +136,8 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
                             controller: _nameController,
                             validator: (value) => PValidator([
                               PRuleRequired(value, message: 'Obrigatório'),
-                              PRuleMaxString(value, 255, message: 'Máximo de 255 caracteres'),
+                              PRuleMaxString(value, 255,
+                                  message: 'Máximo de 255 caracteres'),
                             ]).val(),
                           ),
                           Insets.large.height,
@@ -129,7 +145,9 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
                             hintText: 'Categoria',
                             readOnly: true,
                             controller: _categoryController,
-                            validator: (_) => _categoryId == null ? 'Selecione uma categoria antes' : null,
+                            validator: (_) => _categoryId == null
+                                ? 'Selecione uma categoria antes'
+                                : null,
                           ),
                           Insets.large.height,
                           InputText(
@@ -157,7 +175,13 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
                   ),
                   const SizedBox(height: 12),
                   Card(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: const BorderSide(
+                        color: Color(0x8A46B6EC),
+                        width: 1.2,
+                      ),
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Column(
@@ -165,9 +189,12 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
                         children: [
                           Row(
                             children: [
-                              const Icon(Icons.place_outlined, color: Colors.teal),
+                              const Icon(Icons.place_outlined,
+                                  color: Colors.teal),
                               const SizedBox(width: 8),
-                              const Text('Localização', style: TextStyle(fontWeight: FontWeight.w700)),
+                              const Text('Localização',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.w700)),
                             ],
                           ),
                           Insets.large.height,
@@ -207,7 +234,8 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
                     width: double.infinity,
                     child: Obx(() {
                       final bool loading = _controller.isLoading.value;
-                      final String buttonTitle = loading ? 'Salvando...' : 'Salvar';
+                      final String buttonTitle =
+                          loading ? 'Salvando...' : 'Salvar';
                       return ActionButton(
                         theme: ActionButtonTheme.blue,
                         title: buttonTitle,
@@ -229,7 +257,8 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
       screenName: _screenName,
       route: Get.currentRoute,
       stage: 'preenchimento do formulário',
-      goal: 'registrar uma pista viva com localização, categoria e dados principais',
+      goal:
+          'registrar uma pista viva com localização, categoria e dados principais',
       visibleFields: <String>[
         'nome',
         'categoria',
@@ -242,16 +271,24 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
         'ativo',
       ],
       filledFields: <String, String>{
-        if (_nameController.text.trim().isNotEmpty) 'nome': _nameController.text.trim(),
-        if (_categoryController.text.trim().isNotEmpty) 'categoria': _categoryController.text.trim(),
-        if (_categoryType.trim().isNotEmpty) 'tipo da categoria': _categoryType.trim(),
-        if (_descriptionController.text.trim().isNotEmpty) 'descrição': _descriptionController.text.trim(),
-        if (_latitudeController.text.trim().isNotEmpty) 'latitude': _latitudeController.text.trim(),
-        if (_longitudeController.text.trim().isNotEmpty) 'longitude': _longitudeController.text.trim(),
-        if (_imageUrlController.text.trim().isNotEmpty) 'url da imagem': _imageUrlController.text.trim(),
+        if (_nameController.text.trim().isNotEmpty)
+          'nome': _nameController.text.trim(),
+        if (_categoryController.text.trim().isNotEmpty)
+          'categoria': _categoryController.text.trim(),
+        if (_categoryType.trim().isNotEmpty)
+          'tipo da categoria': _categoryType.trim(),
+        if (_descriptionController.text.trim().isNotEmpty)
+          'descrição': _descriptionController.text.trim(),
+        if (_latitudeController.text.trim().isNotEmpty)
+          'latitude': _latitudeController.text.trim(),
+        if (_longitudeController.text.trim().isNotEmpty)
+          'longitude': _longitudeController.text.trim(),
+        if (_imageUrlController.text.trim().isNotEmpty)
+          'url da imagem': _imageUrlController.text.trim(),
         'ativo': _isActive ? 'sim' : 'não',
         for (final entry in _metadataControllers.entries)
-          if (entry.value.text.trim().isNotEmpty) _formatTagLabel(entry.key): entry.value.text.trim(),
+          if (entry.value.text.trim().isNotEmpty)
+            _formatTagLabel(entry.key): entry.value.text.trim(),
       },
       notes: const <String>[
         'Os dados desta tela são usados para criar o ponto definitivo no mapa.',
@@ -277,10 +314,14 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
       id: 0,
       name: _nameController.text.trim(),
       categoryId: _categoryId!,
-      description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
+      description: _descriptionController.text.trim().isEmpty
+          ? null
+          : _descriptionController.text.trim(),
       latitude: latitude,
       longitude: longitude,
-      imageUrl: _imageUrlController.text.trim().isEmpty ? null : _imageUrlController.text.trim(),
+      imageUrl: _imageUrlController.text.trim().isEmpty
+          ? null
+          : _imageUrlController.text.trim(),
       metadata: metadata.isEmpty ? null : metadata,
       isActive: _isActive,
     );
@@ -293,6 +334,10 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
 
   String _formatTagLabel(String raw) {
     final cleaned = raw.replaceAll('_', ' ');
-    return cleaned.split(' ').where((part) => part.isNotEmpty).map((part) => part[0].toUpperCase() + part.substring(1)).join(' ');
+    return cleaned
+        .split(' ')
+        .where((part) => part.isNotEmpty)
+        .map((part) => part[0].toUpperCase() + part.substring(1))
+        .join(' ');
   }
 }

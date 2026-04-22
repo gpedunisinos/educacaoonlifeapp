@@ -66,7 +66,12 @@ class _LivingCluePreCreateScreenState extends State<LivingCluePreCreateScreen> {
                 children: [
                   Card(
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
+                      borderRadius: BorderRadius.circular(16),
+                      side: const BorderSide(
+                        color: Color(0x8A46B6EC),
+                        width: 1.2,
+                      ),
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Column(
@@ -103,8 +108,8 @@ class _LivingCluePreCreateScreenState extends State<LivingCluePreCreateScreen> {
                               PRuleRequired(value, message: 'Obrigatório'),
                             ]).val(),
                             onFind: (search, offset, params) =>
-                                CategorySelectWebclient()
-                                    .select(search, offset, type: _selectedType),
+                                CategorySelectWebclient().select(search, offset,
+                                    type: _selectedType),
                           ),
                         ],
                       ),

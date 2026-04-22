@@ -48,6 +48,10 @@ class _LivingClueTypeSelectScreenState
               child: Card(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
+                  side: const BorderSide(
+                    color: Color(0x8A46B6EC),
+                    width: 1.2,
+                  ),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -135,7 +139,8 @@ class _LivingClueTypeSelectScreenState
   }
 
   Future<void> _continue() async {
-    if (!(_formKey.currentState?.validate() ?? false) || _selectedType == null) {
+    if (!(_formKey.currentState?.validate() ?? false) ||
+        _selectedType == null) {
       return;
     }
 
@@ -144,7 +149,8 @@ class _LivingClueTypeSelectScreenState
       '/living_clues/pre_create',
       arguments: <String, dynamic>{
         'type': _selectedType,
-        if (args is Map && args['latitude'] != null) 'latitude': args['latitude'],
+        if (args is Map && args['latitude'] != null)
+          'latitude': args['latitude'],
         if (args is Map && args['longitude'] != null)
           'longitude': args['longitude'],
       },

@@ -173,6 +173,13 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
             left: 12,
             right: 12,
             child: Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: const BorderSide(
+                  color: Color(0x8A46B6EC),
+                  width: 1.2,
+                ),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Column(

@@ -81,7 +81,12 @@ class _LivingClueConnectScreenState extends State<LivingClueConnectScreen> {
                   Card(
                     elevation: 2,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
+                      borderRadius: BorderRadius.circular(16),
+                      side: const BorderSide(
+                        color: Color(0x8A46B6EC),
+                        width: 1.2,
+                      ),
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Form(
@@ -198,6 +203,13 @@ class _LivingClueConnectScreenState extends State<LivingClueConnectScreen> {
   Widget _buildSourceCard(BuildContext context) {
     if (_sourceClue == null) {
       return Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(
+            color: Color(0x8A46B6EC),
+            width: 1.2,
+          ),
+        ),
         color: Colors.red.shade50,
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -211,7 +223,13 @@ class _LivingClueConnectScreenState extends State<LivingClueConnectScreen> {
 
     final clue = _sourceClue!;
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(
+          color: Color(0x8A46B6EC),
+          width: 1.2,
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

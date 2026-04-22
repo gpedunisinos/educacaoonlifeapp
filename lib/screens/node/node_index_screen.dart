@@ -68,7 +68,8 @@ class _NodeIndexScreenState extends State<NodeIndexScreen> {
                     prefixIcon: const Icon(Icons.search, color: Colors.white70),
                     suffixIcon: IconButton(
                       icon: const Icon(Icons.refresh, color: Colors.white70),
-                      onPressed: () => _controller.applySearch(_searchController.text),
+                      onPressed: () =>
+                          _controller.applySearch(_searchController.text),
                     ),
                     filled: true,
                     fillColor: Colors.white.withValues(alpha: 0.08),
@@ -83,18 +84,22 @@ class _NodeIndexScreenState extends State<NodeIndexScreen> {
               ),
               Expanded(
                 child: Obx(() {
-                  if (_controller.isLoading.value && _controller.nodes.isEmpty) {
-                    return const Center(child: CircularProgressIndicator(color: Colors.white));
+                  if (_controller.isLoading.value &&
+                      _controller.nodes.isEmpty) {
+                    return const Center(
+                        child: CircularProgressIndicator(color: Colors.white));
                   }
                   if (_controller.nodes.isEmpty) {
                     return const Center(
-                      child: Text('Nenhum nó encontrado.', style: TextStyle(color: Colors.white)),
+                      child: Text('Nenhum nó encontrado.',
+                          style: TextStyle(color: Colors.white)),
                     );
                   }
                   return ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                    itemCount: _controller.nodes.length + (_controller.isLoadingMore.value ? 1 : 0),
+                    itemCount: _controller.nodes.length +
+                        (_controller.isLoadingMore.value ? 1 : 0),
                     itemBuilder: (_, index) {
                       if (index >= _controller.nodes.length) {
                         return const Padding(
@@ -121,7 +126,8 @@ class _NodeIndexScreenState extends State<NodeIndexScreen> {
 
   void _onScroll() {
     if (!_scrollController.hasClients) return;
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       _controller.loadMore();
     }
   }
@@ -148,7 +154,8 @@ class _NodeIndexScreenState extends State<NodeIndexScreen> {
   }
 
   Future<void> _goToUpdate(NodeModel model) async {
-    final updated = await Get.toNamed('/nodes/update', parameters: {'id': model.id.toString()});
+    final updated = await Get.toNamed('/nodes/update',
+        parameters: {'id': model.id.toString()});
     if (updated == true) {
       await _controller.loadInitial();
     }
@@ -172,7 +179,13 @@ class _NodeCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       color: Colors.black.withValues(alpha: 0.58),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(
+          color: Color(0x8A46B6EC),
+          width: 1.2,
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Row(
