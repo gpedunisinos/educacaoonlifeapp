@@ -75,64 +75,77 @@ class _BiomeFormState extends State<_BiomeForm> {
             padding: const EdgeInsets.all(16),
             child: Form(
               key: _formKey,
-              child: Column(
-                children: [
-                  InputText(
-                    hintText: 'Nome',
-                    controller: _nameController,
-                    validator: (v) => PValidator([
-                      PRuleRequired(v, message: 'Obrigatório'),
-                    ]).val(),
+              child: Card(
+                color: Colors.black.withValues(alpha: 0.58),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: const BorderSide(
+                    color: Color(0x8A46B6EC),
+                    width: 1.2,
                   ),
-                  Insets.large.height,
-                  InputText(
-                    hintText: 'Slug',
-                    controller: _slugController,
-                    validator: (v) => PValidator([
-                      PRuleRequired(v, message: 'Obrigatório'),
-                    ]).val(),
-                  ),
-                  Insets.large.height,
-                  InputText(
-                    hintText: 'Cor em hex',
-                    controller: _colorController,
-                    validator: (v) => PValidator([
-                      PRuleRequired(v, message: 'Obrigatório'),
-                      PRuleRegex(
-                        v,
-                        r'^#([A-Fa-f0-9]{6})$',
-                        message: 'Use o formato #RRGGBB',
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      InputText(
+                        hintText: 'Nome',
+                        controller: _nameController,
+                        validator: (v) => PValidator([
+                          PRuleRequired(v, message: 'Obrigatório'),
+                        ]).val(),
                       ),
-                    ]).val(),
+                      Insets.large.height,
+                      InputText(
+                        hintText: 'Slug',
+                        controller: _slugController,
+                        validator: (v) => PValidator([
+                          PRuleRequired(v, message: 'Obrigatório'),
+                        ]).val(),
+                      ),
+                      Insets.large.height,
+                      InputText(
+                        hintText: 'Cor em hex',
+                        controller: _colorController,
+                        validator: (v) => PValidator([
+                          PRuleRequired(v, message: 'Obrigatório'),
+                          PRuleRegex(
+                            v,
+                            r'^#([A-Fa-f0-9]{6})$',
+                            message: 'Use o formato #RRGGBB',
+                          ),
+                        ]).val(),
+                      ),
+                      Insets.large.height,
+                      InputText(
+                        hintText: 'Descrição (opcional)',
+                        controller: _descriptionController,
+                        maxLines: 4,
+                      ),
+                      Insets.large.height,
+                      InputText(
+                        hintText: 'URL da capa (opcional)',
+                        controller: _coverImageController,
+                      ),
+                      Insets.medium.height,
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('Ativo'),
+                        value: _isActive,
+                        onChanged: (v) => setState(() => _isActive = v),
+                      ),
+                      Insets.extraLarge.height,
+                      SizedBox(
+                        width: double.infinity,
+                        child: ActionButton(
+                          theme: ActionButtonTheme.blue,
+                          title: _saving ? 'Salvando...' : 'Salvar',
+                          onPressed: _saving ? null : _save,
+                        ),
+                      ),
+                    ],
                   ),
-                  Insets.large.height,
-                  InputText(
-                    hintText: 'Descrição (opcional)',
-                    controller: _descriptionController,
-                    maxLines: 4,
-                  ),
-                  Insets.large.height,
-                  InputText(
-                    hintText: 'URL da capa (opcional)',
-                    controller: _coverImageController,
-                  ),
-                  Insets.medium.height,
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Ativo'),
-                    value: _isActive,
-                    onChanged: (v) => setState(() => _isActive = v),
-                  ),
-                  Insets.extraLarge.height,
-                  SizedBox(
-                    width: double.infinity,
-                    child: ActionButton(
-                      theme: ActionButtonTheme.blue,
-                      title: _saving ? 'Salvando...' : 'Salvar',
-                      onPressed: _saving ? null : _save,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),

@@ -45,7 +45,15 @@ class BiomeIndexScreen extends StatelessWidget {
               itemBuilder: (_, index) {
                 final BiomeModel model = _controller.biomes[index];
                 return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
                   color: Colors.black.withValues(alpha: 0.58),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: const BorderSide(
+                      color: Color(0x8A46B6EC),
+                      width: 1.2,
+                    ),
+                  ),
                   child: ListTile(
                     leading: CircleAvatar(
                       backgroundColor: _parseColor(model.colorHex),

@@ -83,74 +83,87 @@ class _TerritoryFormState extends State<_TerritoryForm> {
             padding: const EdgeInsets.all(16),
             child: Form(
               key: _formKey,
-              child: Column(
-                children: [
-                  InputText(
-                    hintText: 'Nome',
-                    controller: _nameController,
-                    validator: (v) => PValidator([
-                      PRuleRequired(v, message: 'Obrigatório'),
-                    ]).val(),
+              child: Card(
+                color: Colors.black.withValues(alpha: 0.58),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: const BorderSide(
+                    color: Color(0x8A46B6EC),
+                    width: 1.2,
                   ),
-                  Insets.large.height,
-                  DropdownButtonFormField<int>(
-                    initialValue: _biomeId,
-                    decoration: const InputDecoration(
-                      labelText: 'Bioma',
-                      border: OutlineInputBorder(),
-                    ),
-                    items: _biomes
-                        .map(
-                          (b) => DropdownMenuItem<int>(
-                            value: b.id,
-                            child: Text(b.name),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (v) => setState(() => _biomeId = v),
-                    validator: (v) => v == null ? 'Obrigatório' : null,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      InputText(
+                        hintText: 'Nome',
+                        controller: _nameController,
+                        validator: (v) => PValidator([
+                          PRuleRequired(v, message: 'Obrigatório'),
+                        ]).val(),
+                      ),
+                      Insets.large.height,
+                      DropdownButtonFormField<int>(
+                        initialValue: _biomeId,
+                        decoration: const InputDecoration(
+                          labelText: 'Bioma',
+                          border: OutlineInputBorder(),
+                        ),
+                        items: _biomes
+                            .map(
+                              (b) => DropdownMenuItem<int>(
+                                value: b.id,
+                                child: Text(b.name),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (v) => setState(() => _biomeId = v),
+                        validator: (v) => v == null ? 'Obrigatório' : null,
+                      ),
+                      Insets.large.height,
+                      InputText(
+                        hintText: 'Tipo',
+                        controller: _typeController,
+                        validator: (v) => PValidator([
+                          PRuleRequired(v, message: 'Obrigatório'),
+                        ]).val(),
+                      ),
+                      Insets.large.height,
+                      InputText(
+                        hintText: 'Descrição (opcional)',
+                        controller: _descriptionController,
+                        maxLines: 4,
+                      ),
+                      Insets.large.height,
+                      InputNumber(
+                        label: 'Latitude central (opcional)',
+                        controller: _centerLatController,
+                      ),
+                      Insets.large.height,
+                      InputNumber(
+                        label: 'Longitude central (opcional)',
+                        controller: _centerLngController,
+                      ),
+                      Insets.medium.height,
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('Ativo'),
+                        value: _isActive,
+                        onChanged: (v) => setState(() => _isActive = v),
+                      ),
+                      Insets.extraLarge.height,
+                      SizedBox(
+                        width: double.infinity,
+                        child: ActionButton(
+                          theme: ActionButtonTheme.blue,
+                          title: _saving ? 'Salvando...' : 'Salvar',
+                          onPressed: _saving ? null : _save,
+                        ),
+                      ),
+                    ],
                   ),
-                  Insets.large.height,
-                  InputText(
-                    hintText: 'Tipo',
-                    controller: _typeController,
-                    validator: (v) => PValidator([
-                      PRuleRequired(v, message: 'Obrigatório'),
-                    ]).val(),
-                  ),
-                  Insets.large.height,
-                  InputText(
-                    hintText: 'Descrição (opcional)',
-                    controller: _descriptionController,
-                    maxLines: 4,
-                  ),
-                  Insets.large.height,
-                  InputNumber(
-                    label: 'Latitude central (opcional)',
-                    controller: _centerLatController,
-                  ),
-                  Insets.large.height,
-                  InputNumber(
-                    label: 'Longitude central (opcional)',
-                    controller: _centerLngController,
-                  ),
-                  Insets.medium.height,
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Ativo'),
-                    value: _isActive,
-                    onChanged: (v) => setState(() => _isActive = v),
-                  ),
-                  Insets.extraLarge.height,
-                  SizedBox(
-                    width: double.infinity,
-                    child: ActionButton(
-                      theme: ActionButtonTheme.blue,
-                      title: _saving ? 'Salvando...' : 'Salvar',
-                      onPressed: _saving ? null : _save,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),

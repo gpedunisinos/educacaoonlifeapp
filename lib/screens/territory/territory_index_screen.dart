@@ -30,30 +30,43 @@ class TerritoryIndexScreen extends StatelessWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.all(16),
-                child: Obx(
-                  () => DropdownButtonFormField<int?>(
-                    initialValue: _controller.selectedBiomeId.value,
-                    dropdownColor: Colors.grey.shade900,
-                    decoration: const InputDecoration(
-                      labelText: 'Filtrar por bioma',
-                      border: OutlineInputBorder(),
+                child: Card(
+                  color: Colors.black.withValues(alpha: 0.58),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: const BorderSide(
+                      color: Color(0x8A46B6EC),
+                      width: 1.2,
                     ),
-                    items: [
-                      const DropdownMenuItem<int?>(
-                        value: null,
-                        child: Text('Todos os biomas'),
-                      ),
-                      ..._controller.biomes.map(
-                        (b) => DropdownMenuItem<int?>(
-                          value: b.id,
-                          child: Text(b.name),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Obx(
+                      () => DropdownButtonFormField<int?>(
+                        initialValue: _controller.selectedBiomeId.value,
+                        dropdownColor: Colors.grey.shade900,
+                        decoration: const InputDecoration(
+                          labelText: 'Filtrar por bioma',
+                          border: OutlineInputBorder(),
                         ),
+                        items: [
+                          const DropdownMenuItem<int?>(
+                            value: null,
+                            child: Text('Todos os biomas'),
+                          ),
+                          ..._controller.biomes.map(
+                            (b) => DropdownMenuItem<int?>(
+                              value: b.id,
+                              child: Text(b.name),
+                            ),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          _controller.selectedBiomeId.value = value;
+                          _controller.loadTerritories();
+                        },
                       ),
-                    ],
-                    onChanged: (value) {
-                      _controller.selectedBiomeId.value = value;
-                      _controller.loadTerritories();
-                    },
+                    ),
                   ),
                 ),
               ),
@@ -82,7 +95,15 @@ class TerritoryIndexScreen extends StatelessWidget {
                       final TerritoryModel model =
                           _controller.territories[index];
                       return Card(
+                        margin: const EdgeInsets.only(bottom: 12),
                         color: Colors.black.withValues(alpha: 0.58),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          side: const BorderSide(
+                            color: Color(0x8A46B6EC),
+                            width: 1.2,
+                          ),
+                        ),
                         child: ListTile(
                           title: Text(
                             model.name,
