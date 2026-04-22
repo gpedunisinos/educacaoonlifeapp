@@ -67,11 +67,11 @@ class HomeScreen extends StatelessWidget {
         onTap: () => Get.toNamed('/connection_types'),
       ),
       _HomeMenu(
-        title: 'Agentes',
-        subtitle: 'Templates e chats de IA',
-        icon: Icons.psychology_alt_rounded,
-        color: const Color(0xFF56D5FF),
-        onTap: () => Get.toNamed('/chat_templates'),
+        title: 'Problemáticas',
+        subtitle: 'Visualização estilo grafo',
+        icon: Icons.account_tree_rounded,
+        color: const Color(0xFFFF8A65),
+        onTap: () => Get.toNamed('/nodes/graph'),
       ),
       _HomeMenu(
         title: 'Tipos de nó',
@@ -81,11 +81,11 @@ class HomeScreen extends StatelessWidget {
         onTap: () => Get.toNamed('/node_types'),
       ),
       _HomeMenu(
-        title: 'Problemáticas',
-        subtitle: 'Visualização estilo grafo',
-        icon: Icons.account_tree_rounded,
-        color: const Color(0xFFFF8A65),
-        onTap: () => Get.toNamed('/nodes/graph'),
+        title: 'Agentes',
+        subtitle: 'Templates e chats de IA',
+        icon: Icons.psychology_alt_rounded,
+        color: const Color(0xFF56D5FF),
+        onTap: () => Get.toNamed('/chat_templates'),
       ),
       _HomeMenu(
         title: 'Usuários',

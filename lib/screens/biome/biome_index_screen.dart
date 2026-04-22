@@ -100,17 +100,37 @@ class BiomeIndexScreen extends StatelessWidget {
   }
 
   void _confirmDelete(BiomeModel model) {
-    Get.defaultDialog(
-      title: 'Excluir bioma',
-      middleText: 'Deseja realmente excluir "${model.name}"?',
-      textCancel: 'Cancelar',
-      textConfirm: 'Excluir',
-      confirmTextColor: Colors.white,
-      onConfirm: () {
-        Get.back();
-        _controller.deleteBiome(model);
-      },
-    );
+    Get.dialog(
+      AlertDialog(
+        backgroundColor: const Color(0xFF09192E),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(
+            color: Color(0x8A46B6EC),
+            width: 1.2,
+          ),
+        ),
+        title: const Text(
+          'Confirmar exclusão',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: Text(
+          'Deseja realmente excluir "${model.name}"?',
+          style: const TextStyle(color: Color(0xFFA4C0E6)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: Get.back,
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFB3261E),
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () {
+              Get.back();
+
   }
 
   Future<void> _goToCreate() async {
