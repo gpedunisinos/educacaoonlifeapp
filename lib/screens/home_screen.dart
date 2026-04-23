@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
+import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 
 class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
@@ -97,12 +98,12 @@ class HomeScreen extends StatelessWidget {
     ];
 
     final userName = _controller.user.value?.name.trim();
-    final displayName =
-        (userName == null || userName.isEmpty) ? 'Usuário' : userName;
+    final displayName = (userName == null || userName.isEmpty) ? 'Usuário' : userName;
 
     return Scaffold(
       body: Stack(
         children: [
+          const Positioned.fill(child: StarfieldBackground()),
           const Positioned.fill(child: _CidigScenicBackground()),
           SafeArea(
             child: Column(
@@ -121,7 +122,6 @@ class HomeScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const _HeroPanel(),
                             const SizedBox(height: 20),
                             const _SectionTitle(
                               title: 'Módulos',
@@ -204,9 +204,9 @@ class _HomeTopBar extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxWidth < 760;
-        final logo = Image.asset('assets/logo_atopos.png', height: 52);
+        final logo = Image.asset('assets/logo_unisinos.png', height: 52);
         final title = Text(
-          'Plataforma para a Cidadania Digital',
+          'Plataforma GPe-dU',
           maxLines: compact ? 2 : 1,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
@@ -251,7 +251,10 @@ class _HomeTopBar extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    actions,
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: actions,
+                    ),
                   ],
                 )
               : Row(
@@ -260,7 +263,12 @@ class _HomeTopBar extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(child: title),
                     const SizedBox(width: 12),
-                    Flexible(child: actions),
+                    Flexible(
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: actions,
+                      ),
+                    ),
                   ],
                 ),
         );
@@ -277,8 +285,7 @@ class _ProfilePill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final initial =
-        userName.isEmpty ? '?' : userName.substring(0, 1).toUpperCase();
+    final initial = userName.isEmpty ? '?' : userName.substring(0, 1).toUpperCase();
 
     return Material(
       color: Colors.transparent,
@@ -323,60 +330,6 @@ class _ProfilePill extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _HeroPanel extends StatelessWidget {
-  const _HeroPanel();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xE80B2C5A), Color(0xD3051632)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0x2949C3F8)),
-      ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'CIDIG',
-            style: TextStyle(
-              color: Color(0xFF57D2FF),
-              fontSize: 13,
-              letterSpacing: 2,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          SizedBox(height: 8),
-          Text(
-            'Uma iniciativa internacional para o avanço da cidadania digital',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 28,
-              fontWeight: FontWeight.w700,
-              height: 1.2,
-            ),
-          ),
-          SizedBox(height: 10),
-          Text(
-            'Navegue por conteúdos, trilhas e ferramentas da plataforma com uma experiência visual unificada entre app e site.',
-            style: TextStyle(
-              color: Color(0xFFA6C5EF),
-              fontSize: 14,
-              height: 1.45,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -544,59 +497,61 @@ class _CidigScenicBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF020914), Color(0xFF03162F), Color(0xFF051F3D)],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
+    return Stack(
+      children: [
+        const Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xB3020914), Color(0xB303162F), Color(0xB3051F3D)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+          ),
         ),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            left: -260,
-            top: -180,
-            child: Container(
-              width: 560,
-              height: 560,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [Color(0x2E2AB9FF), Color(0x0032B9FF)],
-                ),
+        Positioned(
+          left: -260,
+          top: -180,
+          child: Container(
+            width: 560,
+            height: 560,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [Color(0x2E2AB9FF), Color(0x0032B9FF)],
               ),
             ),
           ),
-          Positioned(
-            right: -190,
-            top: 90,
-            child: Container(
-              width: 480,
-              height: 480,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [Color(0x1D58DFFF), Color(0x0058DFFF)],
-                ),
+        ),
+        Positioned(
+          right: -190,
+          top: 90,
+          child: Container(
+            width: 480,
+            height: 480,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [Color(0x1D58DFFF), Color(0x0058DFFF)],
               ),
             ),
           ),
-          Positioned(
-            left: -120,
-            bottom: -260,
-            child: Container(
-              width: 760,
-              height: 520,
-              decoration: const BoxDecoration(
-                gradient: RadialGradient(
-                  colors: [Color(0x1B00D0FF), Color(0x0000D0FF)],
-                ),
+        ),
+        Positioned(
+          left: -120,
+          bottom: -260,
+          child: Container(
+            width: 760,
+            height: 520,
+            decoration: const BoxDecoration(
+              gradient: RadialGradient(
+                colors: [Color(0x1B00D0FF), Color(0x0000D0FF)],
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
