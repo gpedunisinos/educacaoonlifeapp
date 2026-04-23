@@ -217,13 +217,11 @@ class _HomeTopBar extends StatelessWidget {
           ),
         );
 
-        final actions = Wrap(
-          alignment: WrapAlignment.end,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          spacing: 10,
-          runSpacing: 10,
+        final actions = Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             _ProfilePill(userName: userName, onTap: onProfileTap),
+            const SizedBox(width: 10),
             FilledButton.tonalIcon(
               onPressed: onLogout,
               icon: const Icon(Icons.logout_rounded, size: 18),
@@ -252,9 +250,15 @@ class _HomeTopBar extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: actions,
+                    SizedBox(
+                      width: double.infinity,
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: actions,
+                        ),
+                      ),
                     ),
                   ],
                 )
@@ -264,12 +268,7 @@ class _HomeTopBar extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(child: title),
                     const SizedBox(width: 12),
-                    Flexible(
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: actions,
-                      ),
-                    ),
+                    actions,
                   ],
                 ),
         );
@@ -316,7 +315,8 @@ class _ProfilePill extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Flexible(
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 180),
                 child: Text(
                   userName,
                   maxLines: 1,

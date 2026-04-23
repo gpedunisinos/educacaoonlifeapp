@@ -15,7 +15,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   <meta name="apple-mobile-web-app-title" content="Unisinos USP" />
-  <link rel="apple-touch-icon" href="icons/Icon-192.png" />
+  <link rel="apple-touch-icon" href="favicon.png" />
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png" />
@@ -39,6 +39,18 @@
     pdfjsLib.GlobalWorkerOptions.workerSrc =
       "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.9.155/pdf.worker.min.mjs";
     window.pdfjsLib = pdfjsLib;
+
+    // Evita cache legado do flutter_service_worker causando drift de assets/fontes.
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        registrations.forEach((registration) => {
+          const scriptUrl = registration.active?.scriptURL ?? registration.waiting?.scriptURL ?? registration.installing?.scriptURL ?? '';
+          if (scriptUrl.includes('flutter_service_worker.js')) {
+            registration.unregister();
+          }
+        });
+      });
+    }
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
