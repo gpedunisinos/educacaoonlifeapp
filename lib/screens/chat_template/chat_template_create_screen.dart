@@ -5,6 +5,7 @@ import 'package:unisinos_usp_app/models/chat_template_model.dart';
 import 'package:unisinos_usp_app/screens/chat_template/chat_template_form.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
+import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 
 class ChatTemplateCreateScreen extends StatelessWidget {
   const ChatTemplateCreateScreen({super.key});
@@ -23,6 +24,7 @@ class ChatTemplateCreateScreen extends StatelessWidget {
       body: Stack(
         children: [
           const Positioned.fill(child: StarfieldBackground()),
+          const Positioned.fill(child: CidigScenicBackground()),
           SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Obx(() {

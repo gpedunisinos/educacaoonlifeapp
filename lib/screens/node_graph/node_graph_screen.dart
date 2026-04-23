@@ -12,6 +12,7 @@ import 'package:unisinos_usp_app/models/node_type_model.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
+import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class NodeGraphScreen extends StatefulWidget {
@@ -69,6 +70,7 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
       body: Stack(
         children: [
           const Positioned.fill(child: StarfieldBackground()),
+          const Positioned.fill(child: CidigScenicBackground()),
           Obx(() {
             if (_controller.isLoading.value && _controller.graphNodes.isEmpty) {
               return const Center(child: CircularProgressIndicator(color: Colors.white));

@@ -6,6 +6,7 @@ import 'package:unisinos_usp_app/controllers/chat_template/chat_template_chat_co
 import 'package:unisinos_usp_app/models/chat_message_model.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
+import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 class ChatTemplateChatScreen extends StatefulWidget {
@@ -64,6 +65,7 @@ class _ChatTemplateChatScreenState extends State<ChatTemplateChatScreen> {
       body: Stack(
         children: [
           const Positioned.fill(child: StarfieldBackground()),
+          const Positioned.fill(child: CidigScenicBackground()),
           Column(
             children: [
               Obx(() {

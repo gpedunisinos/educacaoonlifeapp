@@ -5,6 +5,7 @@ import 'package:unisinos_usp_app/controllers/chat/chat_controller.dart';
 import 'package:unisinos_usp_app/models/chat_message_model.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
+import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:widgets_spo/widgets_spo.dart';
@@ -54,6 +55,7 @@ class _ChatScreenState extends State<ChatScreen> {
       body: Stack(
         children: [
           const Positioned.fill(child: StarfieldBackground()),
+          const Positioned.fill(child: CidigScenicBackground()),
           Column(
             children: [
             Container(

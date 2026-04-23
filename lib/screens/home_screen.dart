@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
+import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -104,7 +105,7 @@ class HomeScreen extends StatelessWidget {
       body: Stack(
         children: [
           const Positioned.fill(child: StarfieldBackground()),
-          const Positioned.fill(child: _CidigScenicBackground()),
+          const Positioned.fill(child: CidigScenicBackground()),
           SafeArea(
             child: Column(
               children: [
@@ -488,70 +489,6 @@ class _ModuleCard extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _CidigScenicBackground extends StatelessWidget {
-  const _CidigScenicBackground();
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        const Positioned.fill(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xB3020914), Color(0xB303162F), Color(0xB3051F3D)],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-            ),
-          ),
-        ),
-        Positioned(
-          left: -260,
-          top: -180,
-          child: Container(
-            width: 560,
-            height: 560,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [Color(0x2E2AB9FF), Color(0x0032B9FF)],
-              ),
-            ),
-          ),
-        ),
-        Positioned(
-          right: -190,
-          top: 90,
-          child: Container(
-            width: 480,
-            height: 480,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [Color(0x1D58DFFF), Color(0x0058DFFF)],
-              ),
-            ),
-          ),
-        ),
-        Positioned(
-          left: -120,
-          bottom: -260,
-          child: Container(
-            width: 760,
-            height: 520,
-            decoration: const BoxDecoration(
-              gradient: RadialGradient(
-                colors: [Color(0x1B00D0FF), Color(0x0000D0FF)],
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

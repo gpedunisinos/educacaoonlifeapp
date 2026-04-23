@@ -4,6 +4,7 @@ import 'package:unisinos_usp_app/controllers/user/user_index_controller.dart';
 import 'package:unisinos_usp_app/models/user_model.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
+import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 
 class UserIndexScreen extends StatefulWidget {
   const UserIndexScreen({super.key});
@@ -50,6 +51,7 @@ class _UserIndexScreenState extends State<UserIndexScreen> {
       body: Stack(
         children: [
           const Positioned.fill(child: StarfieldBackground()),
+          const Positioned.fill(child: CidigScenicBackground()),
           Column(
             children: [
               Padding(

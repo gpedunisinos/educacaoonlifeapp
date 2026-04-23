@@ -7,6 +7,7 @@ import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
+import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 
 class LivingClueMapCreateScreen extends StatefulWidget {
   const LivingClueMapCreateScreen({super.key});
@@ -130,6 +131,7 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
       body: Stack(
         children: [
           const Positioned.fill(child: StarfieldBackground()),
+          const Positioned.fill(child: CidigScenicBackground()),
           FlutterMap(
             mapController: _mapController,
             options: MapOptions(

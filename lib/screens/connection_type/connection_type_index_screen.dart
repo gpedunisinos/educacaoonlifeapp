@@ -4,6 +4,7 @@ import 'package:unisinos_usp_app/controllers/connection_type/connection_type_ind
 import 'package:unisinos_usp_app/models/connection_type_model.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
+import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 
 class ConnectionTypeIndexScreen extends StatelessWidget {
   ConnectionTypeIndexScreen({super.key});
@@ -31,6 +32,7 @@ class ConnectionTypeIndexScreen extends StatelessWidget {
       body: Stack(
         children: [
           const Positioned.fill(child: StarfieldBackground()),
+          const Positioned.fill(child: CidigScenicBackground()),
           Obx(() {
             if (_controller.isLoading.value &&
                 _controller.connectionTypes.isEmpty) {

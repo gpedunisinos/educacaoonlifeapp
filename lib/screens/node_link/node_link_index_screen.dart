@@ -4,6 +4,7 @@ import 'package:unisinos_usp_app/controllers/node_link/node_link_index_controlle
 import 'package:unisinos_usp_app/models/node_link_model.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
+import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 
 class NodeLinkIndexScreen extends StatefulWidget {
   NodeLinkIndexScreen({super.key});
@@ -50,6 +51,7 @@ class _NodeLinkIndexScreenState extends State<NodeLinkIndexScreen> {
       body: Stack(
         children: [
           const Positioned.fill(child: StarfieldBackground()),
+          const Positioned.fill(child: CidigScenicBackground()),
           Column(
             children: [
               Padding(

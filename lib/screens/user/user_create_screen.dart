@@ -5,6 +5,7 @@ import 'package:unisinos_usp_app/models/user_model.dart';
 import 'package:unisinos_usp_app/screens/user/user_form.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
+import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 
 class UserCreateScreen extends StatelessWidget {
   const UserCreateScreen({super.key});
@@ -23,6 +24,7 @@ class UserCreateScreen extends StatelessWidget {
       body: Stack(
         children: [
           const Positioned.fill(child: StarfieldBackground()),
+          const Positioned.fill(child: CidigScenicBackground()),
           SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Obx(

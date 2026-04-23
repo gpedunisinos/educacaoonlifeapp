@@ -4,6 +4,7 @@ import 'package:unisinos_usp_app/controllers/category/category_index_controller.
 import 'package:unisinos_usp_app/models/category_model.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
+import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 
 class CategoryIndexScreen extends StatelessWidget {
   CategoryIndexScreen({super.key});
@@ -12,9 +13,6 @@ class CategoryIndexScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.sizeOf(context).width;
-    final backgroundImageWidth = screenWidth < 400 ? screenWidth : 400.0;
-
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -35,17 +33,8 @@ class CategoryIndexScreen extends StatelessWidget {
           const Positioned.fill(
             child: StarfieldBackground(),
           ),
-          Positioned(
-            right: 0,
-            bottom: 0,
-            child: IgnorePointer(
-              child: Image.asset(
-                'assets/rieonlife/hub_controladora.png',
-                width: backgroundImageWidth,
-                fit: BoxFit.contain,
-                alignment: Alignment.bottomRight,
-              ),
-            ),
+          const Positioned.fill(
+            child: CidigScenicBackground(),
           ),
           Obx(() {
             if (_controller.isLoading.value && _controller.categories.isEmpty) {

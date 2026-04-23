@@ -4,6 +4,7 @@ import 'package:unisinos_usp_app/controllers/clue_connection/clue_connection_ind
 import 'package:unisinos_usp_app/models/clue_connection_model.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
+import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 
 class ClueConnectionIndexScreen extends StatelessWidget {
   ClueConnectionIndexScreen({super.key});
@@ -31,6 +32,7 @@ class ClueConnectionIndexScreen extends StatelessWidget {
       body: Stack(
         children: [
           const Positioned.fill(child: StarfieldBackground()),
+          const Positioned.fill(child: CidigScenicBackground()),
           Obx(() {
             if (_controller.isLoading.value &&
                 _controller.connections.isEmpty) {

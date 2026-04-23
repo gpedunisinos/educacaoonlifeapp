@@ -11,6 +11,7 @@ import 'package:unisinos_usp_app/webclients/living_clue_webclient.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
+import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class LivingClueConnectScreen extends StatefulWidget {
@@ -70,6 +71,7 @@ class _LivingClueConnectScreenState extends State<LivingClueConnectScreen> {
       body: Stack(
         children: [
           const Positioned.fill(child: StarfieldBackground()),
+          const Positioned.fill(child: CidigScenicBackground()),
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),

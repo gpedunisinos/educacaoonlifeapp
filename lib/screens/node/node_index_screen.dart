@@ -4,6 +4,7 @@ import 'package:unisinos_usp_app/controllers/node/node_index_controller.dart';
 import 'package:unisinos_usp_app/models/node_model.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
+import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 
 class NodeIndexScreen extends StatefulWidget {
   NodeIndexScreen({super.key});
@@ -55,6 +56,7 @@ class _NodeIndexScreenState extends State<NodeIndexScreen> {
       body: Stack(
         children: [
           const Positioned.fill(child: StarfieldBackground()),
+          const Positioned.fill(child: CidigScenicBackground()),
           Column(
             children: [
               Padding(

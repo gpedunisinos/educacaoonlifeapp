@@ -4,6 +4,7 @@ import 'package:unisinos_usp_app/controllers/living_clue/living_clue_index_contr
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
+import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 
 class LivingClueIndexScreen extends StatelessWidget {
   LivingClueIndexScreen({super.key});
@@ -13,9 +14,6 @@ class LivingClueIndexScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.sizeOf(context).width;
-    final backgroundImageWidth = screenWidth < 500 ? screenWidth : 500.0;
-
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -41,17 +39,8 @@ class LivingClueIndexScreen extends StatelessWidget {
           const Positioned.fill(
             child: StarfieldBackground(),
           ),
-          Positioned(
-            left: 0,
-            top: 0,
-            child: IgnorePointer(
-              child: Image.asset(
-                'assets/rieonlife/hub_educacao_corporativa.png',
-                width: backgroundImageWidth,
-                fit: BoxFit.contain,
-                alignment: Alignment.topLeft,
-              ),
-            ),
+          const Positioned.fill(
+            child: CidigScenicBackground(),
           ),
           Obx(() {
             if (_controller.isLoading.value &&
