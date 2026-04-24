@@ -8,6 +8,7 @@ import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/widgets/color_preview_card.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
+import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class NodeTypeUpdateScreen extends StatefulWidget {
@@ -46,6 +47,7 @@ class _NodeTypeUpdateScreenState extends State<NodeTypeUpdateScreen> {
       body: Stack(
         children: [
           const Positioned.fill(child: StarfieldBackground()),
+          const Positioned.fill(child: CidigScenicBackground()),
           Obx(() {
             if (_controller.nodeTypeId == null) {
               return const Center(

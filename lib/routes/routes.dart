@@ -7,6 +7,8 @@ import 'package:unisinos_usp_app/routes/clue_connections.dart';
 import 'package:unisinos_usp_app/routes/connection_types.dart';
 import 'package:unisinos_usp_app/routes/chat.dart';
 import 'package:unisinos_usp_app/routes/chat_templates.dart';
+import 'package:unisinos_usp_app/routes/biomes.dart';
+import 'package:unisinos_usp_app/routes/territories.dart';
 import 'package:unisinos_usp_app/routes/node_links.dart';
 import 'package:unisinos_usp_app/routes/node_types.dart';
 import 'package:unisinos_usp_app/routes/nodes.dart';
@@ -17,6 +19,8 @@ List<GetPage> appRoutes() => [
       GetPage(name: '/splash', page: () => const SplashScreen()),
       ...authRoutes(),
       GetPage(name: '/home', page: () => HomeScreen()),
+      ...biomeRoutes(),
+      ...territoryRoutes(),
       ...categoryRoutes(),
       ...livingClueRoutes(),
       ...clueConnectionRoutes(),

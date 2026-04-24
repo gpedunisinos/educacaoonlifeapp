@@ -9,6 +9,7 @@ import 'package:unisinos_usp_app/webclients/file_webclient.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
+import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class LivingClueUpdateScreen extends StatefulWidget {
@@ -19,7 +20,8 @@ class LivingClueUpdateScreen extends StatefulWidget {
 }
 
 class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
-  final LivingClueUpdateController _controller = Get.find<LivingClueUpdateController>();
+  final LivingClueUpdateController _controller =
+      Get.find<LivingClueUpdateController>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final TextEditingController _nameController = TextEditingController();
@@ -70,15 +72,22 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
       body: Stack(
         children: [
           const Positioned.fill(child: StarfieldBackground()),
+          const Positioned.fill(child: CidigScenicBackground()),
           Obx(() {
             if (_controller.livingClueId == null) {
-              return const Center(child: Text('Pista não informada.', style: TextStyle(color: Colors.white)));
+              return const Center(
+                  child: Text('Pista não informada.',
+                      style: TextStyle(color: Colors.white)));
             }
-            if (_controller.isLoading.value && _controller.livingClue.value == null) {
-              return const Center(child: CircularProgressIndicator(color: Colors.white));
+            if (_controller.isLoading.value &&
+                _controller.livingClue.value == null) {
+              return const Center(
+                  child: CircularProgressIndicator(color: Colors.white));
             }
             if (_controller.livingClue.value == null) {
-              return const Center(child: Text('Pista não encontrada.', style: TextStyle(color: Colors.white)));
+              return const Center(
+                  child: Text('Pista não encontrada.',
+                      style: TextStyle(color: Colors.white)));
             }
 
             if (!_filled && _controller.livingClue.value != null) {
@@ -108,38 +117,40 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                    _buildInfoCard(context),
-                    const SizedBox(height: 12),
-                    _buildLocationCard(),
-                    const SizedBox(height: 12),
-                    _buildAttachmentsCard(),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Obx(() {
-                            final bool loading = _controller.isLoading.value;
-                            final String buttonTitle = loading ? 'Atualizando...' : 'Atualizar';
-                            return ActionButton(
-                              theme: ActionButtonTheme.blue,
-                              title: buttonTitle,
-                              onPressed: loading ? null : _save,
-                            );
-                          }),
+                        _buildInfoCard(context),
+                        const SizedBox(height: 12),
+                        _buildLocationCard(),
+                        const SizedBox(height: 12),
+                        _buildAttachmentsCard(),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Obx(() {
+                                final bool loading =
+                                    _controller.isLoading.value;
+                                final String buttonTitle =
+                                    loading ? 'Atualizando...' : 'Atualizar';
+                                return ActionButton(
+                                  theme: ActionButtonTheme.blue,
+                                  title: buttonTitle,
+                                  onPressed: loading ? null : _save,
+                                );
+                              }),
+                            ),
+                            const SizedBox(width: 12),
+                            OutlinedButton.icon(
+                              onPressed: _controller.livingClue.value == null
+                                  ? null
+                                  : () => Get.toNamed(
+                                        '/living_clues/connect',
+                                        arguments: _controller.livingClue.value,
+                                      ),
+                              icon: const Icon(Icons.share),
+                              label: const Text('Vincular'),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 12),
-                        OutlinedButton.icon(
-                          onPressed: _controller.livingClue.value == null
-                              ? null
-                              : () => Get.toNamed(
-                                    '/living_clues/connect',
-                                    arguments: _controller.livingClue.value,
-                                  ),
-                          icon: const Icon(Icons.share),
-                          label: const Text('Vincular'),
-                        ),
-                      ],
-                    ),
                       ],
                     ),
                   ),
@@ -161,7 +172,13 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
 
   Widget _buildInfoCard(BuildContext context) {
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(
+          color: Color(0x8A46B6EC),
+          width: 1.2,
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -173,7 +190,10 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
                 const SizedBox(width: 8),
                 Text(
                   'Informações principais',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w700),
                 ),
               ],
             ),
@@ -191,7 +211,8 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
               hintText: 'Categoria',
               readOnly: true,
               controller: _categoryController,
-              validator: (_) => _categoryId == null ? 'Categoria obrigatória' : null,
+              validator: (_) =>
+                  _categoryId == null ? 'Categoria obrigatória' : null,
             ),
             Insets.large.height,
             InputText(
@@ -221,7 +242,13 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
 
   Widget _buildLocationCard() {
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(
+          color: Color(0x8A46B6EC),
+          width: 1.2,
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -231,7 +258,8 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
               children: [
                 const Icon(Icons.place_outlined, color: Colors.teal),
                 const SizedBox(width: 8),
-                const Text('Localização e status', style: TextStyle(fontWeight: FontWeight.w700)),
+                const Text('Localização e status',
+                    style: TextStyle(fontWeight: FontWeight.w700)),
               ],
             ),
             Insets.large.height,
@@ -272,7 +300,13 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
 
   Widget _buildAttachmentsCard() {
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(
+          color: Color(0x8A46B6EC),
+          width: 1.2,
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -282,10 +316,14 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
               children: [
                 const Icon(Icons.attachment_outlined, color: Colors.deepOrange),
                 const SizedBox(width: 8),
-                const Text('Arquivos e evidências', style: TextStyle(fontWeight: FontWeight.w700)),
+                const Text('Arquivos e evidências',
+                    style: TextStyle(fontWeight: FontWeight.w700)),
                 const Spacer(),
                 if (_uploadingFile || _loadingAttachments)
-                  const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
+                  const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2)),
               ],
             ),
             const SizedBox(height: 10),
@@ -312,11 +350,13 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
                             children: [
                               Container(
                                 width: 200,
-                                constraints: const BoxConstraints(minHeight: 140),
+                                constraints:
+                                    const BoxConstraints(minHeight: 140),
                                 decoration: BoxDecoration(
                                   color: Colors.grey.shade50,
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.grey.shade200),
+                                  border:
+                                      Border.all(color: Colors.grey.shade200),
                                 ),
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(12),
@@ -330,8 +370,11 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
                                   color: Colors.black.withOpacity(0.55),
                                   shape: const CircleBorder(),
                                   child: IconButton(
-                                    icon: const Icon(Icons.close, color: Colors.white, size: 18),
-                                    onPressed: _uploadingFile ? null : () => _removeAttachment(file),
+                                    icon: const Icon(Icons.close,
+                                        color: Colors.white, size: 18),
+                                    onPressed: _uploadingFile
+                                        ? null
+                                        : () => _removeAttachment(file),
                                   ),
                                 ),
                               ),
@@ -357,7 +400,8 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
                 const SizedBox(width: 10),
                 ElevatedButton.icon(
                   icon: const Icon(Icons.cloud_upload),
-                  label: Text(_uploadingFile ? 'Enviando...' : 'Enviar arquivo'),
+                  label:
+                      Text(_uploadingFile ? 'Enviando...' : 'Enviar arquivo'),
                   onPressed: _uploadingFile ? null : _uploadSelectedFile,
                 ),
               ],
@@ -393,16 +437,22 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
     _initialMetadata = model.metadata ?? {};
   }
 
-  Future<void> _loadCategoryMetadata(int categoryId, Map<String, dynamic> existingMetadata) async {
+  Future<void> _loadCategoryMetadata(
+      int categoryId, Map<String, dynamic> existingMetadata) async {
     setState(() => _loadingCategory = true);
     try {
       final category = await CategoryWebclient().fetchById(categoryId);
       _categoryId = category.id;
       _categoryController.text = category.name;
-      _metadataTags = category.metadataTags.split(',').map((t) => t.trim()).where((t) => t.isNotEmpty).toList();
+      _metadataTags = category.metadataTags
+          .split(',')
+          .map((t) => t.trim())
+          .where((t) => t.isNotEmpty)
+          .toList();
       for (final tag in _metadataTags) {
         final initial = existingMetadata[tag]?.toString() ?? '';
-        _metadataControllers.putIfAbsent(tag, () => TextEditingController(text: initial));
+        _metadataControllers.putIfAbsent(
+            tag, () => TextEditingController(text: initial));
       }
       _metadataLoaded = true;
       setState(() {});
@@ -524,10 +574,14 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
       id: _controller.livingClue.value?.id ?? _controller.livingClueId ?? 0,
       name: _nameController.text.trim(),
       categoryId: _categoryId!,
-      description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
+      description: _descriptionController.text.trim().isEmpty
+          ? null
+          : _descriptionController.text.trim(),
       latitude: latitude,
       longitude: longitude,
-      imageUrl: _imageUrlController.text.trim().isEmpty ? null : _imageUrlController.text.trim(),
+      imageUrl: _imageUrlController.text.trim().isEmpty
+          ? null
+          : _imageUrlController.text.trim(),
       metadata: metadata.isEmpty ? null : metadata,
       isActive: _isActive,
     );

@@ -4,11 +4,13 @@ import 'package:unisinos_usp_app/controllers/connection_type/connection_type_ind
 import 'package:unisinos_usp_app/models/connection_type_model.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
+import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 
 class ConnectionTypeIndexScreen extends StatelessWidget {
   ConnectionTypeIndexScreen({super.key});
 
-  final ConnectionTypeIndexController _controller = Get.find<ConnectionTypeIndexController>();
+  final ConnectionTypeIndexController _controller =
+      Get.find<ConnectionTypeIndexController>();
 
   @override
   Widget build(BuildContext context) {
@@ -30,90 +32,110 @@ class ConnectionTypeIndexScreen extends StatelessWidget {
       body: Stack(
         children: [
           const Positioned.fill(child: StarfieldBackground()),
+          const Positioned.fill(child: CidigScenicBackground()),
           Obx(() {
-            if (_controller.isLoading.value && _controller.connectionTypes.isEmpty) {
-              return const Center(child: CircularProgressIndicator(color: Colors.white));
+            if (_controller.isLoading.value &&
+                _controller.connectionTypes.isEmpty) {
+              return const Center(
+                  child: CircularProgressIndicator(color: Colors.white));
             }
             if (_controller.connectionTypes.isEmpty) {
-              return const Center(child: Text('Nenhum tipo cadastrado.', style: TextStyle(color: Colors.white)));
+              return const Center(
+                  child: Text('Nenhum tipo cadastrado.',
+                      style: TextStyle(color: Colors.white)));
             }
             return Column(
               children: [
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
-                  itemCount: _controller.connectionTypes.length,
-                  itemBuilder: (_, index) {
-                    final ConnectionTypeModel model = _controller.connectionTypes[index];
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      color: Colors.black.withValues(alpha: 0.58),
-                      child: Padding(
-                        padding: const EdgeInsets.all(14),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    model.name,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium
-                                        ?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
-                                  ),
-                                ),
-                                Chip(
-                                  backgroundColor: Colors.blue.withValues(alpha: 0.2),
-                                  label: Text(
-                                    model.isDirectional ? 'Direcional' : 'Bidirecional',
-                                    style: TextStyle(
-                                      color: Colors.blue.shade900,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
+                    itemCount: _controller.connectionTypes.length,
+                    itemBuilder: (_, index) {
+                      final ConnectionTypeModel model =
+                          _controller.connectionTypes[index];
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          side: const BorderSide(
+                            color: Color(0x8A46B6EC),
+                            width: 1.2,
+                          ),
+                        ),
+                        color: Colors.black.withValues(alpha: 0.58),
+                        child: Padding(
+                          padding: const EdgeInsets.all(14),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      model.name,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white),
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Estilo: ${model.strokeStyle}',
-                              style: const TextStyle(color: Colors.white70),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                IconButton(
-                                  color: Colors.white,
-                                  icon: const Icon(Icons.edit),
-                                  onPressed: _controller.isLoading.value ? null : () => _goToUpdate(model),
-                                  tooltip: 'Editar',
-                                ),
-                                IconButton(
-                                  color: Colors.white,
-                                  icon: const Icon(Icons.delete_outline),
-                                  onPressed:
-                                      _controller.isLoading.value ? null : () => _confirmDelete(model),
-                                  tooltip: 'Excluir',
-                                ),
-                              ],
-                            ),
-                          ],
+                                  Chip(
+                                    backgroundColor:
+                                        Colors.blue.withValues(alpha: 0.2),
+                                    label: Text(
+                                      model.isDirectional
+                                          ? 'Direcional'
+                                          : 'Bidirecional',
+                                      style: TextStyle(
+                                        color: Colors.blue.shade900,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'Estilo: ${model.strokeStyle}',
+                                style: const TextStyle(color: Colors.white70),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  IconButton(
+                                    color: Colors.white,
+                                    icon: const Icon(Icons.edit),
+                                    onPressed: _controller.isLoading.value
+                                        ? null
+                                        : () => _goToUpdate(model),
+                                    tooltip: 'Editar',
+                                  ),
+                                  IconButton(
+                                    color: Colors.white,
+                                    icon: const Icon(Icons.delete_outline),
+                                    onPressed: _controller.isLoading.value
+                                        ? null
+                                        : () => _confirmDelete(model),
+                                    tooltip: 'Excluir',
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
-              ),
-              if (_controller.isLoading.value)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  child: CircularProgressIndicator(),
-                ),
+                if (_controller.isLoading.value)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    child: CircularProgressIndicator(),
+                  ),
               ],
             );
           }),
@@ -142,7 +164,8 @@ class ConnectionTypeIndexScreen extends StatelessWidget {
   }
 
   Future<void> _goToUpdate(ConnectionTypeModel model) async {
-    await Get.toNamed('/connection_types/update', parameters: {'id': model.id.toString()});
+    await Get.toNamed('/connection_types/update',
+        parameters: {'id': model.id.toString()});
     await _controller.loadConnectionTypes();
   }
 }

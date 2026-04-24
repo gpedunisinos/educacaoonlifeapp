@@ -4,16 +4,19 @@ import 'package:unisinos_usp_app/controllers/chat_template/chat_template_index_c
 import 'package:unisinos_usp_app/models/chat_template_model.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
+import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 
 class ChatTemplateIndexScreen extends StatefulWidget {
   ChatTemplateIndexScreen({super.key});
 
   @override
-  State<ChatTemplateIndexScreen> createState() => _ChatTemplateIndexScreenState();
+  State<ChatTemplateIndexScreen> createState() =>
+      _ChatTemplateIndexScreenState();
 }
 
 class _ChatTemplateIndexScreenState extends State<ChatTemplateIndexScreen> {
-  final ChatTemplateIndexController _controller = Get.find<ChatTemplateIndexController>();
+  final ChatTemplateIndexController _controller =
+      Get.find<ChatTemplateIndexController>();
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -50,9 +53,11 @@ class _ChatTemplateIndexScreenState extends State<ChatTemplateIndexScreen> {
       body: Stack(
         children: [
           const Positioned.fill(child: StarfieldBackground()),
+          const Positioned.fill(child: CidigScenicBackground()),
           Obx(() {
             if (_controller.isLoading.value && _controller.templates.isEmpty) {
-              return const Center(child: CircularProgressIndicator(color: Colors.white));
+              return const Center(
+                  child: CircularProgressIndicator(color: Colors.white));
             }
 
             if (_controller.templates.isEmpty) {
@@ -61,7 +66,9 @@ class _ChatTemplateIndexScreenState extends State<ChatTemplateIndexScreen> {
                 child: ListView(
                   children: const [
                     SizedBox(height: 220),
-                    Center(child: Text('Nenhum template cadastrado.', style: TextStyle(color: Colors.white))),
+                    Center(
+                        child: Text('Nenhum template cadastrado.',
+                            style: TextStyle(color: Colors.white))),
                   ],
                 ),
               );
@@ -72,26 +79,41 @@ class _ChatTemplateIndexScreenState extends State<ChatTemplateIndexScreen> {
               child: ListView.builder(
                 controller: _scrollController,
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-                itemCount: _controller.templates.length + (_controller.isLoadingMore.value ? 1 : 0),
+                itemCount: _controller.templates.length +
+                    (_controller.isLoadingMore.value ? 1 : 0),
                 itemBuilder: (_, index) {
                   if (index >= _controller.templates.length) {
                     return const Padding(
                       padding: EdgeInsets.symmetric(vertical: 16),
-                      child: Center(child: CircularProgressIndicator(color: Colors.white)),
+                      child: Center(
+                          child:
+                              CircularProgressIndicator(color: Colors.white)),
                     );
                   }
 
-                  final ChatTemplateModel template = _controller.templates[index];
+                  final ChatTemplateModel template =
+                      _controller.templates[index];
                   return Card(
                     margin: const EdgeInsets.only(bottom: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: const BorderSide(
+                        color: Color(0x8A46B6EC),
+                        width: 1.2,
+                      ),
+                    ),
                     color: Colors.black.withValues(alpha: 0.58),
                     child: ListTile(
-                      title: Text(template.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      title: Text(template.name,
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold)),
                       subtitle: Text(
                         template.description?.isNotEmpty == true
                             ? template.description!
-                            : (template.systemInstruction?.isNotEmpty == true ? template.systemInstruction! : 'Sem descrição'),
+                            : (template.systemInstruction?.isNotEmpty == true
+                                ? template.systemInstruction!
+                                : 'Sem descrição'),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(color: Colors.white70),
@@ -176,7 +198,8 @@ class _ChatTemplateIndexScreenState extends State<ChatTemplateIndexScreen> {
 
   void _onScroll() {
     if (!_scrollController.hasClients) return;
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       _controller.loadMore();
     }
   }

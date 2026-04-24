@@ -19,7 +19,7 @@ pipelines:
             - git config --global credential.helper store
             - echo "https://x-token-auth:$BITBUCKET_TOKEN@bitbucket.org" > ~/.git-credentials
             - flutter config --enable-web
-            - flutter build web
+            - flutter build web --pwa-strategy=none --no-tree-shake-icons
           artifacts:
             - build/web/**
 
@@ -30,4 +30,5 @@ pipelines:
             - "sshlinux"
           script:
             - ssh-keyscan -H 18.230.235.236 >> ~/.ssh/known_hosts
-            - scp -r build/web/* ubuntu@18.230.235.236:/var/www/unisinos_usp_app
+            - ssh ubuntu@18.230.235.236 "rm -rf /var/www/unisinos_usp_app/*"
+            - scp -r build/web/. ubuntu@18.230.235.236:/var/www/unisinos_usp_app/

@@ -6,6 +6,7 @@ import 'package:unisinos_usp_app/models/connection_type_model.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
+import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class ConnectionTypeUpdateScreen extends StatefulWidget {
@@ -44,6 +45,7 @@ class _ConnectionTypeUpdateScreenState extends State<ConnectionTypeUpdateScreen>
       body: Stack(
         children: [
           const Positioned.fill(child: StarfieldBackground()),
+          const Positioned.fill(child: CidigScenicBackground()),
           Obx(() {
             if (_controller.connectionTypeId == null) {
               return const Center(child: Text('Tipo não informado.', style: TextStyle(color: Colors.white)));

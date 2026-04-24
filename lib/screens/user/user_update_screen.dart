@@ -5,6 +5,7 @@ import 'package:unisinos_usp_app/models/user_model.dart';
 import 'package:unisinos_usp_app/screens/user/user_form.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
+import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 
 class UserUpdateScreen extends StatelessWidget {
   const UserUpdateScreen({super.key});
@@ -23,6 +24,7 @@ class UserUpdateScreen extends StatelessWidget {
       body: Stack(
         children: [
           const Positioned.fill(child: StarfieldBackground()),
+          const Positioned.fill(child: CidigScenicBackground()),
           Obx(() {
             if (controller.userId == null) {
               return const Center(

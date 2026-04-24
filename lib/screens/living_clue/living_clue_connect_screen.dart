@@ -11,6 +11,7 @@ import 'package:unisinos_usp_app/webclients/living_clue_webclient.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
+import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class LivingClueConnectScreen extends StatefulWidget {
@@ -70,6 +71,7 @@ class _LivingClueConnectScreenState extends State<LivingClueConnectScreen> {
       body: Stack(
         children: [
           const Positioned.fill(child: StarfieldBackground()),
+          const Positioned.fill(child: CidigScenicBackground()),
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
@@ -81,7 +83,12 @@ class _LivingClueConnectScreenState extends State<LivingClueConnectScreen> {
                   Card(
                     elevation: 2,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
+                      borderRadius: BorderRadius.circular(16),
+                      side: const BorderSide(
+                        color: Color(0x8A46B6EC),
+                        width: 1.2,
+                      ),
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Form(
@@ -198,6 +205,13 @@ class _LivingClueConnectScreenState extends State<LivingClueConnectScreen> {
   Widget _buildSourceCard(BuildContext context) {
     if (_sourceClue == null) {
       return Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(
+            color: Color(0x8A46B6EC),
+            width: 1.2,
+          ),
+        ),
         color: Colors.red.shade50,
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -211,7 +225,13 @@ class _LivingClueConnectScreenState extends State<LivingClueConnectScreen> {
 
     final clue = _sourceClue!;
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(
+          color: Color(0x8A46B6EC),
+          width: 1.2,
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

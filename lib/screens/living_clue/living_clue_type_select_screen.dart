@@ -7,6 +7,7 @@ import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
+import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class LivingClueTypeSelectScreen extends StatefulWidget {
@@ -41,6 +42,7 @@ class _LivingClueTypeSelectScreenState
       body: Stack(
         children: [
           const Positioned.fill(child: StarfieldBackground()),
+          const Positioned.fill(child: CidigScenicBackground()),
           SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Form(
@@ -48,6 +50,10 @@ class _LivingClueTypeSelectScreenState
               child: Card(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
+                  side: const BorderSide(
+                    color: Color(0x8A46B6EC),
+                    width: 1.2,
+                  ),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -135,7 +141,8 @@ class _LivingClueTypeSelectScreenState
   }
 
   Future<void> _continue() async {
-    if (!(_formKey.currentState?.validate() ?? false) || _selectedType == null) {
+    if (!(_formKey.currentState?.validate() ?? false) ||
+        _selectedType == null) {
       return;
     }
 
@@ -144,7 +151,8 @@ class _LivingClueTypeSelectScreenState
       '/living_clues/pre_create',
       arguments: <String, dynamic>{
         'type': _selectedType,
-        if (args is Map && args['latitude'] != null) 'latitude': args['latitude'],
+        if (args is Map && args['latitude'] != null)
+          'latitude': args['latitude'],
         if (args is Map && args['longitude'] != null)
           'longitude': args['longitude'],
       },

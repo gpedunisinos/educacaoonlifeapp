@@ -4,11 +4,13 @@ import 'package:unisinos_usp_app/controllers/clue_connection/clue_connection_ind
 import 'package:unisinos_usp_app/models/clue_connection_model.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
+import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 
 class ClueConnectionIndexScreen extends StatelessWidget {
   ClueConnectionIndexScreen({super.key});
 
-  final ClueConnectionIndexController _controller = Get.find<ClueConnectionIndexController>();
+  final ClueConnectionIndexController _controller =
+      Get.find<ClueConnectionIndexController>();
 
   @override
   Widget build(BuildContext context) {
@@ -30,12 +32,17 @@ class ClueConnectionIndexScreen extends StatelessWidget {
       body: Stack(
         children: [
           const Positioned.fill(child: StarfieldBackground()),
+          const Positioned.fill(child: CidigScenicBackground()),
           Obx(() {
-            if (_controller.isLoading.value && _controller.connections.isEmpty) {
-              return const Center(child: CircularProgressIndicator(color: Colors.white));
+            if (_controller.isLoading.value &&
+                _controller.connections.isEmpty) {
+              return const Center(
+                  child: CircularProgressIndicator(color: Colors.white));
             }
             if (_controller.connections.isEmpty) {
-              return const Center(child: Text('Nenhuma conexão cadastrada.', style: TextStyle(color: Colors.white)));
+              return const Center(
+                  child: Text('Nenhuma conexão cadastrada.',
+                      style: TextStyle(color: Colors.white)));
             }
 
             return Column(
@@ -45,10 +52,17 @@ class ClueConnectionIndexScreen extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
                     itemCount: _controller.connections.length,
                     itemBuilder: (_, index) {
-                      final ClueConnectionModel model = _controller.connections[index];
+                      final ClueConnectionModel model =
+                          _controller.connections[index];
                       return Card(
                         margin: const EdgeInsets.only(bottom: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          side: const BorderSide(
+                            color: Color(0x8A46B6EC),
+                            width: 1.2,
+                          ),
+                        ),
                         color: Colors.black.withValues(alpha: 0.58),
                         child: Padding(
                           padding: const EdgeInsets.all(14),
@@ -60,17 +74,23 @@ class ClueConnectionIndexScreen extends StatelessWidget {
                                   Expanded(
                                     child: Text(
                                       '${_controller.clueLabel(model.sourceClueId)} → ${_controller.clueLabel(model.targetClueId)}',
-                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(
                                             fontWeight: FontWeight.bold,
                                             color: Colors.white,
                                           ),
                                     ),
                                   ),
                                   Chip(
-                                    backgroundColor: Colors.orange.withValues(alpha: 0.2),
+                                    backgroundColor:
+                                        Colors.orange.withValues(alpha: 0.2),
                                     label: Text(
-                                      _controller.connectionTypeLabel(model.connectionTypeId),
-                                      style: TextStyle(color: Colors.orange.shade900),
+                                      _controller.connectionTypeLabel(
+                                          model.connectionTypeId),
+                                      style: TextStyle(
+                                          color: Colors.orange.shade900),
                                     ),
                                   ),
                                 ],
@@ -87,13 +107,17 @@ class ClueConnectionIndexScreen extends StatelessWidget {
                                   IconButton(
                                     color: Colors.white,
                                     icon: const Icon(Icons.edit),
-                                    onPressed: _controller.isLoading.value ? null : () => _goToUpdate(model),
+                                    onPressed: _controller.isLoading.value
+                                        ? null
+                                        : () => _goToUpdate(model),
                                     tooltip: 'Editar',
                                   ),
                                   IconButton(
                                     color: Colors.white,
                                     icon: const Icon(Icons.delete_outline),
-                                    onPressed: _controller.isLoading.value ? null : () => _confirmDelete(model),
+                                    onPressed: _controller.isLoading.value
+                                        ? null
+                                        : () => _confirmDelete(model),
                                     tooltip: 'Excluir',
                                   ),
                                 ],
@@ -138,7 +162,8 @@ class ClueConnectionIndexScreen extends StatelessWidget {
   }
 
   Future<void> _goToUpdate(ClueConnectionModel model) async {
-    await Get.toNamed('/clue_connections/update', parameters: {'id': model.id.toString()});
+    await Get.toNamed('/clue_connections/update',
+        parameters: {'id': model.id.toString()});
     await _controller.loadConnections();
   }
 }

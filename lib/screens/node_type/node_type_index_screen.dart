@@ -4,6 +4,7 @@ import 'package:unisinos_usp_app/controllers/node_type/node_type_index_controlle
 import 'package:unisinos_usp_app/models/node_type_model.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
+import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 
 class NodeTypeIndexScreen extends StatefulWidget {
   NodeTypeIndexScreen({super.key});
@@ -13,7 +14,8 @@ class NodeTypeIndexScreen extends StatefulWidget {
 }
 
 class _NodeTypeIndexScreenState extends State<NodeTypeIndexScreen> {
-  final NodeTypeIndexController _controller = Get.find<NodeTypeIndexController>();
+  final NodeTypeIndexController _controller =
+      Get.find<NodeTypeIndexController>();
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
@@ -50,6 +52,7 @@ class _NodeTypeIndexScreenState extends State<NodeTypeIndexScreen> {
       body: Stack(
         children: [
           const Positioned.fill(child: StarfieldBackground()),
+          const Positioned.fill(child: CidigScenicBackground()),
           Column(
             children: [
               Padding(
@@ -63,7 +66,8 @@ class _NodeTypeIndexScreenState extends State<NodeTypeIndexScreen> {
                     prefixIcon: const Icon(Icons.search, color: Colors.white70),
                     suffixIcon: IconButton(
                       icon: const Icon(Icons.refresh, color: Colors.white70),
-                      onPressed: () => _controller.applySearch(_searchController.text),
+                      onPressed: () =>
+                          _controller.applySearch(_searchController.text),
                     ),
                     filled: true,
                     fillColor: Colors.white.withValues(alpha: 0.08),
@@ -78,8 +82,10 @@ class _NodeTypeIndexScreenState extends State<NodeTypeIndexScreen> {
               ),
               Expanded(
                 child: Obx(() {
-                  if (_controller.isLoading.value && _controller.nodeTypes.isEmpty) {
-                    return const Center(child: CircularProgressIndicator(color: Colors.white));
+                  if (_controller.isLoading.value &&
+                      _controller.nodeTypes.isEmpty) {
+                    return const Center(
+                        child: CircularProgressIndicator(color: Colors.white));
                   }
                   if (_controller.nodeTypes.isEmpty) {
                     return const Center(
@@ -92,7 +98,8 @@ class _NodeTypeIndexScreenState extends State<NodeTypeIndexScreen> {
                   return ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                    itemCount: _controller.nodeTypes.length + (_controller.isLoadingMore.value ? 1 : 0),
+                    itemCount: _controller.nodeTypes.length +
+                        (_controller.isLoadingMore.value ? 1 : 0),
                     itemBuilder: (_, index) {
                       if (index >= _controller.nodeTypes.length) {
                         return const Padding(
@@ -119,7 +126,8 @@ class _NodeTypeIndexScreenState extends State<NodeTypeIndexScreen> {
 
   void _onScroll() {
     if (!_scrollController.hasClients) return;
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       _controller.loadMore();
     }
   }
@@ -146,7 +154,8 @@ class _NodeTypeIndexScreenState extends State<NodeTypeIndexScreen> {
   }
 
   Future<void> _goToUpdate(NodeTypeModel model) async {
-    final updated = await Get.toNamed('/node_types/update', parameters: {'id': model.id.toString()});
+    final updated = await Get.toNamed('/node_types/update',
+        parameters: {'id': model.id.toString()});
     if (updated == true) {
       await _controller.loadInitial();
     }
@@ -170,7 +179,13 @@ class _NodeTypeCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       color: Colors.black.withValues(alpha: 0.58),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(
+          color: Color(0x8A46B6EC),
+          width: 1.2,
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Row(
