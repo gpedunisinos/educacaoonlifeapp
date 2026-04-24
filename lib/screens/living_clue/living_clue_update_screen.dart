@@ -68,6 +68,17 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Editar pista viva'),
+        actions: [
+          Obx(() {
+            return IconButton(
+              tooltip: 'Abrir painel de conexão',
+              onPressed: _controller.livingClue.value == null
+                  ? null
+                  : _openConnectionPanel,
+              icon: const Icon(Icons.share_outlined),
+            );
+          }),
+        ],
       ),
       body: Stack(
         children: [
@@ -119,6 +130,8 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
                       children: [
                         _buildInfoCard(context),
                         const SizedBox(height: 12),
+                        _buildConnectionCard(),
+                        const SizedBox(height: 12),
                         _buildLocationCard(),
                         const SizedBox(height: 12),
                         _buildAttachmentsCard(),
@@ -142,12 +155,9 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
                             OutlinedButton.icon(
                               onPressed: _controller.livingClue.value == null
                                   ? null
-                                  : () => Get.toNamed(
-                                        '/living_clues/connect',
-                                        arguments: _controller.livingClue.value,
-                                      ),
+                                  : _openConnectionPanel,
                               icon: const Icon(Icons.share),
-                              label: const Text('Vincular'),
+                              label: const Text('Conectar'),
                             ),
                           ],
                         ),
@@ -291,6 +301,48 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
               title: const Text('Ativo'),
               value: _isActive,
               onChanged: (val) => setState(() => _isActive = val),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildConnectionCard() {
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(
+          color: Color(0x8A46B6EC),
+          width: 1.2,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            const Icon(Icons.hub_outlined, color: Colors.purple),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Painel de conexão',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    'Conecte esta pista viva a outras pistas.',
+                    style: TextStyle(color: Colors.black54),
+                  ),
+                ],
+              ),
+            ),
+            OutlinedButton.icon(
+              onPressed: _openConnectionPanel,
+              icon: const Icon(Icons.open_in_new),
+              label: const Text('Abrir'),
             ),
           ],
         ),
@@ -599,5 +651,12 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
         .where((part) => part.isNotEmpty)
         .map((part) => part[0].toUpperCase() + part.substring(1))
         .join(' ');
+  }
+
+  Future<void> _openConnectionPanel() async {
+    final LivingClueModel? model = _controller.livingClue.value;
+    if (model == null) return;
+
+    await Get.toNamed('/living_clues/connect', arguments: model);
   }
 }

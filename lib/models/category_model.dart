@@ -1,11 +1,11 @@
 class CategoryType {
   static const String living = 'Pista Viva';
-  static const String online = 'Pista Online';
-  static const String geographic = 'Pista Geográfica';
+  static const String data = 'Pista de Dados';
+  static const String geographic = 'Pista Georefrenciada';
 
   static const List<String> values = <String>[
     living,
-    online,
+    data,
     geographic,
   ];
 }
