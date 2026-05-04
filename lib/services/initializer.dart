@@ -24,12 +24,11 @@ class Initializer {
         permanent: true);
     Get.put<AiAssistantController>(AiAssistantController(), permanent: true);
 
-    // Temporarily disable Firebase initialization.
-    // if (_supportsFirebaseCore()) {
-    //   await Firebase.initializeApp(
-    //     options: DefaultFirebaseOptions.currentPlatform,
-    //   );
-    // }
+    if (_supportsFirebaseCore()) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
 
     NavigationObserver.initialize(homeResolver: () {
       final controller = Get.find<UserController>();

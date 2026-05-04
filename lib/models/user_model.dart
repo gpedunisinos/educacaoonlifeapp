@@ -8,6 +8,7 @@ class UserModel {
     required this.profile,
     this.phone,
     this.password,
+    this.isGoogleAuth = false,
     this.createdAt,
     this.updatedAt,
   });
@@ -18,6 +19,7 @@ class UserModel {
   int profile;
   String? phone;
   String? password;
+  bool isGoogleAuth;
   DateTime? createdAt;
   DateTime? updatedAt;
 
@@ -28,6 +30,7 @@ class UserModel {
       email: (json['email'] ?? '').toString(),
       profile: _parseInt(json['profile']),
       phone: json['phone']?.toString(),
+      isGoogleAuth: json['is_google_auth'] == true,
       createdAt: _parseDate(json['created_at']),
       updatedAt: _parseDate(json['updated_at']),
     );
@@ -39,6 +42,7 @@ class UserModel {
         'password': (password ?? '').trim(),
         'profile': profile,
         'phone': (phone ?? '').trim(),
+        'is_google_auth': isGoogleAuth,
       };
 
   Map<String, dynamic> toUpdateJson() {
@@ -47,6 +51,7 @@ class UserModel {
       'email': email.trim(),
       'profile': profile,
       'phone': (phone ?? '').trim(),
+      'is_google_auth': isGoogleAuth,
     };
 
     final String pwd = (password ?? '').trim();
