@@ -9,7 +9,7 @@ CN=SPO Tecnologia, OU=Mobile, O=SPO Tecnologia, L=Tupandi, ST=Rio Grande do Sul,
 Senha em key.properties
 
 ### Deploy app 
-flutter build web --pwa-strategy=none --no-tree-shake-icons
+flutter build web --release
 # recomendação: limpar destino para evitar artefatos antigos
 ssh -o IdentitiesOnly=yes -o IdentityAgent=none -i ~/.ssh/aws_spo.pem ubuntu@18.230.235.236 "rm -rf /var/www/unisinos_usp_app/*"
 scp -o IdentitiesOnly=yes -o IdentityAgent=none -i ~/.ssh/aws_spo.pem -r build/web/. ubuntu@18.230.235.236:/var/www/unisinos_usp_app/

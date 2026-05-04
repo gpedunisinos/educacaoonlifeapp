@@ -46,29 +46,31 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAGYI3TWJyOGBEIsMTfhY8BukheE9U-E-8',
-    appId: '1:419473345657:web:cecaa9b6537374579f58a8',
-    messagingSenderId: '419473345657',
-    projectId: 'efv-app-256d4',
-    storageBucket: 'efv-app-256d4.firebasestorage.app',
-    iosBundleId: 'com.br.spotecnologia.uniusp_app',
+    apiKey: 'AIzaSyD30EDQG9QBbwNrxZMXdbPKe95Z4RZ0I1A',
+    appId: '1:431431134667:web:17d3e806a5794ab80d1a4e',
+    messagingSenderId: '431431134667',
+    projectId: 'unisinos-usp',
+    authDomain: 'unisinos-usp.firebaseapp.com',
+    storageBucket: 'unisinos-usp.firebasestorage.app',
+    measurementId: 'G-C8812FEKZQ',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBo2JccKOcXq_n82-mHU9JzKq0g1OQt_jk',
-    appId: '1:419473345657:android:266a3a9e87bd46969f58a8',
-    messagingSenderId: '419473345657',
-    projectId: 'efv-app-256d4',
-    storageBucket: 'efv-app-256d4.firebasestorage.app',
+    apiKey: 'AIzaSyBgeKfsuCZKe5HduiJmyMFSrz04Mxyg9r4',
+    appId: '1:431431134667:android:2e261a960329aa570d1a4e',
+    messagingSenderId: '431431134667',
+    projectId: 'unisinos-usp',
+    storageBucket: 'unisinos-usp.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyAztmuEGrQ9gl122JGJf3yA2i51pZqck74',
-    appId: '1:419473345657:ios:75b2b46f5eb100219f58a8',
-    messagingSenderId: '419473345657',
-    iosClientId: '375087330293-i34sbetodktlfe3259pvfdn69u2idu4e.apps.googleusercontent.com',
-    projectId: 'efv-app-256d4',
-    storageBucket: 'efv-app-256d4.firebasestorage.app',
-    iosBundleId: 'com.br.spotecnologia.uniusp_app',
+    apiKey: 'AIzaSyBZliIxWthcffzDK73oBBTgbIorzxIjgl4',
+    appId: '1:431431134667:ios:640672ceb1a85f3d0d1a4e',
+    messagingSenderId: '431431134667',
+    projectId: 'unisinos-usp',
+    storageBucket: 'unisinos-usp.firebasestorage.app',
+    iosClientId: '431431134667-6f6i1l9l9gmd5fhv95lvbit6f87qep7s.apps.googleusercontent.com',
+    iosBundleId: 'com.br.spotecnologia.uniuspapp',
   );
+
 }

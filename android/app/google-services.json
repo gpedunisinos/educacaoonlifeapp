@@ -1,26 +1,36 @@
 {
   "project_info": {
-    "project_number": "419473345657",
-    "project_id": "efv-app-256d4",
-    "storage_bucket": "efv-app-256d4.firebasestorage.app"
+    "project_number": "431431134667",
+    "project_id": "unisinos-usp",
+    "storage_bucket": "unisinos-usp.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:419473345657:android:266a3a9e87bd46969f58a8",
+        "mobilesdk_app_id": "1:431431134667:android:2e261a960329aa570d1a4e",
         "android_client_info": {
           "package_name": "com.br.spotecnologia.uniuspapp"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "431431134667-1k776udlj5cl93p3i7t7g14n24fje6lr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyBo2JccKOcXq_n82-mHU9JzKq0g1OQt_jk"
+          "current_key": "AIzaSyBgeKfsuCZKe5HduiJmyMFSrz04Mxyg9r4"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "431431134667-1k776udlj5cl93p3i7t7g14n24fje6lr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
