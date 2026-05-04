@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
+import 'package:unisinos_usp_app/policies/app_access_policy.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
 import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
@@ -18,6 +19,8 @@ class HomeScreen extends StatelessWidget {
       _buildAiContext,
     );
 
+    final user = _controller.user.value;
+
     final menus = <_HomeMenu>[
       _HomeMenu(
         title: 'Biomas',
@@ -25,6 +28,7 @@ class HomeScreen extends StatelessWidget {
         icon: Icons.public_outlined,
         color: Colors.lightGreen.shade700,
         onTap: () => Get.toNamed('/biomes'),
+        isVisible: AppAccessPolicy.canViewModule(user, AppModule.biomes),
       ),
       _HomeMenu(
         title: 'Territórios',
@@ -32,6 +36,7 @@ class HomeScreen extends StatelessWidget {
         icon: Icons.terrain_outlined,
         color: Colors.brown.shade400,
         onTap: () => Get.toNamed('/territories'),
+        isVisible: AppAccessPolicy.canViewModule(user, AppModule.territories),
       ),
       _HomeMenu(
         title: 'Categorias',
@@ -39,6 +44,7 @@ class HomeScreen extends StatelessWidget {
         icon: Icons.category_rounded,
         color: const Color(0xFF29B6F6),
         onTap: () => Get.toNamed('/categories'),
+        isVisible: AppAccessPolicy.canViewModule(user, AppModule.categories),
       ),
       _HomeMenu(
         title: 'Pistas',
@@ -46,6 +52,7 @@ class HomeScreen extends StatelessWidget {
         icon: Icons.radar_rounded,
         color: const Color(0xFF3CE4C8),
         onTap: () => Get.toNamed('/living_clues'),
+        isVisible: AppAccessPolicy.canViewModule(user, AppModule.livingClues),
       ),
       _HomeMenu(
         title: 'Mapa de pistas',
@@ -53,6 +60,7 @@ class HomeScreen extends StatelessWidget {
         icon: Icons.map_rounded,
         color: const Color(0xFFFFB74D),
         onTap: () => Get.toNamed('/living_clues/map'),
+        isVisible: AppAccessPolicy.canViewModule(user, AppModule.livingClues),
       ),
       _HomeMenu(
         title: 'Conexões',
@@ -60,6 +68,8 @@ class HomeScreen extends StatelessWidget {
         icon: Icons.hub_rounded,
         color: const Color(0xFFEF6EB0),
         onTap: () => Get.toNamed('/clue_connections'),
+        isVisible:
+            AppAccessPolicy.canViewModule(user, AppModule.clueConnections),
       ),
       _HomeMenu(
         title: 'Tipos de conexão',
@@ -67,6 +77,8 @@ class HomeScreen extends StatelessWidget {
         icon: Icons.link_rounded,
         color: const Color(0xFF7D8BFF),
         onTap: () => Get.toNamed('/connection_types'),
+        isVisible:
+            AppAccessPolicy.canViewModule(user, AppModule.connectionTypes),
       ),
       _HomeMenu(
         title: 'Problemáticas',
@@ -74,6 +86,7 @@ class HomeScreen extends StatelessWidget {
         icon: Icons.account_tree_rounded,
         color: const Color(0xFFFF8A65),
         onTap: () => Get.toNamed('/nodes/graph'),
+        isVisible: AppAccessPolicy.canViewModule(user, AppModule.nodes),
       ),
       _HomeMenu(
         title: 'Tipos de nó',
@@ -81,6 +94,7 @@ class HomeScreen extends StatelessWidget {
         icon: Icons.label_rounded,
         color: const Color(0xFFF3C45F),
         onTap: () => Get.toNamed('/node_types'),
+        isVisible: AppAccessPolicy.canViewModule(user, AppModule.nodeTypes),
       ),
       _HomeMenu(
         title: 'Agentes',
@@ -88,6 +102,7 @@ class HomeScreen extends StatelessWidget {
         icon: Icons.psychology_alt_rounded,
         color: const Color(0xFF56D5FF),
         onTap: () => Get.toNamed('/chat_templates'),
+        isVisible: AppAccessPolicy.canViewModule(user, AppModule.chatTemplates),
       ),
       _HomeMenu(
         title: 'Usuários',
@@ -95,11 +110,13 @@ class HomeScreen extends StatelessWidget {
         icon: Icons.groups_rounded,
         color: const Color(0xFF78E08F),
         onTap: () => Get.toNamed('/users'),
+        isVisible: AppAccessPolicy.canViewModule(user, AppModule.users),
       ),
-    ];
+    ].where((menu) => menu.isVisible).toList();
 
     final userName = _controller.user.value?.name.trim();
-    final displayName = (userName == null || userName.isEmpty) ? 'Usuário' : userName;
+    final displayName =
+        (userName == null || userName.isEmpty) ? 'Usuário' : userName;
 
     return Scaffold(
       body: Stack(
@@ -180,6 +197,7 @@ class _HomeMenu {
     required this.icon,
     required this.color,
     required this.onTap,
+    this.isVisible = true,
   });
 
   final String title;
@@ -187,6 +205,7 @@ class _HomeMenu {
   final IconData icon;
   final Color color;
   final VoidCallback onTap;
+  final bool isVisible;
 }
 
 class _HomeTopBar extends StatelessWidget {
@@ -285,7 +304,8 @@ class _ProfilePill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final initial = userName.isEmpty ? '?' : userName.substring(0, 1).toUpperCase();
+    final initial =
+        userName.isEmpty ? '?' : userName.substring(0, 1).toUpperCase();
 
     return Material(
       color: Colors.transparent,

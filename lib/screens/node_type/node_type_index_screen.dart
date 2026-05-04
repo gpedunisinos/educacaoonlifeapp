@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 import 'package:unisinos_usp_app/controllers/node_type/node_type_index_controller.dart';
 import 'package:unisinos_usp_app/models/node_type_model.dart';
+import 'package:unisinos_usp_app/policies/app_access_policy.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 
 class NodeTypeIndexScreen extends StatefulWidget {
-  NodeTypeIndexScreen({super.key});
+  const NodeTypeIndexScreen({super.key});
 
   @override
   State<NodeTypeIndexScreen> createState() => _NodeTypeIndexScreenState();
@@ -34,6 +36,11 @@ class _NodeTypeIndexScreenState extends State<NodeTypeIndexScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final canManage = AppAccessPolicy.canManageModule(
+      Get.find<UserController>().user.value,
+      AppModule.nodeTypes,
+    );
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -42,11 +49,12 @@ class _NodeTypeIndexScreenState extends State<NodeTypeIndexScreen> {
         leading: const SafeBackButton(),
         title: const Text('Tipos de nó'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: _goToCreate,
-            tooltip: 'Novo tipo',
-          ),
+          if (canManage)
+            IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: _goToCreate,
+              tooltip: 'Novo tipo',
+            ),
         ],
       ),
       body: Stack(
@@ -110,6 +118,7 @@ class _NodeTypeIndexScreenState extends State<NodeTypeIndexScreen> {
                       final model = _controller.nodeTypes[index];
                       return _NodeTypeCard(
                         model: model,
+                        canManage: canManage,
                         onEdit: () => _goToUpdate(model),
                         onDelete: () => _confirmDelete(model),
                       );
@@ -165,11 +174,13 @@ class _NodeTypeIndexScreenState extends State<NodeTypeIndexScreen> {
 class _NodeTypeCard extends StatelessWidget {
   const _NodeTypeCard({
     required this.model,
+    required this.canManage,
     required this.onEdit,
     required this.onDelete,
   });
 
   final NodeTypeModel model;
+  final bool canManage;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -218,14 +229,16 @@ class _NodeTypeCard extends StatelessWidget {
                 ],
               ),
             ),
-            IconButton(
-              onPressed: onEdit,
-              icon: const Icon(Icons.edit, color: Colors.white),
-            ),
-            IconButton(
-              onPressed: onDelete,
-              icon: const Icon(Icons.delete_outline, color: Colors.white),
-            ),
+            if (canManage) ...[
+              IconButton(
+                onPressed: onEdit,
+                icon: const Icon(Icons.edit, color: Colors.white),
+              ),
+              IconButton(
+                onPressed: onDelete,
+                icon: const Icon(Icons.delete_outline, color: Colors.white),
+              ),
+            ],
           ],
         ),
       ),

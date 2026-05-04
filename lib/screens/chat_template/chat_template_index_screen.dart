@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 import 'package:unisinos_usp_app/controllers/chat_template/chat_template_index_controller.dart';
 import 'package:unisinos_usp_app/models/chat_template_model.dart';
+import 'package:unisinos_usp_app/policies/app_access_policy.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 
 class ChatTemplateIndexScreen extends StatefulWidget {
-  ChatTemplateIndexScreen({super.key});
+  const ChatTemplateIndexScreen({super.key});
 
   @override
   State<ChatTemplateIndexScreen> createState() =>
@@ -35,6 +37,11 @@ class _ChatTemplateIndexScreenState extends State<ChatTemplateIndexScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final canManage = AppAccessPolicy.canManageModule(
+      Get.find<UserController>().user.value,
+      AppModule.chatTemplates,
+    );
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -43,11 +50,12 @@ class _ChatTemplateIndexScreenState extends State<ChatTemplateIndexScreen> {
         leading: const SafeBackButton(),
         title: const Text('Agentes'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: _goToCreate,
-            tooltip: 'Novo agente',
-          ),
+          if (canManage)
+            IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: _goToCreate,
+              tooltip: 'Novo agente',
+            ),
         ],
       ),
       body: Stack(
@@ -109,9 +117,9 @@ class _ChatTemplateIndexScreenState extends State<ChatTemplateIndexScreen> {
                               color: Colors.white,
                               fontWeight: FontWeight.bold)),
                       subtitle: Text(
-                        template.description?.isNotEmpty == true
+                        template.description?.isNotEmpty ?? false
                             ? template.description!
-                            : (template.systemInstruction?.isNotEmpty == true
+                            : (template.systemInstruction?.isNotEmpty ?? false
                                 ? template.systemInstruction!
                                 : 'Sem descrição'),
                         maxLines: 2,
@@ -119,23 +127,25 @@ class _ChatTemplateIndexScreenState extends State<ChatTemplateIndexScreen> {
                         style: const TextStyle(color: Colors.white70),
                       ),
                       onTap: () => _goToChat(template),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            color: Colors.white,
-                            icon: const Icon(Icons.edit),
-                            onPressed: () => _goToUpdate(template),
-                            tooltip: 'Editar template',
-                          ),
-                          IconButton(
-                            color: Colors.red.shade300,
-                            icon: const Icon(Icons.delete_outline),
-                            onPressed: () => _confirmDelete(template),
-                            tooltip: 'Excluir template',
-                          ),
-                        ],
-                      ),
+                      trailing: canManage
+                          ? Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  color: Colors.white,
+                                  icon: const Icon(Icons.edit),
+                                  onPressed: () => _goToUpdate(template),
+                                  tooltip: 'Editar template',
+                                ),
+                                IconButton(
+                                  color: Colors.red.shade300,
+                                  icon: const Icon(Icons.delete_outline),
+                                  onPressed: () => _confirmDelete(template),
+                                  tooltip: 'Excluir template',
+                                ),
+                              ],
+                            )
+                          : null,
                     ),
                   );
                 },
@@ -149,7 +159,7 @@ class _ChatTemplateIndexScreenState extends State<ChatTemplateIndexScreen> {
 
   Future<void> _goToCreate() async {
     final dynamic result = await Get.toNamed('/chat_templates/create');
-    if (result == true) {
+    if (result ?? false) {
       await _controller.loadInitial();
     }
   }
@@ -191,7 +201,7 @@ class _ChatTemplateIndexScreenState extends State<ChatTemplateIndexScreen> {
       ),
     );
 
-    if (confirmed == true) {
+    if (confirmed ?? false) {
       await _controller.deleteTemplate(template);
     }
   }

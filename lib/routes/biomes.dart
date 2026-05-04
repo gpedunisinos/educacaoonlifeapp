@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/bindings/biome_binding.dart';
+import 'package:unisinos_usp_app/middlewares/app_route_guard.dart';
+import 'package:unisinos_usp_app/policies/app_access_policy.dart';
 import 'package:unisinos_usp_app/screens/biome/biome_create_screen.dart';
 import 'package:unisinos_usp_app/screens/biome/biome_index_screen.dart';
 import 'package:unisinos_usp_app/screens/biome/biome_update_screen.dart';
@@ -9,15 +11,27 @@ List<GetPage> biomeRoutes() => [
         name: '/biomes',
         page: () => BiomeIndexScreen(),
         binding: BiomeIndexBinding(),
+        middlewares: [
+          AppRouteGuard(
+              module: AppModule.biomes, action: AppPermissionAction.view),
+        ],
       ),
       GetPage(
         name: '/biomes/create',
         page: () => const BiomeCreateScreen(),
         binding: BiomeCreateBinding(),
+        middlewares: [
+          AppRouteGuard(
+              module: AppModule.biomes, action: AppPermissionAction.manage),
+        ],
       ),
       GetPage(
         name: '/biomes/update',
         page: () => const BiomeUpdateScreen(),
         binding: BiomeUpdateBinding(),
+        middlewares: [
+          AppRouteGuard(
+              module: AppModule.biomes, action: AppPermissionAction.manage),
+        ],
       ),
     ];

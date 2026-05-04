@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 import 'package:unisinos_usp_app/controllers/category/category_index_controller.dart';
 import 'package:unisinos_usp_app/models/category_model.dart';
+import 'package:unisinos_usp_app/policies/app_access_policy.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
@@ -9,10 +11,16 @@ import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 class CategoryIndexScreen extends StatelessWidget {
   CategoryIndexScreen({super.key});
 
-  final CategoryIndexController _controller = Get.find<CategoryIndexController>();
+  final CategoryIndexController _controller =
+      Get.find<CategoryIndexController>();
 
   @override
   Widget build(BuildContext context) {
+    final canManage = AppAccessPolicy.canManageModule(
+      Get.find<UserController>().user.value,
+      AppModule.categories,
+    );
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -21,11 +29,12 @@ class CategoryIndexScreen extends StatelessWidget {
         leading: const SafeBackButton(),
         title: const Text('Categorias'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: _goToCreate,
-            tooltip: 'Nova categoria',
-          ),
+          if (canManage)
+            IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: _goToCreate,
+              tooltip: 'Nova categoria',
+            ),
         ],
       ),
       body: Stack(
@@ -38,7 +47,8 @@ class CategoryIndexScreen extends StatelessWidget {
           ),
           Obx(() {
             if (_controller.isLoading.value && _controller.categories.isEmpty) {
-              return const Center(child: CircularProgressIndicator(color: Colors.white));
+              return const Center(
+                  child: CircularProgressIndicator(color: Colors.white));
             }
 
             if (_controller.categories.isEmpty) {
@@ -56,12 +66,15 @@ class CategoryIndexScreen extends StatelessWidget {
                   child: ListView.separated(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     itemCount: _controller.categories.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1, color: Colors.white24),
+                    separatorBuilder: (_, __) =>
+                        const Divider(height: 1, color: Colors.white24),
                     itemBuilder: (_, index) {
-                      final CategoryModel category = _controller.categories[index];
+                      final CategoryModel category =
+                          _controller.categories[index];
                       return ListTile(
                         leading: _ColorDot(colorHex: category.colorHex),
-                        title: Text(category.name, style: const TextStyle(color: Colors.white)),
+                        title: Text(category.name,
+                            style: const TextStyle(color: Colors.white)),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
@@ -77,23 +90,29 @@ class CategoryIndexScreen extends StatelessWidget {
                               ),
                           ],
                         ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              color: Colors.white,
-                              icon: const Icon(Icons.edit),
-                              onPressed: _controller.isLoading.value ? null : () => _goToUpdate(category),
-                              tooltip: 'Editar',
-                            ),
-                            IconButton(
-                              color: Colors.white,
-                              icon: const Icon(Icons.delete_outline),
-                              onPressed: _controller.isLoading.value ? null : () => _confirmDelete(category),
-                              tooltip: 'Excluir',
-                            ),
-                          ],
-                        ),
+                        trailing: canManage
+                            ? Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    color: Colors.white,
+                                    icon: const Icon(Icons.edit),
+                                    onPressed: _controller.isLoading.value
+                                        ? null
+                                        : () => _goToUpdate(category),
+                                    tooltip: 'Editar',
+                                  ),
+                                  IconButton(
+                                    color: Colors.white,
+                                    icon: const Icon(Icons.delete_outline),
+                                    onPressed: _controller.isLoading.value
+                                        ? null
+                                        : () => _confirmDelete(category),
+                                    tooltip: 'Excluir',
+                                  ),
+                                ],
+                              )
+                            : null,
                       );
                     },
                   ),
@@ -131,7 +150,8 @@ class CategoryIndexScreen extends StatelessWidget {
   }
 
   Future<void> _goToUpdate(CategoryModel category) async {
-    await Get.toNamed('/categories/update', parameters: {'id': category.id.toString()});
+    await Get.toNamed('/categories/update',
+        parameters: {'id': category.id.toString()});
     await _controller.loadCategories();
   }
 }
