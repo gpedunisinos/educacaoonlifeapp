@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/bindings/connection_type_binding.dart';
 import 'package:unisinos_usp_app/middlewares/app_route_guard.dart';
-import 'package:unisinos_usp_app/policies/app_access_policy.dart';
+import 'package:unisinos_usp_app/policies/policies.dart';
 import 'package:unisinos_usp_app/screens/connection_type/connection_type_create_screen.dart';
 import 'package:unisinos_usp_app/screens/connection_type/connection_type_index_screen.dart';
 import 'package:unisinos_usp_app/screens/connection_type/connection_type_update_screen.dart';
@@ -13,8 +13,7 @@ List<GetPage> connectionTypeRoutes() => [
         binding: ConnectionTypeIndexBinding(),
         middlewares: [
           AppRouteGuard(
-              module: AppModule.connectionTypes,
-              action: AppPermissionAction.view),
+              canActivate: (user) => ConnectionTypePolicy(user).viewAny()),
         ],
       ),
       GetPage(
@@ -23,8 +22,7 @@ List<GetPage> connectionTypeRoutes() => [
         binding: ConnectionTypeCreateBinding(),
         middlewares: [
           AppRouteGuard(
-              module: AppModule.connectionTypes,
-              action: AppPermissionAction.manage),
+              canActivate: (user) => ConnectionTypePolicy(user).create()),
         ],
       ),
       GetPage(
@@ -33,8 +31,7 @@ List<GetPage> connectionTypeRoutes() => [
         binding: ConnectionTypeUpdateBinding(),
         middlewares: [
           AppRouteGuard(
-              module: AppModule.connectionTypes,
-              action: AppPermissionAction.manage),
+              canActivate: (user) => ConnectionTypePolicy(user).create()),
         ],
       ),
     ];

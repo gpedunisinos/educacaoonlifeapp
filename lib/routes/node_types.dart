@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/bindings/node_type_binding.dart';
 import 'package:unisinos_usp_app/middlewares/app_route_guard.dart';
-import 'package:unisinos_usp_app/policies/app_access_policy.dart';
+import 'package:unisinos_usp_app/policies/policies.dart';
 import 'package:unisinos_usp_app/screens/node_type/node_type_create_screen.dart';
 import 'package:unisinos_usp_app/screens/node_type/node_type_index_screen.dart';
 import 'package:unisinos_usp_app/screens/node_type/node_type_update_screen.dart';
@@ -12,8 +12,7 @@ List<GetPage> nodeTypeRoutes() => [
         page: () => NodeTypeIndexScreen(),
         binding: NodeTypeIndexBinding(),
         middlewares: [
-          AppRouteGuard(
-              module: AppModule.nodeTypes, action: AppPermissionAction.view),
+          AppRouteGuard(canActivate: (user) => NodeTypePolicy(user).viewAny()),
         ],
       ),
       GetPage(
@@ -21,8 +20,7 @@ List<GetPage> nodeTypeRoutes() => [
         page: () => const NodeTypeCreateScreen(),
         binding: NodeTypeCreateBinding(),
         middlewares: [
-          AppRouteGuard(
-              module: AppModule.nodeTypes, action: AppPermissionAction.manage),
+          AppRouteGuard(canActivate: (user) => NodeTypePolicy(user).create()),
         ],
       ),
       GetPage(
@@ -30,8 +28,7 @@ List<GetPage> nodeTypeRoutes() => [
         page: () => const NodeTypeUpdateScreen(),
         binding: NodeTypeUpdateBinding(),
         middlewares: [
-          AppRouteGuard(
-              module: AppModule.nodeTypes, action: AppPermissionAction.manage),
+          AppRouteGuard(canActivate: (user) => NodeTypePolicy(user).create()),
         ],
       ),
     ];

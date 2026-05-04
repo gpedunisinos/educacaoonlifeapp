@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 import 'package:unisinos_usp_app/controllers/connection_type/connection_type_index_controller.dart';
 import 'package:unisinos_usp_app/models/connection_type_model.dart';
-import 'package:unisinos_usp_app/policies/app_access_policy.dart';
+import 'package:unisinos_usp_app/policies/policies.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
@@ -16,10 +16,8 @@ class ConnectionTypeIndexScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final canManage = AppAccessPolicy.canManageModule(
-      Get.find<UserController>().user.value,
-      AppModule.connectionTypes,
-    );
+    final canManage =
+        ConnectionTypePolicy(Get.find<UserController>().user.value).create();
 
     return Scaffold(
       backgroundColor: Colors.black,

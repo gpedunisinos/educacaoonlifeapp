@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/bindings/chat_template_binding.dart';
 import 'package:unisinos_usp_app/middlewares/app_route_guard.dart';
-import 'package:unisinos_usp_app/policies/app_access_policy.dart';
+import 'package:unisinos_usp_app/policies/policies.dart';
 import 'package:unisinos_usp_app/screens/chat_template/chat_template_chat_screen.dart';
 import 'package:unisinos_usp_app/screens/chat_template/chat_template_create_screen.dart';
 import 'package:unisinos_usp_app/screens/chat_template/chat_template_index_screen.dart';
@@ -14,8 +14,7 @@ List<GetPage> chatTemplateRoutes() => [
         binding: ChatTemplateIndexBinding(),
         middlewares: [
           AppRouteGuard(
-              module: AppModule.chatTemplates,
-              action: AppPermissionAction.view),
+              canActivate: (user) => ChatTemplatePolicy(user).viewAny()),
         ],
       ),
       GetPage(
@@ -24,8 +23,7 @@ List<GetPage> chatTemplateRoutes() => [
         binding: ChatTemplateChatBinding(),
         middlewares: [
           AppRouteGuard(
-              module: AppModule.chatTemplates,
-              action: AppPermissionAction.view),
+              canActivate: (user) => ChatTemplatePolicy(user).viewAny()),
         ],
       ),
       GetPage(
@@ -34,8 +32,7 @@ List<GetPage> chatTemplateRoutes() => [
         binding: ChatTemplateCreateBinding(),
         middlewares: [
           AppRouteGuard(
-              module: AppModule.chatTemplates,
-              action: AppPermissionAction.manage),
+              canActivate: (user) => ChatTemplatePolicy(user).create()),
         ],
       ),
       GetPage(
@@ -44,8 +41,7 @@ List<GetPage> chatTemplateRoutes() => [
         binding: ChatTemplateUpdateBinding(),
         middlewares: [
           AppRouteGuard(
-              module: AppModule.chatTemplates,
-              action: AppPermissionAction.manage),
+              canActivate: (user) => ChatTemplatePolicy(user).create()),
         ],
       ),
     ];

@@ -2,7 +2,7 @@ import 'package:get/get.dart';
 import 'package:unisinos_usp_app/bindings/clue_connection_binding.dart';
 import 'package:unisinos_usp_app/bindings/living_clue_binding.dart';
 import 'package:unisinos_usp_app/middlewares/app_route_guard.dart';
-import 'package:unisinos_usp_app/policies/app_access_policy.dart';
+import 'package:unisinos_usp_app/policies/policies.dart';
 import 'package:unisinos_usp_app/screens/living_clue/living_clue_connect_screen.dart';
 import 'package:unisinos_usp_app/screens/living_clue/living_clue_create_screen.dart';
 import 'package:unisinos_usp_app/screens/living_clue/living_clue_index_screen.dart';
@@ -22,7 +22,7 @@ List<GetPage> livingClueRoutes() => [
         transitionDuration: const Duration(milliseconds: 300),
         middlewares: [
           AppRouteGuard(
-              module: AppModule.livingClues, action: AppPermissionAction.view),
+              canActivate: (user) => LivingCluePolicy(user).viewAny()),
         ],
       ),
       GetPage(
@@ -30,36 +30,28 @@ List<GetPage> livingClueRoutes() => [
         page: () => const LivingClueMapScreen(),
         binding: LivingClueMapBinding(),
         middlewares: [
-          AppRouteGuard(
-              module: AppModule.livingClues,
-              action: AppPermissionAction.manage),
+          AppRouteGuard(canActivate: (user) => LivingCluePolicy(user).create()),
         ],
       ),
       GetPage(
         name: '/living_clues/type_select',
         page: () => const LivingClueTypeSelectScreen(),
         middlewares: [
-          AppRouteGuard(
-              module: AppModule.livingClues,
-              action: AppPermissionAction.manage),
+          AppRouteGuard(canActivate: (user) => LivingCluePolicy(user).create()),
         ],
       ),
       GetPage(
         name: '/living_clues/pre_create',
         page: () => const LivingCluePreCreateScreen(),
         middlewares: [
-          AppRouteGuard(
-              module: AppModule.livingClues,
-              action: AppPermissionAction.manage),
+          AppRouteGuard(canActivate: (user) => LivingCluePolicy(user).create()),
         ],
       ),
       GetPage(
         name: '/living_clues/map/create',
         page: () => const LivingClueMapCreateScreen(),
         middlewares: [
-          AppRouteGuard(
-              module: AppModule.livingClues,
-              action: AppPermissionAction.manage),
+          AppRouteGuard(canActivate: (user) => LivingCluePolicy(user).create()),
         ],
       ),
       GetPage(
@@ -67,9 +59,7 @@ List<GetPage> livingClueRoutes() => [
         page: () => const LivingClueCreateScreen(),
         binding: LivingClueCreateBinding(),
         middlewares: [
-          AppRouteGuard(
-              module: AppModule.livingClues,
-              action: AppPermissionAction.manage),
+          AppRouteGuard(canActivate: (user) => LivingCluePolicy(user).create()),
         ],
       ),
       GetPage(
@@ -77,7 +67,7 @@ List<GetPage> livingClueRoutes() => [
         page: () => const LivingClueShowScreen(),
         middlewares: [
           AppRouteGuard(
-              module: AppModule.livingClues, action: AppPermissionAction.view),
+              canActivate: (user) => LivingCluePolicy(user).viewAny()),
         ],
       ),
       GetPage(
@@ -85,9 +75,7 @@ List<GetPage> livingClueRoutes() => [
         page: () => const LivingClueUpdateScreen(),
         binding: LivingClueUpdateBinding(),
         middlewares: [
-          AppRouteGuard(
-              module: AppModule.livingClues,
-              action: AppPermissionAction.manage),
+          AppRouteGuard(canActivate: (user) => LivingCluePolicy(user).create()),
         ],
       ),
       GetPage(
@@ -95,9 +83,7 @@ List<GetPage> livingClueRoutes() => [
         page: () => const LivingClueConnectScreen(),
         binding: ClueConnectionCreateBinding(),
         middlewares: [
-          AppRouteGuard(
-              module: AppModule.livingClues,
-              action: AppPermissionAction.manage),
+          AppRouteGuard(canActivate: (user) => LivingCluePolicy(user).create()),
         ],
       ),
     ];

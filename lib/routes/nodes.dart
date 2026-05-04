@@ -2,7 +2,7 @@ import 'package:get/get.dart';
 import 'package:unisinos_usp_app/bindings/node_binding.dart';
 import 'package:unisinos_usp_app/bindings/node_graph_binding.dart';
 import 'package:unisinos_usp_app/middlewares/app_route_guard.dart';
-import 'package:unisinos_usp_app/policies/app_access_policy.dart';
+import 'package:unisinos_usp_app/policies/policies.dart';
 import 'package:unisinos_usp_app/screens/node/node_create_screen.dart';
 import 'package:unisinos_usp_app/screens/node/node_index_screen.dart';
 import 'package:unisinos_usp_app/screens/node/node_update_screen.dart';
@@ -14,8 +14,7 @@ List<GetPage> nodeRoutes() => [
         page: () => NodeIndexScreen(),
         binding: NodeIndexBinding(),
         middlewares: [
-          AppRouteGuard(
-              module: AppModule.nodes, action: AppPermissionAction.view),
+          AppRouteGuard(canActivate: (user) => NodePolicy(user).viewAny()),
         ],
       ),
       GetPage(
@@ -23,8 +22,7 @@ List<GetPage> nodeRoutes() => [
         page: () => const NodeCreateScreen(),
         binding: NodeCreateBinding(),
         middlewares: [
-          AppRouteGuard(
-              module: AppModule.nodes, action: AppPermissionAction.manage),
+          AppRouteGuard(canActivate: (user) => NodePolicy(user).create()),
         ],
       ),
       GetPage(
@@ -32,8 +30,7 @@ List<GetPage> nodeRoutes() => [
         page: () => const NodeUpdateScreen(),
         binding: NodeUpdateBinding(),
         middlewares: [
-          AppRouteGuard(
-              module: AppModule.nodes, action: AppPermissionAction.manage),
+          AppRouteGuard(canActivate: (user) => NodePolicy(user).create()),
         ],
       ),
       GetPage(
@@ -41,8 +38,7 @@ List<GetPage> nodeRoutes() => [
         page: () => const NodeGraphScreen(),
         binding: NodeGraphBinding(),
         middlewares: [
-          AppRouteGuard(
-              module: AppModule.nodes, action: AppPermissionAction.manage),
+          AppRouteGuard(canActivate: (user) => NodePolicy(user).create()),
         ],
       ),
     ];

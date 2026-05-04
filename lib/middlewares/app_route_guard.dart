@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
-import 'package:unisinos_usp_app/policies/app_access_policy.dart';
+import 'package:unisinos_usp_app/services/auth_user.dart';
+
+typedef AppRoutePermissionChecker = bool Function(AuthUser? user);
 
 class AppRouteGuard extends GetMiddleware {
-  AppRouteGuard({required this.module, required this.action});
+  AppRouteGuard({required this.canActivate});
 
-  final AppModule module;
-  final AppPermissionAction action;
+  final AppRoutePermissionChecker canActivate;
 
   @override
   RouteSettings? redirect(String? route) {
@@ -18,7 +19,7 @@ class AppRouteGuard extends GetMiddleware {
       return const RouteSettings(name: '/login');
     }
 
-    if (AppAccessPolicy.can(user, module, action)) {
+    if (canActivate(user)) {
       return null;
     }
 

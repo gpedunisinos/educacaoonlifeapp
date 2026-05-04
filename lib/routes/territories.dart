@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/bindings/territory_binding.dart';
 import 'package:unisinos_usp_app/middlewares/app_route_guard.dart';
-import 'package:unisinos_usp_app/policies/app_access_policy.dart';
+import 'package:unisinos_usp_app/policies/policies.dart';
 import 'package:unisinos_usp_app/screens/territory/territory_create_screen.dart';
 import 'package:unisinos_usp_app/screens/territory/territory_index_screen.dart';
 import 'package:unisinos_usp_app/screens/territory/territory_update_screen.dart';
@@ -12,8 +12,7 @@ List<GetPage> territoryRoutes() => [
         page: () => TerritoryIndexScreen(),
         binding: TerritoryIndexBinding(),
         middlewares: [
-          AppRouteGuard(
-              module: AppModule.territories, action: AppPermissionAction.view),
+          AppRouteGuard(canActivate: (user) => TerritoryPolicy(user).viewAny()),
         ],
       ),
       GetPage(
@@ -21,9 +20,7 @@ List<GetPage> territoryRoutes() => [
         page: () => const TerritoryCreateScreen(),
         binding: TerritoryCreateBinding(),
         middlewares: [
-          AppRouteGuard(
-              module: AppModule.territories,
-              action: AppPermissionAction.manage),
+          AppRouteGuard(canActivate: (user) => TerritoryPolicy(user).create()),
         ],
       ),
       GetPage(
@@ -31,9 +28,7 @@ List<GetPage> territoryRoutes() => [
         page: () => const TerritoryUpdateScreen(),
         binding: TerritoryUpdateBinding(),
         middlewares: [
-          AppRouteGuard(
-              module: AppModule.territories,
-              action: AppPermissionAction.manage),
+          AppRouteGuard(canActivate: (user) => TerritoryPolicy(user).create()),
         ],
       ),
     ];

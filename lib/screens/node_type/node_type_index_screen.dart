@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 import 'package:unisinos_usp_app/controllers/node_type/node_type_index_controller.dart';
 import 'package:unisinos_usp_app/models/node_type_model.dart';
-import 'package:unisinos_usp_app/policies/app_access_policy.dart';
+import 'package:unisinos_usp_app/policies/policies.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
@@ -36,10 +36,8 @@ class _NodeTypeIndexScreenState extends State<NodeTypeIndexScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final canManage = AppAccessPolicy.canManageModule(
-      Get.find<UserController>().user.value,
-      AppModule.nodeTypes,
-    );
+    final canManage =
+        NodeTypePolicy(Get.find<UserController>().user.value).create();
 
     return Scaffold(
       backgroundColor: Colors.black,

@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/bindings/biome_binding.dart';
 import 'package:unisinos_usp_app/middlewares/app_route_guard.dart';
-import 'package:unisinos_usp_app/policies/app_access_policy.dart';
+import 'package:unisinos_usp_app/policies/policies.dart';
 import 'package:unisinos_usp_app/screens/biome/biome_create_screen.dart';
 import 'package:unisinos_usp_app/screens/biome/biome_index_screen.dart';
 import 'package:unisinos_usp_app/screens/biome/biome_update_screen.dart';
@@ -12,8 +12,7 @@ List<GetPage> biomeRoutes() => [
         page: () => BiomeIndexScreen(),
         binding: BiomeIndexBinding(),
         middlewares: [
-          AppRouteGuard(
-              module: AppModule.biomes, action: AppPermissionAction.view),
+          AppRouteGuard(canActivate: (user) => BiomePolicy(user).viewAny()),
         ],
       ),
       GetPage(
@@ -21,8 +20,7 @@ List<GetPage> biomeRoutes() => [
         page: () => const BiomeCreateScreen(),
         binding: BiomeCreateBinding(),
         middlewares: [
-          AppRouteGuard(
-              module: AppModule.biomes, action: AppPermissionAction.manage),
+          AppRouteGuard(canActivate: (user) => BiomePolicy(user).create()),
         ],
       ),
       GetPage(
@@ -30,8 +28,7 @@ List<GetPage> biomeRoutes() => [
         page: () => const BiomeUpdateScreen(),
         binding: BiomeUpdateBinding(),
         middlewares: [
-          AppRouteGuard(
-              module: AppModule.biomes, action: AppPermissionAction.manage),
+          AppRouteGuard(canActivate: (user) => BiomePolicy(user).create()),
         ],
       ),
     ];
