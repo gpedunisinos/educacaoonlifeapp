@@ -43,7 +43,8 @@ class UserController extends GetxController {
   /// @method
   Future<void> login(String mail, String password) async {
     try {
-      AuthUser loggedUser = await webclient.login(mail: mail, password: password);
+      AuthUser loggedUser =
+          await webclient.login(mail: mail, password: password);
       await savePrefs(loggedUser);
       Get.offAllNamed('/home');
     } catch (error, stackTrace) {
@@ -59,12 +60,14 @@ class UserController extends GetxController {
 
       await authService.signOut();
 
-      final GoogleSignInAccount? googleUser = await authService.signInWithGoogle();
+      final GoogleSignInAccount? googleUser =
+          await authService.signInWithGoogle();
 
       if (googleUser != null) {
         final GoogleSignInAuthentication auth = await googleUser.authentication;
 
-        AuthUser loggedUser = await webclient.loginGoogle(auth.idToken ?? '', auth.accessToken ?? '');
+        AuthUser loggedUser = await webclient.loginGoogle(
+            auth.idToken ?? '', auth.accessToken ?? '');
 
         await savePrefs(loggedUser);
 
@@ -83,15 +86,32 @@ class UserController extends GetxController {
     required String password,
   }) async {
     try {
-      await webclient.register(name: name, email: email, password: password);
+      AuthUser loggedUser = await webclient.register(
+          name: name, email: email, password: password);
 
+      await savePrefs(loggedUser);
       Get.successSnackbar('Usuário registrado com sucesso!'.tlt);
+      Get.offAllNamed('/home');
       return true;
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Falha ao criar usuário. $error');
+      Get.customSnackbar(
+          'Erro', 'Falha ao criar usuário. ${_extractErrorMessage(error)}');
       rethrow;
     }
+  }
+
+  String _extractErrorMessage(Object error) {
+    String message = error.toString();
+    const prefixes = <String>['Exception: ', 'Erro: '];
+
+    for (final prefix in prefixes) {
+      if (message.startsWith(prefix)) {
+        message = message.substring(prefix.length);
+      }
+    }
+
+    return message;
   }
 
   Future<bool> validateRecoverToken(String token) async {
@@ -108,7 +128,8 @@ class UserController extends GetxController {
     try {
       await webclient.forgotPassword(email);
       Get.successSnackbar(
-        'Se o email estiver registrado em nossa base, iremos enviar um link de recuperação de senha para você!'.tlt,
+        'Se o email estiver registrado em nossa base, iremos enviar um link de recuperação de senha para você!'
+            .tlt,
         duration: const Duration(seconds: 5),
       );
       return true;
@@ -133,7 +154,8 @@ class UserController extends GetxController {
 
   Future<void> logout() async {
     user.value = null;
-    WidgetsBinding.instance.addPostFrameCallback((_) async => AuthProvider.instance.logout());
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) async => AuthProvider.instance.logout());
   }
 
   Future<void> savePrefs(AuthUser loggedUser) async {

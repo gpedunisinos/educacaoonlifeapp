@@ -10,7 +10,8 @@ class CreateAccountScreen extends StatelessWidget {
   final TextEditingController _nameTextController = TextEditingController();
   final TextEditingController _mailTextController = TextEditingController();
   final TextEditingController _passwordTextController = TextEditingController();
-  final TextEditingController _confirmPasswordTextController = TextEditingController();
+  final TextEditingController _confirmPasswordTextController =
+      TextEditingController();
 
   final RxBool isAcceptedTerms = false.obs;
 
@@ -32,13 +33,16 @@ class CreateAccountScreen extends StatelessWidget {
           child: Center(
             child: Container(
               constraints: BoxConstraints(maxWidth: 600),
-              height: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top,
+              height: MediaQuery.of(context).size.height -
+                  MediaQuery.of(context).padding.top,
               child: Form(
                 key: _formKey,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Cadastre-se para se\njuntar a nós', textAlign: TextAlign.center, style: boldTextStyle(size: 22)),
+                    Text('Cadastre-se para se\njuntar a nós',
+                        textAlign: TextAlign.center,
+                        style: boldTextStyle(size: 22)),
                     Insets.large.height,
                     InputText(
                       hintText: 'Digite seu nome',
@@ -59,6 +63,9 @@ class CreateAccountScreen extends StatelessWidget {
                         if (string == null || string.isEmpty) {
                           return 'Obrigatório';
                         }
+                        if (!GetUtils.isEmail(string.trim())) {
+                          return 'E-mail inválido';
+                        }
                         return null;
                       },
                     ),
@@ -70,6 +77,9 @@ class CreateAccountScreen extends StatelessWidget {
                       validator: (string) {
                         if (string == null || string.isEmpty) {
                           return 'Obrigatório';
+                        }
+                        if (string.trim().length < 6) {
+                          return 'A senha deve ter pelo menos 6 caracteres';
                         }
                         return null;
                       },
@@ -98,12 +108,14 @@ class CreateAccountScreen extends StatelessWidget {
                           Checkbox(
                             value: isAccepted,
                             fillColor: MaterialStateProperty.all(Colors.black),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(6)),
                             onChanged: (bool? value) {
                               isAcceptedTerms.value = value!;
                             },
                           ),
-                          const Text('Aceito os termos e condições', style: TextStyle(color: Color(0xFF828282))),
+                          const Text('Aceito os termos e condições',
+                              style: TextStyle(color: Color(0xFF828282))),
                         ],
                       );
                     }),
@@ -121,7 +133,8 @@ class CreateAccountScreen extends StatelessWidget {
                       width: double.infinity,
                       child: ActionButton(
                         theme: ActionButtonTheme.white,
-                        icon: SvgPicture.asset('assets/google_icon.svg', width: 20, height: 20),
+                        icon: SvgPicture.asset('assets/google_icon.svg',
+                            width: 20, height: 20),
                         title: 'Continue com Google',
                         onPressed: _doGoogleLogin,
                       ),
@@ -131,12 +144,16 @@ class CreateAccountScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text('Já tem uma conta?', style: TextStyle(color: Color(0xFF828282))),
+                        const Text('Já tem uma conta?',
+                            style: TextStyle(color: Color(0xFF828282))),
                         TextButton(
                           onPressed: () {
                             Get.secureBack();
                           },
-                          child: const Text('Entrar', style: TextStyle(color: Color(0xFF828282), fontWeight: FontWeight.bold)),
+                          child: const Text('Entrar',
+                              style: TextStyle(
+                                  color: Color(0xFF828282),
+                                  fontWeight: FontWeight.bold)),
                         ),
                       ],
                     ),
@@ -156,17 +173,14 @@ class CreateAccountScreen extends StatelessWidget {
         LoadingDialog.showFuture(
           context,
           _controller.createAccount(
-            name: _nameTextController.text,
-            email: _mailTextController.text,
+            name: _nameTextController.text.trim(),
+            email: _mailTextController.text.trim(),
             password: _passwordTextController.text,
           ),
-        ).then((created) {
-          if (created) {
-            Get.secureBack();
-          }
-        });
+        );
       } else {
-        Get.customSnackbar('Aviso', 'Você deve aceitar os termos e condições para prosseguir.');
+        Get.customSnackbar('Aviso',
+            'Você deve aceitar os termos e condições para prosseguir.');
       }
     }
   }
