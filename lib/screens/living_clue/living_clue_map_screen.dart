@@ -9,6 +9,7 @@ import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
+import 'package:widgets_spo/widgets_spo.dart';
 
 class LivingClueMapScreen extends StatefulWidget {
   const LivingClueMapScreen({super.key});
@@ -23,6 +24,9 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
       Get.find<LivingClueMapController>();
   final MapController _mapController = MapController();
   LatLng _tapCenter = const LatLng(-29.718, -51.143);
+  bool _isConnectingMode = false;
+  LivingClueModel? _connectionSource;
+  LivingClueModel? _connectionTarget;
 
   @override
   void initState() {
@@ -49,6 +53,79 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
     _mapController.move(_tapCenter, _mapController.camera.zoom);
   }
 
+  void _toggleConnectionMode() {
+    setState(() {
+      final nextValue = !_isConnectingMode;
+      _isConnectingMode = nextValue;
+      if (!nextValue) {
+        _connectionSource = null;
+        _connectionTarget = null;
+      }
+    });
+  }
+
+  void _cancelConnectionMode() {
+    setState(() {
+      _isConnectingMode = false;
+      _connectionSource = null;
+      _connectionTarget = null;
+    });
+  }
+
+  Future<void> _handleMarkerTap(LivingClueModel item) async {
+    if (!_isConnectingMode) {
+      _showClueSheet(item);
+      return;
+    }
+
+    if (_connectionSource == null) {
+      setState(() {
+        _connectionSource = item;
+        _connectionTarget = null;
+      });
+      Get.customSnackbar(
+        'Nova conexão',
+        'Origem selecionada. Agora toque na pista de destino.',
+      );
+      return;
+    }
+
+    if (_connectionSource!.id == item.id) {
+      Get.customSnackbar(
+        'Atenção',
+        'Selecione uma pista diferente como destino.',
+      );
+      return;
+    }
+
+    setState(() {
+      _connectionTarget = item;
+    });
+
+    final created = await Get.toNamed(
+      '/clue_connections/create',
+      arguments: {
+        'sourceId': _connectionSource!.id,
+        'sourceName': _connectionSource!.name,
+        'targetId': item.id,
+        'targetName': item.name,
+      },
+    );
+
+    if (!mounted) return;
+
+    if (created == true) {
+      await _loadCurrentBounds();
+      _cancelConnectionMode();
+      Get.successSnackbar('Conexão criada e mapa atualizado.');
+      return;
+    }
+
+    setState(() {
+      _connectionTarget = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     Get.find<AiAssistantContextService>().registerProvider(
@@ -63,6 +140,18 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
         leading: const SafeBackButton(),
         title: const Text('Mapa de pistas'),
         actions: [
+          if (_isConnectingMode)
+            IconButton(
+              tooltip: 'Cancelar nova conexão',
+              icon: const Icon(Icons.close),
+              onPressed: _cancelConnectionMode,
+            )
+          else
+            IconButton(
+              tooltip: 'Criar conexão no mapa',
+              icon: const Icon(Icons.hub_outlined),
+              onPressed: _toggleConnectionMode,
+            ),
           IconButton(
             tooltip: 'Criar pista por ponto',
             icon: const Icon(Icons.add_location_alt),
@@ -88,6 +177,27 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
           const Positioned.fill(child: CidigScenicBackground()),
           Column(
             children: [
+              if (_isConnectingMode)
+                Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.deepPurple.withValues(alpha: 0.72),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: Text(
+                    _connectionSource == null
+                        ? 'Modo nova conexão: toque na pista de origem.'
+                        : 'Origem: ${_connectionSource!.name}. Agora toque na pista de destino.',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
               Container(
                 margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                 padding:
@@ -146,14 +256,43 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
                       .map(
                         (item) => Marker(
                           point: LatLng(item.latitude, item.longitude),
-                          width: 46,
-                          height: 46,
+                          width: 52,
+                          height: 52,
                           child: GestureDetector(
-                            onTap: () => _showClueSheet(item),
-                            child: Icon(
-                              Icons.location_on,
-                              color: _categoryColor(item),
-                              size: 36,
+                            onTap: () => _handleMarkerTap(item),
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                if (_connectionSource?.id == item.id)
+                                  Container(
+                                    width: 44,
+                                    height: 44,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.blue.withValues(alpha: 0.22),
+                                      border: Border.all(
+                                          color: Colors.blueAccent, width: 2),
+                                    ),
+                                  ),
+                                if (_connectionTarget?.id == item.id)
+                                  Container(
+                                    width: 44,
+                                    height: 44,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color:
+                                          Colors.orange.withValues(alpha: 0.22),
+                                      border: Border.all(
+                                          color: Colors.orangeAccent,
+                                          width: 2),
+                                    ),
+                                  ),
+                                Icon(
+                                  Icons.location_on,
+                                  color: _categoryColor(item),
+                                  size: 36,
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -180,12 +319,32 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
                       .whereType<Polyline>()
                       .toList();
 
+                  if (_connectionSource != null && _connectionTarget != null) {
+                    final sourcePoint = pointsById[_connectionSource!.id] ??
+                        LatLng(
+                          _connectionSource!.latitude,
+                          _connectionSource!.longitude,
+                        );
+                    final targetPoint = pointsById[_connectionTarget!.id] ??
+                        LatLng(
+                          _connectionTarget!.latitude,
+                          _connectionTarget!.longitude,
+                        );
+                    connectionLines.add(
+                      Polyline(
+                        points: [sourcePoint, targetPoint],
+                        color: Colors.orangeAccent,
+                        strokeWidth: 4,
+                      ),
+                    );
+                  }
+
                   final circles = <CircleMarker>[];
                   if (_controller.sonarCenter.value != null) {
                     circles.add(
                       CircleMarker(
                         point: _controller.sonarCenter.value!,
-                        color: Colors.blue.withOpacity(0.2),
+                        color: Colors.blue.withValues(alpha: 0.2),
                         borderStrokeWidth: 1,
                         borderColor: Colors.blue,
                         radius: _controller.sonarRadius.value,
@@ -295,11 +454,16 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
             '${_tapCenter.latitude.toStringAsFixed(5)}, ${_tapCenter.longitude.toStringAsFixed(5)}',
         'pistas carregadas': _controller.livingClues.length.toString(),
         'conexões visíveis': _controller.connections.length.toString(),
+        'modo criação de conexão': _isConnectingMode ? 'ativo' : 'inativo',
+        if (_connectionSource != null) 'origem da conexão': _connectionSource!.name,
+        if (_connectionTarget != null) 'destino da conexão': _connectionTarget!.name,
       },
       notes: <String>[
         if (_controller.sonarCenter.value != null)
           'O usuário definiu um centro para busca por raio.',
         'Tap longo no mapa escolhe o ponto de referência do sonar.',
+        if (_isConnectingMode)
+          'O usuário está criando uma conexão diretamente no mapa.',
       ],
     );
   }
@@ -317,46 +481,73 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
       } else if (colorString.length == 9) {
         return Color(int.parse(colorString.replaceFirst('#', '0x')));
       }
-    } catch (_) {
-      // fallback handled below
-    }
+    } catch (_) {}
     return Colors.redAccent;
   }
 
-  void _showClueSheet(LivingClueModel model) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        final categoryName =
-            model.category?.name ?? 'Categoria: ${model.categoryId}';
-        return Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(model.name, style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 8),
-              Text(categoryName,
-                  style: const TextStyle(fontWeight: FontWeight.w600)),
-              const SizedBox(height: 6),
-              Text(model.description ?? 'Sem descrição'),
-              const SizedBox(height: 12),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton.icon(
-                  icon: const Icon(Icons.visibility),
-                  label: const Text('Ver'),
-                  onPressed: () {
-                    Get.back(); // fecha o bottomSheet
-                    Get.toNamed('/living_clues/show', arguments: model);
-                  },
+  void _showClueSheet(LivingClueModel item) {
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(16),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              item.name,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 8),
+            Text(item.description ?? 'Sem descrição'),
+            const SizedBox(height: 10),
+            Text(
+              'Categoria: ${item.category?.name ?? item.categoryId}',
+              style: const TextStyle(color: Colors.black54),
+            ),
+            Text(
+              'Lat ${item.latitude.toStringAsFixed(5)} • Lng ${item.longitude.toStringAsFixed(5)}',
+              style: const TextStyle(color: Colors.black54),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.visibility_outlined),
+                    label: const Text('Ver pista'),
+                    onPressed: () {
+                      Get.back();
+                      Get.toNamed('/living_clues/show', arguments: item);
+                    },
+                  ),
                 ),
-              ),
-            ],
-          ),
-        );
-      },
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.edit_location_alt_outlined),
+                    label: const Text('Editar'),
+                    onPressed: () async {
+                      Get.back();
+                      final updated = await Get.toNamed(
+                        '/living_clues/update',
+                        parameters: {'id': item.id.toString()},
+                      );
+                      if (updated == true) {
+                        _loadCurrentBounds();
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
     );
   }
 }

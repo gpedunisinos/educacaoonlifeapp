@@ -33,6 +33,31 @@ class _ClueConnectionCreateScreenState
   final TextEditingController _evidenceController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    final args = Get.arguments;
+    if (args is Map) {
+      final sourceId = args['sourceId'];
+      final sourceName = args['sourceName'];
+      final targetId = args['targetId'];
+      final targetName = args['targetName'];
+
+      if (sourceId is int && sourceName is String && sourceName.isNotEmpty) {
+        _sourceSelectController.selectedItem = ItemSelect(
+          id: sourceId,
+          name: sourceName,
+        );
+      }
+      if (targetId is int && targetName is String && targetName.isNotEmpty) {
+        _targetSelectController.selectedItem = ItemSelect(
+          id: targetId,
+          name: targetName,
+        );
+      }
+    }
+  }
+
+  @override
   void dispose() {
     _strengthController.dispose();
     _evidenceController.dispose();
@@ -64,6 +89,7 @@ class _ClueConnectionCreateScreenState
                     label: '',
                     hint: 'Pista origem',
                     controller: _sourceSelectController,
+                    enable: _sourceSelectController.selectedItem == null,
                     validator: (value) => PValidator([
                       PRuleRequired(value, message: 'Obrigatório'),
                     ]).val(),
@@ -75,6 +101,7 @@ class _ClueConnectionCreateScreenState
                     label: '',
                     hint: 'Pista destino',
                     controller: _targetSelectController,
+                    enable: _targetSelectController.selectedItem == null,
                     validator: (value) => PValidator([
                       PRuleRequired(value, message: 'Obrigatório'),
                     ]).val(),
@@ -140,7 +167,16 @@ class _ClueConnectionCreateScreenState
     if (sourceId == null ||
         targetId == null ||
         typeId == null ||
-        strength == null) return;
+        strength == null) {
+      return;
+    }
+    if (sourceId == targetId) {
+      Get.customSnackbar(
+        'Atenção',
+        'A pista destino deve ser diferente da origem.',
+      );
+      return;
+    }
 
     final model = ClueConnectionModel(
       id: 0,
