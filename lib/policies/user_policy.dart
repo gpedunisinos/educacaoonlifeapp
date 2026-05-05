@@ -1,5 +1,4 @@
 import 'package:unisinos_usp_app/policies/model_policy.dart';
-import 'package:unisinos_usp_app/services/auth_user.dart';
 
 class UserPolicy extends ModelPolicy<Object> {
   UserPolicy(super.user);
@@ -10,8 +9,6 @@ class UserPolicy extends ModelPolicy<Object> {
       return false;
     } else if (user!.isAdmin) {
       return true;
-    } else if (user!.profile == AuthUser.regularProfile) {
-      return false;
     } else {
       return false;
     }
@@ -23,8 +20,6 @@ class UserPolicy extends ModelPolicy<Object> {
       return false;
     } else if (user!.isAdmin) {
       return true;
-    } else if (user!.profile == AuthUser.regularProfile) {
-      return false;
     } else {
       return false;
     }
@@ -36,8 +31,6 @@ class UserPolicy extends ModelPolicy<Object> {
       return false;
     } else if (user!.isAdmin) {
       return true;
-    } else if (user!.profile == AuthUser.regularProfile) {
-      return false;
     } else {
       return false;
     }
@@ -49,8 +42,6 @@ class UserPolicy extends ModelPolicy<Object> {
       return false;
     } else if (user!.isAdmin) {
       return true;
-    } else if (user!.profile == AuthUser.regularProfile) {
-      return false;
     } else {
       return false;
     }
@@ -62,8 +53,6 @@ class UserPolicy extends ModelPolicy<Object> {
       return false;
     } else if (user!.isAdmin) {
       return true;
-    } else if (user!.profile == AuthUser.regularProfile) {
-      return false;
     } else {
       return false;
     }

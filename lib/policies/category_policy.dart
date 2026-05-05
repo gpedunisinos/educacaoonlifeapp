@@ -36,8 +36,6 @@ class CategoryPolicy extends ModelPolicy<Object> {
       return false;
     } else if (user!.isAdmin) {
       return true;
-    } else if (user!.profile == AuthUser.regularProfile) {
-      return false;
     } else {
       return false;
     }
@@ -49,8 +47,6 @@ class CategoryPolicy extends ModelPolicy<Object> {
       return false;
     } else if (user!.isAdmin) {
       return true;
-    } else if (user!.profile == AuthUser.regularProfile) {
-      return false;
     } else {
       return false;
     }
@@ -62,8 +58,6 @@ class CategoryPolicy extends ModelPolicy<Object> {
       return false;
     } else if (user!.isAdmin) {
       return true;
-    } else if (user!.profile == AuthUser.regularProfile) {
-      return false;
     } else {
       return false;
     }
