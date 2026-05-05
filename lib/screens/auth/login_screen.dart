@@ -49,7 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Seja bem-vindo a Unisinos USP',
+                          'Seja bem-vindo a Plataforma eCOnectiva',
                           style: boldTextStyle(size: 22, color: Colors.white),
                         ),
                         Insets.small.height,

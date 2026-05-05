@@ -234,7 +234,7 @@ class _HomeTopBar extends StatelessWidget {
         final compact = constraints.maxWidth < 760;
         final logo = Image.asset('assets/logo_unisinos.png', height: 52);
         final title = Text(
-          'Plataforma GPe-dU',
+          'Plataforma eCOnectiva',
           maxLines: compact ? 2 : 1,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
