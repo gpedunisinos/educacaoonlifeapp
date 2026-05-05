@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 import 'package:unisinos_usp_app/controllers/territory/territory_index_controller.dart';
 import 'package:unisinos_usp_app/models/territory_model.dart';
+import 'package:unisinos_usp_app/policies/policies.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
@@ -13,6 +15,9 @@ class TerritoryIndexScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final canManage =
+        TerritoryPolicy(Get.find<UserController>().user.value).create();
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -21,7 +26,8 @@ class TerritoryIndexScreen extends StatelessWidget {
         leading: const SafeBackButton(),
         title: const Text('Territórios'),
         actions: [
-          IconButton(icon: const Icon(Icons.add), onPressed: _goToCreate),
+          if (canManage)
+            IconButton(icon: const Icon(Icons.add), onPressed: _goToCreate),
         ],
       ),
       body: Stack(
@@ -53,7 +59,6 @@ class TerritoryIndexScreen extends StatelessWidget {
                         ),
                         items: [
                           const DropdownMenuItem<int?>(
-                            value: null,
                             child: Text('Todos os biomas'),
                           ),
                           ..._controller.biomes.map(
@@ -115,21 +120,23 @@ class TerritoryIndexScreen extends StatelessWidget {
                             '${model.type} • ${model.biome?.name ?? 'Bioma ${model.biomeId}'}',
                             style: const TextStyle(color: Colors.white70),
                           ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                color: Colors.white,
-                                icon: const Icon(Icons.edit),
-                                onPressed: () => _goToUpdate(model),
-                              ),
-                              IconButton(
-                                color: Colors.white,
-                                icon: const Icon(Icons.delete_outline),
-                                onPressed: () => _confirmDelete(model),
-                              ),
-                            ],
-                          ),
+                          trailing: canManage
+                              ? Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      color: Colors.white,
+                                      icon: const Icon(Icons.edit),
+                                      onPressed: () => _goToUpdate(model),
+                                    ),
+                                    IconButton(
+                                      color: Colors.white,
+                                      icon: const Icon(Icons.delete_outline),
+                                      onPressed: () => _confirmDelete(model),
+                                    ),
+                                  ],
+                                )
+                              : null,
                         ),
                       );
                     },

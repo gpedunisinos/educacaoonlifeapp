@@ -28,6 +28,23 @@ class UserController extends GetxController {
     if (userPref != null) {
       AuthUser localUser = AuthUser.fromJson(jsonDecode(userPref));
 
+      if (localUser.profile == 0) {
+        try {
+          final userModel = await webclient.fetchUserById(localUser.id);
+          localUser = AuthUser(
+            id: localUser.id,
+            name: localUser.name,
+            email: localUser.email,
+            token: localUser.token,
+            isGoogleAuth: localUser.isGoogleAuth,
+            profile: userModel.profile,
+          );
+          await Util.prefs.setString('user', jsonEncode(localUser.toJson()));
+        } catch (error, stackTrace) {
+          Util.debug(exception: error, stackTrace: stackTrace);
+        }
+      }
+
       user.value = localUser;
       (AuthProvider.instance as UserAuthService).setUser(user.value!);
     } else {

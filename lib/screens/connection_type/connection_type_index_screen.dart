@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 import 'package:unisinos_usp_app/controllers/connection_type/connection_type_index_controller.dart';
 import 'package:unisinos_usp_app/models/connection_type_model.dart';
+import 'package:unisinos_usp_app/policies/policies.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
@@ -14,6 +16,9 @@ class ConnectionTypeIndexScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final canManage =
+        ConnectionTypePolicy(Get.find<UserController>().user.value).create();
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -22,11 +27,12 @@ class ConnectionTypeIndexScreen extends StatelessWidget {
         leading: const SafeBackButton(),
         title: const Text('Tipos de conexão'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: _goToCreate,
-            tooltip: 'Novo tipo',
-          ),
+          if (canManage)
+            IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: _goToCreate,
+              tooltip: 'Novo tipo',
+            ),
         ],
       ),
       body: Stack(
@@ -103,27 +109,28 @@ class ConnectionTypeIndexScreen extends StatelessWidget {
                                 style: const TextStyle(color: Colors.white70),
                               ),
                               const SizedBox(height: 8),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  IconButton(
-                                    color: Colors.white,
-                                    icon: const Icon(Icons.edit),
-                                    onPressed: _controller.isLoading.value
-                                        ? null
-                                        : () => _goToUpdate(model),
-                                    tooltip: 'Editar',
-                                  ),
-                                  IconButton(
-                                    color: Colors.white,
-                                    icon: const Icon(Icons.delete_outline),
-                                    onPressed: _controller.isLoading.value
-                                        ? null
-                                        : () => _confirmDelete(model),
-                                    tooltip: 'Excluir',
-                                  ),
-                                ],
-                              ),
+                              if (canManage)
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    IconButton(
+                                      color: Colors.white,
+                                      icon: const Icon(Icons.edit),
+                                      onPressed: _controller.isLoading.value
+                                          ? null
+                                          : () => _goToUpdate(model),
+                                      tooltip: 'Editar',
+                                    ),
+                                    IconButton(
+                                      color: Colors.white,
+                                      icon: const Icon(Icons.delete_outline),
+                                      onPressed: _controller.isLoading.value
+                                          ? null
+                                          : () => _confirmDelete(model),
+                                      tooltip: 'Excluir',
+                                    ),
+                                  ],
+                                ),
                             ],
                           ),
                         ),

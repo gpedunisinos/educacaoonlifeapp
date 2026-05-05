@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/bindings/user_binding.dart';
+import 'package:unisinos_usp_app/middlewares/app_route_guard.dart';
+import 'package:unisinos_usp_app/policies/policies.dart';
 import 'package:unisinos_usp_app/screens/user/user_create_screen.dart';
 import 'package:unisinos_usp_app/screens/user/user_index_screen.dart';
 import 'package:unisinos_usp_app/screens/user/user_update_screen.dart';
@@ -9,15 +11,24 @@ List<GetPage> userRoutes() => [
         name: '/users',
         page: () => const UserIndexScreen(),
         binding: UserIndexBinding(),
+        middlewares: [
+          AppRouteGuard(canActivate: (user) => UserPolicy(user).viewAny()),
+        ],
       ),
       GetPage(
         name: '/users/create',
         page: () => const UserCreateScreen(),
         binding: UserCreateBinding(),
+        middlewares: [
+          AppRouteGuard(canActivate: (user) => UserPolicy(user).create()),
+        ],
       ),
       GetPage(
         name: '/users/update',
         page: () => const UserUpdateScreen(),
         binding: UserUpdateBinding(),
+        middlewares: [
+          AppRouteGuard(canActivate: (user) => UserPolicy(user).create()),
+        ],
       ),
     ];
