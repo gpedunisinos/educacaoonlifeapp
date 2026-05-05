@@ -71,7 +71,7 @@ class ChatController extends GetxController {
       } else {
         messages.add(
           ChatMessageModel(
-            text: 'Olá! Sou o assistente do UNIUSP. Como posso ajudar?',
+            text: 'Olá! Sou o assistente da Plataforma eCOnectiva. Como posso ajudar?',
             isUser: false,
             timestamp: DateTime.now(),
           ),

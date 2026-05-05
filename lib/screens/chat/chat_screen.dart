@@ -50,7 +50,7 @@ class _ChatScreenState extends State<ChatScreen> {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
-        title: const Text('Assistente UNIUSP'),
+        title: const Text('Assistente eCOnectiva'),
       ),
       body: Stack(
         children: [

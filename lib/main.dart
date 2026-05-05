@@ -21,7 +21,7 @@ Future<void> main() async {
       runApp(
         GetMaterialApp(
           debugShowCheckedModeBanner: false,
-          title: 'Unisinos USP App',
+          title: 'Plataforma eCOnectiva',
           initialRoute: '/splash',
           unknownRoute: GetPage(
             name: '/not_found',
