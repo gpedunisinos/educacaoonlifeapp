@@ -9,6 +9,5 @@ export 'node_link_policy.dart';
 export 'node_policy.dart';
 export 'node_type_policy.dart';
 export 'policy.dart';
-export 'profile_policy.dart';
 export 'territory_policy.dart';
 export 'user_policy.dart';
