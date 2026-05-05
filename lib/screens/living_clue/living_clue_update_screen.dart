@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pvalidator/pvalidator.dart';
 import 'package:unisinos_usp_app/controllers/living_clue/living_clue_update_controller.dart';
+import 'package:unisinos_usp_app/models/biome_model.dart';
 import 'package:unisinos_usp_app/models/file_model.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
+import 'package:unisinos_usp_app/webclients/biome_webclient.dart';
 import 'package:unisinos_usp_app/webclients/category_webclient.dart';
 import 'package:unisinos_usp_app/webclients/file_webclient.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
@@ -23,6 +25,7 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
   final LivingClueUpdateController _controller =
       Get.find<LivingClueUpdateController>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final BiomeWebclient _biomeWebclient = BiomeWebclient();
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -36,14 +39,23 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
   final List<FileModel> _attachments = [];
   bool _filled = false;
   bool _isActive = true;
+  bool _loadingBiomes = false;
   bool _loadingCategory = false;
   bool _loadingAttachments = false;
   bool _metadataLoaded = false;
   bool _attachmentsLoaded = false;
   bool _uploadingFile = false;
+  int? _biomeId;
   int? _categoryId;
+  List<BiomeModel> _biomes = [];
   List<String> _metadataTags = [];
   Map<String, dynamic> _initialMetadata = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBiomes();
+  }
 
   @override
   void dispose() {
@@ -216,6 +228,31 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
                 PRuleMaxString(value, 255, message: 'Máximo de 255 caracteres'),
               ]).val(),
             ),
+            Insets.large.height,
+            DropdownButtonFormField<int>(
+              key: ValueKey('update_biome_${_biomeId}_${_biomes.length}'),
+              initialValue: _biomeId,
+              decoration: const InputDecoration(
+                labelText: 'Bioma',
+                border: OutlineInputBorder(),
+              ),
+              items: _biomes
+                  .map(
+                    (biome) => DropdownMenuItem<int>(
+                      value: biome.id,
+                      child: Text(biome.name),
+                    ),
+                  )
+                  .toList(),
+              onChanged: _loadingBiomes
+                  ? null
+                  : (value) => setState(() => _biomeId = value),
+              validator: (value) => value == null ? 'Bioma obrigatório' : null,
+            ),
+            if (_loadingBiomes) ...[
+              const SizedBox(height: 8),
+              const LinearProgressIndicator(),
+            ],
             Insets.large.height,
             InputText(
               hintText: 'Categoria',
@@ -485,8 +522,25 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
     _longitudeController.text = model.longitude.toString();
     _imageUrlController.text = model.imageUrl ?? '';
     _isActive = model.isActive;
+    _biomeId = model.biomeId > 0 ? model.biomeId : null;
     _categoryId = model.categoryId;
     _initialMetadata = model.metadata ?? {};
+  }
+
+  Future<void> _loadBiomes() async {
+    setState(() => _loadingBiomes = true);
+    try {
+      final biomes = await _biomeWebclient.fetch();
+      if (!mounted) return;
+      setState(() {
+        _biomes = biomes.where((biome) => biome.isActive).toList();
+      });
+    } catch (_) {
+      if (!mounted) return;
+      Get.snackbar('Biomas', 'Não foi possível carregar a lista de biomas.');
+    } finally {
+      if (mounted) setState(() => _loadingBiomes = false);
+    }
   }
 
   Future<void> _loadCategoryMetadata(
@@ -612,7 +666,12 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     final double? latitude = double.tryParse(_latitudeController.text.trim());
     final double? longitude = double.tryParse(_longitudeController.text.trim());
-    if (latitude == null || longitude == null || _categoryId == null) return;
+    if (latitude == null ||
+        longitude == null ||
+        _biomeId == null ||
+        _categoryId == null) {
+      return;
+    }
 
     final Map<String, dynamic> metadata = {};
     for (final entry in _metadataControllers.entries) {
@@ -625,6 +684,7 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
     final model = LivingClueModel(
       id: _controller.livingClue.value?.id ?? _controller.livingClueId ?? 0,
       name: _nameController.text.trim(),
+      biomeId: _biomeId!,
       categoryId: _categoryId!,
       description: _descriptionController.text.trim().isEmpty
           ? null
