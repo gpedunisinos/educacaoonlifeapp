@@ -164,8 +164,8 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
                   'longitude': center.longitude,
                 },
               );
-              if (created == true) {
-                _loadCurrentBounds();
+              if (_isCreatedResult(created)) {
+                await _refreshAfterCreate(created);
               }
             },
           ),
@@ -269,7 +269,8 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
                                     height: 44,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color: Colors.blue.withValues(alpha: 0.22),
+                                      color:
+                                          Colors.blue.withValues(alpha: 0.22),
                                       border: Border.all(
                                           color: Colors.blueAccent, width: 2),
                                     ),
@@ -283,8 +284,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
                                       color:
                                           Colors.orange.withValues(alpha: 0.22),
                                       border: Border.all(
-                                          color: Colors.orangeAccent,
-                                          width: 2),
+                                          color: Colors.orangeAccent, width: 2),
                                     ),
                                   ),
                                 Icon(
@@ -455,8 +455,10 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
         'pistas carregadas': _controller.livingClues.length.toString(),
         'conexões visíveis': _controller.connections.length.toString(),
         'modo criação de conexão': _isConnectingMode ? 'ativo' : 'inativo',
-        if (_connectionSource != null) 'origem da conexão': _connectionSource!.name,
-        if (_connectionTarget != null) 'destino da conexão': _connectionTarget!.name,
+        if (_connectionSource != null)
+          'origem da conexão': _connectionSource!.name,
+        if (_connectionTarget != null)
+          'destino da conexão': _connectionTarget!.name,
       },
       notes: <String>[
         if (_controller.sonarCenter.value != null)
@@ -483,6 +485,33 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
       }
     } catch (_) {}
     return Colors.redAccent;
+  }
+
+  bool _isCreatedResult(Object? result) {
+    return result == true || (result is Map && result['created'] == true);
+  }
+
+  Future<void> _refreshAfterCreate(Object? result) async {
+    final point = _createdPoint(result);
+    if (point != null) {
+      setState(() => _tapCenter = point);
+      final currentZoom = _mapController.camera.zoom;
+      _mapController.move(point, currentZoom < 14 ? 14 : currentZoom);
+    }
+    await _loadCurrentBounds();
+  }
+
+  LatLng? _createdPoint(Object? result) {
+    if (result is! Map) return null;
+    final latitude = _toDouble(result['latitude']);
+    final longitude = _toDouble(result['longitude']);
+    if (latitude == null || longitude == null) return null;
+    return LatLng(latitude, longitude);
+  }
+
+  double? _toDouble(Object? value) {
+    if (value is num) return value.toDouble();
+    return double.tryParse(value?.toString() ?? '');
   }
 
   void _showClueSheet(LivingClueModel item) {

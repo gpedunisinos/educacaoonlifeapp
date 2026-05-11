@@ -92,8 +92,8 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
         'longitude': _selected!.longitude,
       },
     );
-    if (result == true) {
-      Get.back(result: true);
+    if (_isCreatedResult(result)) {
+      Get.back(result: result);
     }
   }
 
@@ -248,5 +248,9 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
         'O usuário deve pressionar e segurar no mapa para marcar a localização.',
       ],
     );
+  }
+
+  bool _isCreatedResult(Object? result) {
+    return result == true || (result is Map && result['created'] == true);
   }
 }

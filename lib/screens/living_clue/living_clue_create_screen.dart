@@ -378,7 +378,13 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
 
     final bool saved = await _controller.save(model);
     if (saved) {
-      Get.secureBack(result: true);
+      Get.secureBack(
+        result: {
+          'created': true,
+          'latitude': latitude,
+          'longitude': longitude,
+        },
+      );
     }
   }
 
