@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:pvalidator/pvalidator.dart';
 import 'package:unisinos_usp_app/controllers/living_clue/living_clue_create_controller.dart';
 import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
-import 'package:unisinos_usp_app/models/biome_model.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
 import 'package:unisinos_usp_app/webclients/biome_webclient.dart';
@@ -33,21 +32,19 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
   final TextEditingController _longitudeController = TextEditingController();
   final TextEditingController _imageUrlController = TextEditingController();
   final TextEditingController _categoryController = TextEditingController();
+  final ItemSelectController _biomeSelectController = ItemSelectController();
   final Map<String, TextEditingController> _metadataControllers = {};
   int? _biomeId;
   int? _categoryId;
   String _categoryName = '';
   String _categoryType = '';
-  List<BiomeModel> _biomes = [];
   List<String> _metadataTags = [];
   bool _isActive = true;
-  bool _loadingBiomes = false;
 
   @override
   void initState() {
     super.initState();
     _prefillFromArgs();
-    _loadBiomes();
   }
 
   @override
@@ -72,6 +69,13 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
         _longitudeController.text = '$lng';
       }
       _biomeId = args['biomeId'] as int?;
+      if (_biomeId != null) {
+        _biomeSelectController.selectedItem = ItemSelect(
+          id: _biomeId!,
+          name: 'Bioma #$_biomeId',
+        );
+        _loadSelectedBiome(_biomeId!);
+      }
       _categoryId = args['categoryId'] as int?;
       _categoryName = (args['categoryName'] ?? '') as String;
       _categoryType = (args['categoryType'] ?? '') as String;
@@ -88,19 +92,17 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
     }
   }
 
-  Future<void> _loadBiomes() async {
-    setState(() => _loadingBiomes = true);
+  Future<void> _loadSelectedBiome(int biomeId) async {
     try {
-      final biomes = await _biomeWebclient.fetch();
+      final biome = await _biomeWebclient.fetchById(biomeId);
       if (!mounted) return;
-      setState(() {
-        _biomes = biomes.where((biome) => biome.isActive).toList();
-      });
+      if (_biomeSelectController.selectedItem?.id != biomeId) return;
+      setState(() => _biomeSelectController.selectedItem = ItemSelect(
+            id: biome.id,
+            name: biome.name,
+          ));
     } catch (_) {
-      if (!mounted) return;
-      Get.snackbar('Biomas', 'Não foi possível carregar a lista de biomas.');
-    } finally {
-      if (mounted) setState(() => _loadingBiomes = false);
+      // Mantem o valor por id quando o nome não puder ser resolvido.
     }
   }
 
@@ -167,32 +169,18 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
                             ]).val(),
                           ),
                           Insets.large.height,
-                          DropdownButtonFormField<int>(
-                            key: ValueKey(
-                                'create_biome_${_biomeId}_${_biomes.length}'),
-                            initialValue: _biomeId,
-                            decoration: const InputDecoration(
-                              labelText: 'Bioma',
-                              border: OutlineInputBorder(),
-                            ),
-                            items: _biomes
-                                .map(
-                                  (biome) => DropdownMenuItem<int>(
-                                    value: biome.id,
-                                    child: Text(biome.name),
-                                  ),
-                                )
-                                .toList(),
-                            onChanged: _loadingBiomes
-                                ? null
-                                : (value) => setState(() => _biomeId = value),
-                            validator: (value) =>
-                                value == null ? 'Selecione um bioma' : null,
+                          InputSelectApi(
+                            label: 'Bioma',
+                            controller: _biomeSelectController,
+                            validator: (value) => PValidator([
+                              PRuleRequired(value,
+                                  message: 'Selecione um bioma'),
+                            ]).val(),
+                            onFind: (search, offset, params) =>
+                                _biomeWebclient.select(search, offset),
+                            onChanged: (value) =>
+                                setState(() => _biomeId = value),
                           ),
-                          if (_loadingBiomes) ...[
-                            const SizedBox(height: 8),
-                            const LinearProgressIndicator(),
-                          ],
                           Insets.large.height,
                           InputText(
                             hintText: 'Categoria',
@@ -355,9 +343,10 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     final double? latitude = double.tryParse(_latitudeController.text.trim());
     final double? longitude = double.tryParse(_longitudeController.text.trim());
+    final int? biomeId = _biomeSelectController.selectedItem?.id ?? _biomeId;
     if (latitude == null ||
         longitude == null ||
-        _biomeId == null ||
+        biomeId == null ||
         _categoryId == null) {
       return;
     }
@@ -373,7 +362,7 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
     final model = LivingClueModel(
       id: 0,
       name: _nameController.text.trim(),
-      biomeId: _biomeId!,
+      biomeId: biomeId,
       categoryId: _categoryId!,
       description: _descriptionController.text.trim().isEmpty
           ? null
@@ -394,12 +383,9 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
   }
 
   String _selectedBiomeName() {
-    for (final biome in _biomes) {
-      if (biome.id == _biomeId) {
-        return biome.name;
-      }
-    }
-    return _biomeId?.toString() ?? '';
+    return _biomeSelectController.selectedItem?.name ??
+        _biomeId?.toString() ??
+        '';
   }
 
   String _formatTagLabel(String raw) {

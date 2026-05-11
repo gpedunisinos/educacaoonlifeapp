@@ -1,13 +1,21 @@
 class CategoryType {
   static const String living = 'Pista Viva';
   static const String data = 'Pista de Dados';
-  static const String geographic = 'Pista Georefrenciada';
+  static const String geographic = 'Pista Georreferenciada';
 
   static const List<String> values = <String>[
     living,
     data,
     geographic,
   ];
+
+  static String normalize(String? value) {
+    final String normalized = value?.trim() ?? '';
+    if (normalized == 'Pista Georreferenciada') {
+      return geographic;
+    }
+    return normalized;
+  }
 }
 
 class CategoryModel {
@@ -33,7 +41,7 @@ class CategoryModel {
     return CategoryModel(
       id: json['id'] is int ? json['id'] : int.tryParse(json['id']?.toString() ?? ''),
       name: json['name'] ?? '',
-      type: json['type'] ?? '',
+      type: CategoryType.normalize(json['type']?.toString()),
       colorHex: json['color_hex'] ?? '',
       iconCode: json['icon_code'],
       description: json['description'],
