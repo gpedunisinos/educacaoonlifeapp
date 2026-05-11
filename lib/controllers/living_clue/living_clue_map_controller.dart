@@ -2,8 +2,10 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:unisinos_usp_app/models/category_model.dart';
 import 'package:unisinos_usp_app/models/clue_connection_model.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
+import 'package:unisinos_usp_app/webclients/category_webclient.dart';
 import 'package:unisinos_usp_app/webclients/clue_connection_webclient.dart';
 import 'package:unisinos_usp_app/webclients/living_clue_webclient.dart';
 import 'package:widgets_spo/widgets_spo.dart';
@@ -12,12 +14,15 @@ class LivingClueMapController extends GetxController {
   final LivingClueWebclient _webclient = LivingClueWebclient();
   final ClueConnectionWebclient _connectionWebclient =
       ClueConnectionWebclient();
+  final CategoryWebclient _categoryWebclient = CategoryWebclient();
 
   final RxList<LivingClueModel> livingClues = <LivingClueModel>[].obs;
   final RxList<ClueConnectionModel> connections = <ClueConnectionModel>[].obs;
+  final RxMap<int, CategoryModel> categoriesById = <int, CategoryModel>{}.obs;
   final RxBool isLoading = false.obs;
   final RxnString errorMessage = RxnString();
   bool _loadingConnections = false;
+  bool _loadingCategories = false;
 
   Future<void> loadByBounds(LatLngBounds bounds) async {
     errorMessage.value = null;
@@ -29,6 +34,7 @@ class LivingClueMapController extends GetxController {
         east: bounds.east,
         west: bounds.west,
       ));
+      await _loadCategories();
       await _loadConnections();
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
@@ -67,6 +73,21 @@ class LivingClueMapController extends GetxController {
       Util.debug(exception: error, stackTrace: stackTrace);
     } finally {
       _loadingConnections = false;
+    }
+  }
+
+  Future<void> _loadCategories() async {
+    if (_loadingCategories || categoriesById.isNotEmpty) return;
+    _loadingCategories = true;
+    try {
+      final categories = await _categoryWebclient.fetch();
+      categoriesById.assignAll({
+        for (final category in categories) category.id: category,
+      });
+    } catch (error, stackTrace) {
+      Util.debug(exception: error, stackTrace: stackTrace);
+    } finally {
+      _loadingCategories = false;
     }
   }
 }

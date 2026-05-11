@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:unisinos_usp_app/models/category_model.dart';
 
 class LivingClueModel {
@@ -39,9 +40,7 @@ class LivingClueModel {
         biomeId = json['biome_id'] is int
             ? json['biome_id']
             : int.tryParse(json['biome_id']?.toString() ?? '') ?? 0,
-        categoryId = json['category_id'] is int
-            ? json['category_id']
-            : int.parse(json['category_id'].toString()),
+        categoryId = _parseCategoryId(json),
         description = json['description'],
         latitude = double.parse(json['latitude'].toString()),
         longitude = double.parse(json['longitude'].toString()),
@@ -54,9 +53,7 @@ class LivingClueModel {
         updatedAt = json['updated_at'] != null
             ? DateTime.parse(json['updated_at'])
             : null,
-        category = json['category'] != null
-            ? CategoryModel.fromJson(json['category'])
-            : null;
+        category = _parseCategory(json);
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -76,5 +73,33 @@ class LivingClueModel {
     return List<LivingClueModel>.from(
       jsonDecode(str).map((map) => LivingClueModel.fromJson(map)),
     );
+  }
+
+  static CategoryModel? _parseCategory(Map<String, dynamic> json) {
+    final categoryJson = json['category'] ?? json['Category'];
+    debugPrint(
+      '[LivingClueModel] id=${json['id']} category_id=${json['category_id']} '
+      'categoryKey=${json.containsKey('category')} '
+      'CategoryKey=${json.containsKey('Category')} '
+      'categoryPayload=$categoryJson',
+    );
+    if (categoryJson is Map<String, dynamic>) {
+      return CategoryModel.fromJson(categoryJson);
+    }
+    if (categoryJson is Map) {
+      return CategoryModel.fromJson(Map<String, dynamic>.from(categoryJson));
+    }
+    return null;
+  }
+
+  static int _parseCategoryId(Map<String, dynamic> json) {
+    final rawId = json['category_id'];
+    if (rawId is int) return rawId;
+
+    final parsedId = int.tryParse(rawId?.toString() ?? '');
+    if (parsedId != null) return parsedId;
+
+    final category = _parseCategory(json);
+    return category?.id ?? 0;
   }
 }

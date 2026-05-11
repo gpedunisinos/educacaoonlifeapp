@@ -271,16 +271,25 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
                     for (final clue in _controller.livingClues)
                       clue.id: LatLng(clue.latitude, clue.longitude),
                   };
+                  final Map<int, LivingClueModel> cluesById = {
+                    for (final clue in _controller.livingClues) clue.id: clue,
+                  };
                   final connectionLines = _controller.connections
                       .map(
                         (conn) {
                           final start = pointsById[conn.sourceClueId];
                           final end = pointsById[conn.targetClueId];
                           if (start == null || end == null) return null;
-                          return Polyline(
+                          final sourceClue = cluesById[conn.sourceClueId];
+                          final targetClue = cluesById[conn.targetClueId];
+                          return _connectionPolyline(
                             points: [start, end],
-                            color: Colors.red.shade600,
-                            strokeWidth: 3,
+                            sourceColor: sourceClue == null
+                                ? Colors.redAccent
+                                : _categoryColor(sourceClue),
+                            targetColor: targetClue == null
+                                ? Colors.redAccent
+                                : _categoryColor(targetClue),
                           );
                         },
                       )
@@ -299,9 +308,10 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
                           _connectionTarget!.longitude,
                         );
                     connectionLines.add(
-                      Polyline(
+                      _connectionPolyline(
                         points: [sourcePoint, targetPoint],
-                        color: Colors.orangeAccent,
+                        sourceColor: _categoryColor(_connectionSource!),
+                        targetColor: _categoryColor(_connectionTarget!),
                         strokeWidth: 4,
                       ),
                     );
@@ -404,20 +414,52 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
   }
 
   Color _categoryColor(LivingClueModel model) {
-    final String? hex = model.category?.colorHex;
-    if (hex == null || hex.isEmpty) return Colors.redAccent;
+    final String? hex = model.category?.colorHex ??
+        _controller.categoriesById[model.categoryId]?.colorHex;
+    if (hex == null || hex.isEmpty) {
+      debugPrint(
+        '[LivingClueMap] fallback red for clue id=${model.id} '
+        'name="${model.name}" categoryId=${model.categoryId} '
+        'modelCategory=${model.category?.toJson()} '
+        'cachedCategory=${_controller.categoriesById[model.categoryId]?.toJson()}',
+      );
+      return Colors.redAccent;
+    }
     try {
-      final buffer = StringBuffer();
-      if (!hex.startsWith('#')) buffer.write('#');
-      buffer.write(hex.replaceAll('#', ''));
-      final colorString = buffer.toString();
+      final colorString = '#${hex.replaceAll('#', '').trim()}';
       if (colorString.length == 7) {
         return Color(int.parse('0xff${colorString.substring(1)}'));
       } else if (colorString.length == 9) {
         return Color(int.parse(colorString.replaceFirst('#', '0x')));
       }
-    } catch (_) {}
+      debugPrint(
+        '[LivingClueMap] invalid category color for clue id=${model.id} '
+        'categoryId=${model.categoryId} hex="$hex" normalized="$colorString"',
+      );
+    } catch (error) {
+      debugPrint(
+        '[LivingClueMap] failed to parse category color for clue id=${model.id} '
+        'categoryId=${model.categoryId} hex="$hex" error=$error',
+      );
+    }
     return Colors.redAccent;
+  }
+
+  Polyline _connectionPolyline({
+    required List<LatLng> points,
+    required Color sourceColor,
+    required Color targetColor,
+    double strokeWidth = 3,
+  }) {
+    return Polyline(
+      points: points,
+      color: sourceColor,
+      gradientColors: [sourceColor, targetColor],
+      colorsStop: const [0, 1],
+      strokeWidth: strokeWidth,
+      borderColor: Colors.black.withValues(alpha: 0.35),
+      borderStrokeWidth: 1,
+    );
   }
 
   bool _isCreatedResult(Object? result) {
