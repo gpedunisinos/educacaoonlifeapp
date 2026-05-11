@@ -417,12 +417,6 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
     final String? hex = model.category?.colorHex ??
         _controller.categoriesById[model.categoryId]?.colorHex;
     if (hex == null || hex.isEmpty) {
-      debugPrint(
-        '[LivingClueMap] fallback red for clue id=${model.id} '
-        'name="${model.name}" categoryId=${model.categoryId} '
-        'modelCategory=${model.category?.toJson()} '
-        'cachedCategory=${_controller.categoriesById[model.categoryId]?.toJson()}',
-      );
       return Colors.redAccent;
     }
     try {
@@ -432,16 +426,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
       } else if (colorString.length == 9) {
         return Color(int.parse(colorString.replaceFirst('#', '0x')));
       }
-      debugPrint(
-        '[LivingClueMap] invalid category color for clue id=${model.id} '
-        'categoryId=${model.categoryId} hex="$hex" normalized="$colorString"',
-      );
-    } catch (error) {
-      debugPrint(
-        '[LivingClueMap] failed to parse category color for clue id=${model.id} '
-        'categoryId=${model.categoryId} hex="$hex" error=$error',
-      );
-    }
+    } catch (_) {}
     return Colors.redAccent;
   }
 
