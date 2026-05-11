@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:unisinos_usp_app/models/category_model.dart';
 
 class LivingClueModel {
@@ -77,12 +76,6 @@ class LivingClueModel {
 
   static CategoryModel? _parseCategory(Map<String, dynamic> json) {
     final categoryJson = json['category'] ?? json['Category'];
-    debugPrint(
-      '[LivingClueModel] id=${json['id']} category_id=${json['category_id']} '
-      'categoryKey=${json.containsKey('category')} '
-      'CategoryKey=${json.containsKey('Category')} '
-      'categoryPayload=$categoryJson',
-    );
     if (categoryJson is Map<String, dynamic>) {
       return CategoryModel.fromJson(categoryJson);
     }
