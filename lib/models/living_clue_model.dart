@@ -5,6 +5,7 @@ import 'package:unisinos_usp_app/models/category_model.dart';
 class LivingClueModel {
   int id;
   String name;
+  int biomeId;
   int categoryId;
   String? description;
   double latitude;
@@ -19,6 +20,7 @@ class LivingClueModel {
   LivingClueModel({
     required this.id,
     required this.name,
+    required this.biomeId,
     required this.categoryId,
     required this.latitude,
     required this.longitude,
@@ -34,6 +36,9 @@ class LivingClueModel {
   LivingClueModel.fromJson(Map<String, dynamic> json)
       : id = json['id'] is int ? json['id'] : int.parse(json['id'].toString()),
         name = json['name'] ?? '',
+        biomeId = json['biome_id'] is int
+            ? json['biome_id']
+            : int.tryParse(json['biome_id']?.toString() ?? '') ?? 0,
         categoryId = json['category_id'] is int
             ? json['category_id']
             : int.parse(json['category_id'].toString()),
@@ -43,13 +48,20 @@ class LivingClueModel {
         imageUrl = json['image_url'],
         metadata = json['metadata'],
         isActive = json['is_active'] == null ? true : json['is_active'] == true,
-        createdAt = json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
-        updatedAt = json['updated_at'] != null ? DateTime.parse(json['updated_at']) : null,
-        category = json['category'] != null ? CategoryModel.fromJson(json['category']) : null;
+        createdAt = json['created_at'] != null
+            ? DateTime.parse(json['created_at'])
+            : null,
+        updatedAt = json['updated_at'] != null
+            ? DateTime.parse(json['updated_at'])
+            : null,
+        category = json['category'] != null
+            ? CategoryModel.fromJson(json['category'])
+            : null;
 
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
+        'biome_id': biomeId,
         'category_id': categoryId,
         'description': description,
         'latitude': latitude,

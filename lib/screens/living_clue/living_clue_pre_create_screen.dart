@@ -181,8 +181,8 @@ class _LivingCluePreCreateScreenState extends State<LivingCluePreCreateScreen> {
             'longitude': args['longitude'],
         },
       );
-      if (result == true) {
-        Get.back(result: true);
+      if (_isCreatedResult(result)) {
+        Get.back(result: result);
       }
     } catch (_) {
       Get.snackbar(
@@ -190,5 +190,9 @@ class _LivingCluePreCreateScreenState extends State<LivingCluePreCreateScreen> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  bool _isCreatedResult(Object? result) {
+    return result == true || (result is Map && result['created'] == true);
   }
 }

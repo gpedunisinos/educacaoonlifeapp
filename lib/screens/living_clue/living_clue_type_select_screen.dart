@@ -157,8 +157,12 @@ class _LivingClueTypeSelectScreenState
           'longitude': args['longitude'],
       },
     );
-    if (result == true) {
-      Get.back(result: true);
+    if (_isCreatedResult(result)) {
+      Get.back(result: result);
     }
+  }
+
+  bool _isCreatedResult(Object? result) {
+    return result == true || (result is Map && result['created'] == true);
   }
 }

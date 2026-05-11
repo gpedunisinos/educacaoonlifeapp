@@ -211,7 +211,7 @@ class LivingClueIndexScreen extends StatelessWidget {
 
   Future<void> _goToCreate() async {
     final result = await Get.toNamed('/living_clues/type_select');
-    if (result == true) {
+    if (result == true || (result is Map && result['created'] == true)) {
       await _controller.loadLivingClues();
     }
   }
