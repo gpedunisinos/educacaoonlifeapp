@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/biome/biome_update_controller.dart';
 import 'package:unisinos_usp_app/models/biome_model.dart';
 import 'package:pvalidator/pvalidator.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
+import 'package:unisinos_usp_app/widgets/color_preview_card.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
@@ -109,14 +111,12 @@ class _BiomeFormState extends State<_BiomeForm> {
                       InputText(
                         hintText: 'Cor em hex',
                         controller: _colorController,
-                        validator: (v) => PValidator([
-                          PRuleRequired(v, message: 'Obrigatório'),
-                          PRuleRegex(
-                            v,
-                            r'^#([A-Fa-f0-9]{6})$',
-                            message: 'Use o formato #RRGGBB',
-                          ),
-                        ]).val(),
+                        validator: _validateColor,
+                      ),
+                      Insets.medium.height,
+                      ColorPreviewCard(
+                        color: _parseHexColor(_colorController.text),
+                        onTap: _pickColor,
                       ),
                       Insets.large.height,
                       InputText(
@@ -176,7 +176,55 @@ class _BiomeFormState extends State<_BiomeForm> {
       ),
     );
     if (mounted) setState(() => _saving = false);
-    if (saved) Get.back(result: true);
+    if (saved) Get.secureBack(result: true);
+  }
+
+  Future<void> _pickColor() async {
+    Color tempColor = _parseHexColor(_colorController.text);
+    await showDialog<void>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Selecionar cor'),
+        content: SingleChildScrollView(
+          child: ColorPicker(
+            pickerColor: tempColor,
+            onColorChanged: (color) => tempColor = color,
+            enableAlpha: false,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              _colorController.text = _colorToHex(tempColor);
+              setState(() {});
+              Navigator.of(context).pop();
+            },
+            child: const Text('Usar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String? _validateColor(String? value) {
+    final String text = value?.trim() ?? '';
+    final RegExp regex = RegExp(r'^#?[0-9A-Fa-f]{6}$');
+    if (text.isEmpty) return 'Obrigatório';
+    if (!regex.hasMatch(text)) return 'Informe uma cor HEX válida';
+    return null;
+  }
+
+  Color _parseHexColor(String value) {
+    final String hex = value.replaceAll('#', '').padLeft(6, '0');
+    return Color(int.parse('FF$hex', radix: 16));
+  }
+
+  String _colorToHex(Color color) {
+    return '#${color.value.toRadixString(16).substring(2).toUpperCase()}';
   }
 }
 
