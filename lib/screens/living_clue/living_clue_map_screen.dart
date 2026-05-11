@@ -20,10 +20,10 @@ class LivingClueMapScreen extends StatefulWidget {
 
 class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
   static const String _screenName = 'Mapa de pistas';
+  static const LatLng _initialCenter = LatLng(-29.718, -51.143);
   final LivingClueMapController _controller =
       Get.find<LivingClueMapController>();
   final MapController _mapController = MapController();
-  LatLng _tapCenter = const LatLng(-29.718, -51.143);
   bool _isConnectingMode = false;
   LivingClueModel? _connectionSource;
   LivingClueModel? _connectionTarget;
@@ -43,14 +43,8 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
     final position = await _controller.currentLocation();
     if (position != null) {
       _mapController.move(position, 14);
-      _tapCenter = position;
-      await _controller.searchAround(position, _controller.sonarRadius.value);
+      await _loadCurrentBounds();
     }
-  }
-
-  Future<void> _searchByTap() async {
-    await _controller.searchAround(_tapCenter, _controller.sonarRadius.value);
-    _mapController.move(_tapCenter, _mapController.camera.zoom);
   }
 
   void _toggleConnectionMode() {
@@ -207,34 +201,8 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          const Icon(Icons.radar,
-                              size: 18, color: Colors.indigo),
-                          const SizedBox(width: 6),
-                          const Text('Raio',
-                              style: TextStyle(color: Colors.white)),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Obx(() {
-                              return Slider(
-                                activeColor: Colors.indigo,
-                                value: _controller.sonarRadius.value,
-                                min: 100,
-                                max: 2000,
-                                divisions: 19,
-                                label:
-                                    '${_controller.sonarRadius.value.toInt()} m',
-                                onChanged: (value) =>
-                                    _controller.sonarRadius.value = value,
-                              );
-                            }),
-                          ),
-                        ],
-                      ),
-                    ),
                     IconButton(
                       color: Colors.white,
                       icon: const Icon(Icons.my_location),
@@ -339,34 +307,17 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
                     );
                   }
 
-                  final circles = <CircleMarker>[];
-                  if (_controller.sonarCenter.value != null) {
-                    circles.add(
-                      CircleMarker(
-                        point: _controller.sonarCenter.value!,
-                        color: Colors.blue.withValues(alpha: 0.2),
-                        borderStrokeWidth: 1,
-                        borderColor: Colors.blue,
-                        radius: _controller.sonarRadius.value,
-                      ),
-                    );
-                  }
-
                   return Stack(
                     children: [
                       FlutterMap(
                         mapController: _mapController,
                         options: MapOptions(
-                          initialCenter: _tapCenter,
+                          initialCenter: _initialCenter,
                           initialZoom: 13,
                           onMapEvent: (event) {
                             if (event is MapEventMoveEnd) {
                               _loadCurrentBounds();
                             }
-                          },
-                          onLongPress: (tapPos, latLng) {
-                            setState(() => _tapCenter = latLng);
-                            _controller.sonarCenter.value = latLng;
                           },
                         ),
                         children: [
@@ -376,7 +327,6 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
                             userAgentPackageName:
                                 'com.br.spotecnologia.uniusp_app',
                           ),
-                          if (circles.isNotEmpty) CircleLayer(circles: circles),
                           if (connectionLines.isNotEmpty)
                             PolylineLayer(
                               polylines: connectionLines,
@@ -390,17 +340,6 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
                             child: Center(child: CircularProgressIndicator()),
                           ),
                         ),
-                      Positioned(
-                        bottom: 16,
-                        left: 16,
-                        right: 16,
-                        child: ElevatedButton.icon(
-                          icon: const Icon(Icons.radar),
-                          label: const Text(
-                              'Buscar por raio (tap longo para escolher o ponto)'),
-                          onPressed: _searchByTap,
-                        ),
-                      ),
                       if (_controller.errorMessage.value != null)
                         Positioned(
                           top: 12,
@@ -443,15 +382,11 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
       goal: 'buscar pistas próximas e iniciar o cadastro de um novo ponto',
       visibleFields: const <String>[
         'mapa',
-        'raio do sonar',
-        'buscar por raio',
         'usar minha localização',
+        'atualizar área',
         'criar pista por ponto',
       ],
       filledFields: <String, String>{
-        'raio do sonar': '${_controller.sonarRadius.value.toInt()} m',
-        'centro selecionado':
-            '${_tapCenter.latitude.toStringAsFixed(5)}, ${_tapCenter.longitude.toStringAsFixed(5)}',
         'pistas carregadas': _controller.livingClues.length.toString(),
         'conexões visíveis': _controller.connections.length.toString(),
         'modo criação de conexão': _isConnectingMode ? 'ativo' : 'inativo',
@@ -461,9 +396,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
           'destino da conexão': _connectionTarget!.name,
       },
       notes: <String>[
-        if (_controller.sonarCenter.value != null)
-          'O usuário definiu um centro para busca por raio.',
-        'Tap longo no mapa escolhe o ponto de referência do sonar.',
+        'O mapa carrega as pistas pela área visível.',
         if (_isConnectingMode)
           'O usuário está criando uma conexão diretamente no mapa.',
       ],
@@ -494,7 +427,6 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
   Future<void> _refreshAfterCreate(Object? result) async {
     final point = _createdPoint(result);
     if (point != null) {
-      setState(() => _tapCenter = point);
       final currentZoom = _mapController.camera.zoom;
       _mapController.move(point, currentZoom < 14 ? 14 : currentZoom);
     }
