@@ -150,8 +150,10 @@ class BiomeIndexScreen extends StatelessWidget {
   }
 
   Future<void> _goToCreate() async {
-    await Get.toNamed('/biomes/create');
-    await _controller.loadBiomes();
+    final result = await Get.toNamed('/biomes/create');
+    if (result == true) {
+      await _controller.loadBiomes();
+    }
   }
 
   Future<void> _goToUpdate(BiomeModel model) async {

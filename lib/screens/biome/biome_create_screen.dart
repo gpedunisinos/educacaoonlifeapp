@@ -174,7 +174,7 @@ class _BiomeFormState extends State<_BiomeForm> {
       ),
     );
     if (mounted) setState(() => _saving = false);
-    if (saved) Get.back(result: true);
+    if (saved) Get.secureBack(result: true);
   }
 }
 
