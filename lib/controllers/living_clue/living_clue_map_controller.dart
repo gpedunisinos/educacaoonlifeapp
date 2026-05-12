@@ -76,6 +76,48 @@ class LivingClueMapController extends GetxController {
     }
   }
 
+  Future<bool> updatePosition(
+    LivingClueModel clue,
+    LatLng newPosition,
+  ) async {
+    try {
+      isLoading.value = true;
+      errorMessage.value = null;
+
+      final LivingClueModel updatedModel = LivingClueModel(
+        id: clue.id,
+        name: clue.name,
+        biomeId: clue.biomeId,
+        categoryId: clue.categoryId,
+        description: clue.description,
+        latitude: newPosition.latitude,
+        longitude: newPosition.longitude,
+        imageUrl: clue.imageUrl,
+        metadata: clue.metadata,
+        isActive: clue.isActive,
+        createdAt: clue.createdAt,
+        updatedAt: clue.updatedAt,
+        category: clue.category,
+      );
+
+      final saved = await _webclient.update(updatedModel);
+      final int index = livingClues.indexWhere((item) => item.id == clue.id);
+      if (index >= 0) {
+        livingClues[index] = saved;
+        livingClues.refresh();
+      }
+      return true;
+    } catch (error, stackTrace) {
+      Util.debug(exception: error, stackTrace: stackTrace);
+      errorMessage.value = 'Não foi possível atualizar a posição da pista.';
+      Get.customSnackbar(
+          'Erro', 'Não foi possível atualizar a posição da pista.');
+      return false;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   Future<void> _loadCategories() async {
     if (_loadingCategories || categoriesById.isNotEmpty) return;
     _loadingCategories = true;
