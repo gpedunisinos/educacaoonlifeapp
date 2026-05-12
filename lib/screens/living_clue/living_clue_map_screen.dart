@@ -25,8 +25,11 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
       Get.find<LivingClueMapController>();
   final MapController _mapController = MapController();
   bool _isConnectingMode = false;
+  bool _isRepositionMode = false;
   LivingClueModel? _connectionSource;
   LivingClueModel? _connectionTarget;
+  LivingClueModel? _repositioningClue;
+  LatLng? _pendingRepositionPoint;
 
   @override
   void initState() {
@@ -51,7 +54,11 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
     setState(() {
       final nextValue = !_isConnectingMode;
       _isConnectingMode = nextValue;
-      if (!nextValue) {
+      if (nextValue) {
+        _isRepositionMode = false;
+        _repositioningClue = null;
+        _pendingRepositionPoint = null;
+      } else {
         _connectionSource = null;
         _connectionTarget = null;
       }
@@ -66,7 +73,44 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
     });
   }
 
+  void _toggleRepositionMode([LivingClueModel? clue]) {
+    setState(() {
+      final bool nextValue = clue != null ? true : !_isRepositionMode;
+      _isRepositionMode = nextValue;
+      if (nextValue) {
+        _isConnectingMode = false;
+        _connectionSource = null;
+        _connectionTarget = null;
+        _repositioningClue = clue;
+        _pendingRepositionPoint = null;
+      } else {
+        _repositioningClue = null;
+        _pendingRepositionPoint = null;
+      }
+    });
+  }
+
+  void _cancelRepositionMode() {
+    setState(() {
+      _isRepositionMode = false;
+      _repositioningClue = null;
+      _pendingRepositionPoint = null;
+    });
+  }
+
   Future<void> _handleMarkerTap(LivingClueModel item) async {
+    if (_isRepositionMode) {
+      setState(() {
+        _repositioningClue = item;
+        _pendingRepositionPoint = null;
+      });
+      Get.customSnackbar(
+        'Reposicionamento',
+        'Pista selecionada. Agora pressione e segure no novo ponto do mapa.',
+      );
+      return;
+    }
+
     if (!_isConnectingMode) {
       _showClueSheet(item);
       return;
@@ -120,6 +164,79 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
     });
   }
 
+  Future<void> _handleRepositionLongPress(LatLng point) async {
+    if (!_isRepositionMode || _repositioningClue == null) {
+      return;
+    }
+
+    setState(() {
+      _pendingRepositionPoint = point;
+    });
+
+    final bool? confirmed = await Get.bottomSheet<bool>(
+      Container(
+        padding: const EdgeInsets.all(16),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Reposicionar pista viva',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 12),
+            Text('Pista: ${_repositioningClue!.name}'),
+            const SizedBox(height: 8),
+            Text(
+              'Atual: ${_repositioningClue!.latitude.toStringAsFixed(6)}, ${_repositioningClue!.longitude.toStringAsFixed(6)}',
+            ),
+            Text(
+              'Nova: ${point.latitude.toStringAsFixed(6)}, ${point.longitude.toStringAsFixed(6)}',
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Get.back(result: false),
+                    child: const Text('Cancelar'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Get.back(result: true),
+                    child: const Text('Salvar posição'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
+    );
+
+    if (confirmed != true || _repositioningClue == null) {
+      return;
+    }
+
+    final saved = await _controller.updatePosition(_repositioningClue!, point);
+    if (!mounted || !saved) return;
+
+    await _loadCurrentBounds();
+    _mapController.move(point, _mapController.camera.zoom);
+    _cancelRepositionMode();
+    Get.successSnackbar('Posição da pista atualizada com sucesso.');
+  }
+
   @override
   Widget build(BuildContext context) {
     Get.find<AiAssistantContextService>().registerProvider(
@@ -134,6 +251,18 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
         leading: const SafeBackButton(),
         title: const Text('Mapa de pistas'),
         actions: [
+          if (_isRepositionMode)
+            IconButton(
+              tooltip: 'Cancelar reposicionamento',
+              icon: const Icon(Icons.close),
+              onPressed: _cancelRepositionMode,
+            )
+          else
+            IconButton(
+              tooltip: 'Reposicionar pista no mapa',
+              icon: const Icon(Icons.open_with),
+              onPressed: _toggleRepositionMode,
+            ),
           if (_isConnectingMode)
             IconButton(
               tooltip: 'Cancelar nova conexão',
@@ -171,21 +300,27 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
           const Positioned.fill(child: CidigScenicBackground()),
           Column(
             children: [
-              if (_isConnectingMode)
+              if (_isConnectingMode || _isRepositionMode)
                 Container(
                   width: double.infinity,
                   margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                   padding:
                       const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   decoration: BoxDecoration(
-                    color: Colors.deepPurple.withValues(alpha: 0.72),
+                    color: _isRepositionMode
+                        ? Colors.teal.withValues(alpha: 0.72)
+                        : Colors.deepPurple.withValues(alpha: 0.72),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: Colors.white24),
                   ),
                   child: Text(
-                    _connectionSource == null
-                        ? 'Modo nova conexão: toque na pista de origem.'
-                        : 'Origem: ${_connectionSource!.name}. Agora toque na pista de destino.',
+                    _isRepositionMode
+                        ? (_repositioningClue == null
+                            ? 'Modo reposicionamento: toque na pista que deseja mover.'
+                            : 'Reposicionando ${_repositioningClue!.name}. Agora pressione e segure no novo ponto do mapa.')
+                        : (_connectionSource == null
+                            ? 'Modo nova conexão: toque na pista de origem.'
+                            : 'Origem: ${_connectionSource!.name}. Agora toque na pista de destino.'),
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
@@ -241,6 +376,20 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
                                           Colors.blue.withValues(alpha: 0.22),
                                       border: Border.all(
                                           color: Colors.blueAccent, width: 2),
+                                    ),
+                                  ),
+                                if (_repositioningClue?.id == item.id)
+                                  Container(
+                                    width: 46,
+                                    height: 46,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color:
+                                          Colors.teal.withValues(alpha: 0.22),
+                                      border: Border.all(
+                                        color: Colors.tealAccent,
+                                        width: 2,
+                                      ),
                                     ),
                                   ),
                                 if (_connectionTarget?.id == item.id)
@@ -324,6 +473,8 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
                         options: MapOptions(
                           initialCenter: _initialCenter,
                           initialZoom: 13,
+                          onLongPress: (_, point) =>
+                              _handleRepositionLongPress(point),
                           onMapEvent: (event) {
                             if (event is MapEventMoveEnd) {
                               _loadCurrentBounds();
@@ -341,7 +492,34 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
                             PolylineLayer(
                               polylines: connectionLines,
                             ),
-                          MarkerLayer(markers: markers),
+                          if (_pendingRepositionPoint != null)
+                            CircleLayer(
+                              circles: [
+                                CircleMarker(
+                                  point: _pendingRepositionPoint!,
+                                  color: Colors.teal.withValues(alpha: 0.25),
+                                  borderColor: Colors.tealAccent,
+                                  borderStrokeWidth: 2,
+                                  radius: 18,
+                                ),
+                              ],
+                            ),
+                          MarkerLayer(
+                            markers: [
+                              ...markers,
+                              if (_pendingRepositionPoint != null)
+                                Marker(
+                                  point: _pendingRepositionPoint!,
+                                  width: 44,
+                                  height: 44,
+                                  child: const Icon(
+                                    Icons.place,
+                                    color: Colors.tealAccent,
+                                    size: 34,
+                                  ),
+                                ),
+                            ],
+                          ),
                         ],
                       ),
                       if (_controller.isLoading.value)
@@ -400,15 +578,20 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
         'pistas carregadas': _controller.livingClues.length.toString(),
         'conexões visíveis': _controller.connections.length.toString(),
         'modo criação de conexão': _isConnectingMode ? 'ativo' : 'inativo',
+        'modo reposicionamento': _isRepositionMode ? 'ativo' : 'inativo',
         if (_connectionSource != null)
           'origem da conexão': _connectionSource!.name,
         if (_connectionTarget != null)
           'destino da conexão': _connectionTarget!.name,
+        if (_repositioningClue != null)
+          'pista em reposicionamento': _repositioningClue!.name,
       },
       notes: <String>[
         'O mapa carrega as pistas pela área visível.',
         if (_isConnectingMode)
           'O usuário está criando uma conexão diretamente no mapa.',
+        if (_isRepositionMode)
+          'O usuário está escolhendo uma nova posição para uma pista viva.',
       ],
     );
   }
@@ -531,6 +714,18 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.open_with),
+                label: const Text('Mover no mapa'),
+                onPressed: () {
+                  Get.back();
+                  _toggleRepositionMode(item);
+                },
+              ),
             ),
           ],
         ),
