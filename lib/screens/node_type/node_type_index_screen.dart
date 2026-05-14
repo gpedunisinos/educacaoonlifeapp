@@ -45,7 +45,7 @@ class _NodeTypeIndexScreenState extends State<NodeTypeIndexScreen> {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
-        title: const Text('Tipos de nó'),
+        title: const Text('Tipos de problemática'),
         actions: [
           if (canManage)
             IconButton(
@@ -96,7 +96,7 @@ class _NodeTypeIndexScreenState extends State<NodeTypeIndexScreen> {
                   if (_controller.nodeTypes.isEmpty) {
                     return const Center(
                       child: Text(
-                        'Nenhum tipo de nó encontrado.',
+                        'Nenhum tipo de problemática encontrado.',
                         style: TextStyle(color: Colors.white),
                       ),
                     );

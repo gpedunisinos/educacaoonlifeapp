@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/node/node_index_controller.dart';
 import 'package:unisinos_usp_app/models/node_model.dart';
+import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 
 class NodeIndexScreen extends StatefulWidget {
   NodeIndexScreen({super.key});
@@ -39,7 +39,7 @@ class _NodeIndexScreenState extends State<NodeIndexScreen> {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
-        title: const Text('Nós'),
+        title: const Text('Problemáticas'),
         actions: [
           IconButton(
             icon: const Icon(Icons.account_tree_outlined),
@@ -49,7 +49,7 @@ class _NodeIndexScreenState extends State<NodeIndexScreen> {
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: _goToCreate,
-            tooltip: 'Novo nó',
+            tooltip: 'Nova problemática',
           ),
         ],
       ),
@@ -70,8 +70,7 @@ class _NodeIndexScreenState extends State<NodeIndexScreen> {
                     prefixIcon: const Icon(Icons.search, color: Colors.white70),
                     suffixIcon: IconButton(
                       icon: const Icon(Icons.refresh, color: Colors.white70),
-                      onPressed: () =>
-                          _controller.applySearch(_searchController.text),
+                      onPressed: () => _controller.applySearch(_searchController.text),
                     ),
                     filled: true,
                     fillColor: Colors.white.withValues(alpha: 0.08),
@@ -86,22 +85,18 @@ class _NodeIndexScreenState extends State<NodeIndexScreen> {
               ),
               Expanded(
                 child: Obx(() {
-                  if (_controller.isLoading.value &&
-                      _controller.nodes.isEmpty) {
-                    return const Center(
-                        child: CircularProgressIndicator(color: Colors.white));
+                  if (_controller.isLoading.value && _controller.nodes.isEmpty) {
+                    return const Center(child: CircularProgressIndicator(color: Colors.white));
                   }
                   if (_controller.nodes.isEmpty) {
                     return const Center(
-                      child: Text('Nenhum nó encontrado.',
-                          style: TextStyle(color: Colors.white)),
+                      child: Text('Nenhuma problemática encontrada.', style: TextStyle(color: Colors.white)),
                     );
                   }
                   return ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                    itemCount: _controller.nodes.length +
-                        (_controller.isLoadingMore.value ? 1 : 0),
+                    itemCount: _controller.nodes.length + (_controller.isLoadingMore.value ? 1 : 0),
                     itemBuilder: (_, index) {
                       if (index >= _controller.nodes.length) {
                         return const Padding(
@@ -128,15 +123,14 @@ class _NodeIndexScreenState extends State<NodeIndexScreen> {
 
   void _onScroll() {
     if (!_scrollController.hasClients) return;
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
       _controller.loadMore();
     }
   }
 
   void _confirmDelete(NodeModel model) {
     Get.defaultDialog(
-      title: 'Excluir nó',
+      title: 'Excluir problemática',
       middleText: 'Deseja realmente excluir "${model.name}"?',
       textCancel: 'Cancelar',
       textConfirm: 'Excluir',
@@ -156,8 +150,7 @@ class _NodeIndexScreenState extends State<NodeIndexScreen> {
   }
 
   Future<void> _goToUpdate(NodeModel model) async {
-    final updated = await Get.toNamed('/nodes/update',
-        parameters: {'id': model.id.toString()});
+    final updated = await Get.toNamed('/nodes/update', parameters: {'id': model.id.toString()});
     if (updated == true) {
       await _controller.loadInitial();
     }

@@ -10,9 +10,9 @@ import 'package:unisinos_usp_app/models/node_link_model.dart';
 import 'package:unisinos_usp_app/models/node_model.dart';
 import 'package:unisinos_usp_app/models/node_type_model.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
+import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class NodeGraphScreen extends StatefulWidget {
@@ -53,12 +53,12 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
-        title: const Text('Grafo de nós'),
+        title: const Text('Grafo de problemáticas'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
             onPressed: _openCreateNodeSheet,
-            tooltip: 'Novo nó',
+            tooltip: 'Nova problemática',
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -209,41 +209,48 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
     return AiAssistantScreenContext(
       screenName: _screenName,
       route: Get.currentRoute,
-      stage: 'mapeamento e análise de nós',
+      stage: 'mapeamento e análise de problemáticas',
       goal: 'criar, conectar, editar e organizar entidades no grafo',
       visibleFields: const <String>[
-        'tipos de nó',
+        'tipos de problemática',
         'grau mínimo',
         'grafo interativo',
-        'painel do nó selecionado',
+        'painel da problemática selecionada',
       ],
       filledFields: <String, String>{
-        'nós carregados': _controller.graphNodes.length.toString(),
+        'problemáticas carregadas': _controller.graphNodes.length.toString(),
         'ligações carregadas': _controller.graphLinks.length.toString(),
-        'tipos de nó carregados': _controller.nodeTypes.length.toString(),
+        'tipos de problemática carregados':
+            _controller.nodeTypes.length.toString(),
         'grau mínimo': _controller.minimumDegree.value.toString(),
         'tipos ativos': _controller.selectedTypeIds.length.toString(),
-        if (selectedNode != null) 'nó selecionado': selectedNode.name,
-        if (selectedNode != null) 'tipo do nó selecionado': selectedNode.nodeType?.name ?? 'Tipo #${selectedNode.nodeTypeId}',
+        if (selectedNode != null)
+          'problemática selecionada': selectedNode.name,
+        if (selectedNode != null)
+          'tipo da problemática selecionada':
+              selectedNode.nodeType?.name ?? 'Tipo #${selectedNode.nodeTypeId}',
       },
       notes: <String>[
-        if (_controller.selectedNodeId.value != null) 'Há um nó selecionado e o painel contextual está disponível.',
-        if (_controller.visibleNodes.isEmpty) 'Os filtros atuais podem estar escondendo todos os nós visíveis.',
-        'O usuário pode arrastar nós, criar conexões e editar o grafo sem sair da tela.',
+        if (_controller.selectedNodeId.value != null)
+          'Há uma problemática selecionada e o painel contextual está disponível.',
+        if (_controller.visibleNodes.isEmpty)
+          'Os filtros atuais podem estar escondendo todas as problemáticas visíveis.',
+        'O usuário pode arrastar problemáticas, criar conexões e editar o grafo sem sair da tela.',
       ],
     );
   }
 
   Future<void> _openCreateNodeSheet() async {
     if (_controller.nodeTypes.isEmpty) {
-      Get.customSnackbar('Erro', 'Cadastre um tipo de nó antes de criar nós.');
+      Get.customSnackbar(
+          'Erro', 'Cadastre um tipo de problemática antes de criar problemáticas.');
       return;
     }
 
     await Get.bottomSheet<void>(
       _NodeEditorSheet(
-        title: 'Novo nó',
-        submitLabel: 'Criar nó',
+        title: 'Nova problemática',
+        submitLabel: 'Criar problemática',
         nodeTypes: _controller.nodeTypes.toList(),
         isSaving: _controller.isSavingNode,
         initialColor: '#0EA5E9',
@@ -264,7 +271,7 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
 
     await Get.bottomSheet<void>(
       _NodeEditorSheet(
-        title: 'Editar nó',
+        title: 'Editar problemática',
         submitLabel: 'Salvar alterações',
         nodeTypes: _controller.nodeTypes.toList(),
         isSaving: _controller.isSavingNode,
@@ -321,7 +328,7 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
     await showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Excluir nó'),
+        title: const Text('Excluir problemática'),
         content: Text('Deseja realmente excluir "${node.name}"?'),
         actions: [
           TextButton(
@@ -399,7 +406,7 @@ class _GraphEmptyState extends StatelessWidget {
                   onPressed: onCreatePressed,
                   icon: const Icon(Icons.add),
                   label: Text(
-                    hasLoadedNodes ? 'Criar novo nó' : 'Criar primeiro nó',
+                    hasLoadedNodes ? 'Criar nova problemática' : 'Criar primeira problemática',
                   ),
                 ),
                 if (hasActiveFilters) ...[
@@ -512,7 +519,7 @@ class _SelectedNodePanel extends StatelessWidget {
                       OutlinedButton.icon(
                         onPressed: onCreateNear,
                         icon: const Icon(Icons.add_link),
-                        label: const Text('Novo nó próximo'),
+                        label: const Text('Nova problemática próxima'),
                       ),
                       OutlinedButton.icon(
                         onPressed: onConnect,
@@ -654,7 +661,7 @@ class _NodeConnectionSheetState extends State<_NodeConnectionSheet> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Conectar nó',
+                  'Conectar problemática',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
@@ -669,7 +676,7 @@ class _NodeConnectionSheetState extends State<_NodeConnectionSheet> {
                 const SizedBox(height: 20),
                 if (widget.availableTargets.isEmpty)
                   Text(
-                    'Todos os outros nós já estão conectados a este nó.',
+                    'Todas as outras problemáticas já estão conectadas a esta problemática.',
                     style: TextStyle(color: Colors.white.withValues(alpha: 0.78)),
                   )
                 else
@@ -677,7 +684,7 @@ class _NodeConnectionSheetState extends State<_NodeConnectionSheet> {
                     initialValue: _targetNodeId,
                     dropdownColor: const Color(0xFF10151D),
                     decoration: InputDecoration(
-                      labelText: 'Nó de destino',
+                      labelText: 'Problemática de destino',
                       labelStyle: const TextStyle(color: Colors.white70),
                       filled: true,
                       fillColor: Colors.white.withValues(alpha: 0.08),
@@ -785,7 +792,7 @@ class _NodeConnectionsSheet extends StatelessWidget {
                   const SizedBox(height: 16),
                   if (connections.isEmpty)
                     Text(
-                      'Este nó ainda não possui conexões.',
+                      'Esta problemática ainda não possui conexões.',
                       style: TextStyle(color: Colors.white.withValues(alpha: 0.78)),
                     )
                   else
@@ -801,7 +808,8 @@ class _NodeConnectionsSheet extends StatelessWidget {
                         itemBuilder: (_, index) {
                           final NodeLinkModel link = connections[index];
                           final NodeModel? otherNode = controller.otherNodeForLink(link, sourceNode.id);
-                          final String label = otherNode?.name ?? 'Nó #${link.sourceNodeId == sourceNode.id ? link.targetNodeId : link.sourceNodeId}';
+                          final String label = otherNode?.name ??
+                              'Problemática #${link.sourceNodeId == sourceNode.id ? link.targetNodeId : link.sourceNodeId}';
 
                           return ListTile(
                             contentPadding: EdgeInsets.zero,
@@ -920,12 +928,12 @@ class _NodeEditorSheetState extends State<_NodeEditorSheet> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Preencha o essencial para colocar o nó no mapa.',
+                      'Preencha o essencial para colocar a problemática no mapa.',
                       style: TextStyle(color: Colors.white.withValues(alpha: 0.72)),
                     ),
                     const SizedBox(height: 20),
                     InputText(
-                      hintText: 'Nome do nó',
+                      hintText: 'Nome da problemática',
                       controller: _nameController,
                       validator: (value) => PValidator([
                         PRuleRequired(value, message: 'Obrigatório'),
@@ -937,7 +945,7 @@ class _NodeEditorSheetState extends State<_NodeEditorSheet> {
                       initialValue: _nodeTypeId,
                       dropdownColor: const Color(0xFF10151D),
                       decoration: InputDecoration(
-                        labelText: 'Tipo de nó',
+                        labelText: 'Tipo de problemática',
                         labelStyle: const TextStyle(color: Colors.white70),
                         filled: true,
                         fillColor: Colors.white.withValues(alpha: 0.08),
@@ -1171,7 +1179,7 @@ class _GraphFilters extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              'Toque para selecionar. Arraste um nó para reposicionar. Pinça ou scroll para zoom.',
+              'Toque para selecionar. Arraste uma problemática para reposicionar. Pinça ou scroll para zoom.',
               style: TextStyle(color: Colors.white.withValues(alpha: 0.72)),
             ),
           ],

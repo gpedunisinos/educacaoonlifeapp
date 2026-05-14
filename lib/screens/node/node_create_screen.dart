@@ -6,10 +6,10 @@ import 'package:unisinos_usp_app/controllers/node/node_create_controller.dart';
 import 'package:unisinos_usp_app/models/node_model.dart';
 import 'package:unisinos_usp_app/webclients/node_type_webclient.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
+import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:unisinos_usp_app/widgets/color_preview_card.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class NodeCreateScreen extends StatefulWidget {
@@ -42,7 +42,7 @@ class _NodeCreateScreenState extends State<NodeCreateScreen> {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
-        title: const Text('Novo nó'),
+        title: const Text('Nova problemática'),
       ),
       body: Stack(
         children: [
@@ -65,7 +65,7 @@ class _NodeCreateScreenState extends State<NodeCreateScreen> {
                   ),
                   Insets.large.height,
                   InputSelectApi(
-                    label: 'Tipo de nó',
+                    label: 'Tipo de problemática',
                     controller: _nodeTypeSelectController,
                     validator: (value) => PValidator([
                       PRuleRequired(value, message: 'Obrigatório'),
@@ -134,7 +134,8 @@ class _NodeCreateScreenState extends State<NodeCreateScreen> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     final int? nodeTypeId = _nodeTypeSelectController.selectedItem?.id;
     if (nodeTypeId == null) {
-      Get.customSnackbar('Erro', 'Selecione um tipo de nó para continuar.');
+      Get.customSnackbar(
+          'Erro', 'Selecione um tipo de problemática para continuar.');
       return;
     }
 

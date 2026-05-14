@@ -97,7 +97,7 @@ class HomeScreen extends StatelessWidget {
         isVisible: nodePolicy.viewAny(),
       ),
       _HomeMenu(
-        title: 'Tipos de nó',
+        title: 'Tipos de problemática',
         subtitle: 'Taxonomias de análise',
         icon: Icons.label_rounded,
         color: const Color(0xFFF3C45F),
@@ -184,7 +184,7 @@ class HomeScreen extends StatelessWidget {
         'tipos de conexão',
         'conexões',
         'agentes',
-        'tipos de nó',
+        'tipos de problemática',
         'problemáticas',
         'usuários',
       ],

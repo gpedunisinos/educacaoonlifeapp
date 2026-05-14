@@ -54,11 +54,13 @@ class _NodeLinkUpdateScreenState extends State<NodeLinkUpdateScreen> {
               final NodeLinkModel model = _controller.nodeLink.value!;
               _sourceNodeSelectController.selectedItem = ItemSelect(
                 id: model.sourceNodeId,
-                name: model.sourceNode?.name ?? 'Nó #${model.sourceNodeId}',
+                name: model.sourceNode?.name ??
+                    'Problemática #${model.sourceNodeId}',
               );
               _targetNodeSelectController.selectedItem = ItemSelect(
                 id: model.targetNodeId,
-                name: model.targetNode?.name ?? 'Nó #${model.targetNodeId}',
+                name: model.targetNode?.name ??
+                    'Problemática #${model.targetNodeId}',
               );
               _filled = true;
             }
@@ -71,7 +73,7 @@ class _NodeLinkUpdateScreenState extends State<NodeLinkUpdateScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     InputSelectApi(
-                      label: 'Nó de origem',
+                      label: 'Problemática de origem',
                       controller: _sourceNodeSelectController,
                       validator: (value) => PValidator([
                         PRuleRequired(value, message: 'Obrigatório'),
@@ -80,7 +82,7 @@ class _NodeLinkUpdateScreenState extends State<NodeLinkUpdateScreen> {
                     ),
                     Insets.large.height,
                     InputSelectApi(
-                      label: 'Nó de destino',
+                      label: 'Problemática de destino',
                       controller: _targetNodeSelectController,
                       validator: (value) => PValidator([
                         PRuleRequired(value, message: 'Obrigatório'),
@@ -115,11 +117,13 @@ class _NodeLinkUpdateScreenState extends State<NodeLinkUpdateScreen> {
     final int? targetNodeId = _targetNodeSelectController.selectedItem?.id;
 
     if (sourceNodeId == null || targetNodeId == null) {
-      Get.customSnackbar('Erro', 'Selecione os dois nós para atualizar a ligação.');
+      Get.customSnackbar(
+          'Erro', 'Selecione as duas problemáticas para atualizar a ligação.');
       return;
     }
     if (sourceNodeId == targetNodeId) {
-      Get.customSnackbar('Erro', 'Escolha nós diferentes para manter a ligação válida.');
+      Get.customSnackbar(
+          'Erro', 'Escolha problemáticas diferentes para manter a ligação válida.');
       return;
     }
 

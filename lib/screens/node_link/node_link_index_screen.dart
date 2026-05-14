@@ -39,7 +39,7 @@ class _NodeLinkIndexScreenState extends State<NodeLinkIndexScreen> {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
-        title: const Text('Ligações entre nós'),
+        title: const Text('Ligações entre problemáticas'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -60,7 +60,7 @@ class _NodeLinkIndexScreenState extends State<NodeLinkIndexScreen> {
                   controller: _searchController,
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
-                    hintText: 'Buscar por nós relacionados',
+                    hintText: 'Buscar por problemáticas relacionadas',
                     hintStyle: const TextStyle(color: Colors.white54),
                     prefixIcon: const Icon(Icons.search, color: Colors.white70),
                     suffixIcon: IconButton(
@@ -180,7 +180,8 @@ class _NodeLinkCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    model.sourceNode?.name ?? 'Nó #${model.sourceNodeId}',
+                    model.sourceNode?.name ??
+                        'Problemática #${model.sourceNodeId}',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
@@ -188,7 +189,7 @@ class _NodeLinkCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'conecta com ${model.targetNode?.name ?? 'Nó #${model.targetNodeId}'}',
+                    'conecta com ${model.targetNode?.name ?? 'Problemática #${model.targetNodeId}'}',
                     style: const TextStyle(color: Colors.white70),
                   ),
                 ],

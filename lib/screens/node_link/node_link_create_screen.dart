@@ -46,7 +46,7 @@ class _NodeLinkCreateScreenState extends State<NodeLinkCreateScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   InputSelectApi(
-                    label: 'Nó de origem',
+                    label: 'Problemática de origem',
                     controller: _sourceNodeSelectController,
                     validator: (value) => PValidator([
                       PRuleRequired(value, message: 'Obrigatório'),
@@ -55,7 +55,7 @@ class _NodeLinkCreateScreenState extends State<NodeLinkCreateScreen> {
                   ),
                   Insets.large.height,
                   InputSelectApi(
-                    label: 'Nó de destino',
+                    label: 'Problemática de destino',
                     controller: _targetNodeSelectController,
                     validator: (value) => PValidator([
                       PRuleRequired(value, message: 'Obrigatório'),
@@ -89,11 +89,13 @@ class _NodeLinkCreateScreenState extends State<NodeLinkCreateScreen> {
     final int? targetNodeId = _targetNodeSelectController.selectedItem?.id;
 
     if (sourceNodeId == null || targetNodeId == null) {
-      Get.customSnackbar('Erro', 'Selecione os dois nós para criar a ligação.');
+      Get.customSnackbar(
+          'Erro', 'Selecione as duas problemáticas para criar a ligação.');
       return;
     }
     if (sourceNodeId == targetNodeId) {
-      Get.customSnackbar('Erro', 'Escolha nós diferentes para criar a ligação.');
+      Get.customSnackbar(
+          'Erro', 'Escolha problemáticas diferentes para criar a ligação.');
       return;
     }
 

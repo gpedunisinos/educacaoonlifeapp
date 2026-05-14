@@ -1,8 +1,8 @@
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/models/node_model.dart';
+import 'package:unisinos_usp_app/utils/safe_get_snackbar.dart';
 import 'package:unisinos_usp_app/webclients/node_webclient.dart';
 import 'package:widgets_spo/widgets_spo.dart';
-import 'package:unisinos_usp_app/utils/safe_get_snackbar.dart';
 
 class NodeIndexController extends GetxController {
   final NodeWebclient _webclient = NodeWebclient();
@@ -29,7 +29,7 @@ class NodeIndexController extends GetxController {
       hasMore.value = items.length == pageSize;
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      SafeGetSnackbar.error('Erro', 'Não foi possível carregar os nós agora.');
+      SafeGetSnackbar.error('Erro', 'Não foi possível carregar as problemáticas agora.');
     } finally {
       isLoading.value = false;
     }
@@ -48,7 +48,7 @@ class NodeIndexController extends GetxController {
       hasMore.value = items.length == pageSize;
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      SafeGetSnackbar.error('Erro', 'Não foi possível carregar mais nós.');
+      SafeGetSnackbar.error('Erro', 'Não foi possível carregar mais problemáticas.');
     } finally {
       isLoadingMore.value = false;
     }
@@ -64,10 +64,10 @@ class NodeIndexController extends GetxController {
       isLoading.value = true;
       await _webclient.delete(model.id);
       nodes.removeWhere((item) => item.id == model.id);
-      SafeGetSnackbar.success('Nó removido com sucesso.');
+      SafeGetSnackbar.success('Problemática removida com sucesso.');
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      SafeGetSnackbar.error('Erro', 'Não foi possível remover o nó.');
+      SafeGetSnackbar.error('Erro', 'Não foi possível remover a problemática.');
     } finally {
       isLoading.value = false;
     }

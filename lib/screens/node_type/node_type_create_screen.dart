@@ -42,7 +42,7 @@ class _NodeTypeCreateScreenState extends State<NodeTypeCreateScreen> {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
-        title: const Text('Novo tipo de nó'),
+        title: const Text('Novo tipo de problemática'),
       ),
       body: Stack(
         children: [

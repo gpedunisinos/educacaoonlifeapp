@@ -29,7 +29,8 @@ class NodeTypeIndexController extends GetxController {
       hasMore.value = items.length == pageSize;
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      SafeGetSnackbar.error('Erro', 'Não foi possível carregar os tipos de nó agora.');
+      SafeGetSnackbar.error(
+          'Erro', 'Não foi possível carregar os tipos de problemática agora.');
     } finally {
       isLoading.value = false;
     }
@@ -48,7 +49,8 @@ class NodeTypeIndexController extends GetxController {
       hasMore.value = items.length == pageSize;
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      SafeGetSnackbar.error('Erro', 'Não foi possível carregar mais tipos de nó.');
+      SafeGetSnackbar.error(
+          'Erro', 'Não foi possível carregar mais tipos de problemática.');
     } finally {
       isLoadingMore.value = false;
     }
@@ -64,10 +66,11 @@ class NodeTypeIndexController extends GetxController {
       isLoading.value = true;
       await _webclient.delete(model.id);
       nodeTypes.removeWhere((item) => item.id == model.id);
-      SafeGetSnackbar.success('Tipo de nó removido com sucesso.');
+      SafeGetSnackbar.success('Tipo de problemática removido com sucesso.');
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      SafeGetSnackbar.error('Erro', 'Não foi possível remover o tipo de nó.');
+      SafeGetSnackbar.error(
+          'Erro', 'Não foi possível remover o tipo de problemática.');
     } finally {
       isLoading.value = false;
     }

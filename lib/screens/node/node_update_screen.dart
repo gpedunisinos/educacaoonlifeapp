@@ -43,7 +43,7 @@ class _NodeUpdateScreenState extends State<NodeUpdateScreen> {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
-        title: const Text('Editar nó'),
+        title: const Text('Editar problemática'),
       ),
       body: Stack(
         children: [
@@ -51,13 +51,13 @@ class _NodeUpdateScreenState extends State<NodeUpdateScreen> {
           const Positioned.fill(child: CidigScenicBackground()),
           Obx(() {
             if (_controller.nodeId == null) {
-              return const Center(child: Text('Nó não informado.', style: TextStyle(color: Colors.white)));
+              return const Center(child: Text('Problemática não informada.', style: TextStyle(color: Colors.white)));
             }
             if (_controller.isLoading.value && _controller.node.value == null) {
               return const Center(child: CircularProgressIndicator(color: Colors.white));
             }
             if (_controller.node.value == null) {
-              return const Center(child: Text('Nó não encontrado.', style: TextStyle(color: Colors.white)));
+              return const Center(child: Text('Problemática não encontrada.', style: TextStyle(color: Colors.white)));
             }
 
             if (!_filled) {
@@ -88,7 +88,7 @@ class _NodeUpdateScreenState extends State<NodeUpdateScreen> {
                     ),
                     Insets.large.height,
                     InputSelectApi(
-                      label: 'Tipo de nó',
+                      label: 'Tipo de problemática',
                       controller: _nodeTypeSelectController,
                       validator: (value) => PValidator([
                         PRuleRequired(value, message: 'Obrigatório'),
@@ -158,7 +158,8 @@ class _NodeUpdateScreenState extends State<NodeUpdateScreen> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     final int? nodeTypeId = _nodeTypeSelectController.selectedItem?.id;
     if (nodeTypeId == null) {
-      Get.customSnackbar('Erro', 'Selecione um tipo de nó para continuar.');
+      Get.customSnackbar(
+          'Erro', 'Selecione um tipo de problemática para continuar.');
       return;
     }
 

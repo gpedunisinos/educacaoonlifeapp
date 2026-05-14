@@ -27,7 +27,8 @@ class NodeTypeUpdateController extends GetxController {
       nodeType.value = await _webclient.fetchById(id);
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      SafeGetSnackbar.error('Erro', 'Não foi possível carregar o tipo de nó.');
+      SafeGetSnackbar.error(
+          'Erro', 'Não foi possível carregar o tipo de problemática.');
     } finally {
       isLoading.value = false;
     }
@@ -40,11 +41,12 @@ class NodeTypeUpdateController extends GetxController {
     try {
       isLoading.value = true;
       await _webclient.update(model);
-      SafeGetSnackbar.success('Tipo de nó atualizado com sucesso.');
+      SafeGetSnackbar.success('Tipo de problemática atualizado com sucesso.');
       return true;
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      SafeGetSnackbar.error('Erro', 'Não foi possível atualizar o tipo de nó.');
+      SafeGetSnackbar.error(
+          'Erro', 'Não foi possível atualizar o tipo de problemática.');
       return false;
     } finally {
       isLoading.value = false;

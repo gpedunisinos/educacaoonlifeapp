@@ -42,7 +42,7 @@ class _NodeTypeUpdateScreenState extends State<NodeTypeUpdateScreen> {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
-        title: const Text('Editar tipo de nó'),
+        title: const Text('Editar tipo de problemática'),
       ),
       body: Stack(
         children: [
@@ -51,7 +51,7 @@ class _NodeTypeUpdateScreenState extends State<NodeTypeUpdateScreen> {
           Obx(() {
             if (_controller.nodeTypeId == null) {
               return const Center(
-                  child: Text('Tipo de nó não informado.',
+                  child: Text('Tipo de problemática não informado.',
                       style: TextStyle(color: Colors.white)));
             }
             if (_controller.isLoading.value &&
@@ -61,7 +61,7 @@ class _NodeTypeUpdateScreenState extends State<NodeTypeUpdateScreen> {
             }
             if (_controller.nodeType.value == null) {
               return const Center(
-                  child: Text('Tipo de nó não encontrado.',
+                  child: Text('Tipo de problemática não encontrado.',
                       style: TextStyle(color: Colors.white)));
             }
 
