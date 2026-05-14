@@ -414,17 +414,17 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                     Expanded(
                       child: Row(
                         children: [
-                          const Icon(
-                            Icons.radar,
-                            size: 18,
-                            color: Colors.indigo,
+                          TextButton.icon(
+                            key: _searchRadiusKey,
+                            icon: const Icon(Icons.radar),
+                            label: const Text('Sonar'),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                            ),
+                            onPressed: _searchByTap,
                           ),
-                          const SizedBox(width: 6),
-                          const Text(
-                            'Raio',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          const SizedBox(width: 6),
                           Expanded(
                             child: Obx(() {
                               return Slider(
@@ -680,19 +680,6 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                             icon: const Icon(Icons.help_outline, size: 20),
                             onPressed: () => _showMapTutorial(),
                           ),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 16,
-                        left: 16,
-                        right: 16,
-                        child: ElevatedButton.icon(
-                          key: _searchRadiusKey,
-                          icon: const Icon(Icons.radar),
-                          label: const Text(
-                            'Buscar por raio (tap longo para escolher o ponto)',
-                          ),
-                          onPressed: _searchByTap,
                         ),
                       ),
                       if (_controller.errorMessage.value != null)
