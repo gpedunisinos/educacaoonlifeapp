@@ -21,6 +21,8 @@ class LivingClueMapController extends GetxController {
   final RxMap<int, CategoryModel> categoriesById = <int, CategoryModel>{}.obs;
   final RxBool isLoading = false.obs;
   final RxnString errorMessage = RxnString();
+  final Rxn<LatLng> sonarCenter = Rxn<LatLng>();
+  final RxDouble sonarRadius = 500.0.obs;
   bool _loadingConnections = false;
   bool _loadingCategories = false;
 
@@ -39,6 +41,27 @@ class LivingClueMapController extends GetxController {
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
       errorMessage.value = 'Falha ao carregar pistas no mapa.';
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> searchAround(LatLng center, double radiusMeters) async {
+    errorMessage.value = null;
+    sonarCenter.value = center;
+    sonarRadius.value = radiusMeters;
+    try {
+      isLoading.value = true;
+      livingClues.assignAll(await _webclient.searchByRadius(
+        latitude: center.latitude,
+        longitude: center.longitude,
+        radiusMeters: radiusMeters,
+      ));
+      await _loadCategories();
+      await _loadConnections();
+    } catch (error, stackTrace) {
+      Util.debug(exception: error, stackTrace: stackTrace);
+      errorMessage.value = 'Falha ao buscar pelo raio informado.';
     } finally {
       isLoading.value = false;
     }
