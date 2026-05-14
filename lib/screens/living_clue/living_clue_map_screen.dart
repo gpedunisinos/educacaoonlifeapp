@@ -18,8 +18,10 @@ class LivingClueMapScreen extends StatefulWidget {
   State<LivingClueMapScreen> createState() => _LivingClueMapScreenState();
 }
 
-class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
+class _LivingClueMapScreenState extends State<LivingClueMapScreen>
+    with SingleTickerProviderStateMixin {
   static const String _screenName = 'Mapa de pistas';
+  static const Color _sonarBlue = Color(0xFF0D47A1);
   final LivingClueMapController _controller =
       Get.find<LivingClueMapController>();
   final MapController _mapController = MapController();
@@ -30,11 +32,27 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
   LivingClueModel? _connectionTarget;
   LivingClueModel? _repositioningClue;
   LatLng? _pendingRepositionPoint;
+  bool _hasRunSonarScan = false;
+  late final AnimationController _sonarPulseController;
 
   @override
   void initState() {
     super.initState();
+    _sonarPulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..addListener(() {
+        if (mounted) {
+          setState(() {});
+        }
+      });
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadCurrentBounds());
+  }
+
+  @override
+  void dispose() {
+    _sonarPulseController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadCurrentBounds() async {
@@ -47,13 +65,22 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
     if (position != null) {
       _mapController.move(position, 14);
       _tapCenter = position;
+      _startSonarPulse();
       await _controller.searchAround(position, _controller.sonarRadius.value);
     }
   }
 
   Future<void> _searchByTap() async {
+    _startSonarPulse();
     await _controller.searchAround(_tapCenter, _controller.sonarRadius.value);
     _mapController.move(_tapCenter, _mapController.camera.zoom);
+  }
+
+  void _startSonarPulse() {
+    setState(() {
+      _hasRunSonarScan = true;
+    });
+    _sonarPulseController.forward(from: 0);
   }
 
   void _toggleConnectionMode() {
@@ -505,13 +532,16 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
 
                   final circles = <CircleMarker>[];
                   if (_controller.sonarCenter.value != null) {
+                    final isPulsing = _sonarPulseController.isAnimating;
                     circles.add(
                       CircleMarker(
                         point: _controller.sonarCenter.value!,
-                        color: Colors.blue.withValues(alpha: 0.2),
-                        borderStrokeWidth: 1,
-                        borderColor: Colors.blue,
-                        radius: _controller.sonarRadius.value,
+                        color: _hasRunSonarScan
+                            ? _sonarBlue.withValues(alpha: 0.18)
+                            : _sonarBlue.withValues(alpha: 0),
+                        borderStrokeWidth: isPulsing ? 3 : 2,
+                        borderColor: _sonarBlue,
+                        radius: _visibleSonarRadius(),
                         useRadiusInMeter: true,
                       ),
                     );
@@ -540,7 +570,12 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
                               _handleRepositionLongPress(point);
                               return;
                             }
-                            setState(() => _tapCenter = point);
+                            _sonarPulseController.stop();
+                            _sonarPulseController.reset();
+                            setState(() {
+                              _tapCenter = point;
+                              _hasRunSonarScan = false;
+                            });
                             _controller.sonarCenter.value = point;
                           },
                           onMapEvent: (event) {
@@ -695,6 +730,15 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
       return '${radiusKm.toInt()} km';
     }
     return '${radiusKm.toStringAsFixed(1)} km';
+  }
+
+  double _visibleSonarRadius() {
+    final radius = _controller.sonarRadius.value;
+    if (!_sonarPulseController.isAnimating) {
+      return radius;
+    }
+    final progress = Curves.easeOut.transform(_sonarPulseController.value);
+    return (radius * progress).clamp(1, radius);
   }
 
   Polyline _connectionPolyline({
