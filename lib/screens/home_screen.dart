@@ -10,6 +10,14 @@ import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
 
+  static const Set<String> _regularUserMenuTitles = {
+    'Mapa de Pistas',
+    'Problemáticas',
+    'Agentes',
+    'Conexões',
+    'Pistas',
+  };
+
   final UserController _controller = Get.find<UserController>();
 
   @override
@@ -65,7 +73,7 @@ class HomeScreen extends StatelessWidget {
         isVisible: livingCluePolicy.viewAny(),
       ),
       _HomeMenu(
-        title: 'Mapa de pistas',
+        title: 'Mapa de Pistas',
         subtitle: 'Visualização territorial',
         icon: Icons.map_rounded,
         color: const Color(0xFFFFB74D),
@@ -120,7 +128,11 @@ class HomeScreen extends StatelessWidget {
         onTap: () => Get.toNamed('/users'),
         isVisible: userPolicy.viewAny(),
       ),
-    ].where((menu) => menu.isVisible).toList();
+    ].where((menu) {
+      if (!menu.isVisible) return false;
+      if (user?.isAdmin ?? false) return true;
+      return _regularUserMenuTitles.contains(menu.title);
+    }).toList();
 
     final userName = _controller.user.value?.name.trim();
     final displayName =
