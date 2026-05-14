@@ -776,6 +776,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     if (steps.isEmpty) return;
 
     int currentIndex = 0;
+    int animationDirection = 1;
     late OverlayEntry entry;
 
     void close() {
@@ -790,12 +791,14 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
         close();
         return;
       }
+      animationDirection = 1;
       currentIndex++;
       entry.markNeedsBuild();
     }
 
     void previous() {
       if (currentIndex == 0) return;
+      animationDirection = -1;
       currentIndex--;
       entry.markNeedsBuild();
     }
@@ -834,16 +837,32 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                 left: 16,
                 right: 16,
                 top: calloutTop,
-                child: _TutorialCard(
-                  current: currentIndex + 1,
-                  total: steps.length,
-                  title: step.title,
-                  description: step.description,
-                  canGoBack: currentIndex > 0,
-                  isLast: currentIndex == steps.length - 1,
-                  onBack: previous,
-                  onNext: next,
-                  onSkip: close,
+                child: TweenAnimationBuilder<double>(
+                  key: ValueKey(currentIndex),
+                  tween:
+                      Tween<double>(begin: animationDirection * 0.08, end: 0),
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, offset, child) {
+                    return Opacity(
+                      opacity: 1 - (offset.abs() / 0.08).clamp(0.0, 1.0),
+                      child: FractionalTranslation(
+                        translation: Offset(offset, 0),
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: _TutorialCard(
+                    current: currentIndex + 1,
+                    total: steps.length,
+                    title: step.title,
+                    description: step.description,
+                    canGoBack: currentIndex > 0,
+                    isLast: currentIndex == steps.length - 1,
+                    onBack: previous,
+                    onNext: next,
+                    onSkip: close,
+                  ),
                 ),
               ),
             ],
