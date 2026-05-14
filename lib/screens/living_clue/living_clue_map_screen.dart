@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:get/get.dart';
@@ -6,9 +8,10 @@ import 'package:unisinos_usp_app/controllers/living_clue/living_clue_map_control
 import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
+import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class LivingClueMapScreen extends StatefulWidget {
@@ -21,10 +24,19 @@ class LivingClueMapScreen extends StatefulWidget {
 class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     with SingleTickerProviderStateMixin {
   static const String _screenName = 'Mapa de pistas';
+  static const String _tutorialSeenKey = 'living_clue_map_tutorial_seen';
   static const Color _sonarBlue = Color(0xFF0D47A1);
   final LivingClueMapController _controller =
       Get.find<LivingClueMapController>();
   final MapController _mapController = MapController();
+  final GlobalKey _mapKey = GlobalKey();
+  final GlobalKey _sonarControlsKey = GlobalKey();
+  final GlobalKey _useLocationKey = GlobalKey();
+  final GlobalKey _refreshKey = GlobalKey();
+  final GlobalKey _repositionKey = GlobalKey();
+  final GlobalKey _connectionKey = GlobalKey();
+  final GlobalKey _createPointKey = GlobalKey();
+  final GlobalKey _searchRadiusKey = GlobalKey();
   LatLng _tapCenter = const LatLng(-29.718, -51.143);
   bool _isConnectingMode = false;
   bool _isRepositionMode = false;
@@ -46,7 +58,10 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
           setState(() {});
         }
       });
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadCurrentBounds());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadCurrentBounds();
+      _showInitialTutorialIfNeeded();
+    });
   }
 
   @override
@@ -81,6 +96,21 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
       _hasRunSonarScan = true;
     });
     _sonarPulseController.forward(from: 0);
+  }
+
+  Future<void> _showInitialTutorialIfNeeded() async {
+    final prefs = await SharedPreferences.getInstance();
+    final seen = prefs.getBool(_tutorialSeenKey) ?? false;
+    if (!mounted || seen) return;
+
+    await Future<void>.delayed(const Duration(milliseconds: 350));
+    if (!mounted) return;
+    _showMapTutorial(markAsSeen: true);
+  }
+
+  Future<void> _markTutorialAsSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_tutorialSeenKey, true);
   }
 
   void _toggleConnectionMode() {
@@ -284,31 +314,41 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
         leading: const SafeBackButton(),
         title: const Text('Mapa de pistas'),
         actions: [
+          IconButton(
+            tooltip: 'Ajuda do mapa',
+            icon: const Icon(Icons.help_outline),
+            onPressed: () => _showMapTutorial(),
+          ),
           if (_isRepositionMode)
             IconButton(
+              key: _repositionKey,
               tooltip: 'Cancelar reposicionamento',
               icon: const Icon(Icons.close),
               onPressed: _cancelRepositionMode,
             )
           else
             IconButton(
+              key: _repositionKey,
               tooltip: 'Reposicionar pista no mapa',
               icon: const Icon(Icons.open_with),
               onPressed: _toggleRepositionMode,
             ),
           if (_isConnectingMode)
             IconButton(
+              key: _connectionKey,
               tooltip: 'Cancelar nova conexão',
               icon: const Icon(Icons.close),
               onPressed: _cancelConnectionMode,
             )
           else
             IconButton(
+              key: _connectionKey,
               tooltip: 'Criar conexão no mapa',
               icon: const Icon(Icons.hub_outlined),
               onPressed: _toggleConnectionMode,
             ),
           IconButton(
+            key: _createPointKey,
             tooltip: 'Criar pista por ponto',
             icon: const Icon(Icons.add_location_alt),
             onPressed: () async {
@@ -361,6 +401,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                   ),
                 ),
               Container(
+                key: _sonarControlsKey,
                 margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -403,12 +444,14 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                       ),
                     ),
                     IconButton(
+                      key: _useLocationKey,
                       color: Colors.white,
                       icon: const Icon(Icons.my_location),
                       tooltip: 'Usar minha localização',
                       onPressed: _useCurrentLocation,
                     ),
                     IconButton(
+                      key: _refreshKey,
                       color: Colors.white,
                       icon: const Icon(Icons.refresh),
                       tooltip: 'Atualizar área',
@@ -561,10 +604,10 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                   return Stack(
                     children: [
                       FlutterMap(
+                        key: _mapKey,
                         mapController: _mapController,
                         options: MapOptions(
                           initialCenter: _tapCenter,
-                          initialZoom: 13,
                           onLongPress: (_, point) {
                             if (_isRepositionMode) {
                               _handleRepositionLongPress(point);
@@ -621,10 +664,30 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                           ),
                         ),
                       Positioned(
+                        top: 12,
+                        right: 12,
+                        child: Material(
+                          color: Colors.black.withValues(alpha: 0.42),
+                          shape: const CircleBorder(),
+                          child: IconButton(
+                            constraints: const BoxConstraints.tightFor(
+                              width: 36,
+                              height: 36,
+                            ),
+                            padding: EdgeInsets.zero,
+                            color: Colors.white,
+                            tooltip: 'Ver tutorial',
+                            icon: const Icon(Icons.help_outline, size: 20),
+                            onPressed: () => _showMapTutorial(),
+                          ),
+                        ),
+                      ),
+                      Positioned(
                         bottom: 16,
                         left: 16,
                         right: 16,
                         child: ElevatedButton.icon(
+                          key: _searchRadiusKey,
                           icon: const Icon(Icons.radar),
                           label: const Text(
                             'Buscar por raio (tap longo para escolher o ponto)',
@@ -705,6 +768,169 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
           'O usuário está escolhendo uma nova posição para uma pista viva.',
       ],
     );
+  }
+
+  void _showMapTutorial({bool markAsSeen = false}) {
+    final overlay = Overlay.of(context);
+    final steps = _tutorialSteps();
+    if (steps.isEmpty) return;
+
+    int currentIndex = 0;
+    late OverlayEntry entry;
+
+    void close() {
+      entry.remove();
+      if (markAsSeen) {
+        _markTutorialAsSeen();
+      }
+    }
+
+    void next() {
+      if (currentIndex >= steps.length - 1) {
+        close();
+        return;
+      }
+      currentIndex++;
+      entry.markNeedsBuild();
+    }
+
+    void previous() {
+      if (currentIndex == 0) return;
+      currentIndex--;
+      entry.markNeedsBuild();
+    }
+
+    entry = OverlayEntry(
+      builder: (context) {
+        final step = steps[currentIndex];
+        final targetRect = _targetRect(step.targetKey);
+        final screenSize = MediaQuery.of(context).size;
+        final calloutAbove = targetRect.center.dy > screenSize.height / 2;
+        final calloutTop = calloutAbove
+            ? (targetRect.top - 174).clamp(16.0, screenSize.height - 190)
+            : (targetRect.bottom + 16).clamp(16.0, screenSize.height - 190);
+
+        return Material(
+          color: Colors.transparent,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: _TutorialOverlayPainter(targetRect),
+                ),
+              ),
+              Positioned.fromRect(
+                rect: targetRect.inflate(6),
+                child: IgnorePointer(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: _sonarBlue, width: 2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 16,
+                right: 16,
+                top: calloutTop,
+                child: _TutorialCard(
+                  current: currentIndex + 1,
+                  total: steps.length,
+                  title: step.title,
+                  description: step.description,
+                  canGoBack: currentIndex > 0,
+                  isLast: currentIndex == steps.length - 1,
+                  onBack: previous,
+                  onNext: next,
+                  onSkip: close,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    overlay.insert(entry);
+  }
+
+  List<_MapTutorialStep> _tutorialSteps() {
+    return [
+      _MapTutorialStep(
+        targetKey: _mapKey,
+        title: 'Mapa',
+        description:
+            'Movimente o mapa e use zoom para navegar. As pistas carregadas aparecem como marcadores coloridos.',
+      ),
+      _MapTutorialStep(
+        targetKey: _sonarControlsKey,
+        title: 'Raio do sonar',
+        description:
+            'Ajuste o alcance da busca. O valor vai de 1 km a 1000 km e o círculo usa a escala real do mapa.',
+      ),
+      _MapTutorialStep(
+        targetKey: _searchRadiusKey,
+        title: 'Buscar por raio',
+        description:
+            'Executa a varredura a partir do centro selecionado e mostra o raio pesquisado no mapa.',
+      ),
+      _MapTutorialStep(
+        targetKey: _useLocationKey,
+        title: 'Minha localização',
+        description:
+            'Centraliza o mapa na sua localização atual e usa esse ponto como referência para o sonar.',
+      ),
+      _MapTutorialStep(
+        targetKey: _refreshKey,
+        title: 'Atualizar área',
+        description:
+            'Recarrega as pistas da área visível quando você muda o enquadramento do mapa.',
+      ),
+      _MapTutorialStep(
+        targetKey: _createPointKey,
+        title: 'Criar pista',
+        description:
+            'Abre o cadastro de uma nova pista usando o centro atual do mapa como posição inicial.',
+      ),
+      _MapTutorialStep(
+        targetKey: _connectionKey,
+        title: 'Criar conexão',
+        description:
+            'Ativa o modo de conexão. Toque em uma pista de origem e depois em uma pista de destino.',
+      ),
+      _MapTutorialStep(
+        targetKey: _repositionKey,
+        title: 'Reposicionar pista',
+        description:
+            'Ativa o modo de reposicionamento para mover uma pista existente para outro ponto do mapa.',
+      ),
+    ];
+  }
+
+  Rect _targetRect(GlobalKey key) {
+    final context = key.currentContext;
+    if (context == null) {
+      final size = MediaQuery.of(this.context).size;
+      return Rect.fromCenter(
+        center: size.center(Offset.zero),
+        width: size.width * 0.72,
+        height: 96,
+      );
+    }
+
+    final box = context.findRenderObject() as RenderBox?;
+    if (box == null || !box.hasSize) {
+      final size = MediaQuery.of(this.context).size;
+      return Rect.fromCenter(
+        center: size.center(Offset.zero),
+        width: size.width * 0.72,
+        height: 96,
+      );
+    }
+
+    final offset = box.localToGlobal(Offset.zero);
+    return offset & box.size;
   }
 
   Color _categoryColor(LivingClueModel model) {
@@ -860,6 +1086,145 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
         ),
       ),
       isScrollControlled: true,
+    );
+  }
+}
+
+class _MapTutorialStep {
+  const _MapTutorialStep({
+    required this.targetKey,
+    required this.title,
+    required this.description,
+  });
+
+  final GlobalKey targetKey;
+  final String title;
+  final String description;
+}
+
+class _TutorialOverlayPainter extends CustomPainter {
+  const _TutorialOverlayPainter(this.targetRect);
+
+  final Rect targetRect;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final overlayPath = ui.Path()
+      ..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
+    final targetPath = ui.Path()
+      ..addRRect(
+        RRect.fromRectAndRadius(
+          targetRect.inflate(8),
+          const Radius.circular(14),
+        ),
+      );
+    final dimPath = ui.Path.combine(
+      ui.PathOperation.difference,
+      overlayPath,
+      targetPath,
+    );
+
+    canvas.drawPath(
+      dimPath,
+      Paint()..color = Colors.black.withValues(alpha: 0.72),
+    );
+  }
+
+  @override
+  bool shouldRepaint(_TutorialOverlayPainter oldDelegate) {
+    return oldDelegate.targetRect != targetRect;
+  }
+}
+
+class _TutorialCard extends StatelessWidget {
+  const _TutorialCard({
+    required this.current,
+    required this.total,
+    required this.title,
+    required this.description,
+    required this.canGoBack,
+    required this.isLast,
+    required this.onBack,
+    required this.onNext,
+    required this.onSkip,
+  });
+
+  final int current;
+  final int total;
+  final String title;
+  final String description;
+  final bool canGoBack;
+  final bool isLast;
+  final VoidCallback onBack;
+  final VoidCallback onNext;
+  final VoidCallback onSkip;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: const Color(0xFF0B1220),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF0D47A1), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
+                ),
+                Text(
+                  '$current/$total',
+                  style: const TextStyle(color: Colors.white70),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              description,
+              style: const TextStyle(color: Colors.white70, height: 1.35),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                TextButton(
+                  onPressed: onSkip,
+                  child: const Text('Pular'),
+                ),
+                const Spacer(),
+                if (canGoBack)
+                  TextButton(
+                    onPressed: onBack,
+                    child: const Text('Voltar'),
+                  ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: onNext,
+                  child: Text(isLast ? 'Concluir' : 'Próximo'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
