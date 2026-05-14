@@ -22,7 +22,7 @@ class LivingClueMapController extends GetxController {
   final RxBool isLoading = false.obs;
   final RxnString errorMessage = RxnString();
   final Rxn<LatLng> sonarCenter = Rxn<LatLng>();
-  final RxDouble sonarRadius = 500.0.obs;
+  final RxDouble sonarRadius = 1000.0.obs;
   bool _loadingConnections = false;
   bool _loadingCategories = false;
 

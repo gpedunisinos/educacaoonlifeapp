@@ -362,11 +362,11 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
                               return Slider(
                                 activeColor: Colors.indigo,
                                 value: _controller.sonarRadius.value,
-                                min: 100,
-                                max: 2000,
-                                divisions: 19,
-                                label:
-                                    '${_controller.sonarRadius.value.toInt()} m',
+                                min: 1000,
+                                max: 1000000,
+                                divisions: 999,
+                                label: _formatRadius(
+                                    _controller.sonarRadius.value),
                                 onChanged: (value) =>
                                     _controller.sonarRadius.value = value,
                               );
@@ -512,6 +512,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
                         borderStrokeWidth: 1,
                         borderColor: Colors.blue,
                         radius: _controller.sonarRadius.value,
+                        useRadiusInMeter: true,
                       ),
                     );
                   }
@@ -645,7 +646,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
         'criar pista por ponto',
       ],
       filledFields: <String, String>{
-        'raio do sonar': '${_controller.sonarRadius.value.toInt()} m',
+        'raio do sonar': _formatRadius(_controller.sonarRadius.value),
         'centro selecionado':
             '${_tapCenter.latitude.toStringAsFixed(5)}, ${_tapCenter.longitude.toStringAsFixed(5)}',
         'pistas carregadas': _controller.livingClues.length.toString(),
@@ -686,6 +687,14 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen> {
       }
     } catch (_) {}
     return Colors.redAccent;
+  }
+
+  String _formatRadius(double radiusMeters) {
+    final radiusKm = radiusMeters / 1000;
+    if (radiusKm == radiusKm.roundToDouble()) {
+      return '${radiusKm.toInt()} km';
+    }
+    return '${radiusKm.toStringAsFixed(1)} km';
   }
 
   Polyline _connectionPolyline({
