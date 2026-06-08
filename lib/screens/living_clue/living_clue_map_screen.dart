@@ -26,6 +26,9 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
   static const String _screenName = 'Mapa de pistas';
   static const String _tutorialSeenKey = 'living_clue_map_tutorial_seen';
   static const Color _sonarBlue = Color(0xFF0D47A1);
+  static const double _minMapZoom = 3;
+  static const double _maxMapZoom = 18;
+  static const double _zoomStep = 1;
   final LivingClueMapController _controller =
       Get.find<LivingClueMapController>();
   final MapController _mapController = MapController();
@@ -89,6 +92,12 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     _startSonarPulse();
     await _controller.searchAround(_tapCenter, _controller.sonarRadius.value);
     _mapController.move(_tapCenter, _mapController.camera.zoom);
+  }
+
+  void _changeMapZoom(double delta) {
+    final camera = _mapController.camera;
+    final nextZoom = (camera.zoom + delta).clamp(_minMapZoom, _maxMapZoom);
+    _mapController.move(camera.center, nextZoom);
   }
 
   void _startSonarPulse() {
@@ -682,6 +691,11 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                           ),
                         ),
                       ),
+                      Positioned(
+                        top: 56,
+                        right: 12,
+                        child: _buildZoomControl(),
+                      ),
                       if (_controller.errorMessage.value != null)
                         Positioned(
                           top: 12,
@@ -713,6 +727,49 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildZoomControl() {
+    return Material(
+      color: Colors.black.withValues(alpha: 0.42),
+      borderRadius: BorderRadius.circular(18),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _zoomButton(
+            icon: Icons.add,
+            tooltip: 'Aproximar mapa',
+            onPressed: () => _changeMapZoom(_zoomStep),
+          ),
+          Container(
+            width: 28,
+            height: 1,
+            color: Colors.white.withValues(alpha: 0.22),
+          ),
+          _zoomButton(
+            icon: Icons.remove,
+            tooltip: 'Afastar mapa',
+            onPressed: () => _changeMapZoom(-_zoomStep),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _zoomButton({
+    required IconData icon,
+    required String tooltip,
+    required VoidCallback onPressed,
+  }) {
+    return IconButton(
+      constraints: const BoxConstraints.tightFor(width: 36, height: 36),
+      padding: EdgeInsets.zero,
+      color: Colors.white,
+      tooltip: tooltip,
+      icon: Icon(icon, size: 20),
+      onPressed: onPressed,
     );
   }
 
@@ -867,7 +924,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
         targetKey: _mapKey,
         title: 'Mapa',
         description:
-            'Movimente o mapa e use zoom para navegar. As pistas carregadas aparecem como marcadores coloridos.',
+            'Movimente o mapa e use os botões de zoom para navegar sem mouse. As pistas carregadas aparecem como marcadores coloridos.',
       ),
       _MapTutorialStep(
         targetKey: _sonarControlsKey,
