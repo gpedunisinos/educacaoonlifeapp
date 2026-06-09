@@ -3,6 +3,7 @@ import 'package:unisinos_usp_app/bindings/clue_connection_binding.dart';
 import 'package:unisinos_usp_app/bindings/living_clue_binding.dart';
 import 'package:unisinos_usp_app/middlewares/app_route_guard.dart';
 import 'package:unisinos_usp_app/policies/policies.dart';
+import 'package:unisinos_usp_app/screens/living_clue/living_clue_chat_screen.dart';
 import 'package:unisinos_usp_app/screens/living_clue/living_clue_connect_screen.dart';
 import 'package:unisinos_usp_app/screens/living_clue/living_clue_create_screen.dart';
 import 'package:unisinos_usp_app/screens/living_clue/living_clue_index_screen.dart';
@@ -69,6 +70,11 @@ List<GetPage> livingClueRoutes() => [
           AppRouteGuard(
               canActivate: (user) => LivingCluePolicy(user).viewAny()),
         ],
+      ),
+      GetPage(
+        name: '/living_clues/:id/chat',
+        page: () => const LivingClueChatScreen(),
+        binding: LivingClueChatBinding(),
       ),
       GetPage(
         name: '/living_clues/update',

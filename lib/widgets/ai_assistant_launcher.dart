@@ -11,13 +11,24 @@ class AiAssistantLauncher extends StatelessWidget {
     required this.child,
   });
 
+  static final RxDouble _bottomOffset = 24.0.obs;
+
   final Widget child;
+
+  static void useRaisedPosition() {
+    _bottomOffset.value = 104;
+  }
+
+  static void useDefaultPosition() {
+    _bottomOffset.value = 24;
+  }
 
   @override
   Widget build(BuildContext context) {
     final UserController userController = Get.find<UserController>();
     final AiAssistantController controller = Get.find<AiAssistantController>();
-    final AiAssistantContextService contextService = Get.find<AiAssistantContextService>();
+    final AiAssistantContextService contextService =
+        Get.find<AiAssistantContextService>();
 
     return Obx(() {
       final String route = Get.currentRoute;
@@ -37,14 +48,15 @@ class AiAssistantLauncher extends StatelessWidget {
           if (showLauncher)
             Positioned(
               right: 16,
-              bottom: 24,
+              bottom: _bottomOffset.value,
               child: FloatingActionButton.extended(
                 heroTag: 'ai-assistant-launcher',
                 backgroundColor: const Color(0xFF0F172A),
                 foregroundColor: Colors.white,
                 onPressed: () {
                   controller.logCurrentContext();
-                  final BuildContext? navigatorContext = Get.key.currentContext ?? Get.overlayContext;
+                  final BuildContext? navigatorContext =
+                      Get.key.currentContext ?? Get.overlayContext;
                   if (navigatorContext == null) return;
                   showModalBottomSheet<void>(
                     context: navigatorContext,

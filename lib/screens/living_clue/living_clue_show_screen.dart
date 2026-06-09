@@ -142,6 +142,45 @@ class LivingClueShowScreen extends StatelessWidget {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: const BorderSide(
+                        color: Color(0x8A46B6EC),
+                        width: 1.2,
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Conversa com a pista viva',
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Abra um chat contextual para conversar com esta pista.',
+                            style: theme.textTheme.bodyMedium,
+                          ),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () => Get.toNamed(
+                                '/living_clues/${model.id}/chat',
+                                arguments: {'model': model},
+                              ),
+                              icon: const Icon(Icons.forum_outlined),
+                              label: const Text('Conversar'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                   if (model.imageUrl != null && model.imageUrl!.isNotEmpty) ...[
                     const SizedBox(height: 12),
                     Card(
