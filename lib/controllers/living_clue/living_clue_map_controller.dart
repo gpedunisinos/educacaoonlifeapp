@@ -5,9 +5,11 @@ import 'package:latlong2/latlong.dart';
 import 'package:unisinos_usp_app/models/category_model.dart';
 import 'package:unisinos_usp_app/models/clue_connection_model.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
+import 'package:unisinos_usp_app/models/nominatim_place_model.dart';
 import 'package:unisinos_usp_app/webclients/category_webclient.dart';
 import 'package:unisinos_usp_app/webclients/clue_connection_webclient.dart';
 import 'package:unisinos_usp_app/webclients/living_clue_webclient.dart';
+import 'package:unisinos_usp_app/webclients/nominatim_webclient.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 enum LivingClueMapLoadMode { bounds, radius, search }
@@ -17,8 +19,10 @@ class LivingClueMapController extends GetxController {
   final ClueConnectionWebclient _connectionWebclient =
       ClueConnectionWebclient();
   final CategoryWebclient _categoryWebclient = CategoryWebclient();
+  final NominatimWebclient _nominatimWebclient = NominatimWebclient();
 
   final RxList<LivingClueModel> livingClues = <LivingClueModel>[].obs;
+  final RxList<NominatimPlaceModel> mapPlaces = <NominatimPlaceModel>[].obs;
   final RxList<ClueConnectionModel> connections = <ClueConnectionModel>[].obs;
   final RxMap<int, CategoryModel> categoriesById = <int, CategoryModel>{}.obs;
   final RxBool isLoading = false.obs;
@@ -36,6 +40,7 @@ class LivingClueMapController extends GetxController {
     errorMessage.value = null;
     activeSearch.value = '';
     loadMode.value = LivingClueMapLoadMode.bounds;
+    mapPlaces.clear();
     try {
       isLoading.value = true;
       final loadedClues = await _webclient.fetchByBounds(
@@ -66,6 +71,7 @@ class LivingClueMapController extends GetxController {
     sonarRadius.value = radiusMeters;
     activeSearch.value = '';
     loadMode.value = LivingClueMapLoadMode.radius;
+    mapPlaces.clear();
     try {
       isLoading.value = true;
       final loadedClues = await _webclient.searchByRadius(
@@ -98,11 +104,19 @@ class LivingClueMapController extends GetxController {
     errorMessage.value = null;
     activeSearch.value = trimmedSearch;
     loadMode.value = LivingClueMapLoadMode.search;
+    mapPlaces.clear();
     try {
       isLoading.value = true;
       final loadedClues = await _webclient.search(search: trimmedSearch);
+      List<NominatimPlaceModel> loadedPlaces = <NominatimPlaceModel>[];
+      try {
+        loadedPlaces = await _nominatimWebclient.search(search: trimmedSearch);
+      } catch (error, stackTrace) {
+        Util.debug(exception: error, stackTrace: stackTrace);
+      }
       if (requestId != _requestSerial) return;
       livingClues.assignAll(loadedClues);
+      mapPlaces.assignAll(loadedPlaces);
       await _loadCategories();
       await _loadConnections();
     } catch (error, stackTrace) {

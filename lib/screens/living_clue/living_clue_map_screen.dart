@@ -8,6 +8,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:unisinos_usp_app/controllers/living_clue/living_clue_map_controller.dart';
 import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
+import 'package:unisinos_usp_app/models/nominatim_place_model.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
 import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
@@ -166,6 +167,15 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     _mapController.move(point,
         _mapController.camera.zoom < 14 ? 14 : _mapController.camera.zoom);
     _searchFocusNode.unfocus();
+  }
+
+  Future<void> _focusMapPlace(NominatimPlaceModel place) async {
+    final point = LatLng(place.latitude, place.longitude);
+    _clearSearchText();
+    _searchFocusNode.unfocus();
+    setState(() => _tapCenter = point);
+    _mapController.move(point, 15);
+    await _loadCurrentBounds();
   }
 
   Future<void> _showInitialTutorialIfNeeded() async {
@@ -574,6 +584,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
               Expanded(
                 child: Obx(() {
                   final visibleClues = _controller.livingClues.toList();
+                  final visiblePlaces = _controller.mapPlaces.toList();
                   final markers = visibleClues
                       .map(
                         (item) => Marker(
@@ -831,7 +842,10 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                           left: 12,
                           right: 12,
                           bottom: 12,
-                          child: _buildSearchResults(visibleClues),
+                          child: _buildSearchResults(
+                            clues: visibleClues,
+                            places: visiblePlaces,
+                          ),
                         ),
                     ],
                   );
@@ -873,11 +887,13 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
   }
 
   Widget _buildLoadStatus() {
-    final int total = _controller.livingClues.length;
+    final int clueTotal = _controller.livingClues.length;
+    final int placeTotal = _controller.mapPlaces.length;
     final String label = switch (_controller.loadMode.value) {
-      LivingClueMapLoadMode.search => '$total pistas encontradas globalmente',
-      LivingClueMapLoadMode.radius => '$total pistas no raio do sonar',
-      LivingClueMapLoadMode.bounds => '$total pistas nesta area',
+      LivingClueMapLoadMode.search =>
+        '$clueTotal pistas e $placeTotal locais encontrados',
+      LivingClueMapLoadMode.radius => '$clueTotal pistas no raio do sonar',
+      LivingClueMapLoadMode.bounds => '$clueTotal pistas nesta area',
     };
 
     return Padding(
@@ -925,12 +941,14 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
         'atualizar área',
         'criar pista por ponto',
         'pesquisar pistas em todo o mapa',
+        'pesquisar locais do mapa',
       ],
       filledFields: <String, String>{
         'raio do sonar': _formatRadius(_controller.sonarRadius.value),
         'centro selecionado':
             '${_tapCenter.latitude.toStringAsFixed(5)}, ${_tapCenter.longitude.toStringAsFixed(5)}',
         'pistas carregadas': _controller.livingClues.length.toString(),
+        'locais encontrados': _controller.mapPlaces.length.toString(),
         'conexões visíveis': _controller.connections.length.toString(),
         if (_searchQuery.isNotEmpty) 'pesquisa': _searchQuery,
         'modo criação de conexão': _isConnectingMode ? 'ativo' : 'inativo',
@@ -1214,67 +1232,134 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     return double.tryParse(value?.toString() ?? '');
   }
 
-  Widget _buildSearchResults(List<LivingClueModel> results) {
+  Widget _buildSearchResults({
+    required List<LivingClueModel> clues,
+    required List<NominatimPlaceModel> places,
+  }) {
+    final bool hasResults = clues.isNotEmpty || places.isNotEmpty;
+
     return Material(
       color: Colors.black.withValues(alpha: 0.72),
       borderRadius: BorderRadius.circular(14),
       clipBehavior: Clip.antiAlias,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxHeight: 220),
-        child: results.isEmpty
+        constraints: const BoxConstraints(maxHeight: 320),
+        child: !hasResults
             ? const Padding(
                 padding: EdgeInsets.all(14),
                 child: Text(
-                  'Nenhuma pista encontrada para esta pesquisa.',
+                  'Nenhuma pista ou local encontrado para esta pesquisa.',
                   style: TextStyle(color: Colors.white),
                 ),
               )
-            : ListView.separated(
+            : ListView(
                 padding: EdgeInsets.zero,
                 shrinkWrap: true,
-                itemCount: results.length,
-                separatorBuilder: (_, __) => Divider(
-                  height: 1,
-                  color: Colors.white.withValues(alpha: 0.12),
-                ),
-                itemBuilder: (context, index) {
-                  final clue = results[index];
-                  final category = clue.category ??
-                      _controller.categoriesById[clue.categoryId];
-                  return ListTile(
-                    dense: true,
-                    leading: Icon(
-                      Icons.location_on,
-                      color: _categoryColor(clue),
-                    ),
-                    title: Text(
-                      clue.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    subtitle: Text(
-                      category?.name ?? 'Categoria ${clue.categoryId}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.72),
-                      ),
-                    ),
-                    trailing: const Icon(
-                      Icons.center_focus_strong,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                    onTap: () => _focusClueOnMap(clue),
-                  );
-                },
+                children: [
+                  if (clues.isNotEmpty) ...[
+                    _buildSearchSectionHeader('Pistas'),
+                    ...clues.map(_buildClueSearchTile),
+                  ],
+                  if (places.isNotEmpty) ...[
+                    _buildSearchSectionHeader('Locais'),
+                    ...places.map(_buildPlaceSearchTile),
+                  ],
+                ],
               ),
       ),
     );
+  }
+
+  Widget _buildSearchSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 10, 14, 4),
+      child: Text(
+        title,
+        style: TextStyle(
+          color: Colors.white.withValues(alpha: 0.62),
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildClueSearchTile(LivingClueModel clue) {
+    final category =
+        clue.category ?? _controller.categoriesById[clue.categoryId];
+    return ListTile(
+      dense: true,
+      leading: Icon(
+        Icons.location_on,
+        color: _categoryColor(clue),
+      ),
+      title: Text(
+        clue.name,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      subtitle: Text(
+        category?.name ?? 'Categoria ${clue.categoryId}',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: Colors.white.withValues(alpha: 0.72),
+        ),
+      ),
+      trailing: const Icon(
+        Icons.center_focus_strong,
+        color: Colors.white,
+        size: 20,
+      ),
+      onTap: () => _focusClueOnMap(clue),
+    );
+  }
+
+  Widget _buildPlaceSearchTile(NominatimPlaceModel place) {
+    return ListTile(
+      dense: true,
+      leading: const Icon(
+        Icons.public,
+        color: Colors.lightBlueAccent,
+      ),
+      title: Text(
+        place.displayName,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      subtitle: Text(
+        _placeSubtitle(place),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: Colors.white.withValues(alpha: 0.72),
+        ),
+      ),
+      trailing: const Icon(
+        Icons.travel_explore,
+        color: Colors.white,
+        size: 20,
+      ),
+      onTap: () => _focusMapPlace(place),
+    );
+  }
+
+  String _placeSubtitle(NominatimPlaceModel place) {
+    final labels = [
+      place.category,
+      place.type,
+    ].where((value) => value != null && value.isNotEmpty).join(' • ');
+
+    if (labels.isNotEmpty) return labels;
+    return 'Local do mapa';
   }
 
   void _showClueSheet(LivingClueModel item) {
