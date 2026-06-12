@@ -32,6 +32,8 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
   final LivingClueMapController _controller =
       Get.find<LivingClueMapController>();
   final MapController _mapController = MapController();
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
   final GlobalKey _mapKey = GlobalKey();
   final GlobalKey _sonarControlsKey = GlobalKey();
   final GlobalKey _useLocationKey = GlobalKey();
@@ -47,6 +49,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
   LivingClueModel? _connectionTarget;
   LivingClueModel? _repositioningClue;
   LatLng? _pendingRepositionPoint;
+  String _searchQuery = '';
   bool _hasRunSonarScan = false;
   late final AnimationController _sonarPulseController;
 
@@ -70,6 +73,8 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
   @override
   void dispose() {
     _sonarPulseController.dispose();
+    _searchController.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
   }
 
@@ -105,6 +110,21 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
       _hasRunSonarScan = true;
     });
     _sonarPulseController.forward(from: 0);
+  }
+
+  void _clearSearch() {
+    _searchController.clear();
+    _searchFocusNode.unfocus();
+    setState(() {
+      _searchQuery = '';
+    });
+  }
+
+  void _focusClueOnMap(LivingClueModel clue) {
+    final point = LatLng(clue.latitude, clue.longitude);
+    _mapController.move(point,
+        _mapController.camera.zoom < 14 ? 14 : _mapController.camera.zoom);
+    _searchFocusNode.unfocus();
   }
 
   Future<void> _showInitialTutorialIfNeeded() async {
@@ -418,60 +438,103 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                   color: Colors.black.withValues(alpha: 0.55),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Row(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          TextButton.icon(
-                            key: _searchRadiusKey,
-                            icon: const Icon(Icons.radar),
-                            label: const Text('Sonar'),
-                            style: TextButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8),
-                            ),
-                            onPressed: _searchByTap,
-                          ),
-                          Expanded(
-                            child: Obx(() {
-                              return Slider(
-                                activeColor: Colors.indigo,
-                                value: _controller.sonarRadius.value,
-                                min: 1000,
-                                max: 1000000,
-                                divisions: 999,
-                                label: _formatRadius(
-                                    _controller.sonarRadius.value),
-                                onChanged: (value) =>
-                                    _controller.sonarRadius.value = value,
-                              );
-                            }),
-                          ),
-                        ],
+                    TextField(
+                      controller: _searchController,
+                      focusNode: _searchFocusNode,
+                      style: const TextStyle(color: Colors.white),
+                      textInputAction: TextInputAction.search,
+                      decoration: InputDecoration(
+                        isDense: true,
+                        hintText: 'Pesquisar pistas carregadas',
+                        hintStyle: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.72),
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          color: Colors.white,
+                        ),
+                        suffixIcon: _searchQuery.isEmpty
+                            ? null
+                            : IconButton(
+                                tooltip: 'Limpar pesquisa',
+                                icon: const Icon(Icons.close),
+                                color: Colors.white,
+                                onPressed: _clearSearch,
+                              ),
+                        filled: true,
+                        fillColor: Colors.white.withValues(alpha: 0.12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
                       ),
+                      onChanged: (value) {
+                        setState(() {
+                          _searchQuery = value.trim();
+                        });
+                      },
                     ),
-                    IconButton(
-                      key: _useLocationKey,
-                      color: Colors.white,
-                      icon: const Icon(Icons.my_location),
-                      tooltip: 'Usar minha localização',
-                      onPressed: _useCurrentLocation,
-                    ),
-                    IconButton(
-                      key: _refreshKey,
-                      color: Colors.white,
-                      icon: const Icon(Icons.refresh),
-                      tooltip: 'Atualizar área',
-                      onPressed: _loadCurrentBounds,
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Row(
+                            children: [
+                              TextButton.icon(
+                                key: _searchRadiusKey,
+                                icon: const Icon(Icons.radar),
+                                label: const Text('Sonar'),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 8),
+                                ),
+                                onPressed: _searchByTap,
+                              ),
+                              Expanded(
+                                child: Obx(() {
+                                  return Slider(
+                                    activeColor: Colors.indigo,
+                                    value: _controller.sonarRadius.value,
+                                    min: 1000,
+                                    max: 1000000,
+                                    divisions: 999,
+                                    label: _formatRadius(
+                                        _controller.sonarRadius.value),
+                                    onChanged: (value) =>
+                                        _controller.sonarRadius.value = value,
+                                  );
+                                }),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          key: _useLocationKey,
+                          color: Colors.white,
+                          icon: const Icon(Icons.my_location),
+                          tooltip: 'Usar minha localização',
+                          onPressed: _useCurrentLocation,
+                        ),
+                        IconButton(
+                          key: _refreshKey,
+                          color: Colors.white,
+                          icon: const Icon(Icons.refresh),
+                          tooltip: 'Atualizar área',
+                          onPressed: _loadCurrentBounds,
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
               Expanded(
                 child: Obx(() {
-                  final markers = _controller.livingClues
+                  final visibleClues = _filteredClues();
+                  final markers = visibleClues
                       .map(
                         (item) => Marker(
                           point: LatLng(item.latitude, item.longitude),
@@ -533,11 +596,11 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                       .toList();
 
                   final Map<int, LatLng> pointsById = {
-                    for (final clue in _controller.livingClues)
+                    for (final clue in visibleClues)
                       clue.id: LatLng(clue.latitude, clue.longitude),
                   };
                   final Map<int, LivingClueModel> cluesById = {
-                    for (final clue in _controller.livingClues) clue.id: clue,
+                    for (final clue in visibleClues) clue.id: clue,
                   };
                   final connectionLines = _controller.connections
                       .map(
@@ -719,6 +782,13 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                             ),
                           ),
                         ),
+                      if (_searchQuery.isNotEmpty)
+                        Positioned(
+                          left: 12,
+                          right: 12,
+                          bottom: 12,
+                          child: _buildSearchResults(visibleClues),
+                        ),
                     ],
                   );
                 }),
@@ -786,6 +856,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
         'usar minha localização',
         'atualizar área',
         'criar pista por ponto',
+        'pesquisar pistas carregadas',
       ],
       filledFields: <String, String>{
         'raio do sonar': _formatRadius(_controller.sonarRadius.value),
@@ -793,6 +864,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
             '${_tapCenter.latitude.toStringAsFixed(5)}, ${_tapCenter.longitude.toStringAsFixed(5)}',
         'pistas carregadas': _controller.livingClues.length.toString(),
         'conexões visíveis': _controller.connections.length.toString(),
+        if (_searchQuery.isNotEmpty) 'pesquisa': _searchQuery,
         'modo criação de conexão': _isConnectingMode ? 'ativo' : 'inativo',
         'modo reposicionamento': _isRepositionMode ? 'ativo' : 'inativo',
         if (_connectionSource != null)
@@ -1072,6 +1144,108 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
   double? _toDouble(Object? value) {
     if (value is num) return value.toDouble();
     return double.tryParse(value?.toString() ?? '');
+  }
+
+  List<LivingClueModel> _filteredClues() {
+    final query = _normalizeSearchText(_searchQuery);
+    if (query.isEmpty) {
+      return _controller.livingClues.toList();
+    }
+    return _controller.livingClues
+        .where((clue) => _matchesSearch(clue, query))
+        .toList();
+  }
+
+  bool _matchesSearch(LivingClueModel clue, String query) {
+    final category =
+        clue.category ?? _controller.categoriesById[clue.categoryId];
+    final metadata = clue.metadata?.entries
+            .map((entry) => '${entry.key} ${entry.value}')
+            .join(' ') ??
+        '';
+    final searchableText = [
+      clue.name,
+      clue.description ?? '',
+      category?.name ?? '',
+      category?.type ?? '',
+      metadata,
+    ].join(' ');
+
+    return _normalizeSearchText(searchableText).contains(query);
+  }
+
+  String _normalizeSearchText(String value) {
+    return value
+        .toLowerCase()
+        .replaceAll(RegExp('[áàãâä]'), 'a')
+        .replaceAll(RegExp('[éèêë]'), 'e')
+        .replaceAll(RegExp('[íìîï]'), 'i')
+        .replaceAll(RegExp('[óòõôö]'), 'o')
+        .replaceAll(RegExp('[úùûü]'), 'u')
+        .replaceAll(RegExp('[ç]'), 'c');
+  }
+
+  Widget _buildSearchResults(List<LivingClueModel> results) {
+    return Material(
+      color: Colors.black.withValues(alpha: 0.72),
+      borderRadius: BorderRadius.circular(14),
+      clipBehavior: Clip.antiAlias,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxHeight: 220),
+        child: results.isEmpty
+            ? const Padding(
+                padding: EdgeInsets.all(14),
+                child: Text(
+                  'Nenhuma pista carregada encontrada para esta pesquisa.',
+                  style: TextStyle(color: Colors.white),
+                ),
+              )
+            : ListView.separated(
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                itemCount: results.length,
+                separatorBuilder: (_, __) => Divider(
+                  height: 1,
+                  color: Colors.white.withValues(alpha: 0.12),
+                ),
+                itemBuilder: (context, index) {
+                  final clue = results[index];
+                  final category = clue.category ??
+                      _controller.categoriesById[clue.categoryId];
+                  return ListTile(
+                    dense: true,
+                    leading: Icon(
+                      Icons.location_on,
+                      color: _categoryColor(clue),
+                    ),
+                    title: Text(
+                      clue.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    subtitle: Text(
+                      category?.name ?? 'Categoria ${clue.categoryId}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.72),
+                      ),
+                    ),
+                    trailing: const Icon(
+                      Icons.center_focus_strong,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                    onTap: () => _focusClueOnMap(clue),
+                  );
+                },
+              ),
+      ),
+    );
   }
 
   void _showClueSheet(LivingClueModel item) {
