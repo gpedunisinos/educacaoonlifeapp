@@ -52,6 +52,28 @@ class LivingClueWebclient {
     return LivingClueModel.fromJsonArray(response.body);
   }
 
+  Future<List<LivingClueModel>> search({
+    required String search,
+    int? limit,
+    int? offset,
+  }) async {
+    final Response response = await webClient.get(
+      '/$endpoint',
+      [
+        LoggingInterceptor(),
+        ApiInterceptor(),
+        TokenInterceptor(),
+      ],
+      {
+        'search': search,
+        'limit': (limit ?? webClient.defaultLimit).toString(),
+        'offset': (offset ?? 0).toString(),
+      },
+    );
+
+    return LivingClueModel.fromJsonArray(response.body);
+  }
+
   Future<List<LivingClueModel>> searchByRadius({
     required double latitude,
     required double longitude,
