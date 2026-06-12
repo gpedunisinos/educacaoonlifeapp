@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -51,6 +52,8 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
   LatLng? _pendingRepositionPoint;
   String _searchQuery = '';
   bool _hasRunSonarScan = false;
+  bool _isUpdatingSearchText = false;
+  Timer? _searchDebounce;
   late final AnimationController _sonarPulseController;
 
   @override
@@ -72,6 +75,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _sonarPulseController.dispose();
     _searchController.dispose();
     _searchFocusNode.dispose();
@@ -83,9 +87,18 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     await _controller.loadByBounds(bounds);
   }
 
+  Future<void> _refreshActiveContext() async {
+    if (_searchQuery.isNotEmpty) {
+      await _controller.searchGlobal(_searchQuery);
+      return;
+    }
+    await _loadCurrentBounds();
+  }
+
   Future<void> _useCurrentLocation() async {
     final position = await _controller.currentLocation();
     if (position != null) {
+      _clearSearchText();
       _mapController.move(position, 14);
       _tapCenter = position;
       _startSonarPulse();
@@ -94,6 +107,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
   }
 
   Future<void> _searchByTap() async {
+    _clearSearchText();
     _startSonarPulse();
     await _controller.searchAround(_tapCenter, _controller.sonarRadius.value);
     _mapController.move(_tapCenter, _mapController.camera.zoom);
@@ -112,11 +126,38 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     _sonarPulseController.forward(from: 0);
   }
 
-  void _clearSearch() {
-    _searchController.clear();
+  Future<void> _clearSearch() async {
+    _clearSearchText();
     _searchFocusNode.unfocus();
+    await _loadCurrentBounds();
+  }
+
+  void _clearSearchText() {
+    _searchDebounce?.cancel();
+    _isUpdatingSearchText = true;
+    _searchController.clear();
+    _isUpdatingSearchText = false;
     setState(() {
       _searchQuery = '';
+    });
+  }
+
+  void _onSearchChanged(String value) {
+    if (_isUpdatingSearchText) return;
+
+    final query = value.trim();
+    setState(() {
+      _searchQuery = query;
+    });
+
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 450), () {
+      if (!mounted) return;
+      if (query.isEmpty) {
+        _loadCurrentBounds();
+        return;
+      }
+      _controller.searchGlobal(query);
     });
   }
 
@@ -245,7 +286,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     if (!mounted) return;
 
     if (created == true) {
-      await _loadCurrentBounds();
+      await _refreshActiveContext();
       _cancelConnectionMode();
       Get.successSnackbar('Conexão criada e mapa atualizado.');
       return;
@@ -323,7 +364,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     final saved = await _controller.updatePosition(_repositioningClue!, point);
     if (!mounted || !saved) return;
 
-    await _loadCurrentBounds();
+    await _refreshActiveContext();
     _mapController.move(point, _mapController.camera.zoom);
     _cancelRepositionMode();
     Get.successSnackbar('Posição da pista atualizada com sucesso.');
@@ -448,7 +489,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                       textInputAction: TextInputAction.search,
                       decoration: InputDecoration(
                         isDense: true,
-                        hintText: 'Pesquisar pistas carregadas',
+                        hintText: 'Pesquisar pistas em todo o mapa',
                         hintStyle: TextStyle(
                           color: Colors.white.withValues(alpha: 0.72),
                         ),
@@ -471,12 +512,9 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                           borderSide: BorderSide.none,
                         ),
                       ),
-                      onChanged: (value) {
-                        setState(() {
-                          _searchQuery = value.trim();
-                        });
-                      },
+                      onChanged: _onSearchChanged,
                     ),
+                    Obx(() => _buildLoadStatus()),
                     const SizedBox(height: 8),
                     Row(
                       children: [
@@ -523,8 +561,10 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                           key: _refreshKey,
                           color: Colors.white,
                           icon: const Icon(Icons.refresh),
-                          tooltip: 'Atualizar área',
-                          onPressed: _loadCurrentBounds,
+                          tooltip: _searchQuery.isEmpty
+                              ? 'Atualizar área'
+                              : 'Refazer pesquisa',
+                          onPressed: _refreshActiveContext,
                         ),
                       ],
                     ),
@@ -533,7 +573,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
               ),
               Expanded(
                 child: Obx(() {
-                  final visibleClues = _filteredClues();
+                  final visibleClues = _controller.livingClues.toList();
                   final markers = visibleClues
                       .map(
                         (item) => Marker(
@@ -695,6 +735,10 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                           },
                           onMapEvent: (event) {
                             if (event is MapEventMoveEnd) {
+                              if (_controller.loadMode.value ==
+                                  LivingClueMapLoadMode.search) {
+                                return;
+                              }
                               _loadCurrentBounds();
                             }
                           },
@@ -828,6 +872,30 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     );
   }
 
+  Widget _buildLoadStatus() {
+    final int total = _controller.livingClues.length;
+    final String label = switch (_controller.loadMode.value) {
+      LivingClueMapLoadMode.search => '$total pistas encontradas globalmente',
+      LivingClueMapLoadMode.radius => '$total pistas no raio do sonar',
+      LivingClueMapLoadMode.bounds => '$total pistas nesta area',
+    };
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          label,
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.74),
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _zoomButton({
     required IconData icon,
     required String tooltip,
@@ -856,7 +924,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
         'usar minha localização',
         'atualizar área',
         'criar pista por ponto',
-        'pesquisar pistas carregadas',
+        'pesquisar pistas em todo o mapa',
       ],
       filledFields: <String, String>{
         'raio do sonar': _formatRadius(_controller.sonarRadius.value),
@@ -1130,7 +1198,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
       final currentZoom = _mapController.camera.zoom;
       _mapController.move(point, currentZoom < 14 ? 14 : currentZoom);
     }
-    await _loadCurrentBounds();
+    await _refreshActiveContext();
   }
 
   LatLng? _createdPoint(Object? result) {
@@ -1146,45 +1214,6 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     return double.tryParse(value?.toString() ?? '');
   }
 
-  List<LivingClueModel> _filteredClues() {
-    final query = _normalizeSearchText(_searchQuery);
-    if (query.isEmpty) {
-      return _controller.livingClues.toList();
-    }
-    return _controller.livingClues
-        .where((clue) => _matchesSearch(clue, query))
-        .toList();
-  }
-
-  bool _matchesSearch(LivingClueModel clue, String query) {
-    final category =
-        clue.category ?? _controller.categoriesById[clue.categoryId];
-    final metadata = clue.metadata?.entries
-            .map((entry) => '${entry.key} ${entry.value}')
-            .join(' ') ??
-        '';
-    final searchableText = [
-      clue.name,
-      clue.description ?? '',
-      category?.name ?? '',
-      category?.type ?? '',
-      metadata,
-    ].join(' ');
-
-    return _normalizeSearchText(searchableText).contains(query);
-  }
-
-  String _normalizeSearchText(String value) {
-    return value
-        .toLowerCase()
-        .replaceAll(RegExp('[áàãâä]'), 'a')
-        .replaceAll(RegExp('[éèêë]'), 'e')
-        .replaceAll(RegExp('[íìîï]'), 'i')
-        .replaceAll(RegExp('[óòõôö]'), 'o')
-        .replaceAll(RegExp('[úùûü]'), 'u')
-        .replaceAll(RegExp('[ç]'), 'c');
-  }
-
   Widget _buildSearchResults(List<LivingClueModel> results) {
     return Material(
       color: Colors.black.withValues(alpha: 0.72),
@@ -1196,7 +1225,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
             ? const Padding(
                 padding: EdgeInsets.all(14),
                 child: Text(
-                  'Nenhuma pista carregada encontrada para esta pesquisa.',
+                  'Nenhuma pista encontrada para esta pesquisa.',
                   style: TextStyle(color: Colors.white),
                 ),
               )
@@ -1300,7 +1329,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                         parameters: {'id': item.id.toString()},
                       );
                       if (updated == true) {
-                        _loadCurrentBounds();
+                        _refreshActiveContext();
                       }
                     },
                   ),

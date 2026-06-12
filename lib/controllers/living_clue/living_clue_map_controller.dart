@@ -10,6 +10,8 @@ import 'package:unisinos_usp_app/webclients/clue_connection_webclient.dart';
 import 'package:unisinos_usp_app/webclients/living_clue_webclient.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
+enum LivingClueMapLoadMode { bounds, radius, search }
+
 class LivingClueMapController extends GetxController {
   final LivingClueWebclient _webclient = LivingClueWebclient();
   final ClueConnectionWebclient _connectionWebclient =
@@ -23,47 +25,94 @@ class LivingClueMapController extends GetxController {
   final RxnString errorMessage = RxnString();
   final Rxn<LatLng> sonarCenter = Rxn<LatLng>();
   final RxDouble sonarRadius = 1000.0.obs;
+  final Rx<LivingClueMapLoadMode> loadMode = LivingClueMapLoadMode.bounds.obs;
+  final RxString activeSearch = ''.obs;
   bool _loadingConnections = false;
   bool _loadingCategories = false;
+  int _requestSerial = 0;
 
   Future<void> loadByBounds(LatLngBounds bounds) async {
+    final int requestId = ++_requestSerial;
     errorMessage.value = null;
+    activeSearch.value = '';
+    loadMode.value = LivingClueMapLoadMode.bounds;
     try {
       isLoading.value = true;
-      livingClues.assignAll(await _webclient.fetchByBounds(
+      final loadedClues = await _webclient.fetchByBounds(
         north: bounds.north,
         south: bounds.south,
         east: bounds.east,
         west: bounds.west,
-      ));
+      );
+      if (requestId != _requestSerial) return;
+      livingClues.assignAll(loadedClues);
       await _loadCategories();
       await _loadConnections();
     } catch (error, stackTrace) {
+      if (requestId != _requestSerial) return;
       Util.debug(exception: error, stackTrace: stackTrace);
       errorMessage.value = 'Falha ao carregar pistas no mapa.';
     } finally {
-      isLoading.value = false;
+      if (requestId == _requestSerial) {
+        isLoading.value = false;
+      }
     }
   }
 
   Future<void> searchAround(LatLng center, double radiusMeters) async {
+    final int requestId = ++_requestSerial;
     errorMessage.value = null;
     sonarCenter.value = center;
     sonarRadius.value = radiusMeters;
+    activeSearch.value = '';
+    loadMode.value = LivingClueMapLoadMode.radius;
     try {
       isLoading.value = true;
-      livingClues.assignAll(await _webclient.searchByRadius(
+      final loadedClues = await _webclient.searchByRadius(
         latitude: center.latitude,
         longitude: center.longitude,
         radiusMeters: radiusMeters,
-      ));
+      );
+      if (requestId != _requestSerial) return;
+      livingClues.assignAll(loadedClues);
       await _loadCategories();
       await _loadConnections();
     } catch (error, stackTrace) {
+      if (requestId != _requestSerial) return;
       Util.debug(exception: error, stackTrace: stackTrace);
       errorMessage.value = 'Falha ao buscar pelo raio informado.';
     } finally {
-      isLoading.value = false;
+      if (requestId == _requestSerial) {
+        isLoading.value = false;
+      }
+    }
+  }
+
+  Future<void> searchGlobal(String search) async {
+    final trimmedSearch = search.trim();
+    if (trimmedSearch.isEmpty) {
+      return;
+    }
+
+    final int requestId = ++_requestSerial;
+    errorMessage.value = null;
+    activeSearch.value = trimmedSearch;
+    loadMode.value = LivingClueMapLoadMode.search;
+    try {
+      isLoading.value = true;
+      final loadedClues = await _webclient.search(search: trimmedSearch);
+      if (requestId != _requestSerial) return;
+      livingClues.assignAll(loadedClues);
+      await _loadCategories();
+      await _loadConnections();
+    } catch (error, stackTrace) {
+      if (requestId != _requestSerial) return;
+      Util.debug(exception: error, stackTrace: stackTrace);
+      errorMessage.value = 'Falha ao pesquisar pistas.';
+    } finally {
+      if (requestId == _requestSerial) {
+        isLoading.value = false;
+      }
     }
   }
 
