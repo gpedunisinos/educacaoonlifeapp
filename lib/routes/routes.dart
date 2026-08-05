@@ -5,7 +5,6 @@ import 'package:unisinos_usp_app/routes/samples.dart';
 import 'package:unisinos_usp_app/routes/living_clues.dart';
 import 'package:unisinos_usp_app/routes/clue_connections.dart';
 import 'package:unisinos_usp_app/routes/connection_types.dart';
-import 'package:unisinos_usp_app/routes/chat.dart';
 import 'package:unisinos_usp_app/routes/chat_templates.dart';
 import 'package:unisinos_usp_app/routes/biomes.dart';
 import 'package:unisinos_usp_app/routes/territories.dart';
@@ -26,7 +25,6 @@ List<GetPage> appRoutes() => [
       ...clueConnectionRoutes(),
       ...connectionTypeRoutes(),
       ...sampleRoutes(),
-      ...chatRoutes(),
       ...chatTemplateRoutes(),
       ...nodeTypeRoutes(),
       ...nodeRoutes(),

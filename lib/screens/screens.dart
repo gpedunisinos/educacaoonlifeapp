@@ -15,7 +15,6 @@ export 'package:unisinos_usp_app/screens/living_clue/living_clue_create_screen.d
 export 'package:unisinos_usp_app/screens/living_clue/living_clue_index_screen.dart';
 export 'package:unisinos_usp_app/screens/living_clue/living_clue_update_screen.dart';
 export 'package:unisinos_usp_app/screens/living_clue/living_clue_map_screen.dart';
-export 'package:unisinos_usp_app/screens/chat/chat_screen.dart';
 export 'package:unisinos_usp_app/screens/chat_template/chat_template_chat_screen.dart';
 export 'package:unisinos_usp_app/screens/chat_template/chat_template_create_screen.dart';
 export 'package:unisinos_usp_app/screens/chat_template/chat_template_index_screen.dart';
