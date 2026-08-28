@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
+import 'package:unisinos_usp_app/services/location_privacy_service.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
@@ -43,6 +44,9 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
   }
 
   Future<void> _useCurrentLocation() async {
+    if (!await LocationPrivacyService.ensureAcknowledged(context)) return;
+    if (!mounted) return;
+
     try {
       setState(() => _loadingLocation = true);
       LocationPermission permission = await Geolocator.checkPermission();
@@ -69,7 +73,10 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
     }
   }
 
-  void _onLongPress(TapPosition tapPosition, LatLng latLng) {
+  Future<void> _onLongPress(TapPosition tapPosition, LatLng latLng) async {
+    if (!await LocationPrivacyService.ensureAcknowledged(context)) return;
+    if (!mounted) return;
+
     setState(() {
       _selected = latLng;
     });
@@ -85,6 +92,9 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
           'Pressione e segure no mapa para marcar a localização.');
       return;
     }
+    if (!await LocationPrivacyService.ensureAcknowledged(context)) return;
+    if (!mounted) return;
+
     final result = await Get.toNamed(
       '/living_clues/type_select',
       arguments: {
@@ -188,7 +198,9 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                        'Segure no mapa para marcar a latitude/longitude.'),
+                      'Segure no mapa e escolha um ponto público ou '
+                      'aproximado. Evite marcar sua casa ou localização exata.',
+                    ),
                     const SizedBox(height: 6),
                     Text(
                       selectedText,
@@ -230,7 +242,7 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
       screenName: _screenName,
       route: Get.currentRoute,
       stage: 'seleção do ponto no mapa',
-      goal: 'marcar o local exato onde a pista viva será criada',
+      goal: 'marcar um ponto público ou aproximado para a pista viva',
       visibleFields: const <String>[
         'mapa',
         'usar minha localização',
@@ -245,7 +257,7 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
             : '${_selected!.latitude.toStringAsFixed(5)}, ${_selected!.longitude.toStringAsFixed(5)}',
       },
       notes: <String>[
-        'O usuário deve pressionar e segurar no mapa para marcar a localização.',
+        'O usuário deve evitar sua casa ou localização exata e preferir um ponto público ou aproximado.',
       ],
     );
   }
