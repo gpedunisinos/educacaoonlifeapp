@@ -10,6 +10,7 @@ import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
 import 'package:unisinos_usp_app/models/nominatim_place_model.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
+import 'package:unisinos_usp_app/services/location_privacy_service.dart';
 import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
@@ -311,6 +312,9 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     if (!_isRepositionMode || _repositioningClue == null) {
       return;
     }
+
+    if (!await LocationPrivacyService.ensureAcknowledged(context)) return;
+    if (!mounted) return;
 
     setState(() {
       _pendingRepositionPoint = point;
