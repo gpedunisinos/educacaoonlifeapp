@@ -2,10 +2,8 @@ import 'dart:convert';
 
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
-import 'package:widgets_spo/services/services.dart';
+import 'package:unisinos_usp_app/webclients/webclient.dart';
 import 'package:widgets_spo/widgets_spo.dart';
-
-import 'webclient.dart';
 
 class LivingClueWebclient {
   final WebClient webClient = WebClient.instance;
@@ -138,6 +136,18 @@ class LivingClueWebclient {
     );
 
     return LivingClueModel.fromJson(jsonDecode(response.body));
+  }
+
+  Future<void> reprocessEnvironmentalContext(int id) async {
+    await webClient.post(
+      '/$endpoint/$id/environmental_context/reprocess',
+      '{}',
+      [
+        LoggingInterceptor(),
+        ApiInterceptor(),
+        TokenInterceptor(),
+      ],
+    );
   }
 
   Future<void> delete(int id) async {

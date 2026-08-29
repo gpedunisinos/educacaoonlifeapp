@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:unisinos_usp_app/models/category_model.dart';
+import 'package:unisinos_usp_app/models/environmental_context_model.dart';
 
 class LivingClueModel {
   int id;
@@ -17,6 +18,7 @@ class LivingClueModel {
   DateTime? createdAt;
   DateTime? updatedAt;
   CategoryModel? category;
+  EnvironmentalContextModel? environmentalContext;
 
   LivingClueModel({
     required this.id,
@@ -33,6 +35,7 @@ class LivingClueModel {
     this.createdAt,
     this.updatedAt,
     this.category,
+    this.environmentalContext,
   });
 
   LivingClueModel.fromJson(Map<String, dynamic> json)
@@ -55,7 +58,8 @@ class LivingClueModel {
         updatedAt = json['updated_at'] != null
             ? DateTime.parse(json['updated_at'])
             : null,
-        category = _parseCategory(json);
+        category = _parseCategory(json),
+        environmentalContext = _parseEnvironmentalContext(json);
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -98,5 +102,16 @@ class LivingClueModel {
 
     final category = _parseCategory(json);
     return category?.id ?? 0;
+  }
+
+  static EnvironmentalContextModel? _parseEnvironmentalContext(
+    Map<String, dynamic> json,
+  ) {
+    final value = json['environmental_context'];
+    if (value is Map) {
+      return EnvironmentalContextModel.fromJson(
+          Map<String, dynamic>.from(value));
+    }
+    return null;
   }
 }
