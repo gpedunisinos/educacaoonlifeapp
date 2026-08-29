@@ -1,19 +1,65 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
+import 'package:unisinos_usp_app/webclients/living_clue_webclient.dart';
 import 'package:unisinos_usp_app/widgets/living_clue_description_view.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
+import 'package:unisinos_usp_app/widgets/environmental_context_card.dart';
 
-class LivingClueShowScreen extends StatelessWidget {
+class LivingClueShowScreen extends StatefulWidget {
   const LivingClueShowScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  State<LivingClueShowScreen> createState() => _LivingClueShowScreenState();
+}
+
+class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
+  late LivingClueModel model;
+  Timer? _refreshTimer;
+  int _refreshAttempts = 0;
+
+  @override
+  void initState() {
+    super.initState();
     final args = Get.arguments;
-    final LivingClueModel model =
-        args is LivingClueModel ? args : args['model'] as LivingClueModel;
+    model = args is LivingClueModel ? args : args['model'] as LivingClueModel;
+    _refreshContext();
+  }
+
+  Future<void> _refreshContext() async {
+    try {
+      final refreshed = await LivingClueWebclient().fetchById(model.id);
+      if (!mounted) return;
+      setState(() => model = refreshed);
+      final status = model.environmentalContext?.status;
+      if ((status == null || status == 'pending' || status == 'processing') &&
+          _refreshAttempts < 6) {
+        _refreshAttempts++;
+        _refreshTimer = Timer(const Duration(seconds: 5), _refreshContext);
+      }
+    } catch (_) {
+      // A pista já carregada permanece visível se a atualização falhar.
+    }
+  }
+
+  Future<void> _reprocessContext() async {
+    await LivingClueWebclient().reprocessEnvironmentalContext(model.id);
+    _refreshAttempts = 0;
+    await _refreshContext();
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final categoryName =
         model.category?.name ?? 'Categoria ${model.categoryId}';
@@ -104,6 +150,11 @@ class LivingClueShowScreen extends StatelessWidget {
                         ],
                       ),
                     ),
+                  ),
+                  const SizedBox(height: 12),
+                  EnvironmentalContextCard(
+                    context: model.environmentalContext,
+                    onRetry: _reprocessContext,
                   ),
                   const SizedBox(height: 12),
                   Card(
