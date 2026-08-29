@@ -6,6 +6,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:unisinos_usp_app/controllers/living_clue/living_clue_map_controller.dart';
+import 'package:unisinos_usp_app/controllers/living_clue/environmental_layers_controller.dart';
+import 'package:unisinos_usp_app/models/environmental_layer_model.dart';
 import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
 import 'package:unisinos_usp_app/models/nominatim_place_model.dart';
@@ -34,6 +36,8 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
   static const double _zoomStep = 1;
   final LivingClueMapController _controller =
       Get.find<LivingClueMapController>();
+  final EnvironmentalLayersController _environmentalController =
+      Get.find<EnvironmentalLayersController>();
   final MapController _mapController = MapController();
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
@@ -71,6 +75,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
       });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadCurrentBounds();
+      _environmentalController.load();
       _showInitialTutorialIfNeeded();
     });
   }
@@ -765,6 +770,28 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                             userAgentPackageName:
                                 'com.br.spotecnologia.uniusp_app',
                           ),
+                          ..._environmentalController.activeLayers.map(
+                            (layer) => Opacity(
+                              key: ValueKey('environmental-${layer.id}'),
+                              opacity: _environmentalController
+                                      .opacities[layer.id] ??
+                                  layer.defaultOpacity,
+                              child: TileLayer(
+                                urlTemplate: _environmentalController.webclient
+                                    .absoluteTileUrl(layer),
+                                tileProvider: NetworkTileProvider(
+                                  headers: {
+                                    'Authorization':
+                                        'Bearer ${AuthProvider.instance.getToken()}',
+                                  },
+                                ),
+                                minZoom: layer.minZoom.toDouble(),
+                                maxZoom: layer.maxZoom.toDouble(),
+                                userAgentPackageName:
+                                    'com.br.spotecnologia.uniusp_app',
+                              ),
+                            ),
+                          ),
                           if (circles.isNotEmpty) CircleLayer(circles: circles),
                           if (connectionLines.isNotEmpty)
                             PolylineLayer(
@@ -818,6 +845,39 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                         right: 12,
                         child: _buildZoomControl(),
                       ),
+                      Positioned(
+                        top: 136,
+                        right: 12,
+                        child: Material(
+                          color: Colors.black.withValues(alpha: 0.42),
+                          shape: const CircleBorder(),
+                          child: IconButton(
+                            constraints: const BoxConstraints.tightFor(
+                              width: 36,
+                              height: 36,
+                            ),
+                            padding: EdgeInsets.zero,
+                            color: Colors.white,
+                            tooltip: 'Camadas ambientais',
+                            icon: Badge(
+                              isLabelVisible: _environmentalController
+                                  .activeLayers.isNotEmpty,
+                              label: Text(_environmentalController
+                                  .activeLayers.length
+                                  .toString()),
+                              child:
+                                  const Icon(Icons.layers_outlined, size: 20),
+                            ),
+                            onPressed: _showEnvironmentalLayers,
+                          ),
+                        ),
+                      ),
+                      if (_environmentalController.activeLayers.isNotEmpty)
+                        Positioned(
+                          left: 12,
+                          bottom: _searchQuery.isNotEmpty ? 190 : 12,
+                          child: _buildEnvironmentalLegend(),
+                        ),
                       if (_controller.errorMessage.value != null)
                         Positioned(
                           top: 12,
@@ -888,6 +948,163 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
         ],
       ),
     );
+  }
+
+  void _showEnvironmentalLayers() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (context) => Obx(() {
+        final controller = _environmentalController;
+        return SafeArea(
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height * 0.72,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 12, 8),
+                  child: Row(
+                    children: [
+                      const Expanded(
+                        child: Text('Camadas ambientais',
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold)),
+                      ),
+                      TextButton(
+                        onPressed: controller.activeLayers.isEmpty
+                            ? null
+                            : controller.disableAll,
+                        child: const Text('Desativar todas'),
+                      ),
+                    ],
+                  ),
+                ),
+                if (controller.isLoading.value)
+                  const Expanded(
+                      child: Center(child: CircularProgressIndicator()))
+                else if (controller.errorMessage.value != null)
+                  Expanded(
+                    child: Center(
+                      child: TextButton.icon(
+                        onPressed: controller.load,
+                        icon: const Icon(Icons.refresh),
+                        label: Text(controller.errorMessage.value!),
+                      ),
+                    ),
+                  )
+                else
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: controller.layers.length,
+                      itemBuilder: (context, index) {
+                        final layer = controller.layers[index];
+                        final enabled =
+                            controller.enabledIds.contains(layer.id);
+                        return ExpansionTile(
+                          enabled: layer.available,
+                          leading: Switch(
+                            value: enabled,
+                            onChanged: layer.available
+                                ? (value) => controller.toggle(layer.id, value)
+                                : null,
+                          ),
+                          title: Text(layer.name),
+                          subtitle: Text(layer.available
+                              ? layer.description
+                              : 'Camada temporariamente indisponível'),
+                          childrenPadding:
+                              const EdgeInsets.fromLTRB(24, 0, 24, 16),
+                          children: [
+                            Row(
+                              children: [
+                                const Text('Opacidade'),
+                                Expanded(
+                                  child: Slider(
+                                    value: controller.opacities[layer.id] ??
+                                        layer.defaultOpacity,
+                                    onChanged: enabled
+                                        ? (value) => controller.setOpacity(
+                                            layer.id, value)
+                                        : null,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Fonte: ${layer.sourceName} — ${layer.sourceVersion}',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildEnvironmentalLegend() {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 245, maxHeight: 220),
+      child: Card(
+        color: Colors.black.withValues(alpha: 0.76),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: _environmentalController.activeLayers
+                .map((layer) => _legendLayer(layer))
+                .toList(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _legendLayer(EnvironmentalLayerModel layer) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(layer.name,
+              style: const TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.bold)),
+          ...layer.legend.map((item) => Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 12,
+                    height: 12,
+                    margin: const EdgeInsets.only(right: 6, top: 3),
+                    decoration: BoxDecoration(
+                      color: _hexColor(item.color),
+                      border: Border.all(color: Colors.white54),
+                    ),
+                  ),
+                  Flexible(
+                    child: Text(item.label,
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 11)),
+                  ),
+                ],
+              )),
+        ],
+      ),
+    );
+  }
+
+  Color _hexColor(String value) {
+    final hex = value.replaceFirst('#', '');
+    return Color(int.parse('FF${hex.padLeft(6, '0')}', radix: 16));
   }
 
   Widget _buildLoadStatus() {
