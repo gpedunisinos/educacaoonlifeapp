@@ -8,6 +8,7 @@ class LivingClueModel {
   int biomeId;
   int categoryId;
   String? description;
+  String? descriptionDelta;
   double latitude;
   double longitude;
   String? imageUrl;
@@ -25,6 +26,7 @@ class LivingClueModel {
     required this.latitude,
     required this.longitude,
     this.description,
+    this.descriptionDelta,
     this.imageUrl,
     this.metadata,
     this.isActive = true,
@@ -41,6 +43,7 @@ class LivingClueModel {
             : int.tryParse(json['biome_id']?.toString() ?? '') ?? 0,
         categoryId = _parseCategoryId(json),
         description = json['description'],
+        descriptionDelta = json['description_delta'],
         latitude = double.parse(json['latitude'].toString()),
         longitude = double.parse(json['longitude'].toString()),
         imageUrl = json['image_url'],
@@ -60,6 +63,7 @@ class LivingClueModel {
         'biome_id': biomeId,
         'category_id': categoryId,
         'description': description,
+        'description_delta': descriptionDelta,
         'latitude': latitude,
         'longitude': longitude,
         'image_url': imageUrl,

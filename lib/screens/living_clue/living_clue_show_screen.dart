@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
+import 'package:unisinos_usp_app/widgets/living_clue_description_view.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
@@ -92,12 +93,12 @@ class LivingClueShowScreen extends StatelessWidget {
                                   style: theme.textTheme.bodyMedium),
                             ],
                           ),
-                          if ((model.description ?? '').isNotEmpty) ...[
+                          if ((model.description ?? '').isNotEmpty ||
+                              (model.descriptionDelta ?? '').isNotEmpty) ...[
                             const SizedBox(height: 12),
-                            Text(
-                              model.description ?? '',
-                              style: theme.textTheme.bodyMedium
-                                  ?.copyWith(color: Colors.grey[700]),
+                            LivingClueDescriptionView(
+                              plainText: model.description ?? '',
+                              delta: model.descriptionDelta,
                             ),
                           ],
                         ],

@@ -176,6 +176,7 @@ class LivingClueMapController extends GetxController {
         biomeId: clue.biomeId,
         categoryId: clue.categoryId,
         description: clue.description,
+        descriptionDelta: clue.descriptionDelta,
         latitude: newPosition.latitude,
         longitude: newPosition.longitude,
         imageUrl: clue.imageUrl,

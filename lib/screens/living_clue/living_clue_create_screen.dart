@@ -5,8 +5,10 @@ import 'package:unisinos_usp_app/controllers/living_clue/living_clue_create_cont
 import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
+import 'package:unisinos_usp_app/utils/quill_document_utils.dart';
 import 'package:unisinos_usp_app/webclients/biome_webclient.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
+import 'package:unisinos_usp_app/widgets/living_clue_description_editor.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
@@ -27,7 +29,7 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
   final BiomeWebclient _biomeWebclient = BiomeWebclient();
 
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
+  final QuillController _descriptionController = QuillController.basic();
   final TextEditingController _latitudeController = TextEditingController();
   final TextEditingController _longitudeController = TextEditingController();
   final TextEditingController _imageUrlController = TextEditingController();
@@ -191,10 +193,8 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
                                 : null,
                           ),
                           Insets.large.height,
-                          InputText(
-                            hintText: 'Descrição (opcional)',
+                          LivingClueDescriptionEditor(
                             controller: _descriptionController,
-                            maxLines: 3,
                           ),
                           Insets.large.height,
                           if (_metadataTags.isNotEmpty) ...[
@@ -320,8 +320,8 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
           'categoria': _categoryController.text.trim(),
         if (_categoryType.trim().isNotEmpty)
           'tipo da categoria': _categoryType.trim(),
-        if (_descriptionController.text.trim().isNotEmpty)
-          'descrição': _descriptionController.text.trim(),
+        if (QuillDocumentUtils.plainText(_descriptionController).isNotEmpty)
+          'descrição': QuillDocumentUtils.plainText(_descriptionController),
         if (_latitudeController.text.trim().isNotEmpty)
           'latitude': _latitudeController.text.trim(),
         if (_longitudeController.text.trim().isNotEmpty)
@@ -364,9 +364,10 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
       name: _nameController.text.trim(),
       biomeId: biomeId,
       categoryId: _categoryId!,
-      description: _descriptionController.text.trim().isEmpty
+      description: QuillDocumentUtils.plainText(_descriptionController).isEmpty
           ? null
-          : _descriptionController.text.trim(),
+          : QuillDocumentUtils.plainText(_descriptionController),
+      descriptionDelta: QuillDocumentUtils.encodeDelta(_descriptionController),
       latitude: latitude,
       longitude: longitude,
       imageUrl: _imageUrlController.text.trim().isEmpty
