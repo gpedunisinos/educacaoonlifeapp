@@ -244,11 +244,6 @@ class _HomeTopBar extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxWidth < 760;
-        final logo = Image.asset(
-          'assets/logo_econectiva.png',
-          height: 52,
-          semanticLabel: 'Plataforma eCOnectiva',
-        );
         final title = Text(
           'Plataforma eCOnectiva',
           maxLines: compact ? 2 : 1,
@@ -287,8 +282,6 @@ class _HomeTopBar extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        logo,
-                        const SizedBox(width: 12),
                         Expanded(child: title),
                       ],
                     ),
@@ -307,8 +300,6 @@ class _HomeTopBar extends StatelessWidget {
                 )
               : Row(
                   children: [
-                    logo,
-                    const SizedBox(width: 12),
                     Expanded(child: title),
                     const SizedBox(width: 12),
                     actions,

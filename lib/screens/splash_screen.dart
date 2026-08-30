@@ -26,15 +26,9 @@ class _SplashScreenState extends State<SplashScreen> {
       child: Scaffold(
         backgroundColor: Colors.white,
         body: Center(
-          child: Wrap(
-            spacing: 32,
-            runSpacing: 24,
-            alignment: WrapAlignment.center,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              Image.asset('assets/logo_econectiva.png', width: 112),
-              Image.asset('assets/logo_usp.png', width: 120),
-            ],
+          child: Image.asset(
+            'assets/logo_usp.png',
+            width: 120,
           ),
         ),
       ),
