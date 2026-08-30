@@ -26,19 +26,9 @@ class _SplashScreenState extends State<SplashScreen> {
       child: Scaffold(
         backgroundColor: Colors.white,
         body: Center(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset(
-                'assets/logo_unisinos.png',
-                width: 120,
-              ),
-              const SizedBox(width: 32),
-              Image.asset(
-                'assets/logo_usp.png',
-                width: 120,
-              ),
-            ],
+          child: Image.asset(
+            'assets/logo_usp.png',
+            width: 120,
           ),
         ),
       ),
