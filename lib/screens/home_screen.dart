@@ -244,7 +244,11 @@ class _HomeTopBar extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxWidth < 760;
-        final logo = Image.asset('assets/logo_unisinos.png', height: 52);
+        final logo = Image.asset(
+          'assets/logo_econectiva.png',
+          height: 52,
+          semanticLabel: 'Plataforma eCOnectiva',
+        );
         final title = Text(
           'Plataforma eCOnectiva',
           maxLines: compact ? 2 : 1,
