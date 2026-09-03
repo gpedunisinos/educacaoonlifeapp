@@ -4,7 +4,7 @@ import 'package:http_interceptor/http_interceptor.dart';
 import 'package:unisinos_usp_app/models/clue_connection_model.dart';
 import 'package:widgets_spo/services/services.dart';
 
-import 'webclient.dart';
+import 'package:unisinos_usp_app/webclients/webclient.dart';
 
 class ClueConnectionWebclient {
   final WebClient webClient = WebClient.instance;
@@ -14,6 +14,20 @@ class ClueConnectionWebclient {
   Future<List<ClueConnectionModel>> fetch() async {
     final Response response = await webClient.get(
       '/$endpoint',
+      [
+        LoggingInterceptor(),
+        ApiInterceptor(),
+        TokenInterceptor(),
+      ],
+      {},
+    );
+
+    return ClueConnectionModel.fromJsonArray(response.body);
+  }
+
+  Future<List<ClueConnectionModel>> fetchForLivingClue(int clueId) async {
+    final Response response = await webClient.get(
+      '/living_clues/$clueId/connections',
       [
         LoggingInterceptor(),
         ApiInterceptor(),
