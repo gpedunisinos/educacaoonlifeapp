@@ -23,5 +23,10 @@ class EnvironmentalLayerWebclient {
   }
 
   String absoluteTileUrl(EnvironmentalLayerModel layer) =>
-      '${webClient.scheme}://${webClient.host}${layer.tileUrl}';
+      Uri(
+        scheme: webClient.scheme,
+        host: webClient.host,
+        port: webClient.port,
+      ).origin +
+      layer.tileUrl;
 }

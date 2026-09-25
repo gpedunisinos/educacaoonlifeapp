@@ -10,8 +10,8 @@ Senha em key.properties
 
 ### Deploy app 
 flutter build web --release
-ssh -o IdentitiesOnly=yes -o IdentityAgent=none -i ~/.ssh/aws_spo.pem ubuntu@18.230.235.236 "rm -rf /var/www/unisinos_usp_app/*"
-scp -o IdentitiesOnly=yes -o IdentityAgent=none -i ~/.ssh/aws_spo.pem -r build/web/. ubuntu@18.230.235.236:/var/www/unisinos_usp_app/
+ssh -o IdentitiesOnly=yes -o IdentityAgent=none -i ~/.ssh/aws_spo.pem ubuntu@54.94.142.29 "rm -rf /var/www/usp_app/*"
+scp -o IdentitiesOnly=yes -o IdentityAgent=none -i ~/.ssh/aws_spo.pem -r build/web/. ubuntu@54.94.142.29:/var/www/usp_app/
 
 ## Integration tests (with screenshot)
 

@@ -8,6 +8,8 @@ void main() {
       'name': 'Biomas',
       'description': 'Limites',
       'tile_url': '/api/environmental_tiles/biomes/{z}/{x}/{y}.png',
+      'map_role': 'overlay',
+      'attribution': '',
       'default_opacity': 0.35,
       'min_zoom': 3,
       'max_zoom': 12,
@@ -22,5 +24,19 @@ void main() {
     expect(layer.available, isTrue);
     expect(layer.legend.single.label, 'Pampa');
     expect(layer.sourceName, 'IBGE');
+    expect(layer.mapRole, 'overlay');
+  });
+
+  test('converte mapa-base de satélite', () {
+    final layer = EnvironmentalLayerModel.fromJson({
+      'id': 'satellite',
+      'name': 'Imagem de satélite',
+      'tile_url': '/api/environmental_tiles/satellite/{z}/{x}/{y}.jpg',
+      'map_role': 'basemap',
+      'attribution': 'Imagem © Esri',
+      'available': true,
+    });
+    expect(layer.mapRole, 'basemap');
+    expect(layer.attribution, contains('Esri'));
   });
 }

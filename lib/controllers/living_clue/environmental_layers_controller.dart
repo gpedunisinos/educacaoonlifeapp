@@ -7,14 +7,35 @@ import 'package:widgets_spo/widgets_spo.dart';
 class EnvironmentalLayersController extends GetxController {
   static const _enabledKey = 'environmental_map_enabled_layers';
   static const _opacityPrefix = 'environmental_map_opacity_';
+  static const _baseMapKey = 'environmental_map_base_map';
   final EnvironmentalLayerWebclient webclient = EnvironmentalLayerWebclient();
   final layers = <EnvironmentalLayerModel>[].obs;
   final enabledIds = <String>{}.obs;
   final opacities = <String, double>{}.obs;
+  final selectedBaseMapId = 'osm'.obs;
   final isLoading = false.obs;
   final RxnString errorMessage = RxnString();
 
-  List<EnvironmentalLayerModel> get activeLayers => layers
+  List<EnvironmentalLayerModel> get baseMaps =>
+      layers.where((layer) => layer.mapRole == 'basemap').toList();
+
+  List<EnvironmentalLayerModel> get overlayLayers =>
+      layers.where((layer) => layer.mapRole != 'basemap').toList();
+
+  EnvironmentalLayerModel? get selectedExternalBaseMap {
+    if (selectedBaseMapId.value == 'osm') return null;
+    return baseMaps.firstWhereOrNull(
+        (layer) => layer.id == selectedBaseMapId.value && layer.available);
+  }
+
+  String get baseMapAttribution {
+    final attribution = selectedExternalBaseMap?.attribution;
+    return attribution != null && attribution.isNotEmpty
+        ? attribution
+        : '© OpenStreetMap contributors';
+  }
+
+  List<EnvironmentalLayerModel> get activeLayers => overlayLayers
       .where((layer) => layer.available && enabledIds.contains(layer.id))
       .toList();
 
@@ -26,6 +47,14 @@ class EnvironmentalLayersController extends GetxController {
       final preferences = await SharedPreferences.getInstance();
       final loaded = await webclient.fetch();
       layers.assignAll(loaded);
+      final savedBaseMap = preferences.getString(_baseMapKey) ?? 'osm';
+      selectedBaseMapId.value = savedBaseMap == 'osm' ||
+              loaded.any((layer) =>
+                  layer.id == savedBaseMap &&
+                  layer.mapRole == 'basemap' &&
+                  layer.available)
+          ? savedBaseMap
+          : 'osm';
       enabledIds.assignAll(
         (preferences.getStringList(_enabledKey) ?? const <String>[]).where(
             (id) => loaded.any((layer) => layer.id == id && layer.available)),
@@ -48,6 +77,16 @@ class EnvironmentalLayersController extends GetxController {
     enabledIds.refresh();
     final preferences = await SharedPreferences.getInstance();
     await preferences.setStringList(_enabledKey, enabledIds.toList());
+  }
+
+  Future<void> selectBaseMap(String id) async {
+    if (id != 'osm' &&
+        !baseMaps.any((layer) => layer.id == id && layer.available)) {
+      return;
+    }
+    selectedBaseMapId.value = id;
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setString(_baseMapKey, id);
   }
 
   Future<void> setOpacity(String id, double opacity) async {

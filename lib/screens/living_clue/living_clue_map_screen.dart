@@ -764,12 +764,37 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                           },
                         ),
                         children: [
-                          TileLayer(
-                            urlTemplate:
-                                'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                            userAgentPackageName:
-                                'com.br.spotecnologia.uniusp_app',
-                          ),
+                          if (_environmentalController
+                                  .selectedExternalBaseMap ==
+                              null)
+                            TileLayer(
+                              urlTemplate:
+                                  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                              userAgentPackageName:
+                                  'com.br.spotecnologia.uniusp_app',
+                            )
+                          else
+                            TileLayer(
+                              key: ValueKey(
+                                  'basemap-${_environmentalController.selectedBaseMapId.value}'),
+                              urlTemplate: _environmentalController.webclient
+                                  .absoluteTileUrl(_environmentalController
+                                      .selectedExternalBaseMap!),
+                              tileProvider: NetworkTileProvider(
+                                headers: {
+                                  'Authorization':
+                                      'Bearer ${AuthProvider.instance.getToken()}',
+                                },
+                              ),
+                              minZoom: _environmentalController
+                                  .selectedExternalBaseMap!.minZoom
+                                  .toDouble(),
+                              maxZoom: _environmentalController
+                                  .selectedExternalBaseMap!.maxZoom
+                                  .toDouble(),
+                              userAgentPackageName:
+                                  'com.br.spotecnologia.uniusp_app',
+                            ),
                           ..._environmentalController.activeLayers.map(
                             (layer) => Opacity(
                               key: ValueKey('environmental-${layer.id}'),
@@ -878,6 +903,25 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                           bottom: _searchQuery.isNotEmpty ? 190 : 12,
                           child: _buildEnvironmentalLegend(),
                         ),
+                      Positioned(
+                        right: 12,
+                        bottom: _searchQuery.isNotEmpty ? 190 : 12,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.62),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 7, vertical: 4),
+                            child: Text(
+                              _environmentalController.baseMapAttribution,
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 10),
+                            ),
+                          ),
+                        ),
+                      ),
                       if (_controller.errorMessage.value != null)
                         Positioned(
                           top: 12,
@@ -967,7 +1011,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                   child: Row(
                     children: [
                       const Expanded(
-                        child: Text('Camadas ambientais',
+                        child: Text('Camadas do mapa',
                             style: TextStyle(
                                 fontSize: 20, fontWeight: FontWeight.bold)),
                       ),
@@ -996,9 +1040,20 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                 else
                   Expanded(
                     child: ListView.builder(
-                      itemCount: controller.layers.length,
+                      itemCount: controller.overlayLayers.length + 2,
                       itemBuilder: (context, index) {
-                        final layer = controller.layers[index];
+                        if (index == 0) {
+                          return _buildBaseMapSelector(controller);
+                        }
+                        if (index == 1) {
+                          return const Padding(
+                            padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
+                            child: Text('Camadas ambientais',
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold)),
+                          );
+                        }
+                        final layer = controller.overlayLayers[index - 2];
                         final enabled =
                             controller.enabledIds.contains(layer.id);
                         return ExpansionTile(
@@ -1048,6 +1103,42 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
           ),
         );
       }),
+    );
+  }
+
+  Widget _buildBaseMapSelector(EnvironmentalLayersController controller) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8),
+            child: Text('Mapa-base',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ),
+          RadioListTile<String>(
+            value: 'osm',
+            groupValue: controller.selectedBaseMapId.value,
+            onChanged: (value) => controller.selectBaseMap(value!),
+            title: const Text('Mapa claro'),
+            subtitle: const Text('OpenStreetMap'),
+          ),
+          ...controller.baseMaps.map(
+            (layer) => RadioListTile<String>(
+              value: layer.id,
+              groupValue: controller.selectedBaseMapId.value,
+              onChanged: layer.available
+                  ? (value) => controller.selectBaseMap(value!)
+                  : null,
+              title: Text(layer.name),
+              subtitle: Text(layer.available
+                  ? layer.description
+                  : 'Configure a credencial Esri para habilitar'),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
