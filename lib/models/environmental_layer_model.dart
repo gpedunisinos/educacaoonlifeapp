@@ -16,6 +16,8 @@ class EnvironmentalLayerModel {
   final String name;
   final String description;
   final String tileUrl;
+  final String mapRole;
+  final String attribution;
   final double defaultOpacity;
   final int minZoom;
   final int maxZoom;
@@ -29,6 +31,8 @@ class EnvironmentalLayerModel {
     required this.name,
     required this.description,
     required this.tileUrl,
+    required this.mapRole,
+    required this.attribution,
     required this.defaultOpacity,
     required this.minZoom,
     required this.maxZoom,
@@ -47,6 +51,8 @@ class EnvironmentalLayerModel {
       name: json['name']?.toString() ?? '',
       description: json['description']?.toString() ?? '',
       tileUrl: json['tile_url']?.toString() ?? '',
+      mapRole: json['map_role']?.toString() ?? 'overlay',
+      attribution: json['attribution']?.toString() ?? '',
       defaultOpacity: (json['default_opacity'] as num?)?.toDouble() ?? 0.6,
       minZoom: (json['min_zoom'] as num?)?.toInt() ?? 0,
       maxZoom: (json['max_zoom'] as num?)?.toInt() ?? 18,
