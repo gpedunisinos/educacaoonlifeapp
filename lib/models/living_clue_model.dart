@@ -6,7 +6,6 @@ import 'package:unisinos_usp_app/models/environmental_context_model.dart';
 class LivingClueModel {
   int id;
   String name;
-  int biomeId;
   int categoryId;
   String? description;
   String? descriptionDelta;
@@ -23,7 +22,6 @@ class LivingClueModel {
   LivingClueModel({
     required this.id,
     required this.name,
-    required this.biomeId,
     required this.categoryId,
     required this.latitude,
     required this.longitude,
@@ -41,9 +39,6 @@ class LivingClueModel {
   LivingClueModel.fromJson(Map<String, dynamic> json)
       : id = json['id'] is int ? json['id'] : int.parse(json['id'].toString()),
         name = json['name'] ?? '',
-        biomeId = json['biome_id'] is int
-            ? json['biome_id']
-            : int.tryParse(json['biome_id']?.toString() ?? '') ?? 0,
         categoryId = _parseCategoryId(json),
         description = json['description'],
         descriptionDelta = json['description_delta'],
@@ -64,7 +59,6 @@ class LivingClueModel {
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
-        'biome_id': biomeId,
         'category_id': categoryId,
         'description': description,
         'description_delta': descriptionDelta,

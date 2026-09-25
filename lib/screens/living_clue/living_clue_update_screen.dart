@@ -5,7 +5,6 @@ import 'package:unisinos_usp_app/controllers/living_clue/living_clue_update_cont
 import 'package:unisinos_usp_app/models/file_model.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
 import 'package:unisinos_usp_app/utils/quill_document_utils.dart';
-import 'package:unisinos_usp_app/webclients/biome_webclient.dart';
 import 'package:unisinos_usp_app/webclients/category_webclient.dart';
 import 'package:unisinos_usp_app/webclients/file_webclient.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
@@ -26,7 +25,6 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
   final LivingClueUpdateController _controller =
       Get.find<LivingClueUpdateController>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final BiomeWebclient _biomeWebclient = BiomeWebclient();
 
   final TextEditingController _nameController = TextEditingController();
   final QuillController _descriptionController = QuillController.basic();
@@ -35,7 +33,6 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
   final TextEditingController _imageUrlController = TextEditingController();
   final TextEditingController _categoryController = TextEditingController();
   final TextEditingController _linkController = TextEditingController();
-  final ItemSelectController _biomeSelectController = ItemSelectController();
   final MFileController _fileController = MFileController();
   final Map<String, TextEditingController> _metadataControllers = {};
   final List<FileModel> _attachments = [];
@@ -46,7 +43,6 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
   bool _metadataLoaded = false;
   bool _attachmentsLoaded = false;
   bool _uploadingFile = false;
-  int? _biomeId;
   int? _categoryId;
   List<String> _metadataTags = [];
   Map<String, dynamic> _initialMetadata = {};
@@ -226,17 +222,6 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
                 PRuleRequired(value, message: 'Obrigatório'),
                 PRuleMaxString(value, 255, message: 'Máximo de 255 caracteres'),
               ]).val(),
-            ),
-            Insets.large.height,
-            InputSelectApi(
-              label: 'Bioma',
-              controller: _biomeSelectController,
-              validator: (value) => PValidator([
-                PRuleRequired(value, message: 'Bioma obrigatório'),
-              ]).val(),
-              onFind: (search, offset, params) =>
-                  _biomeWebclient.select(search, offset),
-              onChanged: (value) => setState(() => _biomeId = value),
             ),
             Insets.large.height,
             InputText(
@@ -506,30 +491,8 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
     _longitudeController.text = model.longitude.toString();
     _imageUrlController.text = model.imageUrl ?? '';
     _isActive = model.isActive;
-    _biomeId = model.biomeId > 0 ? model.biomeId : null;
-    if (_biomeId != null) {
-      _biomeSelectController.selectedItem = ItemSelect(
-        id: _biomeId!,
-        name: 'Bioma #$_biomeId',
-      );
-      _loadSelectedBiome(_biomeId!);
-    }
     _categoryId = model.categoryId;
     _initialMetadata = model.metadata ?? {};
-  }
-
-  Future<void> _loadSelectedBiome(int biomeId) async {
-    try {
-      final biome = await _biomeWebclient.fetchById(biomeId);
-      if (!mounted) return;
-      if (_biomeSelectController.selectedItem?.id != biomeId) return;
-      setState(() => _biomeSelectController.selectedItem = ItemSelect(
-            id: biome.id,
-            name: biome.name,
-          ));
-    } catch (_) {
-      // Mantem o valor por id quando o nome não puder ser resolvido.
-    }
   }
 
   Future<void> _loadCategoryMetadata(
@@ -655,11 +618,7 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     final double? latitude = double.tryParse(_latitudeController.text.trim());
     final double? longitude = double.tryParse(_longitudeController.text.trim());
-    final int? biomeId = _biomeSelectController.selectedItem?.id ?? _biomeId;
-    if (latitude == null ||
-        longitude == null ||
-        biomeId == null ||
-        _categoryId == null) {
+    if (latitude == null || longitude == null || _categoryId == null) {
       return;
     }
 
@@ -674,7 +633,6 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
     final model = LivingClueModel(
       id: _controller.livingClue.value?.id ?? _controller.livingClueId ?? 0,
       name: _nameController.text.trim(),
-      biomeId: biomeId,
       categoryId: _categoryId!,
       description: QuillDocumentUtils.plainText(_descriptionController).isEmpty
           ? null

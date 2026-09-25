@@ -6,7 +6,6 @@ import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
 import 'package:unisinos_usp_app/utils/quill_document_utils.dart';
-import 'package:unisinos_usp_app/webclients/biome_webclient.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/widgets/living_clue_description_editor.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
@@ -26,7 +25,6 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
   final LivingClueCreateController _controller =
       Get.find<LivingClueCreateController>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final BiomeWebclient _biomeWebclient = BiomeWebclient();
 
   final TextEditingController _nameController = TextEditingController();
   final QuillController _descriptionController = QuillController.basic();
@@ -34,9 +32,7 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
   final TextEditingController _longitudeController = TextEditingController();
   final TextEditingController _imageUrlController = TextEditingController();
   final TextEditingController _categoryController = TextEditingController();
-  final ItemSelectController _biomeSelectController = ItemSelectController();
   final Map<String, TextEditingController> _metadataControllers = {};
-  int? _biomeId;
   int? _categoryId;
   String _categoryName = '';
   String _categoryType = '';
@@ -70,14 +66,6 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
         _latitudeController.text = '$lat';
         _longitudeController.text = '$lng';
       }
-      _biomeId = args['biomeId'] as int?;
-      if (_biomeId != null) {
-        _biomeSelectController.selectedItem = ItemSelect(
-          id: _biomeId!,
-          name: 'Bioma #$_biomeId',
-        );
-        _loadSelectedBiome(_biomeId!);
-      }
       _categoryId = args['categoryId'] as int?;
       _categoryName = (args['categoryName'] ?? '') as String;
       _categoryType = (args['categoryType'] ?? '') as String;
@@ -91,20 +79,6 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
       for (final tag in _metadataTags) {
         _metadataControllers[tag] = TextEditingController();
       }
-    }
-  }
-
-  Future<void> _loadSelectedBiome(int biomeId) async {
-    try {
-      final biome = await _biomeWebclient.fetchById(biomeId);
-      if (!mounted) return;
-      if (_biomeSelectController.selectedItem?.id != biomeId) return;
-      setState(() => _biomeSelectController.selectedItem = ItemSelect(
-            id: biome.id,
-            name: biome.name,
-          ));
-    } catch (_) {
-      // Mantem o valor por id quando o nome não puder ser resolvido.
     }
   }
 
@@ -169,19 +143,6 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
                               PRuleMaxString(value, 255,
                                   message: 'Máximo de 255 caracteres'),
                             ]).val(),
-                          ),
-                          Insets.large.height,
-                          InputSelectApi(
-                            label: 'Bioma',
-                            controller: _biomeSelectController,
-                            validator: (value) => PValidator([
-                              PRuleRequired(value,
-                                  message: 'Selecione um bioma'),
-                            ]).val(),
-                            onFind: (search, offset, params) =>
-                                _biomeWebclient.select(search, offset),
-                            onChanged: (value) =>
-                                setState(() => _biomeId = value),
                           ),
                           Insets.large.height,
                           InputText(
@@ -302,7 +263,6 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
           'registrar uma pista viva com localização, categoria e dados principais',
       visibleFields: <String>[
         'nome',
-        'bioma',
         'categoria',
         if (_categoryType.isNotEmpty) 'tipo da categoria',
         'descrição',
@@ -315,7 +275,6 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
       filledFields: <String, String>{
         if (_nameController.text.trim().isNotEmpty)
           'nome': _nameController.text.trim(),
-        if (_biomeId != null) 'bioma': _selectedBiomeName(),
         if (_categoryController.text.trim().isNotEmpty)
           'categoria': _categoryController.text.trim(),
         if (_categoryType.trim().isNotEmpty)
@@ -343,11 +302,7 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     final double? latitude = double.tryParse(_latitudeController.text.trim());
     final double? longitude = double.tryParse(_longitudeController.text.trim());
-    final int? biomeId = _biomeSelectController.selectedItem?.id ?? _biomeId;
-    if (latitude == null ||
-        longitude == null ||
-        biomeId == null ||
-        _categoryId == null) {
+    if (latitude == null || longitude == null || _categoryId == null) {
       return;
     }
 
@@ -362,7 +317,6 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
     final model = LivingClueModel(
       id: 0,
       name: _nameController.text.trim(),
-      biomeId: biomeId,
       categoryId: _categoryId!,
       description: QuillDocumentUtils.plainText(_descriptionController).isEmpty
           ? null
@@ -387,12 +341,6 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
         },
       );
     }
-  }
-
-  String _selectedBiomeName() {
-    return _biomeSelectController.selectedItem?.name ??
-        _biomeId?.toString() ??
-        '';
   }
 
   String _formatTagLabel(String raw) {

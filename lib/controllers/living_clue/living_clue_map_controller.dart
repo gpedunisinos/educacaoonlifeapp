@@ -173,7 +173,6 @@ class LivingClueMapController extends GetxController {
       final LivingClueModel updatedModel = LivingClueModel(
         id: clue.id,
         name: clue.name,
-        biomeId: clue.biomeId,
         categoryId: clue.categoryId,
         description: clue.description,
         descriptionDelta: clue.descriptionDelta,
