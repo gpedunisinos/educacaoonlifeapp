@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/routes/routes.dart';
 import 'package:unisinos_usp_app/services/initializer.dart';
@@ -31,6 +32,7 @@ Future<void> main() async {
           getPages: appRoutes(),
           theme: AppTheme.theme,
           localizationsDelegates: const [
+            FlutterQuillLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,

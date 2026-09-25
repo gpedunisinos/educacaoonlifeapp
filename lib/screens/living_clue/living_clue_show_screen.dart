@@ -66,7 +66,7 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
       if (!mounted) return;
       setState(() => model = refreshed);
       final status = model.environmentalContext?.status;
-      if ((status == null || status == 'pending' || status == 'processing') &&
+      if ((status == 'pending' || status == 'processing') &&
           _refreshAttempts < 6) {
         _refreshAttempts++;
         _refreshTimer = Timer(const Duration(seconds: 5), _refreshContext);

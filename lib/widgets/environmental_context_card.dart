@@ -39,9 +39,20 @@ class EnvironmentalContextCard extends StatelessWidget {
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 12),
-            if (data == null ||
-                data.status == 'pending' ||
-                data.status == 'processing')
+            if (data == null) ...[
+              const _ContextMessage(
+                icon: Icons.info_outline,
+                text: 'O contexto deste território ainda não foi analisado.',
+              ),
+              if (onRetry != null) ...[
+                const SizedBox(height: 10),
+                TextButton.icon(
+                  onPressed: onRetry,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Analisar agora'),
+                ),
+              ],
+            ] else if (data.status == 'pending' || data.status == 'processing')
               const _ContextMessage(
                 icon: Icons.hourglass_top,
                 text: 'Analisando o contexto do território…',
