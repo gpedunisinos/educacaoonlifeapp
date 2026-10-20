@@ -73,3 +73,10 @@ python3 -m http.server 8766 --bind 127.0.0.1 --directory assets/space
 - Cabine construída em geometria 3D presa à câmera: montantes, travessas, painel físico, parafusos e iluminação local. Console integrado ao painel e instrumentos laterais.
 - Abertura de módulos com sequência de aproximadamente 1,9 s: recolhimento do console, aproximação visual e tela de transferência. Mapa usa fade de 900 ms. Movimento reduzido encurta a transferência e suprime deslocamentos.
 - Retorno restaura a cabine e a órbita, sem repetir a entrada.
+
+### Seleção sem alterar o voo
+
+A entrada já começa em cruzeiro no espaço, inclusive antes de iniciar a expedição. Terra e estações ficam ocultas até o primeiro salto. Partículas próximas têm velocidades variadas; movimento reduzido mantém a cena estática.
+Selecionar um destino altera somente o planejamento: a nave continua em sua órbita atual. Só o botão Navegar inicia alinhamento e salto. Selecionar novamente o local atual oferece Abrir módulo, sem um salto redundante.
+
+Validação desta revisão no navegador: abertura sem corpos celestes; salto até a Terra; seleção de Pesquisa mantendo a Terra visível e a órbita ativa; salto até Pesquisa somente ao navegar; reseleção do local atual oferecendo Abrir Pistas. Bundle regenerado e análise Dart sem erros (avisos legados permanecem). Evidência da abertura: `space-cruise.jpg`.

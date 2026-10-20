@@ -86,7 +86,7 @@ const destinations = [
 ];
 let allowed = destinations.map((d) => d.id),
   selected = destinations[0],
-  current = "earth";
+  current = null;
 let started = false,
   paused = false,
   hostPaused = false,
@@ -196,10 +196,10 @@ function renderDestinations() {
 function select(d) {
   if (travelling || transferTime >= 0 || !allowed.includes(d.id)) return;
   selected = d;
-  arrived = false;
+  // Selection changes the planned route, never the physical flight state.
   audio.select();
   $("navigate").hidden = false;
-  $("direct").hidden = false;
+  $("direct").hidden = arrived && current === d.id;
   $("skip").hidden = true;
   $("destination-title").textContent = d.name;
   $("destination-subtitle").textContent = d.subtitle;
@@ -207,12 +207,21 @@ function select(d) {
   $("coordinates").textContent = d.sector;
   $("distance").textContent = `0${destinations.indexOf(d) + 1} / 05`;
   $("navigate").textContent =
-    d.id === "earth" ? "Navegar até a Terra →" : "Navegar até a estação →";
+    arrived && current === d.id
+      ? `Abrir ${d.module} ↗`
+      : d.id === "earth"
+        ? "Navegar até a Terra →"
+        : "Navegar até a estação →";
   $("reticle-label").textContent =
     current === d.id
       ? `${d.short.toUpperCase()} / SINAL ESTÁVEL`
       : "ROTA DISPONÍVEL";
-  $("flight-status").textContent = "Rota disponível";
+  $("flight-status").textContent =
+    current && current !== d.id
+      ? "Destino selecionado · aguardando iniciar navegação"
+      : arrived
+        ? "Órbita estabelecida"
+        : "Rota contínua · destino selecionado";
   $("progress").style.width = "0%";
   renderDestinations();
   say(d.message);
@@ -223,11 +232,12 @@ let cruisePhase = 0,
   jumpPhase = "",
   transferTime = -1,
   transferDestination;
-let streaks, streakPositions, cockpitRig;
+let streaks, streakPositions, cockpitRig, destinationWorld;
 const dustSeeds = Array.from({ length: 260 }, () => ({
   x: (Math.random() - 0.5) * 70,
   y: (Math.random() - 0.5) * 42,
   z: -3 - Math.random() * 110,
+  speed: 0.25 + Math.random() ** 2 * 2.75,
 }));
 function cruisePoint(t) {
   return new THREE.Vector3(
@@ -245,11 +255,12 @@ function navigate() {
     !allowed.includes(selected.id)
   )
     return;
-  if (arrived) {
+  if (arrived && current === selected.id) {
     openModule();
     return;
   }
   travelling = true;
+  if (destinationWorld) destinationWorld.visible = true;
   travelTime = 0;
   jumpPhase = "charge";
   audio.warpCharge();
@@ -461,7 +472,7 @@ function station(d, index) {
     second.rotation.y = 1.3;
     group.add(second);
   }
-  scene.add(group);
+  destinationWorld.add(group);
   stations.push(group);
 }
 function buildCockpit() {
@@ -568,8 +579,12 @@ function initScene() {
       0.1,
       1200,
     );
-    camera.position.set(-2, 2, 6);
+    camera.position.copy(cruisePoint(0));
+    look.copy(cruisePoint(0.35));
     camera.lookAt(look);
+    destinationWorld = new THREE.Group();
+    destinationWorld.visible = false;
+    scene.add(destinationWorld);
     renderer = new THREE.WebGLRenderer({
       antialias: devicePixelRatio < 2,
       alpha: true,
@@ -644,7 +659,7 @@ function initScene() {
     earth.position.set(...destinations[0].position);
     earth.rotation.y = 2.5;
     earth.rotation.z = 0.12;
-    scene.add(earth);
+    destinationWorld.add(earth);
     atmosphere = new THREE.Mesh(
       new THREE.SphereGeometry(5.12, 64, 40),
       new THREE.ShaderMaterial({
@@ -659,7 +674,7 @@ function initScene() {
       }),
     );
     atmosphere.position.copy(earth.position);
-    scene.add(atmosphere);
+    destinationWorld.add(atmosphere);
     // Delicate orbital guide around Earth, a visual navigation instrument.
     const orbit = new THREE.Mesh(
       new THREE.TorusGeometry(6.15, 0.009, 5, 160),
@@ -672,7 +687,7 @@ function initScene() {
     orbit.position.copy(earth.position);
     orbit.rotation.x = 1.15;
     orbit.rotation.y = 0.22;
-    scene.add(orbit);
+    destinationWorld.add(orbit);
     destinations.slice(1).forEach(station);
     renderer.domElement.addEventListener("webglcontextlost", (event) => {
       event.preventDefault();
@@ -741,7 +756,7 @@ function tick(now) {
       camera.updateProjectionMatrix();
     }
     if (travelTime >= charge + jump + settle) finishTravel();
-  } else if (started && camera && !reduced && transferTime < 0) {
+  } else if (camera && !reduced && transferTime < 0) {
     if (arrived) {
       // Continue a slow survey orbit after arrival, without losing the destination.
       orbitPhase += dt * 0.018;
@@ -765,15 +780,16 @@ function tick(now) {
     }
     audio.throttle(0.16);
   }
-  if (streaks && !reduced && started) {
+  if (streaks && !reduced) {
     const strength =
       travelling && jumpPhase === "jump"
         ? Math.sin(Math.min((travelTime - 1.6) / 2.4, 1) * Math.PI)
         : 0;
     dustSeeds.forEach((particle, i) => {
-      particle.z += dt * (travelling ? 15 + strength * 180 : 8);
+      particle.z +=
+        dt * (travelling ? 15 + strength * 180 : 5 * particle.speed);
       if (particle.z > -2) particle.z = -110;
-      const length = 0.04 + strength * 16;
+      const length = 0.12 + particle.speed * 0.14 + strength * 16;
       streakPositions.set(
         [
           particle.x,
