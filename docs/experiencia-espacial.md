@@ -90,3 +90,9 @@ A virada interpola a orientação da câmera por quaternion com curva quintic sm
 Casco contínuo nas laterais, teto e base, dimensionado para cobrir também o campo de visão máximo do salto. Painéis com camadas de revestimento, telas de instrumentação, interruptores, nervuras e luminárias embutidas. Console com fundo opaco. O brilho CSS sobre a tela foi removido para que não atravesse visualmente a estrutura; os rastros 3D permanecem atrás do casco.
 
 Validação visual em desktop e largura móvel, incluindo salto Terra → Pesquisa com lente aberta: as bordas mostram a cabine, sem vãos para o espaço. Bundle regenerado e análise Dart sem erros, com avisos legados. Evidências: `space-solid-cockpit.jpg` e `space-solid-warp.jpg`.
+
+### Experimento de cockpit envolvente a partir da referência
+
+Base anterior preservada no commit `d2aacfb`, já publicado antes desta experiência. Nova cabine construída em geometria própria: para-brisa trapezoidal, montantes diagonais, placas extrudadas com chanfros, trilhos luminosos, fixadores, consoles inclinados e pedestal central. Instrumentos laterais e mesa holográfica em SVG/CSS; são elementos ilustrativos da demonstração, sem telemetria real. A imagem de referência não foi incorporada como asset.
+
+O painel de controles foi compactado em telas maiores para liberar a vista; instrumentos decorativos são ocultados em telas estreitas ou muito baixas. Verificados no navegador: composição desktop e móvel, salto com campo de visão ampliado e chegada à Terra. Análise Dart sem erros (avisos legados permanecem), bundle regenerado. Evidências: `space-wraparound-cockpit.jpg` e `space-wraparound-warp.jpg`. Toda esta experiência foi isolada em um commit para permitir reversão com git revert.

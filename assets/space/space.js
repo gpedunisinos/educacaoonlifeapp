@@ -481,21 +481,33 @@ function buildCockpit() {
   cockpitRig = new THREE.Group();
   camera.add(cockpitRig);
   const hull = new THREE.MeshStandardMaterial({
-    color: 0x263541,
-    metalness: 0.75,
-    roughness: 0.38,
+    color: 0x15212c,
+    metalness: 0.86,
+    roughness: 0.3,
   });
   const inset = new THREE.MeshStandardMaterial({
-    color: 0x080e16,
-    metalness: 0.4,
-    roughness: 0.62,
+    color: 0x03080e,
+    metalness: 0.6,
+    roughness: 0.44,
   });
-  const strip = new THREE.MeshBasicMaterial({ color: 0x73d7cf });
+  const trim = new THREE.MeshStandardMaterial({
+    color: 0x405663,
+    metalness: 0.9,
+    roughness: 0.23,
+  });
+  const cyan = new THREE.MeshBasicMaterial({ color: 0x56cadc });
+  const amber = new THREE.MeshBasicMaterial({ color: 0xe7a86c });
+  function box(w, h, d, x, y, z, material = hull) {
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material);
+    mesh.position.set(x, y, z);
+    cockpitRig.add(mesh);
+    return mesh;
+  }
   function beam(a, b, width, material = hull) {
     const start = new THREE.Vector3(...a),
       end = new THREE.Vector3(...b);
     const mesh = new THREE.Mesh(
-      new THREE.BoxGeometry(width, start.distanceTo(end), width * 0.8),
+      new THREE.BoxGeometry(width, start.distanceTo(end), width * 0.7),
       material,
     );
     mesh.position.copy(start).add(end).multiplyScalar(0.5);
@@ -504,110 +516,145 @@ function buildCockpit() {
       end.sub(start).normalize(),
     );
     cockpitRig.add(mesh);
-    return mesh;
   }
-  // A continuous opaque pressure shell surrounds the windshield. It extends
-  // beyond the widest jump FOV, so widening the lens reveals cabin, never gaps.
-  function panel(width, height, depth, x, y, z, material = hull) {
+  function armor(points, z, material = hull) {
+    const shape = new THREE.Shape();
+    points.forEach(([x, y], i) =>
+      i ? shape.lineTo(x, y) : shape.moveTo(x, y),
+    );
+    shape.closePath();
     const mesh = new THREE.Mesh(
-      new THREE.BoxGeometry(width, height, depth),
+      new THREE.ExtrudeGeometry(shape, {
+        depth: 0.055,
+        bevelEnabled: true,
+        bevelThickness: 0.012,
+        bevelSize: 0.012,
+        bevelSegments: 2,
+      }),
       material,
     );
-    mesh.position.set(x, y, z);
+    mesh.position.z = z;
     cockpitRig.add(mesh);
-    return mesh;
   }
-  panel(6, 2, 0.22, 0, 1.58, -1.52);
-  panel(6, 2.2, 0.32, 0, -1.53, -1.32);
-  const amber = new THREE.MeshBasicMaterial({ color: 0xffbe73 });
-  const screen = new THREE.MeshStandardMaterial({
-    color: 0x102c35,
-    emissive: 0x0a333a,
-    emissiveIntensity: 0.65,
-    metalness: 0.25,
-    roughness: 0.3,
-  });
+  // Pressure shell and faceted consoles extend beyond the widest jump lens.
+  box(6, 2.1, 0.2, 0, 1.64, -1.5);
+  box(6, 2.4, 0.3, 0, -1.53, -1.25);
   for (const side of [-1, 1]) {
-    panel(2.55, 4, 0.22, side * 1.735, 0, -1.52);
-    // Layered service covers, recessed instruments and illuminated switches.
-    panel(0.24, 0.84, 0.065, side * 0.59, -0.04, -1.36);
-    panel(0.19, 0.28, 0.035, side * 0.59, 0.13, -1.31, inset);
-    panel(0.16, 0.23, 0.018, side * 0.59, 0.13, -1.285, screen);
-    for (let row = 0; row < 5; row++) {
-      panel(
-        0.1 - row * 0.011,
-        0.006,
-        0.008,
-        side * 0.59,
-        0.205 - row * 0.035,
-        -1.27,
-        strip,
-      );
-      panel(0.13, 0.012, 0.016, side * 0.59, -0.17 - row * 0.035, -1.3, inset);
-    }
-    for (let row = 0; row < 3; row++) {
-      panel(
-        0.04,
-        0.025,
-        0.03,
-        side * 0.55,
-        -0.065 - row * 0.035,
-        -1.28,
-        row === 0 ? amber : strip,
-      );
-      panel(0.04, 0.025, 0.03, side * 0.63, -0.065 - row * 0.035, -1.28, inset);
-    }
-    // Outer ribs and ceiling equipment become visible as the jump lens widens.
-    for (let rib = 0; rib < 3; rib++) {
-      panel(0.035, 2.4, 0.12, side * (0.78 + rib * 0.25), 0, -1.34, inset);
-    }
-    panel(0.26, 0.12, 0.08, side * 0.28, 0.66, -1.35, inset);
-    panel(0.19, 0.012, 0.012, side * 0.28, 0.65, -1.3, strip);
-    beam([side * 0.47, 0.63, -1.5], [side * 0.38, -0.48, -1.1], 0.085);
-    beam([side * 0.49, 0.6, -1.5], [side * 0.4, -0.5, -1.1], 0.014, strip);
-    beam([side * 0.25, 0.64, -1.5], [side * 0.34, 0.12, -1.4], 0.045);
-    beam([side * 0.34, 0.12, -1.4], [side * 0.44, -0.39, -1.15], 0.045);
-    for (let i = 0; i < 7; i++) {
-      const screw = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.009, 0.009, 0.015, 8),
-        inset,
-      );
-      screw.rotation.x = Math.PI / 2;
-      screw.position.set(
-        side * (0.47 - i * 0.012),
-        0.51 - i * 0.13,
-        -1.075 - i * 0.05,
-      );
-      cockpitRig.add(screw);
-    }
-    const sidePanel = new THREE.Mesh(
-      new THREE.BoxGeometry(0.19, 0.08, 0.65),
-      hull,
+    armor(
+      [
+        [side * 0.62, 0.63],
+        [side * 3, 0.63],
+        [side * 3, -2],
+        [side * 0.29, -0.22],
+      ],
+      -1.53,
     );
-    sidePanel.position.set(side * 0.4, -0.39, -1.05);
-    sidePanel.rotation.z = side * 0.16;
-    cockpitRig.add(sidePanel);
+    armor(
+      [
+        [side * 0.3, -0.19],
+        [side * 0.95, -0.4],
+        [side * 1.5, -0.95],
+        [side * 0.17, -0.6],
+      ],
+      -1.18,
+      inset,
+    );
+    // Diagonal canopy spars with inset light guides, collars and fasteners.
+    beam([side * 0.6, 0.62, -1.42], [side * 0.28, -0.2, -1.18], 0.065);
+    beam(
+      [side * 0.57, 0.6, -1.375],
+      [side * 0.255, -0.19, -1.135],
+      0.009,
+      trim,
+    );
+    beam([side * 0.58, 0.6, -1.36], [side * 0.27, -0.19, -1.12], 0.003, cyan);
+    beam([side * 0.29, -0.2, -1.1], [side * 1.1, -0.57, -0.85], 0.045, trim);
+    beam([side * 0.29, -0.19, -1.075], [side * 1.1, -0.56, -0.82], 0.005, cyan);
     for (let i = 0; i < 5; i++) {
-      const key = new THREE.Mesh(
-        new THREE.BoxGeometry(0.027, 0.012, 0.045),
-        i % 2 ? strip : inset,
+      const x = side * (0.56 - i * 0.058),
+        y = 0.5 - i * 0.15;
+      box(0.045, 0.016, 0.028, x, y, -1.32 + i * 0.045, inset);
+      const bolt = new THREE.Mesh(new THREE.SphereGeometry(0.006, 8, 6), trim);
+      bolt.position.set(x, y, -1.29 + i * 0.045);
+      cockpitRig.add(bolt);
+    }
+    for (const [x, y, z] of [
+      [0.48, 0.25, -1.25],
+      [0.52, -0.31, -0.99],
+    ]) {
+      const collar = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.026, 0.026, 0.07, 16),
+        trim,
       );
-      key.position.set(side * 0.4, -0.34, -0.83 - i * 0.09);
-      cockpitRig.add(key);
+      collar.rotation.x = Math.PI / 2;
+      collar.position.set(side * x, y, z);
+      cockpitRig.add(collar);
+      const lens = new THREE.Mesh(new THREE.SphereGeometry(0.011, 12, 8), cyan);
+      lens.position.set(side * x, y, z + 0.04);
+      cockpitRig.add(lens);
+    }
+    // Faceted overhead equipment and switch banks.
+    armor(
+      [
+        [side * 0.06, 0.59],
+        [side * 0.53, 0.59],
+        [side * 0.48, 0.48],
+        [side * 0.06, 0.49],
+      ],
+      -1.33,
+      inset,
+    );
+    beam([side * 0.07, 0.56, -1.25], [side * 0.47, 0.56, -1.25], 0.004, cyan);
+    for (let i = 0; i < 7; i++) {
+      box(
+        0.019,
+        0.009,
+        0.008,
+        side * (0.1 + i * 0.05),
+        0.525,
+        -1.24,
+        i === 5 ? amber : trim,
+      );
+      box(
+        0.022,
+        0.012,
+        0.018,
+        side * (0.38 + i * 0.045),
+        -0.34 - i * 0.022,
+        -1.0,
+        i % 3 ? trim : cyan,
+      );
     }
   }
-  beam([-0.55, 0.54, -1.2], [0.55, 0.54, -1.2], 0.14);
-  beam([-0.42, -0.4, -1.15], [0.42, -0.4, -1.15], 0.14);
-  const dash = new THREE.Mesh(new THREE.BoxGeometry(1.05, 0.15, 0.55), hull);
-  dash.position.set(0, -0.48, -0.96);
-  dash.rotation.x = 0.16;
-  cockpitRig.add(dash);
-  const lamp = new THREE.PointLight(0x89e7e5, 1.3, 4);
-  lamp.position.set(0, 0.1, -0.55);
+  armor(
+    [
+      [-0.3, -0.2],
+      [0.3, -0.2],
+      [0.48, -0.57],
+      [-0.48, -0.57],
+    ],
+    -1.12,
+  );
+  beam([-0.28, -0.21, -1.04], [0.28, -0.21, -1.04], 0.025, inset);
+  const pedestal = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.13, 0.17, 0.07, 40),
+    inset,
+  );
+  pedestal.position.set(0, -0.36, -0.92);
+  cockpitRig.add(pedestal);
+  const ring = new THREE.Mesh(
+    new THREE.TorusGeometry(0.12, 0.003, 6, 64),
+    cyan,
+  );
+  ring.rotation.x = Math.PI / 2;
+  ring.position.set(0, -0.32, -0.92);
+  cockpitRig.add(ring);
+  const lamp = new THREE.PointLight(0x7fbbdc, 1.8, 4);
+  lamp.position.set(0, 0.22, -0.55);
   camera.add(lamp);
-  const warm = new THREE.PointLight(0xffb174, 0.3, 3);
-  warm.position.set(-0.6, -0.15, -0.6);
-  camera.add(warm);
+  const fill = new THREE.PointLight(0x218bc6, 0.55, 3);
+  fill.position.set(0, -0.27, -0.65);
+  camera.add(fill);
   cockpitRig.scale.x = camera.aspect;
   const geometry = new THREE.BufferGeometry();
   streakPositions = new Float32Array(dustSeeds.length * 6);
