@@ -107,7 +107,7 @@ class _AiAssistantLauncherState extends State<AiAssistantLauncher> {
     final u = Get.find<UserController>().user.value;
     final route = AiAssistantLauncher.activeRoute.value;
 
-    final show = u != null && route != '/splash';
+    final show = u != null && route != '/splash' && route != '/space';
     final explorer = u?.usageMode == 'explorer';
     final accent = explorer ? const Color(0xFF65DFD2) : const Color(0xFFB5A0FF);
     return Material(

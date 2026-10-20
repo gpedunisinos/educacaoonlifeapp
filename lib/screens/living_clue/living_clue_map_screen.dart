@@ -414,7 +414,13 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
-        leading: const SafeBackButton(),
+        leading: Get.arguments is Map && Get.arguments['fromSpace'] == true
+            ? IconButton(
+                tooltip: 'Voltar à nave',
+                onPressed: () => Get.back(),
+                icon: const Icon(Icons.rocket_launch_outlined),
+              )
+            : const SafeBackButton(),
         title: const Text('Mapa de pistas'),
         actions: [
           IconButton(

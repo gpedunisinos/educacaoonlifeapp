@@ -144,6 +144,8 @@ class HomeScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const SizedBox(height: 20),
+                            const _SpaceEntry(),
+                            const SizedBox(height: 24),
                             const _SectionTitle(
                               title: 'Módulos',
                               subtitle: 'Acessos da plataforma',
@@ -499,4 +501,72 @@ class _ModuleCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class _SpaceEntry extends StatelessWidget {
+  const _SpaceEntry();
+  @override
+  Widget build(BuildContext context) => Semantics(
+    label: 'Experiência espacial: entrar na nave eCOnectiva',
+    button: true,
+    child: Material(
+      color: const Color(0xFF0C2333),
+      borderRadius: BorderRadius.circular(24),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => Get.toNamed('/space'),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF123E49), Color(0xFF10192E)],
+            ),
+            border: Border.all(color: const Color(0xFF34636D)),
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.rocket_launch_outlined,
+                color: Color(0xFF8DF5DC),
+                size: 42,
+              ),
+              const SizedBox(width: 20),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'UMA NOVA PERSPECTIVA',
+                      style: TextStyle(
+                        fontSize: 10,
+                        letterSpacing: 2,
+                        color: Color(0xFF8DF5DC),
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Entre na nave eCOnectiva',
+                      style: TextStyle(
+                        fontSize: 23,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: 6),
+                    Text(
+                      'Explore a Terra e as estações com a Iareté. Uma experiência espacial com som e movimento.',
+                      style: TextStyle(color: Color(0xFFB8CDD6)),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Icon(Icons.arrow_forward_rounded, color: Color(0xFF8DF5DC)),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
 }

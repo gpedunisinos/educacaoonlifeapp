@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/screens/space/space_screen.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/screens/mode_selection_screen.dart';
 import 'package:unisinos_usp_app/middlewares/app_route_guard.dart';
@@ -24,6 +25,7 @@ List<GetPage> appRoutes() =>
         page: () => HomeScreen(),
         middlewares: [AppRouteGuard(canActivate: (u) => u != null)],
       ),
+      GetPage(name: '/space', page: () => const SpaceScreen()),
       ...categoryRoutes(),
       ...livingClueRoutes(),
       ...clueConnectionRoutes(),
