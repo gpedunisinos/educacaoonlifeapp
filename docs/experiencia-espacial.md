@@ -118,3 +118,9 @@ Validada no navegador a troca Terra → Pesquisa e a atualização direta em mov
 Substitui sensores decorativos por mapa SVG dos destinos permitidos, projetados a partir das posições X/Z da cena. O ponto dourado indica a nave: em espaço aberto antes da primeira chegada, no destino visitado após chegar, e em deslocamento pela rota tracejada durante o salto. Selecionar outro destino destaca seu ponto sem mover a nave. O texto do local e a descrição acessível do mapa acompanham o estado do voo. É um mapa esquemático, não um mapa geográfico.
 
 Validado no navegador: marcador na Terra antes e depois de selecionar Pesquisa, posição intermediária durante o salto e chegada ao ponto de Pesquisa. Análise Dart sem erros (avisos legados permanecem), bundle regenerado. Evidência: `space-expedition-map.jpg`.
+
+### Canopy panorâmico de vidro com reforços sobre o espaço
+
+Substituídas as chapas laterais amplas por vidros transparentes com leve tonalidade e casco restrito ao contorno. Dois montantes diagonais foram deslocados para dentro da vista, criando janelas frontal e laterais pelas quais se vê o mesmo espaço e os mesmos destinos. Fixadores, trilhos luminosos e colares acompanham os reforços. Painéis de local e mapa passam para a parte inferior; o console fica mais compacto e o radar próximo à base. Telas mais baixas ajustam a posição dos instrumentos para manter os controles disponíveis.
+
+Validado no navegador: cruzeiro, Terra visível além dos montantes, salto até Pesquisa e composição em tela mais baixa. Câmera mantém enquadramento fixo e não responde ao mouse. Análise Dart sem erros (avisos legados permanecem); bundle regenerado. Evidência: `space-panoramic-canopy.jpg`.

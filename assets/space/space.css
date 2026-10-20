@@ -1529,3 +1529,171 @@ dialog::backdrop {
     display: none;
   }
 }
+
+/* Panoramic canopy: instruments sit along the lower cockpit sill. */
+@media (min-width: 761px) and (min-height: 520px) {
+  .glass-instrument {
+    top: auto;
+    bottom: 24%;
+    width: 17%;
+    background: linear-gradient(155deg, #071722ed, #081724d9);
+  }
+  .port-instrument {
+    left: 2%;
+  }
+  .starboard-instrument {
+    right: 2%;
+  }
+  .mission {
+    top: 14%;
+  }
+  .mission h1 {
+    font-size: clamp(22px, 2.3vw, 34px);
+  }
+  .mission .coordinates {
+    margin-top: 8px;
+  }
+  .console {
+    left: 10%;
+    right: 10%;
+    bottom: 10px;
+    padding: 9px 18px 0;
+  }
+  .console-content {
+    padding: 9px 0;
+  }
+  .console-top {
+    padding-bottom: 6px;
+  }
+  .assistant p {
+    font-size: 10px;
+    line-height: 1.45;
+    min-height: 30px;
+  }
+  .assistant {
+    gap: 14px;
+  }
+  .orb {
+    width: 44px;
+    height: 44px;
+  }
+  .orb span {
+    font-size: 24px;
+  }
+  .assistant-name {
+    font-size: 9px;
+  }
+  .assistant-name span {
+    font-size: 6px;
+  }
+  .navigation {
+    padding-left: 18px;
+  }
+  .destination-row h2 {
+    font-size: 16px;
+    margin: 4px 0 7px;
+  }
+  .navigation .eyebrow {
+    font-size: 7px;
+  }
+  .flight-progress {
+    margin-bottom: 8px;
+  }
+  .actions button {
+    padding: 7px 9px;
+    font-size: 10px;
+  }
+  #destinations {
+    gap: 5px;
+    padding-bottom: 7px;
+  }
+  .destination {
+    padding: 7px;
+    gap: 7px;
+  }
+  .destination strong {
+    font-size: 9px;
+  }
+  .destination small {
+    font-size: 6px;
+  }
+  .console-footer {
+    padding: 5px 0;
+  }
+  .holo-table {
+    top: auto;
+    bottom: 27%;
+    width: 160px;
+    height: 110px;
+  }
+  .holo-globe {
+    width: 75px;
+    height: 75px;
+    left: 42px;
+  }
+  .reticle {
+    top: 35%;
+  }
+  .telemetry {
+    top: 48%;
+    right: 24%;
+  }
+  .local-emblem {
+    width: 38px;
+    height: 38px;
+    font-size: 24px;
+    margin: 7px auto;
+  }
+  .local-copy p {
+    font-size: 10px;
+    line-height: 1.45;
+    margin-bottom: 8px;
+  }
+  .local-copy h2 {
+    font-size: 17px;
+  }
+  .local-open {
+    padding: 7px 5px;
+    margin-top: 9px;
+  }
+  .local-contents {
+    gap: 4px;
+    padding-top: 7px;
+    font-size: 8px;
+  }
+}
+@media (min-width: 761px) and (min-height: 520px) and (max-height: 700px) {
+  .glass-instrument {
+    bottom: 40%;
+    width: 16%;
+    padding: 8px;
+  }
+  .local-emblem {
+    display: none;
+  }
+  .local-copy h2 {
+    font-size: 14px;
+  }
+  .local-copy p {
+    font-size: 9px;
+  }
+  .local-contents {
+    font-size: 7px;
+  }
+  .local-open {
+    font-size: 8px;
+  }
+  .map-location {
+    font-size: 8px;
+  }
+  .holo-table {
+    bottom: 41%;
+    width: 130px;
+    height: 90px;
+  }
+  .holo-globe {
+    width: 60px;
+    height: 60px;
+    left: 35px;
+  }
+}

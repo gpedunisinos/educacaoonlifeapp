@@ -693,18 +693,57 @@ function buildCockpit() {
     mesh.position.z = z;
     cockpitRig.add(mesh);
   }
-  // Pressure shell and faceted consoles extend beyond the widest jump lens.
+  const glass = new THREE.MeshBasicMaterial({
+    color: 0x78bddb,
+    transparent: true,
+    opacity: 0.025,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+  });
+  function pane(points) {
+    const shape = new THREE.Shape();
+    points.forEach(([x, y], i) =>
+      i ? shape.lineTo(x, y) : shape.moveTo(x, y),
+    );
+    shape.closePath();
+    const mesh = new THREE.Mesh(new THREE.ShapeGeometry(shape), glass);
+    mesh.position.z = -1.55;
+    cockpitRig.add(mesh);
+  }
+  pane([
+    [-0.6, 0.6],
+    [0.6, 0.6],
+    [0.28, -0.2],
+    [-0.28, -0.2],
+  ]);
+  for (const side of [-1, 1]) {
+    pane([
+      [side * 0.6, 0.6],
+      [side * 0.68, 0.6],
+      [side * 0.64, -0.42],
+      [side * 0.28, -0.2],
+    ]);
+  }
+  // Panoramic glazed canopy: open side windows, framed by solid outer sills.
   box(6, 2.1, 0.2, 0, 1.64, -1.5);
   box(6, 2.4, 0.3, 0, -1.53, -1.25);
   for (const side of [-1, 1]) {
+    // Keep the opaque shell at the perimeter instead of closing the side views.
     armor(
       [
-        [side * 0.62, 0.63],
-        [side * 3, 0.63],
+        [side * 0.68, 0.64],
+        [side * 3, 0.64],
         [side * 3, -2],
-        [side * 0.29, -0.22],
+        [side * 0.64, -0.48],
       ],
       -1.53,
+    );
+    beam([side * 0.65, 0.64, -1.48], [side * 0.6, -0.42, -1.12], 0.045);
+    beam(
+      [side * 0.635, 0.62, -1.445],
+      [side * 0.585, -0.4, -1.085],
+      0.006,
+      trim,
     );
     armor(
       [
@@ -717,18 +756,18 @@ function buildCockpit() {
       inset,
     );
     // Diagonal canopy spars with inset light guides, collars and fasteners.
-    beam([side * 0.6, 0.62, -1.42], [side * 0.28, -0.2, -1.18], 0.065);
+    beam([side * 0.35, 0.62, -1.42], [side * 0.14, -0.2, -1.18], 0.065);
     beam(
-      [side * 0.57, 0.6, -1.375],
-      [side * 0.255, -0.19, -1.135],
+      [side * 0.335, 0.6, -1.375],
+      [side * 0.125, -0.19, -1.135],
       0.009,
       trim,
     );
-    beam([side * 0.58, 0.6, -1.36], [side * 0.27, -0.19, -1.12], 0.003, cyan);
-    beam([side * 0.29, -0.2, -1.1], [side * 1.1, -0.57, -0.85], 0.045, trim);
-    beam([side * 0.29, -0.19, -1.075], [side * 1.1, -0.56, -0.82], 0.005, cyan);
+    beam([side * 0.34, 0.6, -1.36], [side * 0.13, -0.19, -1.12], 0.003, cyan);
+    beam([side * 0.15, -0.2, -1.1], [side * 1.1, -0.57, -0.85], 0.045, trim);
+    beam([side * 0.15, -0.19, -1.075], [side * 1.1, -0.56, -0.82], 0.005, cyan);
     for (let i = 0; i < 5; i++) {
-      const x = side * (0.56 - i * 0.058),
+      const x = side * (0.33 - i * 0.038),
         y = 0.5 - i * 0.15;
       box(0.045, 0.016, 0.028, x, y, -1.32 + i * 0.045, inset);
       const bolt = new THREE.Mesh(new THREE.SphereGeometry(0.006, 8, 6), trim);
@@ -736,8 +775,8 @@ function buildCockpit() {
       cockpitRig.add(bolt);
     }
     for (const [x, y, z] of [
-      [0.48, 0.25, -1.25],
-      [0.52, -0.31, -0.99],
+      [0.25, 0.25, -1.25],
+      [0.18, -0.08, -1.16],
     ]) {
       const collar = new THREE.Mesh(
         new THREE.CylinderGeometry(0.026, 0.026, 0.07, 16),
