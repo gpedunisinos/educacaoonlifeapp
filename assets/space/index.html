@@ -82,30 +82,23 @@
         <span>EC–01 / EXPLORER</span><span>CONEXÃO ESTABELECIDA</span
         ><span>IARETÉ · ONLINE</span>
       </div>
-      <aside class="glass-instrument port-instrument" aria-hidden="true">
-        <div class="instrument-heading">EC–01 <span>ESTRUTURA</span></div>
-        <svg
-          viewBox="0 0 180 140"
-          fill="none"
-          stroke="currentColor"
-          stroke-width=".8"
-        >
-          <path
-            d="M90 8 104 52 130 62 155 108 110 91 103 124 77 124 70 91 25 108 50 62 76 52Z M90 8V124 M76 52 70 91 90 79 110 91 104 52 M50 62 70 91 25 108 M130 62 110 91 155 108 M77 111H103 M78 55H102V78H78Z"
-          />
-          <path
-            d="M7 35H49L72 54 M131 35H172 M8 120H51L71 96 M113 98 133 120H173"
-            stroke-dasharray="2 3"
-            opacity=".5"
-          />
-          <circle cx="90" cy="66" r="22" stroke="#e7ab78" />
-          <circle cx="90" cy="66" r="28" opacity=".3" />
-        </svg>
-        <div class="instrument-row"><span>CASCO</span><b>ÍNTEGRO</b></div>
-        <div class="instrument-meter"><i></i></div>
-        <div class="instrument-row"><span>PROPULSÃO</span><b>ESTÁVEL</b></div>
-        <div class="instrument-meter"><i></i></div>
-        <small>● SUPORTE À VIDA ATIVO</small>
+      <aside class="glass-instrument port-instrument" aria-label="Local atual">
+        <div class="instrument-heading">
+          EXPLORAÇÃO <span id="local-sector">EC–01</span>
+        </div>
+        <div class="local-emblem" id="local-emblem" aria-hidden="true">✧</div>
+        <div class="local-copy" aria-live="polite" aria-atomic="true">
+          <small id="local-status">EM CRUZEIRO</small>
+          <h2 id="local-name">Espaço aberto</h2>
+          <p id="local-description">
+            Escolha um destino. Na chegada, consulte aqui o que você pode
+            explorar.
+          </p>
+          <div id="local-contents" class="local-contents"></div>
+        </div>
+        <button id="local-open" class="local-open" hidden>
+          Abrir módulo ↗
+        </button>
       </aside>
       <aside class="glass-instrument starboard-instrument" aria-hidden="true">
         <div class="instrument-heading">SENSORES <span>DEEP SPACE</span></div>

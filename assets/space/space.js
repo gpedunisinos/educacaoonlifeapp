@@ -6,6 +6,9 @@ const flightTiming = { charge: 3.6, jump: 2.4, settle: 1.2 };
 const destinations = [
   {
     id: "earth",
+    description:
+      "Explore as pistas dos territórios em um mapa georreferenciado.",
+    contents: ["Pistas no mapa", "Territórios e localizações"],
     name: "Terra",
     module: "Mapa de Pistas",
     short: "Terra",
@@ -22,6 +25,9 @@ const destinations = [
   },
   {
     id: "research",
+    description:
+      "Reúna pistas, vivências e descobertas para conhecer melhor os territórios.",
+    contents: ["Pistas", "Vivências e descobertas"],
     name: "Estação de Pesquisa",
     module: "Pistas",
     short: "Pesquisa",
@@ -38,6 +44,9 @@ const destinations = [
   },
   {
     id: "observatory",
+    description:
+      "Explore problemáticas e observe as relações entre os desafios dos territórios.",
+    contents: ["Problemáticas", "Questões dos territórios"],
     name: "Observatório",
     module: "Problemáticas",
     short: "Observatório",
@@ -54,6 +63,9 @@ const destinations = [
   },
   {
     id: "connections",
+    description:
+      "Descubra vínculos entre pistas e construa novos sentidos para suas explorações.",
+    contents: ["Conexões entre pistas", "Relações e vínculos"],
     name: "Estação de Conexões",
     module: "Conexões",
     short: "Conexões",
@@ -70,6 +82,9 @@ const destinations = [
   },
   {
     id: "agents",
+    description:
+      "Conheça os agentes de inteligência artificial que acompanham suas explorações.",
+    contents: ["Agentes de IA", "Conversas e apoio à exploração"],
     name: "Central de Inteligências",
     module: "Agentes",
     short: "Inteligências",
@@ -261,6 +276,7 @@ function navigate() {
     return;
   }
   travelling = true;
+  renderLocalPanel();
   if (destinationWorld) destinationWorld.visible = true;
   travelTime = 0;
   jumpPhase = "charge";
@@ -300,6 +316,7 @@ function finishTravel() {
   travelling = false;
   arrived = true;
   current = selected.id;
+  renderLocalPanel();
   audio.throttle(0.12);
   audio.arrival();
   orbitPhase = 0;
@@ -328,21 +345,51 @@ function finishTravel() {
   renderDestinations();
   $("navigate").focus({ preventScroll: true });
 }
+function renderLocalPanel() {
+  const destination = destinations.find((d) => d.id === current);
+  if (destination) {
+    $("local-sector").textContent = destination.sector;
+    $("local-emblem").textContent = destination.symbol;
+    $("local-name").textContent = destination.name;
+    $("local-description").textContent = destination.description;
+    $("local-status").textContent = travelling
+      ? "EM TRÂNSITO · ÚLTIMO LOCAL"
+      : "CONEXÃO ESTABELECIDA";
+    $("local-contents").replaceChildren(
+      ...destination.contents.map((text) => {
+        const item = document.createElement("span");
+        item.textContent = text;
+        return item;
+      }),
+    );
+    $("local-open").hidden = !allowed.includes(destination.id);
+    $("local-open").disabled = travelling || transferTime >= 0;
+    $("local-open").textContent = `Abrir ${destination.module} ↗`;
+  }
+}
+$("local-open").onclick = () => {
+  const destination = destinations.find((d) => d.id === current);
+  if (destination) openDestination(destination);
+};
 function openModule() {
-  if (!allowed.includes(selected.id) || transferTime >= 0 || travelling) return;
-  transferDestination = selected.id;
+  openDestination(selected);
+}
+function openDestination(destination) {
+  if (!allowed.includes(destination.id) || transferTime >= 0 || travelling)
+    return;
+  transferDestination = destination.id;
   transferTime = 0;
   audio.select();
-  record("Preparando saída do cockpit · " + selected.module);
+  record("Preparando saída do cockpit · " + destination.module);
   say(
-    selected.id === "earth"
+    destination.id === "earth"
       ? "Preparando a imersão territorial. O cockpit se recolhe para dar lugar ao mapa."
       : "Preparando acesso à estação. Transferindo os controles para o módulo.",
   );
   $("transfer-label").textContent =
-    selected.id === "earth"
+    destination.id === "earth"
       ? "Entrando no observatório territorial"
-      : "Acessando " + selected.module;
+      : "Acessando " + destination.module;
   document.body.classList.add("disembarking");
   document
     .querySelectorAll("#flight-ui button")
@@ -362,6 +409,7 @@ function restoreCockpit() {
     .querySelectorAll("#flight-ui button")
     .forEach((button) => (button.disabled = false));
   renderDestinations();
+  renderLocalPanel();
 }
 function setPaused(value) {
   paused = value;

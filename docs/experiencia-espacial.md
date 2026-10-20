@@ -100,3 +100,9 @@ O painel de controles foi compactado em telas maiores para liberar a vista; inst
 ### Salto com enquadramento fixo
 
 Removida a variação de campo de visão durante o salto. A câmera permanece em 48 graus, preservando o tamanho e a posição aparente da cabine. Permanecem o alinhamento suave, deslocamento até o destino, rastros estelares no para-brisa e sons. Verificado no navegador durante o salto e chegada à Terra; análise Dart sem erros (avisos legados permanecem). Evidência: `space-fixed-framing-warp.jpg`.
+
+### Painel interativo do local visitado
+
+O instrumento à esquerda apresenta nome, setor, descrição e conteúdos do último destino alcançado, com botão de acesso ao módulo. Textos provisórios estão nos campos `description` e `contents` de cada destino, sem números ou contagens simuladas. Antes da primeira chegada, apresenta Espaço aberto. Selecionar outro destino mantém o local visitado; durante o salto o botão fica desabilitado. O acesso do painel usa o destino efetivamente visitado, independentemente do selecionado no console.
+
+Validado no navegador: chegada à Terra, seleção de Pesquisa sem alterar o painel, abertura do mapa pelo painel, retorno à nave e chegada à Pesquisa com atualização do conteúdo. Bundle regenerado; análise Dart sem erros, com avisos legados. Evidência: `space-local-panel.jpg`.
