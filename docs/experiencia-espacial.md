@@ -152,3 +152,11 @@ Removidos a pré-visualização lateral e o painel de detalhes móvel. A lista u
 Os detalhes usam o registro carregado na lista e, em acesso direto ou atualização, consultam a conexão por ID e resolvem os nomes das pistas e tipo. A rota mantém a política de visualização de Conexões e registra contexto próprio para a Iareté.
 
 Validação: 7 testes aprovados, incluindo rota separada em desktop e celular, preservação de busca e rolagem, carregamento direto/atualização, erro/nova tentativa e navegação do cockpit. Build web concluído, análise Dart sem erros e avisos legados mantidos. Navegador: lista completa sem prévia, filtro CVV, abertura do detalhe #13, retorno ao filtro e recarga direta do detalhe em largura móvel. Evidência: `space-connection-detail.jpg`.
+
+### Elemento próprio para Inteligências
+
+A antiga estação de Agentes foi substituída pelo Campo de Inteligências: 18 pontos luminosos com halos procedurais e rastros curtos em ciano, azul, violeta e verde claro. Cada ponto percorre uma órbita elíptica com velocidade, sentido, inclinação e precessão próprios. Não há malha, emissor ou luz no centro. A distribuição inicial usa semente fixa; as órbitas são atualizadas sem recriar geometrias a cada frame. O modo reduzido congela o movimento.
+
+O identificador `agents`, posição no mapa, permissões e acesso a `/chat_templates` continuam integrados. Nome e mensagens de navegação agora descrevem o campo luminoso. Nenhuma outra estação teve sua geometria substituída nesta etapa.
+
+Validação no navegador: seleção, salto e chegada ao campo; apresentação das luzes e rastros pelo para-brisa; modo reduzido; abertura da lista real de agentes e retorno à nave. Bundle regenerado; análise Dart sem erros, com avisos legados. Evidência: `space-intelligence-field.jpg`.

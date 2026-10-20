@@ -85,7 +85,7 @@ const destinations = [
     description:
       "Conheça os agentes de inteligência artificial que acompanham suas explorações.",
     contents: ["Agentes de IA", "Conversas e apoio à exploração"],
-    name: "Central de Inteligências",
+    name: "Campo de Inteligências",
     module: "Agentes",
     short: "Inteligências",
     symbol: "✧",
@@ -95,9 +95,9 @@ const destinations = [
     radius: 2.7,
     color: 0x82d8ff,
     message:
-      "A Central de Inteligências reúne agentes para acompanhar suas explorações. Vamos conhecê-los?",
+      "Órbitas luminosas entrelaçam as inteligências que acompanham nossas explorações. Vamos nos aproximar?",
     arrival:
-      "Bem-vindo à Central de Inteligências. Seus agentes estão disponíveis para conversar.",
+      "Chegamos ao Campo de Inteligências. Não há uma estrutura central: as luzes se conectam em movimento. Os agentes estão disponíveis para conversar.",
   },
 ];
 let allowed = destinations.map((d) => d.id),
@@ -347,7 +347,9 @@ function select(d) {
       ? `Abrir ${d.module} ↗`
       : d.id === "earth"
         ? "Navegar até a Terra →"
-        : "Navegar até a estação →";
+        : d.id === "agents"
+          ? "Navegar até Inteligências →"
+          : "Navegar até a estação →";
   $("reticle-label").textContent =
     current === d.id
       ? `${d.short.toUpperCase()} / SINAL ESTÁVEL`
@@ -456,7 +458,9 @@ function finishTravel() {
   $("flight-status").textContent =
     selected.id === "earth"
       ? "Órbita terrestre estabelecida"
-      : "Acoplamento concluído";
+      : selected.id === "agents"
+        ? "Campo de Inteligências alcançado"
+        : "Acoplamento concluído";
   $("speed").textContent = "ÓRBITA";
   $("progress").style.width = "100%";
   $("reticle-label").textContent =
@@ -622,6 +626,122 @@ window.addEventListener("message", (event) => {
     window.receiveSpaceCommand(JSON.parse(event.data));
   } catch (_) {}
 });
+let intelligenceClock = 0;
+const intelligenceOrbits = [];
+function intelligenceField(destination) {
+  const field = new THREE.Group();
+  field.position.set(...destination.position);
+  destinationWorld.add(field);
+  // Procedural light halos; no central mesh or central light source.
+  const haloCanvas = document.createElement("canvas");
+  haloCanvas.width = haloCanvas.height = 64;
+  const ctx = haloCanvas.getContext("2d");
+  const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+  gradient.addColorStop(0, "rgba(255,255,255,1)");
+  gradient.addColorStop(0.12, "rgba(255,255,255,.85)");
+  gradient.addColorStop(0.35, "rgba(255,255,255,.22)");
+  gradient.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, 64, 64);
+  const texture = new THREE.CanvasTexture(haloCanvas);
+  const palette = [0x83eaff, 0xbca1ff, 0x62caff, 0xc3fff1];
+  const coreGeometry = new THREE.SphereGeometry(0.028, 10, 8);
+  const coreMaterial = new THREE.MeshBasicMaterial({ color: 0xe6faff });
+  const samples = 72;
+  // A seeded layout keeps the same field when the app is reopened.
+  let seed = 95;
+  const random = () => {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    return seed / 4294967296;
+  };
+  for (let i = 0; i < 18; i++) {
+    const plane = new THREE.Group();
+    field.add(plane);
+    const radius = 1.7 + random() * 1.15,
+      eccentricity = 0.68 + random() * 0.3;
+    const tint = new THREE.Color(palette[i % palette.length]);
+    const positions = new Float32Array(samples * 3),
+      colors = new Float32Array(samples * 3);
+    for (let j = 0; j < samples; j++) {
+      const brightness = Math.pow(1 - j / (samples - 1), 1.7) * 0.8;
+      colors.set(
+        [tint.r * brightness, tint.g * brightness, tint.b * brightness],
+        j * 3,
+      );
+    }
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+    const trail = new THREE.Line(
+      geometry,
+      new THREE.LineBasicMaterial({
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.9,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      }),
+    );
+    trail.frustumCulled = false;
+    plane.add(trail);
+    const halo = new THREE.Sprite(
+      new THREE.SpriteMaterial({
+        map: texture,
+        color: tint,
+        transparent: true,
+        opacity: 0.8,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      }),
+    );
+    halo.scale.setScalar(0.4 + random() * 0.18);
+    plane.add(halo);
+    const core = new THREE.Mesh(coreGeometry, coreMaterial);
+    plane.add(core);
+    intelligenceOrbits.push({
+      plane,
+      halo,
+      core,
+      geometry,
+      positions,
+      radius,
+      eccentricity,
+      phase: random() * Math.PI * 2,
+      speed: (0.2 + random() * 0.32) * (i % 2 ? 1 : -1),
+      tiltX: random() * Math.PI,
+      tiltY: random() * Math.PI,
+      tiltZ: random() * Math.PI,
+      drift: (random() - 0.5) * 0.08,
+      tail: 0.75 + random() * 0.8,
+    });
+  }
+  updateIntelligenceField(0);
+}
+function updateIntelligenceField(dt) {
+  intelligenceClock += dt;
+  for (const orbit of intelligenceOrbits) {
+    const phase = orbit.phase + intelligenceClock * orbit.speed;
+    orbit.plane.rotation.set(
+      orbit.tiltX + Math.sin(intelligenceClock * 0.06) * 0.12,
+      orbit.tiltY + intelligenceClock * orbit.drift,
+      orbit.tiltZ + Math.cos(intelligenceClock * 0.045) * 0.1,
+    );
+    for (let j = 0; j < 72; j++) {
+      const t = phase - ((Math.sign(orbit.speed) * j) / 71) * orbit.tail;
+      orbit.positions.set(
+        [
+          Math.cos(t) * orbit.radius,
+          Math.sin(t) * orbit.radius * orbit.eccentricity,
+          Math.sin(t * 3) * 0.06,
+        ],
+        j * 3,
+      );
+    }
+    orbit.core.position.fromArray(orbit.positions);
+    orbit.halo.position.copy(orbit.core.position);
+    orbit.geometry.attributes.position.needsUpdate = true;
+  }
+}
 function station(d, index) {
   const group = new THREE.Group();
   group.position.set(...d.position);
@@ -1039,7 +1159,11 @@ function initScene() {
     orbit.rotation.x = 1.15;
     orbit.rotation.y = 0.22;
     destinationWorld.add(orbit);
-    destinations.slice(1).forEach(station);
+    destinations
+      .slice(1)
+      .forEach((d, i) =>
+        d.id === "agents" ? intelligenceField(d) : station(d, i),
+      );
     renderer.domElement.addEventListener("webglcontextlost", (event) => {
       event.preventDefault();
       rendered = false;
@@ -1159,6 +1283,7 @@ function tick(now) {
   }
   if (camera && rendered) {
     if (!reduced) {
+      updateIntelligenceField(dt);
       earth.rotation.y += dt * 0.012;
       stations.forEach((s, i) => {
         s.rotation.y += dt * (0.025 + i * 0.005);
