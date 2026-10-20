@@ -194,7 +194,7 @@ function renderDestinations() {
     });
 }
 function select(d) {
-  if (travelling || !allowed.includes(d.id)) return;
+  if (travelling || transferTime >= 0 || !allowed.includes(d.id)) return;
   selected = d;
   arrived = false;
   audio.select();
@@ -218,8 +218,32 @@ function select(d) {
   say(d.message);
   emit("select", { name: d.name });
 }
+let cruisePhase = 0,
+  orbitPhase = 0,
+  jumpPhase = "",
+  transferTime = -1,
+  transferDestination;
+let streaks, streakPositions, cockpitRig;
+const dustSeeds = Array.from({ length: 260 }, () => ({
+  x: (Math.random() - 0.5) * 70,
+  y: (Math.random() - 0.5) * 42,
+  z: -3 - Math.random() * 110,
+}));
+function cruisePoint(t) {
+  return new THREE.Vector3(
+    Math.sin(t) * 90,
+    18 + Math.sin(t * 2) * 5,
+    Math.cos(t) * 80,
+  );
+}
 function navigate() {
-  if (!started || paused || travelling || !allowed.includes(selected.id))
+  if (
+    !started ||
+    paused ||
+    travelling ||
+    transferTime >= 0 ||
+    !allowed.includes(selected.id)
+  )
     return;
   if (arrived) {
     openModule();
@@ -227,15 +251,16 @@ function navigate() {
   }
   travelling = true;
   travelTime = 0;
-  audio.depart();
+  jumpPhase = "charge";
+  audio.warpCharge();
   document.body.classList.add("travelling");
   $("navigate").hidden = true;
   $("direct").hidden = true;
   $("skip").hidden = false;
-  $("flight-status").textContent = "Navegação assistida";
-  $("speed").textContent = "EM TRÂNSITO";
+  $("flight-status").textContent = "Alinhando vetor · carregando salto";
+  $("speed").textContent = "CARGA";
   say(
-    `Rota confirmada. Seguimos para ${selected.id === "earth" ? "a Terra" : selected.name}. Preparando aproximação.`,
+    `Rota confirmada. Seguimos para ${selected.id === "earth" ? "a Terra" : selected.name}. Carregando o salto conectivo.`,
   );
   record("Partida autorizada · " + selected.name);
   renderDestinations();
@@ -263,8 +288,15 @@ function finishTravel() {
   travelling = false;
   arrived = true;
   current = selected.id;
-  audio.throttle(0);
+  audio.throttle(0.12);
   audio.arrival();
+  orbitPhase = 0;
+  jumpPhase = "";
+  document.body.style.setProperty("--warp-strength", "0");
+  if (camera) {
+    camera.fov = 48;
+    camera.updateProjectionMatrix();
+  }
   if (camera && flightTo) {
     camera.position.copy(flightTo);
     look.copy(lookTo);
@@ -289,10 +321,39 @@ function finishTravel() {
   $("navigate").focus({ preventScroll: true });
 }
 function openModule() {
-  if (!allowed.includes(selected.id)) return;
+  if (!allowed.includes(selected.id) || transferTime >= 0 || travelling) return;
+  transferDestination = selected.id;
+  transferTime = 0;
   audio.select();
-  record("Acesso · " + selected.module);
-  emit("open", { destination: selected.id });
+  record("Preparando saída do cockpit · " + selected.module);
+  say(
+    selected.id === "earth"
+      ? "Preparando a imersão territorial. O cockpit se recolhe para dar lugar ao mapa."
+      : "Preparando acesso à estação. Transferindo os controles para o módulo.",
+  );
+  $("transfer-label").textContent =
+    selected.id === "earth"
+      ? "Entrando no observatório territorial"
+      : "Acessando " + selected.module;
+  document.body.classList.add("disembarking");
+  document
+    .querySelectorAll("#flight-ui button")
+    .forEach((button) => (button.disabled = true));
+}
+function completeTransfer() {
+  transferTime = -1;
+  document.body.classList.remove("disembarking");
+  document.body.classList.add("transfer-covered");
+  emit("open", { destination: transferDestination });
+  if (parent === window && !window.SpaceBridge) restoreCockpit();
+}
+function restoreCockpit() {
+  transferTime = -1;
+  document.body.classList.remove("transfer-covered", "disembarking");
+  document
+    .querySelectorAll("#flight-ui button")
+    .forEach((button) => (button.disabled = false));
+  renderDestinations();
 }
 function setPaused(value) {
   paused = value;
@@ -325,6 +386,7 @@ window.receiveSpaceCommand = (data) => {
   }
   if (data.type === "resume") {
     hostPaused = false;
+    restoreCockpit();
     setPaused(document.hidden);
     if (data.returned) {
       record("Retorno ao cockpit · posição preservada");
@@ -402,6 +464,101 @@ function station(d, index) {
   scene.add(group);
   stations.push(group);
 }
+function buildCockpit() {
+  scene.add(camera);
+  cockpitRig = new THREE.Group();
+  camera.add(cockpitRig);
+  const hull = new THREE.MeshStandardMaterial({
+    color: 0x263541,
+    metalness: 0.75,
+    roughness: 0.38,
+  });
+  const inset = new THREE.MeshStandardMaterial({
+    color: 0x080e16,
+    metalness: 0.4,
+    roughness: 0.62,
+  });
+  const strip = new THREE.MeshBasicMaterial({ color: 0x73d7cf });
+  function beam(a, b, width, material = hull) {
+    const start = new THREE.Vector3(...a),
+      end = new THREE.Vector3(...b);
+    const mesh = new THREE.Mesh(
+      new THREE.BoxGeometry(width, start.distanceTo(end), width * 0.8),
+      material,
+    );
+    mesh.position.copy(start).add(end).multiplyScalar(0.5);
+    mesh.quaternion.setFromUnitVectors(
+      new THREE.Vector3(0, 1, 0),
+      end.sub(start).normalize(),
+    );
+    cockpitRig.add(mesh);
+    return mesh;
+  }
+  for (const side of [-1, 1]) {
+    beam([side * 0.47, 0.63, -1.5], [side * 0.38, -0.48, -1.1], 0.085);
+    beam([side * 0.49, 0.6, -1.5], [side * 0.4, -0.5, -1.1], 0.014, strip);
+    beam([side * 0.25, 0.64, -1.5], [side * 0.34, 0.12, -1.4], 0.045);
+    beam([side * 0.34, 0.12, -1.4], [side * 0.44, -0.39, -1.15], 0.045);
+    for (let i = 0; i < 7; i++) {
+      const screw = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.009, 0.009, 0.015, 8),
+        inset,
+      );
+      screw.rotation.x = Math.PI / 2;
+      screw.position.set(
+        side * (0.47 - i * 0.012),
+        0.51 - i * 0.13,
+        -1.075 - i * 0.05,
+      );
+      cockpitRig.add(screw);
+    }
+    const sidePanel = new THREE.Mesh(
+      new THREE.BoxGeometry(0.19, 0.08, 0.65),
+      hull,
+    );
+    sidePanel.position.set(side * 0.4, -0.39, -1.05);
+    sidePanel.rotation.z = side * 0.16;
+    cockpitRig.add(sidePanel);
+    for (let i = 0; i < 5; i++) {
+      const key = new THREE.Mesh(
+        new THREE.BoxGeometry(0.027, 0.012, 0.045),
+        i % 2 ? strip : inset,
+      );
+      key.position.set(side * 0.4, -0.34, -0.83 - i * 0.09);
+      cockpitRig.add(key);
+    }
+  }
+  beam([-0.55, 0.54, -1.2], [0.55, 0.54, -1.2], 0.14);
+  beam([-0.42, -0.4, -1.15], [0.42, -0.4, -1.15], 0.14);
+  const dash = new THREE.Mesh(new THREE.BoxGeometry(1.05, 0.15, 0.55), hull);
+  dash.position.set(0, -0.48, -0.96);
+  dash.rotation.x = 0.16;
+  cockpitRig.add(dash);
+  const lamp = new THREE.PointLight(0x89e7e5, 1.3, 4);
+  lamp.position.set(0, 0.1, -0.55);
+  camera.add(lamp);
+  const warm = new THREE.PointLight(0xffb174, 0.3, 3);
+  warm.position.set(-0.6, -0.15, -0.6);
+  camera.add(warm);
+  cockpitRig.scale.x = camera.aspect;
+  const geometry = new THREE.BufferGeometry();
+  streakPositions = new Float32Array(dustSeeds.length * 6);
+  geometry.setAttribute(
+    "position",
+    new THREE.BufferAttribute(streakPositions, 3),
+  );
+  streaks = new THREE.LineSegments(
+    geometry,
+    new THREE.LineBasicMaterial({
+      color: 0xa2dbff,
+      transparent: true,
+      opacity: 0.3,
+      depthWrite: false,
+    }),
+  );
+  streaks.frustumCulled = false;
+  camera.add(streaks);
+}
 function initScene() {
   try {
     scene = new THREE.Scene();
@@ -426,6 +583,7 @@ function initScene() {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.2;
     $("universe").append(renderer.domElement);
+    buildCockpit();
     scene.add(new THREE.AmbientLight(0x779bbf, 1.15));
     const sun = new THREE.DirectionalLight(0xe4f9ff, 3.2);
     sun.position.set(-20, 15, 20);
@@ -459,10 +617,10 @@ function initScene() {
     stars = new THREE.Points(
       geometry,
       new THREE.PointsMaterial({
-        size: 0.48,
+        size: 0.8,
         vertexColors: true,
         transparent: true,
-        opacity: 0.85,
+        opacity: 0.95,
       }),
     );
     scene.add(stars);
@@ -546,18 +704,90 @@ function tick(now) {
       qualityReduced = true;
     }
   }
+  if (transferTime >= 0) {
+    transferTime += dt;
+    if (transferTime >= (reduced ? 0.25 : 1.9)) completeTransfer();
+  }
   if (travelling) {
     travelTime += dt;
-    const t = Math.min(travelTime / 4.5, 1),
-      ease = t * t * (3 - 2 * t);
-    $("progress").style.width = `${t * 100}%`;
-    audio.throttle(Math.sin(t * Math.PI));
+    const charge = 1.6,
+      jump = 2.4,
+      settle = 1.2;
+    const t = Math.min(Math.max((travelTime - charge) / jump, 0), 1);
+    const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    $("progress").style.width =
+      `${Math.min(travelTime / (charge + jump + settle), 1) * 100}%`;
+    if (travelTime >= charge && jumpPhase === "charge") {
+      jumpPhase = "jump";
+      audio.warpJump();
+      $("flight-status").textContent = "Salto conectivo · corredor aberto";
+      $("speed").textContent = "SALTO";
+      record("Salto iniciado · " + selected.name);
+    }
+    if (t >= 1 && jumpPhase === "jump") {
+      jumpPhase = "settle";
+      $("flight-status").textContent = "Desacelerando · aproximação orbital";
+      $("speed").textContent = "APROXIMAÇÃO";
+    }
+    const strength = jumpPhase === "jump" ? Math.sin(t * Math.PI) : 0;
+    document.body.style.setProperty("--warp-strength", String(strength));
+    audio.throttle(
+      jumpPhase === "charge" ? (travelTime / charge) * 0.6 : strength,
+    );
     if (camera) {
       camera.position.lerpVectors(flightFrom, flightTo, ease);
-      camera.position.y += Math.sin(t * Math.PI) * 5;
-      look.lerpVectors(lookFrom, lookTo, ease);
+      look.lerpVectors(lookFrom, lookTo, Math.min(travelTime / charge, 1));
+      camera.fov = 48 + strength * 30;
+      camera.updateProjectionMatrix();
     }
-    if (t >= 1) finishTravel();
+    if (travelTime >= charge + jump + settle) finishTravel();
+  } else if (started && camera && !reduced && transferTime < 0) {
+    if (arrived) {
+      // Continue a slow survey orbit after arrival, without losing the destination.
+      orbitPhase += dt * 0.018;
+      const body = destinations.find((d) => d.id === current);
+      const target = new THREE.Vector3(...body.position);
+      camera.position
+        .copy(target)
+        .add(
+          new THREE.Vector3(
+            Math.sin(orbitPhase) * body.radius * 3.2 - body.radius * 0.85,
+            body.radius * 0.4,
+            Math.cos(orbitPhase) * body.radius * 3.2,
+          ),
+        );
+      look.copy(target).add(new THREE.Vector3(-body.radius * 0.65, 0, 0));
+    } else {
+      cruisePhase += dt * 0.025;
+      camera.position.lerp(cruisePoint(cruisePhase), 1 - Math.exp(-dt * 0.4));
+      look.lerp(cruisePoint(cruisePhase + 0.35), 1 - Math.exp(-dt * 0.4));
+      $("speed").textContent = "CRUZEIRO";
+    }
+    audio.throttle(0.16);
+  }
+  if (streaks && !reduced && started) {
+    const strength =
+      travelling && jumpPhase === "jump"
+        ? Math.sin(Math.min((travelTime - 1.6) / 2.4, 1) * Math.PI)
+        : 0;
+    dustSeeds.forEach((particle, i) => {
+      particle.z += dt * (travelling ? 15 + strength * 180 : 8);
+      if (particle.z > -2) particle.z = -110;
+      const length = 0.04 + strength * 16;
+      streakPositions.set(
+        [
+          particle.x,
+          particle.y,
+          particle.z,
+          particle.x,
+          particle.y,
+          particle.z - length,
+        ],
+        i * 6,
+      );
+    });
+    streaks.geometry.attributes.position.needsUpdate = true;
+    streaks.material.opacity = travelling ? 0.35 + strength * 0.65 : 0.3;
   }
   if (camera && rendered) {
     if (!reduced) {
@@ -581,6 +811,8 @@ function tick(now) {
 }
 $("start").onclick = async () => {
   started = true;
+  $("flight-status").textContent = "Rota contínua · piloto automático";
+  $("reticle-label").textContent = "PILOTO AUTOMÁTICO / ROTA CONTÍNUA";
   $("welcome").hidden = true;
   $("flight-ui").hidden = false;
   await audio.enable($("start-sound").checked);
@@ -588,7 +820,7 @@ $("start").onclick = async () => {
   audio.arrival();
   record("Expedição iniciada · Iareté online");
   say(
-    "Olá, sou a Iareté, sua inteligência de bordo. A Terra é nosso ponto de partida. Escolha um destino e vamos explorar juntos.",
+    "Olá, sou a Iareté, sua inteligência de bordo. Já estamos em uma rota contínua de exploração. Escolha a Terra ou uma estação e eu preparo nosso salto.",
   );
   $("navigate").focus({ preventScroll: true });
 };
@@ -650,6 +882,7 @@ window.addEventListener("keydown", (event) => {
 window.addEventListener("resize", () => {
   if (!renderer) return;
   camera.aspect = innerWidth / innerHeight;
+  if (cockpitRig) cockpitRig.scale.x = camera.aspect;
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
 });

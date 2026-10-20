@@ -23,9 +23,9 @@ Entrada: Home → **Entre na nave eCOnectiva**. Rota autenticada: `/space`.
 - `space.bundle.js`: bundle clássico, sem imports em tempo de execução, para compatibilidade com assets locais na WebView.
 - `AppPageViewport`: cena e mapa usam toda a largura, preservando a árvore de navegação ao trocar de rota.
 
-O voo dura cerca de 4,5 segundos e pode ser pulado; movimento reduzido conclui a aproximação imediatamente. O mapa não é desenhado no para-brisa. A cena fica pausada e oculta enquanto o Flutter apresenta outro módulo ou o painel do assistente; ao retornar, a cena e o áudio retomam. Na web, a visibilidade é acompanhada dentro do iframe: mudança de foco entre Flutter e HTML não deve ocultar a nave.
+O salto dura cerca de 5,2 segundos e pode ser pulado; movimento reduzido conclui a aproximação imediatamente. O mapa não é desenhado no para-brisa. A cena fica pausada e oculta enquanto o Flutter apresenta outro módulo ou o painel do assistente; ao retornar, a cena e o áudio retomam. Na web, a visibilidade é acompanhada dentro do iframe: mudança de foco entre Flutter e HTML não deve ocultar a nave.
 
-As falas de boas-vindas e navegação são textos locais de orientação; **Conversar com Iareté** abre o assistente real, com contexto do cockpit. Não há voz sintetizada nesta etapa. Diário limitado a 30 entradas por sessão. Não há simulação física nem pilotagem livre.
+As falas de boas-vindas e navegação são textos locais de orientação; **Conversar com Iareté** abre o assistente real, com contexto do cockpit. Não há voz sintetizada nesta etapa. Diário limitado a 30 entradas por sessão. A nave percorre uma rota contínua em piloto automático; após a chegada mantém uma órbita de observação. Não há pilotagem livre.
 
 ## Build dos assets
 
@@ -65,3 +65,11 @@ python3 -m http.server 8766 --bind 127.0.0.1 --directory assets/space
 - Confirmados no navegador: login → home → nave → mapa real → retorno à mesma cena; abertura/fechamento da Iareté; aproximação da Terra e de estação; movimento reduzido e diário de bordo.
 - Evidência visual: `space-cockpit.jpg`.
 - Jira: o CLI instalado oferece get/search/update/create-issue/list-projects, mas não comentários ou transições. Nenhum comentário ou alteração de status foi realizado; revisão humana pendente.
+
+## Revisão da experiência — cruzeiro e cockpit físico
+
+- Cruzeiro contínuo com trajetória elíptica e partículas próximas que reforçam o deslocamento. Selecionar um destino não interrompe o voo; Navegar inicia o salto.
+- Salto em três etapas: carga/alinhamento (1,6 s), salto com rastros estelares, campo de visão ampliado e áudio (2,4 s), desaceleração (1,2 s). Pular viagem e movimento reduzido continuam disponíveis.
+- Cabine construída em geometria 3D presa à câmera: montantes, travessas, painel físico, parafusos e iluminação local. Console integrado ao painel e instrumentos laterais.
+- Abertura de módulos com sequência de aproximadamente 1,9 s: recolhimento do console, aproximação visual e tela de transferência. Mapa usa fade de 900 ms. Movimento reduzido encurta a transferência e suprime deslocamentos.
+- Retorno restaura a cabine e a órbita, sem repetir a entrada.

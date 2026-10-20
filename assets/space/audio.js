@@ -101,6 +101,17 @@ export class SpaceAudio {
       this.tone(n, 0.45, 0.07, i * 0.1),
     );
   }
+  warpCharge() {
+    this.depart();
+    [110, 164.81, 220, 329.63, 440, 659.25].forEach((n, i) =>
+      this.tone(n, 0.5, 0.07, i * 0.23, "triangle"),
+    );
+  }
+  warpJump() {
+    [65.41, 130.81, 261.63, 523.25, 1046.5].forEach((n, i) =>
+      this.tone(n, 1.5, 0.09, i * 0.045),
+    );
+  }
   throttle(value) {
     if (!this.ctx) return;
     this.engine.frequency.setTargetAtTime(

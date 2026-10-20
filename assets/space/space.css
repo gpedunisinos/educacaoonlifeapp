@@ -899,3 +899,177 @@ dialog::backdrop {
     display: none;
   }
 }
+/* Structural frame is now rendered in camera space, with physical depth. */
+.cockpit {
+  display: none;
+}
+.console {
+  left: 13%;
+  right: 13%;
+  bottom: 12px;
+  border-radius: 7px;
+  border: 3px solid #263d49;
+  outline: 1px solid #526572;
+  background: linear-gradient(140deg, #10252df5, #070e19fa);
+  box-shadow:
+    0 -10px 0 #060e16,
+    0 -12px 0 #425360,
+    0 15px 45px #000,
+    inset 0 1px 1px #8ab8c536;
+  transform-origin: 50% 100%;
+  transition:
+    transform 1.6s ease,
+    opacity 1.4s ease;
+}
+.console:before,
+.console:after {
+  content: "";
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background: #71818c;
+  border: 2px solid #15212d;
+  border-radius: 50%;
+  top: 6px;
+}
+.console:before {
+  left: 6px;
+}
+.console:after {
+  right: 6px;
+}
+.hull-label {
+  position: absolute;
+  bottom: 15%;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #81919d;
+  line-height: 2;
+  pointer-events: none;
+  text-shadow: 0 1px #000;
+}
+.hull-label span {
+  font-size: 6px;
+  color: #6eafa8;
+  letter-spacing: 1px;
+}
+.hull-left {
+  left: 2%;
+  transform: perspective(250px) rotateY(25deg) rotateZ(5deg);
+}
+.hull-right {
+  right: 2%;
+  transform: perspective(250px) rotateY(-25deg) rotateZ(-5deg);
+}
+.hull-vents {
+  width: 65px;
+  height: 65px;
+  margin-top: 18px;
+  background: repeating-linear-gradient(0deg, #040910 0 5px, #35434e 6px 8px);
+  border: 5px solid #1e2d38;
+  border-radius: 4px;
+  box-shadow: 0 3px 10px #000;
+}
+#warp {
+  opacity: var(--warp-strength, 0) !important;
+  transition: none;
+  background: radial-gradient(
+    ellipse at 50% 45%,
+    transparent 5%,
+    #d9ffff09 25%,
+    #5bbaff99 95%
+  );
+}
+#transfer {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  background: radial-gradient(ellipse, #163743, #050d19 70%);
+  transition: opacity 0.65s ease;
+  color: #b9f6e4;
+  text-align: center;
+  padding: 30px;
+}
+#transfer p {
+  font-size: 19px;
+  letter-spacing: 0.8px;
+}
+#transfer small {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #8eacb7;
+}
+.transfer-ring {
+  width: 85px;
+  height: 85px;
+  border: 1px solid #82d8cd44;
+  border-top: 2px solid #a4ffe1;
+  border-radius: 50%;
+  animation: orbit 2.5s linear infinite;
+}
+.disembarking .console {
+  transform: perspective(650px) rotateX(25deg) translateY(90%);
+  opacity: 0;
+}
+.disembarking .mission,
+.disembarking .reticle,
+.disembarking .telemetry {
+  opacity: 0;
+  transition: opacity 0.8s;
+}
+.disembarking #universe {
+  transform: scale(1.2);
+  transition: transform 1.8s ease;
+}
+.disembarking #transfer {
+  opacity: 1;
+  transition-delay: 1s;
+}
+.transfer-covered #transfer {
+  opacity: 1;
+  transition: none;
+}
+@media (max-width: 760px) {
+  .console {
+    left: 17px;
+    right: 17px;
+    bottom: 10px;
+    border-width: 2px;
+  }
+  .hull-label {
+    display: none;
+  }
+  .mission {
+    left: 10%;
+    top: 17%;
+  }
+  .console-content {
+    gap: 8px;
+    padding: 10px 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .disembarking #transfer {
+    transition-delay: 0s;
+  }
+  .disembarking .console {
+    transform: none;
+  }
+  .disembarking #universe {
+    transform: none;
+  }
+}
+.reduced.disembarking #transfer {
+  opacity: 1;
+  transition: none;
+}
+.reduced.disembarking .console,
+.reduced.disembarking #universe {
+  transform: none;
+}
