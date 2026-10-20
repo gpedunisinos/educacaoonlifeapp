@@ -69,7 +69,7 @@ python3 -m http.server 8766 --bind 127.0.0.1 --directory assets/space
 ## Revisão da experiência — cruzeiro e cockpit físico
 
 - Cruzeiro contínuo com trajetória elíptica e partículas próximas que reforçam o deslocamento. Selecionar um destino não interrompe o voo; Navegar inicia o salto.
-- Salto em três etapas: carga/alinhamento (1,6 s), salto com rastros estelares, campo de visão ampliado e áudio (2,4 s), desaceleração (1,2 s). Pular viagem e movimento reduzido continuam disponíveis.
+- Salto em três etapas: carga/alinhamento (3,6 s), salto com rastros estelares, campo de visão ampliado e áudio (2,4 s), desaceleração (1,2 s). Pular viagem e movimento reduzido continuam disponíveis.
 - Cabine construída em geometria 3D presa à câmera: montantes, travessas, painel físico, parafusos e iluminação local. Console integrado ao painel e instrumentos laterais.
 - Abertura de módulos com sequência de aproximadamente 1,9 s: recolhimento do console, aproximação visual e tela de transferência. Mapa usa fade de 900 ms. Movimento reduzido encurta a transferência e suprime deslocamentos.
 - Retorno restaura a cabine e a órbita, sem repetir a entrada.
@@ -80,3 +80,7 @@ A entrada já começa em cruzeiro no espaço, inclusive antes de iniciar a exped
 Selecionar um destino altera somente o planejamento: a nave continua em sua órbita atual. Só o botão Navegar inicia alinhamento e salto. Selecionar novamente o local atual oferece Abrir módulo, sem um salto redundante.
 
 Validação desta revisão no navegador: abertura sem corpos celestes; salto até a Terra; seleção de Pesquisa mantendo a Terra visível e a órbita ativa; salto até Pesquisa somente ao navegar; reseleção do local atual oferecendo Abrir Pistas. Bundle regenerado e análise Dart sem erros (avisos legados permanecem). Evidência da abertura: `space-cruise.jpg`.
+
+### Alinhamento suave antes do salto
+
+A virada interpola a orientação da câmera por quaternion com curva quintic smootherstep, partindo da orientação efetivamente exibida. Isso evita que a distância entre os alvos concentre a rotação no início. O alinhamento dura 3,6 s, com aceleração e desaceleração progressivas; carga sonora, partículas e início do salto usam os mesmos tempos. Validado no navegador em cruzeiro → Terra e Terra → Pesquisa. Bundle regenerado; análise Dart sem erros, com avisos legados.

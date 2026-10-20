@@ -2,6 +2,7 @@ import * as THREE from "./vendor/three.module.js";
 import { SpaceAudio } from "./audio.js";
 const $ = (id) => document.getElementById(id);
 const audio = new SpaceAudio();
+const flightTiming = { charge: 3.6, jump: 2.4, settle: 1.2 };
 const destinations = [
   {
     id: "earth",
@@ -109,7 +110,7 @@ let renderer,
   stations = [],
   flightFrom,
   flightTo,
-  lookFrom,
+  rotationFrom,
   lookTo;
 const look = new THREE.Vector3(0, 0, -14),
   pointer = { x: 0, y: 0 };
@@ -263,7 +264,7 @@ function navigate() {
   if (destinationWorld) destinationWorld.visible = true;
   travelTime = 0;
   jumpPhase = "charge";
-  audio.warpCharge();
+  audio.warpCharge(flightTiming.charge);
   document.body.classList.add("travelling");
   $("navigate").hidden = true;
   $("direct").hidden = true;
@@ -277,7 +278,7 @@ function navigate() {
   renderDestinations();
   if (camera) {
     flightFrom = camera.position.clone();
-    lookFrom = look.clone();
+    rotationFrom = camera.quaternion.clone();
     const target = new THREE.Vector3(...selected.position);
     flightTo = target
       .clone()
@@ -725,9 +726,7 @@ function tick(now) {
   }
   if (travelling) {
     travelTime += dt;
-    const charge = 1.6,
-      jump = 2.4,
-      settle = 1.2;
+    const { charge, jump, settle } = flightTiming;
     const t = Math.min(Math.max((travelTime - charge) / jump, 0), 1);
     const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
     $("progress").style.width =
@@ -751,7 +750,7 @@ function tick(now) {
     );
     if (camera) {
       camera.position.lerpVectors(flightFrom, flightTo, ease);
-      look.lerpVectors(lookFrom, lookTo, Math.min(travelTime / charge, 1));
+      look.copy(lookTo);
       camera.fov = 48 + strength * 30;
       camera.updateProjectionMatrix();
     }
@@ -783,7 +782,12 @@ function tick(now) {
   if (streaks && !reduced) {
     const strength =
       travelling && jumpPhase === "jump"
-        ? Math.sin(Math.min((travelTime - 1.6) / 2.4, 1) * Math.PI)
+        ? Math.sin(
+            Math.min(
+              (travelTime - flightTiming.charge) / flightTiming.jump,
+              1,
+            ) * Math.PI,
+          )
         : 0;
     dustSeeds.forEach((particle, i) => {
       particle.z +=
@@ -821,6 +825,21 @@ function tick(now) {
             0,
           );
     camera.lookAt(look.clone().add(offset));
+    if (travelling) {
+      // Interpolate orientation instead of a world-space target: target distances
+      // otherwise concentrate a large turn into the first moments of alignment.
+      const alignment = Math.min(travelTime / flightTiming.charge, 1);
+      const easedAlignment =
+        alignment *
+        alignment *
+        alignment *
+        (alignment * (alignment * 6 - 15) + 10);
+      camera.quaternion.slerpQuaternions(
+        rotationFrom,
+        camera.quaternion.clone(),
+        easedAlignment,
+      );
+    }
     renderer.render(scene, camera);
   }
   frame = requestAnimationFrame(tick);

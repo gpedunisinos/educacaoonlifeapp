@@ -101,10 +101,10 @@ export class SpaceAudio {
       this.tone(n, 0.45, 0.07, i * 0.1),
     );
   }
-  warpCharge() {
+  warpCharge(duration = 1.6) {
     this.depart();
     [110, 164.81, 220, 329.63, 440, 659.25].forEach((n, i) =>
-      this.tone(n, 0.5, 0.07, i * 0.23, "triangle"),
+      this.tone(n, 0.5, 0.07, i * ((duration - 0.5) / 5), "triangle"),
     );
   }
   warpJump() {
