@@ -14,7 +14,9 @@ class AppPageViewport extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Obx(() {
     final route = AiAssistantLauncher.activeRoute.value;
-    final immersive = route == '/space' || route == '/living_clues/map';
+    final immersive =
+        (route == '/space' || route.startsWith('/space/')) ||
+        route == '/living_clues/map';
     return Stack(
       fit: StackFit.expand,
       children: [

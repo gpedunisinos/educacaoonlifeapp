@@ -1,3 +1,5 @@
+import 'package:unisinos_usp_app/screens/space/connections_room_screen.dart';
+import 'package:unisinos_usp_app/policies/policies.dart';
 import 'package:unisinos_usp_app/screens/space/space_screen.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/screens/mode_selection_screen.dart';
@@ -26,6 +28,15 @@ List<GetPage> appRoutes() =>
         middlewares: [AppRouteGuard(canActivate: (u) => u != null)],
       ),
       GetPage(name: '/space', page: () => const SpaceScreen()),
+      GetPage(
+        name: '/space/connections',
+        page: () => const ConnectionsRoomScreen(),
+        transition: Transition.fadeIn,
+        transitionDuration: const Duration(milliseconds: 700),
+        middlewares: [
+          AppRouteGuard(canActivate: (u) => ClueConnectionPolicy(u).viewAny()),
+        ],
+      ),
       ...categoryRoutes(),
       ...livingClueRoutes(),
       ...clueConnectionRoutes(),

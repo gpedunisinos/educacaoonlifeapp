@@ -130,3 +130,11 @@ Validado no navegador: cruzeiro, Terra visível além dos montantes, salto até 
 Painel esquerdo ampliado de 17% para 23% da largura em desktop, com título, descrição, conteúdos e botão maiores. Botão disponível recebe pulso suave de brilho (sem alterar escala); durante viagem fica desabilitado e o brilho para. Movimento reduzido mantém destaque estático. Após chegar, o acesso ao módulo fica somente no painel local: a área redundante de acesso junto à Iareté é recolhida. Selecionar outro destino restaura Navegar no console. Painel local passa a estar disponível também em telas estreitas após a chegada.
 
 Validado no navegador: chegada à Terra com acesso único, abertura do mapa em largura móvel, retorno preservando posição, seleção de Pesquisa com Navegar disponível e reseleção da Terra. Análise Dart sem erros, com avisos legados; bundle regenerado. Evidência: `space-large-local-panel.jpg`.
+
+### Piloto: sala de Conexões no interior da nave
+
+A estação de Conexões agora abre `/space/connections`, um ambiente Flutter com paredes, iluminação, piso em perspectiva, mesa central e um monitor de parede interativo. A interface permite consultar conexões reais, pesquisar por pistas, tipo ou evidência, selecionar detalhes e atualizar a lista. Em telas estreitas, os detalhes abrem em um painel sobre a própria sala. Este piloto é de consulta; não inclui criação, edição ou exclusão dentro da sala.
+
+Reutiliza os webclients autenticados e a política de visualização de Conexões. Tem estados explícitos de carregamento, falha com nova tentativa, lista vazia e busca sem resultados. A Iareté recebe contexto da sala, busca e seleção. A nave continua pausada e preservada ao entrar pela estação; Voltar ao cockpit retoma a mesma cena. Acesso direto à URL sem histórico retorna a `/space`. Transições respeitam movimento reduzido.
+
+Validação: 5 testes de widget aprovados cobrindo busca, seleção de detalhes, falha/nova tentativa/lista vazia, detalhes móveis, ponte cockpit → sala → cockpit e viewport imersivo. Build web concluído; análise Dart sem erros, com avisos legados. Navegador: 14 conexões reais carregadas; busca CVV retornou 5 itens; detalhes em desktop e celular; retorno ao cockpit; entrada pelo painel da Estação de Conexões. Evidência: `space-connections-room.jpg`.

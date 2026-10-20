@@ -40,7 +40,7 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
       if (LivingCluePolicy(user).viewAny()) 'research': '/living_clues',
       if (NodePolicy(user).viewAny()) 'observatory': '/nodes/graph',
       if (ClueConnectionPolicy(user).viewAny())
-        'connections': '/clue_connections',
+        'connections': '/space/connections',
       if (ChatTemplatePolicy(user).viewAny()) 'agents': '/chat_templates',
     };
   }

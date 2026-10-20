@@ -39,6 +39,15 @@ void main() {
           home: const SpaceScreen(),
           getPages: [
             GetPage(
+              name: '/space/connections',
+              page: () => Scaffold(
+                body: TextButton(
+                  onPressed: Get.back,
+                  child: const Text('Sair da sala'),
+                ),
+              ),
+            ),
+            GetPage(
               name: '/living_clues/map',
               page: () => Scaffold(
                 body: TextButton(
@@ -78,6 +87,14 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.widget<SpaceView>(find.byType(SpaceView)), same(view));
       expect(commands.last, {'type': 'resume', 'returned': true});
+      view.onMessage({'type': 'open', 'destination': 'connections'});
+      await tester.pumpAndSettle();
+      expect(Get.currentRoute, '/space/connections');
+      expect(find.text('Sair da sala'), findsOneWidget);
+      await tester.tap(find.text('Sair da sala'));
+      await tester.pumpAndSettle();
+      expect(tester.widget<SpaceView>(find.byType(SpaceView)), same(view));
+
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
       debugDefaultTargetPlatformOverride = null;
@@ -101,7 +118,13 @@ void main() {
     );
     final element = key.currentContext;
     expect(tester.getSize(find.byKey(key)).width, 1040);
-    for (final route in ['/space', '/living_clues/map', '/space', '/home']) {
+    for (final route in [
+      '/space',
+      '/space/connections',
+      '/living_clues/map',
+      '/space',
+      '/home',
+    ]) {
       AiAssistantLauncher.activeRoute.value = route;
       await tester.pump();
       expect(key.currentContext, same(element));
