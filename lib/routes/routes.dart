@@ -37,6 +37,20 @@ List<GetPage> appRoutes() =>
           AppRouteGuard(canActivate: (u) => ClueConnectionPolicy(u).viewAny()),
         ],
       ),
+      GetPage(
+        name: '/space/connections/:id',
+        page: () => ConnectionsRoomScreen(
+          connectionId: int.tryParse(Get.parameters['id'] ?? '') ?? -1,
+          initialConnection: Get.arguments is RoomConnection
+              ? Get.arguments as RoomConnection
+              : null,
+        ),
+        transition: Transition.fadeIn,
+        transitionDuration: const Duration(milliseconds: 400),
+        middlewares: [
+          AppRouteGuard(canActivate: (u) => ClueConnectionPolicy(u).viewAny()),
+        ],
+      ),
       ...categoryRoutes(),
       ...livingClueRoutes(),
       ...clueConnectionRoutes(),

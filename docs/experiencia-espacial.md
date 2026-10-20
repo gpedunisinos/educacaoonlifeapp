@@ -144,3 +144,11 @@ Validação: 5 testes de widget aprovados cobrindo busca, seleção de detalhes,
 Nome, descrição e setor do destino agora apagam juntos em 180 ms antes da atualização e reaparecem em 500 ms com deslocamento discreto. Trocas rápidas cancelam a transição anterior e mantêm a última seleção. Movimento reduzido atualiza os dados imediatamente, inclusive ao ser ativado durante um fade. A seleção da rota continua imediata e independente da animação visual.
 
 Validado no navegador: Terra → Pesquisa, sequência rápida Observatório → Terra → Observatório e ativação de movimento reduzido durante a troca para Pesquisa. Bundle regenerado; análise Dart sem erros, com avisos legados. Evidência: `space-destination-fade.jpg`.
+
+### Conexões: lista e visualização em telas separadas da sala
+
+Removidos a pré-visualização lateral e o painel de detalhes móvel. A lista usa toda a largura do monitor. Clicar em uma conexão abre `/space/connections/:id`, uma tela própria com o mesmo ambiente, moldura e estética da sala, e botão Voltar à lista. Busca e rolagem da lista permanecem ao retornar. O componente de ambiente e monitor é compartilhado entre as duas telas.
+
+Os detalhes usam o registro carregado na lista e, em acesso direto ou atualização, consultam a conexão por ID e resolvem os nomes das pistas e tipo. A rota mantém a política de visualização de Conexões e registra contexto próprio para a Iareté.
+
+Validação: 7 testes aprovados, incluindo rota separada em desktop e celular, preservação de busca e rolagem, carregamento direto/atualização, erro/nova tentativa e navegação do cockpit. Build web concluído, análise Dart sem erros e avisos legados mantidos. Navegador: lista completa sem prévia, filtro CVV, abertura do detalhe #13, retorno ao filtro e recarga direta do detalhe em largura móvel. Evidência: `space-connection-detail.jpg`.

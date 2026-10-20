@@ -22,7 +22,14 @@ class RoomConnection {
 
 /// Pilot ship interior. Uses real platform data; exploration stays on the wall screen.
 class ConnectionsRoomScreen extends StatefulWidget {
-  const ConnectionsRoomScreen({super.key, this.loader});
+  const ConnectionsRoomScreen({
+    super.key,
+    this.loader,
+    this.connectionId,
+    this.initialConnection,
+  });
+  final int? connectionId;
+  final RoomConnection? initialConnection;
   final Future<List<RoomConnection>> Function()? loader;
   @override
   State<ConnectionsRoomScreen> createState() => _ConnectionsRoomScreenState();
@@ -30,7 +37,11 @@ class ConnectionsRoomScreen extends StatefulWidget {
 
 class _ConnectionsRoomScreenState extends State<ConnectionsRoomScreen> {
   List<RoomConnection> items = [];
-  RoomConnection? selected;
+  bool get isDetail => widget.connectionId != null;
+  String get route => isDetail
+      ? '/space/connections/${widget.connectionId}'
+      : '/space/connections';
+  final listScroll = ScrollController();
   bool loading = true;
   bool failed = false;
   String query = '';
@@ -38,13 +49,13 @@ class _ConnectionsRoomScreenState extends State<ConnectionsRoomScreen> {
   late final AiAssistantContextProvider contextProvider = buildContext;
   AiAssistantScreenContext buildContext() => AiAssistantScreenContext(
     screenName: 'Sala de Conexões da nave',
-    route: '/space/connections',
+    route: route,
     stage: 'exploração de conexões',
     goal: 'explorar vínculos entre pistas na tela da sala',
     filledFields: {
       'busca': query,
-      if (selected != null)
-        'conexão selecionada': '${selected!.source} → ${selected!.target}',
+      if (isDetail && items.isNotEmpty)
+        'conexão visualizada': '${items.first.source} → ${items.first.target}',
       'conexões carregadas': items.length.toString(),
     },
     notes: const [
@@ -56,16 +67,26 @@ class _ConnectionsRoomScreenState extends State<ConnectionsRoomScreen> {
     super.initState();
     if (Get.isRegistered<AiAssistantContextService>()) {
       Get.find<AiAssistantContextService>().registerProvider(
-        '/space/connections',
+        route,
         contextProvider,
       );
     }
-    load();
+    final initial = widget.initialConnection;
+    if (isDetail && initial?.model.id == widget.connectionId) {
+      items = [initial!];
+      loading = false;
+    } else {
+      load();
+    }
   }
 
   Future<List<RoomConnection>> fetch() async {
     final results = await Future.wait([
-      ClueConnectionWebclient().fetch(),
+      isDetail
+          ? ClueConnectionWebclient()
+                .fetchById(widget.connectionId!)
+                .then((c) => [c])
+          : ClueConnectionWebclient().fetch(),
       LivingClueWebclient().fetch(),
       ConnectionTypeWebclient().fetch(),
     ]);
@@ -103,7 +124,6 @@ class _ConnectionsRoomScreenState extends State<ConnectionsRoomScreen> {
       if (!mounted) return;
       setState(() {
         items = result;
-        selected = result.isEmpty ? null : result.first;
         loading = false;
       });
     } catch (_) {
@@ -120,10 +140,11 @@ class _ConnectionsRoomScreenState extends State<ConnectionsRoomScreen> {
   void dispose() {
     if (Get.isRegistered<AiAssistantContextService>()) {
       Get.find<AiAssistantContextService>().unregisterProvider(
-        '/space/connections',
+        route,
         contextProvider,
       );
     }
+    listScroll.dispose();
     search.dispose();
     super.dispose();
   }
@@ -132,10 +153,197 @@ class _ConnectionsRoomScreenState extends State<ConnectionsRoomScreen> {
     if (Navigator.of(context).canPop()) {
       Get.back();
     } else {
-      Get.offNamed('/space');
+      Get.offNamed(isDetail ? '/space/connections' : '/space');
     }
   }
 
+  @override
+  Widget build(BuildContext context) {
+    final filtered = items
+        .where(
+          (c) => '${c.source} ${c.target} ${c.type} ${c.model.evidence ?? ''}'
+              .toLowerCase()
+              .contains(query.toLowerCase()),
+        )
+        .toList();
+    return _RoomShell(
+      title: isDetail ? 'Detalhes da conexão' : 'Conexões',
+      subtitle: isDetail
+          ? 'Os vínculos que conectam nossos territórios.'
+          : 'Explore os vínculos entre as pistas.',
+      backLabel: isDetail ? 'Voltar à lista' : 'Voltar ao cockpit',
+      onBack: leave,
+      onRefresh: loading ? null : load,
+      status: loading
+          ? 'CARREGANDO'
+          : failed
+          ? 'CONEXÃO INDISPONÍVEL'
+          : isDetail
+          ? 'CONEXÃO #${widget.connectionId}'
+          : '${filtered.length} / ${items.length} CONEXÕES',
+      child: Column(
+        children: [
+          if (!isDetail)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+              child: TextField(
+                controller: search,
+                onChanged: (v) => setState(() => query = v),
+                style: const TextStyle(fontSize: 14, color: Colors.white),
+                decoration: InputDecoration(
+                  isDense: true,
+                  hintText: 'Buscar pistas, tipos ou evidências',
+                  hintStyle: const TextStyle(color: _muted, fontSize: 13),
+                  prefixIcon: const Icon(Icons.search, color: _ice),
+                  filled: true,
+                  fillColor: const Color(0xFF0B202D),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(4),
+                    borderSide: const BorderSide(color: Color(0xFF2A5668)),
+                  ),
+                ),
+              ),
+            ),
+          Expanded(
+            child: loading
+                ? const Center(child: CircularProgressIndicator(color: _ice))
+                : failed
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            isDetail
+                                ? 'Não foi possível carregar a conexão.'
+                                : 'Não foi possível carregar as conexões.',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(color: _muted),
+                          ),
+                          const SizedBox(height: 12),
+                          OutlinedButton(
+                            onPressed: load,
+                            child: const Text('Tentar novamente'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : items.isEmpty
+                ? _EmptyRoom(
+                    text: isDetail
+                        ? 'Conexão não encontrada.'
+                        : 'Nenhuma conexão cadastrada.',
+                    icon: Icons.hub_outlined,
+                  )
+                : isDetail
+                ? SingleChildScrollView(
+                    padding: const EdgeInsets.all(24),
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 900),
+                        child: _ConnectionDetail(connection: items.first),
+                      ),
+                    ),
+                  )
+                : filtered.isEmpty
+                ? const _EmptyRoom(
+                    text: 'Nenhuma conexão encontrada para essa busca.',
+                    icon: Icons.search_off,
+                  )
+                : ListView.separated(
+                    controller: listScroll,
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                    itemCount: filtered.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 8),
+                    itemBuilder: (context, index) {
+                      final c = filtered[index];
+                      return Material(
+                        color: const Color(0xFF0B202D),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5),
+                          side: const BorderSide(color: Color(0xFF254656)),
+                        ),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(5),
+                          onTap: () => Get.toNamed(
+                            '/space/connections/${c.model.id}',
+                            arguments: c,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  c.type.toUpperCase(),
+                                  style: const TextStyle(
+                                    color: _ice,
+                                    fontSize: 10,
+                                    letterSpacing: 1.2,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  '${c.source} → ${c.target}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    height: 1.4,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Força ${c.model.strength}',
+                                      style: const TextStyle(
+                                        color: _muted,
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    const Icon(
+                                      Icons.chevron_right,
+                                      color: _ice,
+                                      size: 18,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Both routes occupy the same ship room and wall display.
+class _RoomShell extends StatelessWidget {
+  const _RoomShell({
+    required this.title,
+    required this.subtitle,
+    required this.backLabel,
+    required this.onBack,
+    required this.onRefresh,
+    required this.status,
+    required this.child,
+  });
+  final String title;
+  final String subtitle;
+  final String backLabel;
+  final String status;
+  final VoidCallback onBack;
+  final VoidCallback? onRefresh;
+  final Widget child;
   @override
   Widget build(BuildContext context) => Theme(
     data: ThemeData.dark(useMaterial3: true).copyWith(
@@ -150,20 +358,6 @@ class _ConnectionsRoomScreenState extends State<ConnectionsRoomScreen> {
         builder: (context, constraints) {
           final compact = constraints.maxWidth < 760;
           final low = constraints.maxHeight < 600;
-          final filtered = items
-              .where(
-                (c) =>
-                    '${c.source} ${c.target} ${c.type} ${c.model.evidence ?? ''}'
-                        .toLowerCase()
-                        .contains(query.toLowerCase()),
-              )
-              .toList();
-          final visibleSelection = filtered.isEmpty
-              ? null
-              : filtered.firstWhere(
-                  (c) => c.model.id == selected?.model.id,
-                  orElse: () => filtered.first,
-                );
           return Stack(
             children: [
               const Positioned.fill(
@@ -182,11 +376,9 @@ class _ConnectionsRoomScreenState extends State<ConnectionsRoomScreen> {
                       child: Row(
                         children: [
                           OutlinedButton.icon(
-                            onPressed: leave,
+                            onPressed: onBack,
                             icon: const Icon(Icons.arrow_back, size: 17),
-                            label: Text(
-                              compact ? 'Cockpit' : 'Voltar ao cockpit',
-                            ),
+                            label: Text(backLabel),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
@@ -194,14 +386,14 @@ class _ConnectionsRoomScreenState extends State<ConnectionsRoomScreen> {
                               compact
                                   ? 'SALA DE CONEXÕES'
                                   : 'EC–01  /  DECK 02  /  SALA DE CONEXÕES',
+                              textAlign: TextAlign.right,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 color: _ice,
                                 letterSpacing: compact ? 1 : 2,
                                 fontSize: compact ? 9 : 11,
                               ),
-                              textAlign: TextAlign.right,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
@@ -281,16 +473,16 @@ class _ConnectionsRoomScreenState extends State<ConnectionsRoomScreen> {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                'Conexões',
+                                                title,
                                                 style: TextStyle(
                                                   color: Colors.white,
                                                   fontSize: compact ? 22 : 30,
                                                   fontWeight: FontWeight.w300,
                                                 ),
                                               ),
-                                              const Text(
-                                                'Explore os vínculos entre as pistas.',
-                                                style: TextStyle(
+                                              Text(
+                                                subtitle,
+                                                style: const TextStyle(
                                                   color: _muted,
                                                   fontSize: 12,
                                                 ),
@@ -300,7 +492,7 @@ class _ConnectionsRoomScreenState extends State<ConnectionsRoomScreen> {
                                         ),
                                         IconButton(
                                           tooltip: 'Atualizar conexões',
-                                          onPressed: loading ? null : load,
+                                          onPressed: onRefresh,
                                           icon: const Icon(
                                             Icons.refresh,
                                             color: _ice,
@@ -309,279 +501,7 @@ class _ConnectionsRoomScreenState extends State<ConnectionsRoomScreen> {
                                       ],
                                     ),
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.fromLTRB(
-                                      16,
-                                      12,
-                                      16,
-                                      12,
-                                    ),
-                                    child: TextField(
-                                      controller: search,
-                                      onChanged: (v) =>
-                                          setState(() => query = v),
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.white,
-                                      ),
-                                      decoration: InputDecoration(
-                                        isDense: true,
-                                        hintText:
-                                            'Buscar pistas, tipos ou evidências',
-                                        hintStyle: const TextStyle(
-                                          color: _muted,
-                                          fontSize: 13,
-                                        ),
-                                        prefixIcon: const Icon(
-                                          Icons.search,
-                                          color: _ice,
-                                        ),
-                                        filled: true,
-                                        fillColor: const Color(0xFF0B202D),
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            4,
-                                          ),
-                                          borderSide: const BorderSide(
-                                            color: Color(0xFF2A5668),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: loading
-                                        ? const Center(
-                                            child: CircularProgressIndicator(
-                                              color: _ice,
-                                            ),
-                                          )
-                                        : failed
-                                        ? Center(
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                const Text(
-                                                  'Não foi possível carregar as conexões.',
-                                                  style: TextStyle(
-                                                    color: _muted,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 12),
-                                                OutlinedButton(
-                                                  onPressed: load,
-                                                  child: const Text(
-                                                    'Tentar novamente',
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          )
-                                        : items.isEmpty
-                                        ? const _EmptyRoom(
-                                            text: 'Nenhuma conexão cadastrada.',
-                                            icon: Icons.hub_outlined,
-                                          )
-                                        : filtered.isEmpty
-                                        ? const _EmptyRoom(
-                                            text:
-                                                'Nenhuma conexão encontrada para essa busca.',
-                                            icon: Icons.search_off,
-                                          )
-                                        : Row(
-                                            children: [
-                                              Expanded(
-                                                child: ListView.separated(
-                                                  padding:
-                                                      const EdgeInsets.fromLTRB(
-                                                        16,
-                                                        0,
-                                                        16,
-                                                        16,
-                                                      ),
-                                                  itemCount: filtered.length,
-                                                  separatorBuilder: (_, _) =>
-                                                      const SizedBox(height: 8),
-                                                  itemBuilder: (context, index) {
-                                                    final c = filtered[index];
-                                                    final active =
-                                                        selected?.model.id ==
-                                                        filtered[index]
-                                                            .model
-                                                            .id;
-                                                    return Material(
-                                                      color: active
-                                                          ? const Color(
-                                                              0xFF173848,
-                                                            )
-                                                          : const Color(
-                                                              0xFF0B202D,
-                                                            ),
-                                                      shape: RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                              5,
-                                                            ),
-                                                        side: BorderSide(
-                                                          color: active
-                                                              ? _ice
-                                                              : const Color(
-                                                                  0xFF254656,
-                                                                ),
-                                                        ),
-                                                      ),
-                                                      child: InkWell(
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                              5,
-                                                            ),
-                                                        onTap: () {
-                                                          setState(
-                                                            () => selected = c,
-                                                          );
-                                                          if (compact) {
-                                                            showModalBottomSheet<
-                                                              void
-                                                            >(
-                                                              context: context,
-                                                              backgroundColor:
-                                                                  const Color(
-                                                                    0xFF0A1B28,
-                                                                  ),
-                                                              isScrollControlled:
-                                                                  true,
-                                                              showDragHandle:
-                                                                  true,
-                                                              builder: (_) => SafeArea(
-                                                                child: SizedBox(
-                                                                  height:
-                                                                      MediaQuery.sizeOf(
-                                                                        context,
-                                                                      ).height *
-                                                                      .6,
-                                                                  child: SingleChildScrollView(
-                                                                    padding:
-                                                                        const EdgeInsets.all(
-                                                                          24,
-                                                                        ),
-                                                                    child: _ConnectionDetail(
-                                                                      connection:
-                                                                          c,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            );
-                                                          }
-                                                        },
-                                                        child: Padding(
-                                                          padding:
-                                                              const EdgeInsets.all(
-                                                                14,
-                                                              ),
-                                                          child: Column(
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .start,
-                                                            children: [
-                                                              Text(
-                                                                c.type
-                                                                    .toUpperCase(),
-                                                                style: const TextStyle(
-                                                                  color: _ice,
-                                                                  fontSize: 10,
-                                                                  letterSpacing:
-                                                                      1.2,
-                                                                ),
-                                                              ),
-                                                              const SizedBox(
-                                                                height: 8,
-                                                              ),
-                                                              Text(
-                                                                '${c.source} → ${c.target}',
-                                                                style: const TextStyle(
-                                                                  color: Colors
-                                                                      .white,
-                                                                  fontSize: 15,
-                                                                  height: 1.4,
-                                                                ),
-                                                              ),
-                                                              const SizedBox(
-                                                                height: 8,
-                                                              ),
-                                                              Row(
-                                                                children: [
-                                                                  Text(
-                                                                    'Força ${c.model.strength}',
-                                                                    style: const TextStyle(
-                                                                      color:
-                                                                          _muted,
-                                                                      fontSize:
-                                                                          11,
-                                                                    ),
-                                                                  ),
-                                                                  const Spacer(),
-                                                                  const Icon(
-                                                                    Icons
-                                                                        .chevron_right,
-                                                                    color: _ice,
-                                                                    size: 18,
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    );
-                                                  },
-                                                ),
-                                              ),
-                                              if (!compact &&
-                                                  visibleSelection != null)
-                                                SizedBox(
-                                                  width:
-                                                      constraints.maxWidth *
-                                                      .27,
-                                                  child: DecoratedBox(
-                                                    decoration:
-                                                        const BoxDecoration(
-                                                          border: Border(
-                                                            left: BorderSide(
-                                                              color: Color(
-                                                                0xFF254656,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                    child: SingleChildScrollView(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                            22,
-                                                          ),
-                                                      child: AnimatedSwitcher(
-                                                        duration: Duration(
-                                                          milliseconds:
-                                                              MediaQuery.disableAnimationsOf(
-                                                                context,
-                                                              )
-                                                              ? 0
-                                                              : 250,
-                                                        ),
-                                                        child: _ConnectionDetail(
-                                                          key: ValueKey(
-                                                            selected!.model.id,
-                                                          ),
-                                                          connection:
-                                                              visibleSelection,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                            ],
-                                          ),
-                                  ),
+                                  Expanded(child: child),
                                   Container(
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 16,
@@ -602,21 +522,20 @@ class _ConnectionsRoomScreenState extends State<ConnectionsRoomScreen> {
                                           color: _ice,
                                         ),
                                         const SizedBox(width: 7),
-                                        const Text(
-                                          'REDE DE CONEXÕES',
-                                          style: TextStyle(
-                                            color: _muted,
-                                            fontSize: 8,
-                                            letterSpacing: 1.3,
+                                        const Flexible(
+                                          child: Text(
+                                            'REDE DE CONEXÕES',
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              color: _muted,
+                                              fontSize: 8,
+                                              letterSpacing: 1.3,
+                                            ),
                                           ),
                                         ),
                                         const Spacer(),
                                         Text(
-                                          loading
-                                              ? 'CARREGANDO'
-                                              : failed
-                                              ? 'CONEXÃO INDISPONÍVEL'
-                                              : '${filtered.length} / ${items.length} CONEXÕES',
+                                          status,
                                           style: const TextStyle(
                                             color: _ice,
                                             fontSize: 9,
@@ -681,7 +600,7 @@ class _EmptyRoom extends StatelessWidget {
 }
 
 class _ConnectionDetail extends StatelessWidget {
-  const _ConnectionDetail({super.key, required this.connection});
+  const _ConnectionDetail({required this.connection});
   final RoomConnection connection;
   @override
   Widget build(BuildContext context) => Column(
