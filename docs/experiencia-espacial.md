@@ -106,3 +106,9 @@ Removida a variação de campo de visão durante o salto. A câmera permanece em
 O instrumento à esquerda apresenta nome, setor, descrição e conteúdos do último destino alcançado, com botão de acesso ao módulo. Textos provisórios estão nos campos `description` e `contents` de cada destino, sem números ou contagens simuladas. Antes da primeira chegada, apresenta Espaço aberto. Selecionar outro destino mantém o local visitado; durante o salto o botão fica desabilitado. O acesso do painel usa o destino efetivamente visitado, independentemente do selecionado no console.
 
 Validado no navegador: chegada à Terra, seleção de Pesquisa sem alterar o painel, abertura do mapa pelo painel, retorno à nave e chegada à Pesquisa com atualização do conteúdo. Bundle regenerado; análise Dart sem erros, com avisos legados. Evidência: `space-local-panel.jpg`.
+
+### Transição do painel e câmera independente do mouse
+
+Ao chegar a outro local, o conteúdo do painel esquerdo apaga em 180 ms e o novo aparece em 520 ms com deslocamento leve. Atualizações de estado do mesmo local não repetem a animação. Transições anteriores são canceladas quando substituídas, e movimento reduzido atualiza diretamente. Removidos o listener de pointermove e o deslocamento visual adicional da câmera: sua orientação agora segue somente o voo e as manobras.
+
+Validada no navegador a troca Terra → Pesquisa e a atualização direta em movimento reduzido. Análise Dart sem erros, com avisos legados; bundle regenerado. Evidência: `space-panel-transition.jpg`.

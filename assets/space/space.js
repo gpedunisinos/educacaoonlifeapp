@@ -127,8 +127,7 @@ let renderer,
   flightTo,
   rotationFrom,
   lookTo;
-const look = new THREE.Vector3(0, 0, -14),
-  pointer = { x: 0, y: 0 };
+const look = new THREE.Vector3(0, 0, -14);
 function emit(type, extra = {}) {
   const data = JSON.stringify({ channel: "econectiva-space", type, ...extra });
   if (window.SpaceBridge) window.SpaceBridge.postMessage(data);
@@ -345,26 +344,64 @@ function finishTravel() {
   renderDestinations();
   $("navigate").focus({ preventScroll: true });
 }
+let localPanelId = null,
+  localPanelAnimation = null,
+  localPanelRevision = 0;
 function renderLocalPanel() {
   const destination = destinations.find((d) => d.id === current);
   if (destination) {
-    $("local-sector").textContent = destination.sector;
-    $("local-emblem").textContent = destination.symbol;
-    $("local-name").textContent = destination.name;
-    $("local-description").textContent = destination.description;
-    $("local-status").textContent = travelling
-      ? "EM TRÂNSITO · ÚLTIMO LOCAL"
-      : "CONEXÃO ESTABELECIDA";
-    $("local-contents").replaceChildren(
-      ...destination.contents.map((text) => {
-        const item = document.createElement("span");
-        item.textContent = text;
-        return item;
-      }),
+    const changed = localPanelId !== destination.id;
+    const revision = ++localPanelRevision;
+    localPanelAnimation?.cancel();
+    const details = $("local-details");
+    const update = () => {
+      $("local-sector").textContent = destination.sector;
+      $("local-emblem").textContent = destination.symbol;
+      $("local-name").textContent = destination.name;
+      $("local-description").textContent = destination.description;
+      $("local-status").textContent = travelling
+        ? "EM TRÂNSITO · ÚLTIMO LOCAL"
+        : "CONEXÃO ESTABELECIDA";
+      $("local-contents").replaceChildren(
+        ...destination.contents.map((text) => {
+          const item = document.createElement("span");
+          item.textContent = text;
+          return item;
+        }),
+      );
+      $("local-open").hidden = !allowed.includes(destination.id);
+      $("local-open").disabled = travelling || transferTime >= 0;
+      $("local-open").textContent = `Abrir ${destination.module} ↗`;
+      localPanelId = destination.id;
+    };
+    if (!changed || reduced) {
+      update();
+      return;
+    }
+    // Keep the old location visible until it fades, then reveal the new data.
+    $("local-open").disabled = true;
+    localPanelAnimation = details.animate(
+      [
+        { opacity: 1, transform: "translateY(0)" },
+        { opacity: 0, transform: "translateY(-4px)" },
+      ],
+      { duration: 180, easing: "ease-in", fill: "forwards" },
     );
-    $("local-open").hidden = !allowed.includes(destination.id);
-    $("local-open").disabled = travelling || transferTime >= 0;
-    $("local-open").textContent = `Abrir ${destination.module} ↗`;
+    localPanelAnimation.finished
+      .then(() => {
+        if (revision !== localPanelRevision) return;
+        update();
+        localPanelAnimation.cancel();
+        if (!reduced)
+          localPanelAnimation = details.animate(
+            [
+              { opacity: 0, transform: "translateY(6px)" },
+              { opacity: 1, transform: "translateY(0)" },
+            ],
+            { duration: 520, easing: "cubic-bezier(.2,.7,.2,1)" },
+          );
+      })
+      .catch(() => {}); // A newer update can supersede this transition.
   }
 }
 $("local-open").onclick = () => {
@@ -961,15 +998,7 @@ function tick(now) {
         s.rotation.y += dt * (0.025 + i * 0.005);
       });
     }
-    const offset =
-      reduced || travelling
-        ? new THREE.Vector3()
-        : new THREE.Vector3(
-            pointer.x * 0.45,
-            Math.sin(elapsed * 0.24) * 0.045 + pointer.y * 0.22,
-            0,
-          );
-    camera.lookAt(look.clone().add(offset));
+    camera.lookAt(look);
     if (travelling) {
       // Interpolate orientation instead of a world-space target: target distances
       // otherwise concentrate a large turn into the first moments of alignment.
@@ -1032,10 +1061,6 @@ $("journal-close").onclick = () => $("journal").close();
 $("journal").addEventListener("close", () => {
   $("journal-toggle").setAttribute("aria-expanded", "false");
   $("journal-toggle").focus();
-});
-window.addEventListener("pointermove", (event) => {
-  pointer.x = (event.clientX / innerWidth - 0.5) * 2;
-  pointer.y = -(event.clientY / innerHeight - 0.5) * 2;
 });
 window.addEventListener("keydown", (event) => {
   if (
