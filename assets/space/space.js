@@ -259,6 +259,11 @@ function updateMapShip() {
   );
 }
 function renderDestinations() {
+  document.body.classList.toggle("at-destination", Boolean(current));
+  document.body.classList.toggle(
+    "at-current-destination",
+    arrived && current === selected.id && !travelling,
+  );
   renderExpeditionMap();
   $("destinations").replaceChildren();
   destinations
@@ -288,7 +293,7 @@ function select(d) {
   selected = d;
   // Selection changes the planned route, never the physical flight state.
   audio.select();
-  $("navigate").hidden = false;
+  $("navigate").hidden = arrived && current === d.id;
   $("direct").hidden = arrived && current === d.id;
   $("skip").hidden = true;
   $("destination-title").textContent = d.name;
@@ -403,7 +408,7 @@ function finishTravel() {
     camera.lookAt(look);
   }
   document.body.classList.remove("travelling");
-  $("navigate").hidden = false;
+  $("navigate").hidden = true;
   $("direct").hidden = true;
   $("skip").hidden = true;
   $("navigate").textContent = `Abrir ${selected.module} ↗`;
@@ -418,7 +423,6 @@ function finishTravel() {
   record("Chegada · " + selected.name);
   say(selected.arrival);
   renderDestinations();
-  $("navigate").focus({ preventScroll: true });
 }
 let localPanelId = null,
   localPanelAnimation = null,
@@ -449,6 +453,8 @@ function renderLocalPanel() {
       $("local-open").disabled = travelling || transferTime >= 0;
       $("local-open").textContent = `Abrir ${destination.module} ↗`;
       localPanelId = destination.id;
+      if (changed && !travelling)
+        $("local-open").focus({ preventScroll: true });
     };
     if (!changed || reduced) {
       update();

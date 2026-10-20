@@ -124,3 +124,9 @@ Validado no navegador: marcador na Terra antes e depois de selecionar Pesquisa, 
 Substituídas as chapas laterais amplas por vidros transparentes com leve tonalidade e casco restrito ao contorno. Dois montantes diagonais foram deslocados para dentro da vista, criando janelas frontal e laterais pelas quais se vê o mesmo espaço e os mesmos destinos. Fixadores, trilhos luminosos e colares acompanham os reforços. Painéis de local e mapa passam para a parte inferior; o console fica mais compacto e o radar próximo à base. Telas mais baixas ajustam a posição dos instrumentos para manter os controles disponíveis.
 
 Validado no navegador: cruzeiro, Terra visível além dos montantes, salto até Pesquisa e composição em tela mais baixa. Câmera mantém enquadramento fixo e não responde ao mouse. Análise Dart sem erros (avisos legados permanecem); bundle regenerado. Evidência: `space-panoramic-canopy.jpg`.
+
+### Painel local ampliado e acesso com brilho pulsante
+
+Painel esquerdo ampliado de 17% para 23% da largura em desktop, com título, descrição, conteúdos e botão maiores. Botão disponível recebe pulso suave de brilho (sem alterar escala); durante viagem fica desabilitado e o brilho para. Movimento reduzido mantém destaque estático. Após chegar, o acesso ao módulo fica somente no painel local: a área redundante de acesso junto à Iareté é recolhida. Selecionar outro destino restaura Navegar no console. Painel local passa a estar disponível também em telas estreitas após a chegada.
+
+Validado no navegador: chegada à Terra com acesso único, abertura do mapa em largura móvel, retorno preservando posição, seleção de Pesquisa com Navegar disponível e reseleção da Terra. Análise Dart sem erros, com avisos legados; bundle regenerado. Evidência: `space-large-local-panel.jpg`.
