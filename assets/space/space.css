@@ -1459,3 +1459,73 @@ dialog::backdrop {
     gap: 4px;
   }
 }
+
+/* Schematic navigation map: the warm point represents the actual flight state. */
+.glass-instrument.expedition-map svg {
+  max-height: none;
+  overflow: visible;
+}
+#map-nodes circle {
+  stroke: #82d6e6;
+  fill: #0b202e;
+  stroke-width: 1;
+}
+#map-nodes text {
+  font: 8px monospace;
+  fill: #91c7d4;
+  text-shadow: none;
+}
+#map-nodes .map-selected circle {
+  stroke: #c6f3f6;
+  stroke-width: 1.6;
+}
+#map-nodes .map-current text {
+  fill: #fff0c2;
+}
+.map-location {
+  font: 10px/1.5 sans-serif;
+  color: #c3e6ed;
+  padding: 10px 0;
+  border-top: 1px solid #7ad9e333;
+  text-shadow: none;
+}
+.map-legend {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font: 7px monospace;
+  letter-spacing: 0.5px;
+  color: #9ac9d3;
+  margin: 0 0 10px;
+}
+.ship-key,
+.destination-key {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ffe8ae;
+  box-shadow: 0 0 6px #ffd28b66;
+}
+.destination-key {
+  margin-left: 8px;
+  background: none;
+  border: 1px solid #82d6e6;
+  box-shadow: none;
+}
+.map-note {
+  opacity: 0.6;
+}
+@media (min-width: 761px) and (min-height: 520px) and (max-height: 700px) {
+  .map-location {
+    font-size: 9px;
+    padding: 6px 0;
+  }
+  .map-legend {
+    font-size: 6px;
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+  .map-note {
+    display: none;
+  }
+}

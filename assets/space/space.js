@@ -184,7 +184,82 @@ function setMotion() {
   $("motion").textContent = reduced ? "Movimento reduzido" : "Movimento suave";
   $("motion").setAttribute("aria-pressed", String(reduced));
 }
+const mapShipPoint = { x: 110, y: 122 };
+let mapDeparture = { ...mapShipPoint };
+function mapPoint(destination) {
+  return {
+    x: 110 + destination.position[0] * 2,
+    y: 108 + destination.position[2] * 1.8,
+  };
+}
+function renderExpeditionMap() {
+  const ns = "http://www.w3.org/2000/svg";
+  $("map-nodes").replaceChildren(
+    ...destinations
+      .filter((d) => allowed.includes(d.id))
+      .map((d) => {
+        const point = mapPoint(d),
+          group = document.createElementNS(ns, "g");
+        group.classList.toggle("map-current", current === d.id);
+        group.classList.toggle("map-selected", selected.id === d.id);
+        const dot = document.createElementNS(ns, "circle");
+        dot.setAttribute("cx", point.x);
+        dot.setAttribute("cy", point.y);
+        dot.setAttribute("r", d.id === "earth" ? 5 : 3.5);
+        const label = document.createElementNS(ns, "text");
+        label.setAttribute("x", point.x);
+        label.setAttribute("y", point.y + (point.y > 108 ? 17 : -13));
+        label.setAttribute("text-anchor", "middle");
+        label.textContent = d.short;
+        group.append(dot, label);
+        return group;
+      }),
+  );
+  const currentDestination = destinations.find((d) => d.id === current);
+  const location = travelling
+    ? `Em salto → ${selected.short}`
+    : currentDestination
+      ? `Você está em ${currentDestination.name}`
+      : "Espaço aberto · em cruzeiro";
+  $("map-location").textContent = location;
+  $("expedition-map").setAttribute(
+    "aria-label",
+    `Mapa da expedição. ${location}`,
+  );
+  const target = mapPoint(selected);
+  $("map-route").setAttribute(
+    "d",
+    travelling
+      ? `M${mapDeparture.x},${mapDeparture.y} L${target.x},${target.y}`
+      : "",
+  );
+}
+function updateMapShip() {
+  if (travelling) {
+    const t = Math.min(
+      Math.max((travelTime - flightTiming.charge) / flightTiming.jump, 0),
+      1,
+    );
+    const ease = t * t * (3 - 2 * t),
+      target = mapPoint(selected);
+    mapShipPoint.x = mapDeparture.x + (target.x - mapDeparture.x) * ease;
+    mapShipPoint.y = mapDeparture.y + (target.y - mapDeparture.y) * ease;
+  } else if (current) {
+    Object.assign(
+      mapShipPoint,
+      mapPoint(destinations.find((d) => d.id === current)),
+    );
+  } else if (!reduced) {
+    mapShipPoint.x = 110 + Math.sin(elapsed * 0.12) * 8;
+    mapShipPoint.y = 122 + Math.cos(elapsed * 0.12) * 4;
+  }
+  $("map-ship").setAttribute(
+    "transform",
+    `translate(${mapShipPoint.x} ${mapShipPoint.y})`,
+  );
+}
 function renderDestinations() {
+  renderExpeditionMap();
   $("destinations").replaceChildren();
   destinations
     .filter((d) => allowed.includes(d.id))
@@ -274,6 +349,7 @@ function navigate() {
     openModule();
     return;
   }
+  mapDeparture = { ...mapShipPoint };
   travelling = true;
   renderLocalPanel();
   if (destinationWorld) destinationWorld.visible = true;
@@ -1016,6 +1092,7 @@ function tick(now) {
     }
     renderer.render(scene, camera);
   }
+  updateMapShip();
   frame = requestAnimationFrame(tick);
 }
 $("start").onclick = async () => {

@@ -112,3 +112,9 @@ Validado no navegador: chegada à Terra, seleção de Pesquisa sem alterar o pai
 Ao chegar a outro local, o conteúdo do painel esquerdo apaga em 180 ms e o novo aparece em 520 ms com deslocamento leve. Atualizações de estado do mesmo local não repetem a animação. Transições anteriores são canceladas quando substituídas, e movimento reduzido atualiza diretamente. Removidos o listener de pointermove e o deslocamento visual adicional da câmera: sua orientação agora segue somente o voo e as manobras.
 
 Validada no navegador a troca Terra → Pesquisa e a atualização direta em movimento reduzido. Análise Dart sem erros, com avisos legados; bundle regenerado. Evidência: `space-panel-transition.jpg`.
+
+### Mapa da expedição no painel direito
+
+Substitui sensores decorativos por mapa SVG dos destinos permitidos, projetados a partir das posições X/Z da cena. O ponto dourado indica a nave: em espaço aberto antes da primeira chegada, no destino visitado após chegar, e em deslocamento pela rota tracejada durante o salto. Selecionar outro destino destaca seu ponto sem mover a nave. O texto do local e a descrição acessível do mapa acompanham o estado do voo. É um mapa esquemático, não um mapa geográfico.
+
+Validado no navegador: marcador na Terra antes e depois de selecionar Pesquisa, posição intermediária durante o salto e chegada ao ponto de Pesquisa. Análise Dart sem erros (avisos legados permanecem), bundle regenerado. Evidência: `space-expedition-map.jpg`.

@@ -102,30 +102,65 @@
           </button>
         </div>
       </aside>
-      <aside class="glass-instrument starboard-instrument" aria-hidden="true">
-        <div class="instrument-heading">SENSORES <span>DEEP SPACE</span></div>
-        <svg
-          viewBox="0 0 180 115"
-          fill="none"
-          stroke="currentColor"
-          stroke-width=".8"
-        >
-          <ellipse cx="90" cy="57" rx="70" ry="30" />
-          <ellipse cx="90" cy="57" rx="46" ry="20" />
-          <ellipse cx="90" cy="57" rx="22" ry="10" />
-          <path
-            d="M90 12V100 M12 57H168 M39 25 141 89 M39 89 141 25"
-            opacity=".4"
-          />
-          <circle cx="119" cy="47" r="3" fill="currentColor" />
-          <circle cx="52" cy="68" r="2" fill="#e7ab78" />
-        </svg>
-        <div class="instrument-row"><span>CANAL IARETÉ</span><b>ONLINE</b></div>
-        <div class="signal-wave">
-          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i
-          ><i></i><i></i>
+      <aside
+        class="glass-instrument starboard-instrument expedition-map"
+        aria-label="Mapa da expedição"
+      >
+        <div class="instrument-heading">
+          MAPA DA EXPEDIÇÃO <span>EC–01</span>
         </div>
-        <small>REDE DE EXPLORAÇÃO · ATIVA</small>
+        <svg
+          id="expedition-map"
+          viewBox="0 0 220 205"
+          role="img"
+          aria-label="Nave em espaço aberto"
+          fill="none"
+        >
+          <defs>
+            <pattern
+              id="map-grid"
+              width="22"
+              height="22"
+              patternUnits="userSpaceOnUse"
+            >
+              <path
+                d="M22 0H0V22"
+                stroke="#5cbad7"
+                stroke-opacity=".12"
+                stroke-width=".5"
+              />
+            </pattern>
+          </defs>
+          <rect x="5" y="15" width="210" height="180" fill="url(#map-grid)" />
+          <ellipse
+            cx="110"
+            cy="108"
+            rx="94"
+            ry="68"
+            stroke="currentColor"
+            stroke-opacity=".14"
+            stroke-dasharray="2 5"
+          />
+          <g id="map-nodes"></g>
+          <path
+            id="map-route"
+            stroke="#e7b785"
+            stroke-width="1"
+            stroke-dasharray="3 3"
+          />
+          <g id="map-ship" fill="#fff1be" stroke="#ffd28b">
+            <circle r="8" fill="none" stroke-opacity=".45" />
+            <circle r="3" />
+          </g>
+        </svg>
+        <div class="map-location" id="map-location" role="status">
+          Espaço aberto · em cruzeiro
+        </div>
+        <div class="map-legend">
+          <span class="ship-key"></span> NAVE
+          <span class="destination-key"></span> DESTINOS
+        </div>
+        <small class="map-note">MAPA ESQUEMÁTICO · EXPLORAÇÃO</small>
       </aside>
       <div class="holo-table" aria-hidden="true">
         <div class="holo-globe"></div>
