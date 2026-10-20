@@ -96,3 +96,7 @@ Validação visual em desktop e largura móvel, incluindo salto Terra → Pesqui
 Base anterior preservada no commit `d2aacfb`, já publicado antes desta experiência. Nova cabine construída em geometria própria: para-brisa trapezoidal, montantes diagonais, placas extrudadas com chanfros, trilhos luminosos, fixadores, consoles inclinados e pedestal central. Instrumentos laterais e mesa holográfica em SVG/CSS; são elementos ilustrativos da demonstração, sem telemetria real. A imagem de referência não foi incorporada como asset.
 
 O painel de controles foi compactado em telas maiores para liberar a vista; instrumentos decorativos são ocultados em telas estreitas ou muito baixas. Verificados no navegador: composição desktop e móvel, salto com campo de visão ampliado e chegada à Terra. Análise Dart sem erros (avisos legados permanecem), bundle regenerado. Evidências: `space-wraparound-cockpit.jpg` e `space-wraparound-warp.jpg`. Toda esta experiência foi isolada em um commit para permitir reversão com git revert.
+
+### Salto com enquadramento fixo
+
+Removida a variação de campo de visão durante o salto. A câmera permanece em 48 graus, preservando o tamanho e a posição aparente da cabine. Permanecem o alinhamento suave, deslocamento até o destino, rastros estelares no para-brisa e sons. Verificado no navegador durante o salto e chegada à Terra; análise Dart sem erros (avisos legados permanecem). Evidência: `space-fixed-framing-warp.jpg`.

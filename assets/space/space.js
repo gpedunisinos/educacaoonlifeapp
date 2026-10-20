@@ -305,10 +305,6 @@ function finishTravel() {
   orbitPhase = 0;
   jumpPhase = "";
   document.body.style.setProperty("--warp-strength", "0");
-  if (camera) {
-    camera.fov = 48;
-    camera.updateProjectionMatrix();
-  }
   if (camera && flightTo) {
     camera.position.copy(flightTo);
     look.copy(lookTo);
@@ -854,8 +850,6 @@ function tick(now) {
     if (camera) {
       camera.position.lerpVectors(flightFrom, flightTo, ease);
       look.copy(lookTo);
-      camera.fov = 48 + strength * 30;
-      camera.updateProjectionMatrix();
     }
     if (travelTime >= charge + jump + settle) finishTravel();
   } else if (camera && !reduced && transferTime < 0) {
