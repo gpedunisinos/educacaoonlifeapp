@@ -83,11 +83,17 @@ class _CodeConfirmationScreenState extends State<CodeConfirmationScreen> {
                     },
                   ),
                   Insets.medium.height,
-                  Text('Um código foi enviado para seu e-mail', style: secondaryTextStyle(size: 14)),
+                  Text(
+                    'Um código foi enviado para seu e-mail',
+                    style: secondaryTextStyle(size: 14),
+                  ),
                   Insets.small.height,
                   Obx(() {
                     if (_timeout.value > 0) {
-                      return Text('Reenviar em 00:${_timeout.value}', style: boldTextStyle(size: 14));
+                      return Text(
+                        'Reenviar em 00:${_timeout.value}',
+                        style: boldTextStyle(size: 14),
+                      );
                     } else {
                       return GestureDetector(
                         onTap: () async {
@@ -95,7 +101,12 @@ class _CodeConfirmationScreenState extends State<CodeConfirmationScreen> {
                           _pinController.text = '';
                           await _controller.sendCode(email);
                         },
-                        child: Text('Reenviar código', style: boldTextStyle(size: 14).copyWith(color: Color(0xFF084cec))),
+                        child: Text(
+                          'Reenviar código',
+                          style: boldTextStyle(
+                            size: 14,
+                          ).copyWith(color: Color(0xFF084cec)),
+                        ),
                       );
                     }
                   }),
@@ -130,7 +141,8 @@ class _CodeConfirmationScreenState extends State<CodeConfirmationScreen> {
   }
 
   Future<void> _doConfirmCode() async {
-    if (_formKey.currentState!.validate() && await _controller.validateRecoverToken(_pinController.text)) {
+    if (_formKey.currentState!.validate() &&
+        await _controller.validateRecoverToken(_pinController.text)) {
       Get.toNamed('/create_password', arguments: _pinController.text);
     } else {
       Get.snackbar('Erro', 'Código inválido');

@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -49,6 +50,9 @@ class NodeGraphController extends GetxController {
 
       graphNodes.assignAll(_buildNodeStates(map.nodes, map.links));
       graphLinks.assignAll(map.links);
+      final focus = int.tryParse(Get.parameters['focus'] ?? '');
+      if (focus != null && map.nodes.any((n) => n.node.id == focus))
+        selectedNodeId.value = focus;
       nodeTypes.assignAll(types);
       selectedTypeIds
         ..clear()
@@ -61,11 +65,14 @@ class NodeGraphController extends GetxController {
     }
   }
 
-  List<NodeGraphNodeState> _buildNodeStates(List<NodeGraphNode> nodes, List<NodeLinkModel> links) {
+  List<NodeGraphNodeState> _buildNodeStates(
+      List<NodeGraphNode> nodes, List<NodeLinkModel> links) {
     final Map<int, int> degreeById = <int, int>{};
     for (final link in links) {
-      degreeById.update(link.sourceNodeId, (value) => value + 1, ifAbsent: () => 1);
-      degreeById.update(link.targetNodeId, (value) => value + 1, ifAbsent: () => 1);
+      degreeById.update(link.sourceNodeId, (value) => value + 1,
+          ifAbsent: () => 1);
+      degreeById.update(link.targetNodeId, (value) => value + 1,
+          ifAbsent: () => 1);
     }
 
     final List<NodeGraphNodeState> states = nodes
@@ -93,13 +100,18 @@ class NodeGraphController extends GetxController {
 
   List<NodeGraphNodeState> get visibleNodes => graphNodes
       .where(
-        (node) => selectedTypeIds.contains(node.node.nodeTypeId) && node.degree >= minimumDegree.value,
+        (node) =>
+            selectedTypeIds.contains(node.node.nodeTypeId) &&
+            node.degree >= minimumDegree.value,
       )
       .toList();
 
   List<NodeLinkModel> get visibleLinks {
     final Set<int> ids = visibleNodes.map((item) => item.node.id).toSet();
-    return graphLinks.where((link) => ids.contains(link.sourceNodeId) && ids.contains(link.targetNodeId)).toList();
+    return graphLinks
+        .where((link) =>
+            ids.contains(link.sourceNodeId) && ids.contains(link.targetNodeId))
+        .toList();
   }
 
   Set<int> get neighborNodeIds {
@@ -136,6 +148,7 @@ class NodeGraphController extends GetxController {
   }
 
   void updateNodePosition(int nodeId, Offset position) {
+    if (Get.find<UserController>().user.value?.canAuthor != true) return;
     final int index = graphNodes.indexWhere((item) => item.node.id == nodeId);
     if (index == -1) return;
     graphNodes[index] = graphNodes[index].copyWith(position: position);
@@ -161,12 +174,14 @@ class NodeGraphController extends GetxController {
         ),
       );
 
-      final NodeTypeModel? type = nodeTypes.firstWhereOrNull((item) => item.id == created.nodeTypeId);
+      final NodeTypeModel? type =
+          nodeTypes.firstWhereOrNull((item) => item.id == created.nodeTypeId);
       if (type != null) created.nodeType = type;
 
       final NodeGraphNodeState state = NodeGraphNodeState(
         node: created,
-        position: Offset(created.x ?? initialPosition.dx, created.y ?? initialPosition.dy),
+        position: Offset(
+            created.x ?? initialPosition.dx, created.y ?? initialPosition.dy),
         degree: 0,
       );
 
@@ -207,7 +222,8 @@ class NodeGraphController extends GetxController {
     try {
       isSavingNode.value = true;
       final NodeModel saved = await _nodeWebclient.update(updatedModel);
-      final NodeTypeModel? type = nodeTypes.firstWhereOrNull((item) => item.id == saved.nodeTypeId);
+      final NodeTypeModel? type =
+          nodeTypes.firstWhereOrNull((item) => item.id == saved.nodeTypeId);
       if (type != null) saved.nodeType = type;
 
       graphNodes[index] = graphNodes[index].copyWith(node: saved);
@@ -219,7 +235,8 @@ class NodeGraphController extends GetxController {
       Util.debug(exception: error, stackTrace: stackTrace);
       graphNodes[index] = graphNodes[index].copyWith(node: current);
       graphNodes.refresh();
-      SafeGetSnackbar.error('Erro', 'Não foi possível atualizar a problemática.');
+      SafeGetSnackbar.error(
+          'Erro', 'Não foi possível atualizar a problemática.');
       return null;
     } finally {
       isSavingNode.value = false;
@@ -231,13 +248,16 @@ class NodeGraphController extends GetxController {
     if (nodeIndex == -1) return false;
 
     final NodeGraphNodeState removedNode = graphNodes[nodeIndex];
-    final List<NodeLinkModel> removedLinks = graphLinks.where((link) => link.sourceNodeId == id || link.targetNodeId == id).toList();
+    final List<NodeLinkModel> removedLinks = graphLinks
+        .where((link) => link.sourceNodeId == id || link.targetNodeId == id)
+        .toList();
 
     try {
       isDeletingNode.value = true;
       await _nodeWebclient.delete(id);
       graphNodes.removeAt(nodeIndex);
-      graphLinks.removeWhere((link) => link.sourceNodeId == id || link.targetNodeId == id);
+      graphLinks.removeWhere(
+          (link) => link.sourceNodeId == id || link.targetNodeId == id);
       if (selectedNodeId.value == id) selectedNodeId.value = null;
       _syncNodeDegrees();
       SafeGetSnackbar.success('Problemática removida com sucesso.');
@@ -261,6 +281,7 @@ class NodeGraphController extends GetxController {
   }
 
   Future<void> persistNodePosition(int nodeId) async {
+    if (Get.find<UserController>().user.value?.canAuthor != true) return;
     final int index = graphNodes.indexWhere((item) => item.node.id == nodeId);
     if (index == -1) return;
 
@@ -283,7 +304,8 @@ class NodeGraphController extends GetxController {
       graphNodes.refresh();
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      SafeGetSnackbar.error('Erro', 'Não foi possível salvar a posição da problemática.');
+      SafeGetSnackbar.error(
+          'Erro', 'Não foi possível salvar a posição da problemática.');
     }
   }
 
@@ -299,8 +321,10 @@ class NodeGraphController extends GetxController {
 
     final bool exists = graphLinks.any(
       (item) =>
-          (item.sourceNodeId == sourceNodeId && item.targetNodeId == targetNodeId) ||
-          (item.sourceNodeId == targetNodeId && item.targetNodeId == sourceNodeId),
+          (item.sourceNodeId == sourceNodeId &&
+              item.targetNodeId == targetNodeId) ||
+          (item.sourceNodeId == targetNodeId &&
+              item.targetNodeId == sourceNodeId),
     );
     if (exists) {
       SafeGetSnackbar.error('Erro', 'Essas problemáticas já estão conectadas.');
@@ -359,10 +383,12 @@ class NodeGraphController extends GetxController {
   Offset _nextNewNodePosition() {
     final int? selectedId = selectedNodeId.value;
     if (selectedId != null) {
-      final NodeGraphNodeState? anchor = graphNodes.firstWhereOrNull((item) => item.node.id == selectedId);
+      final NodeGraphNodeState? anchor =
+          graphNodes.firstWhereOrNull((item) => item.node.id == selectedId);
       if (anchor != null) {
         final double angle = (graphNodes.length % 8) * (math.pi / 4);
-        return anchor.position + Offset(math.cos(angle) * 140, math.sin(angle) * 140);
+        return anchor.position +
+            Offset(math.cos(angle) * 140, math.sin(angle) * 140);
       }
     }
 
@@ -375,40 +401,59 @@ class NodeGraphController extends GetxController {
 
   List<NodeModel> availableTargetsFor(int sourceNodeId) {
     final Set<int> connectedIds = graphLinks
-        .where((item) => item.sourceNodeId == sourceNodeId || item.targetNodeId == sourceNodeId)
-        .map((item) => item.sourceNodeId == sourceNodeId ? item.targetNodeId : item.sourceNodeId)
+        .where((item) =>
+            item.sourceNodeId == sourceNodeId ||
+            item.targetNodeId == sourceNodeId)
+        .map((item) => item.sourceNodeId == sourceNodeId
+            ? item.targetNodeId
+            : item.sourceNodeId)
         .toSet();
 
-    return graphNodes.map((item) => item.node).where((node) => node.id != sourceNodeId && !connectedIds.contains(node.id)).toList()
+    return graphNodes
+        .map((item) => item.node)
+        .where((node) =>
+            node.id != sourceNodeId && !connectedIds.contains(node.id))
+        .toList()
       ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
   }
 
   List<NodeLinkModel> connectionsFor(int nodeId) {
-    final List<NodeLinkModel> connections = graphLinks.where((item) => item.sourceNodeId == nodeId || item.targetNodeId == nodeId).toList();
+    final List<NodeLinkModel> connections = graphLinks
+        .where((item) =>
+            item.sourceNodeId == nodeId || item.targetNodeId == nodeId)
+        .toList();
     connections.sort((a, b) {
-      final String aName = otherNodeForLink(a, nodeId)?.name.toLowerCase() ?? '';
-      final String bName = otherNodeForLink(b, nodeId)?.name.toLowerCase() ?? '';
+      final String aName =
+          otherNodeForLink(a, nodeId)?.name.toLowerCase() ?? '';
+      final String bName =
+          otherNodeForLink(b, nodeId)?.name.toLowerCase() ?? '';
       return aName.compareTo(bName);
     });
     return connections;
   }
 
   NodeModel? otherNodeForLink(NodeLinkModel link, int referenceNodeId) {
-    final int otherId = link.sourceNodeId == referenceNodeId ? link.targetNodeId : link.sourceNodeId;
-    final NodeGraphNodeState? state = graphNodes.firstWhereOrNull((item) => item.node.id == otherId);
+    final int otherId = link.sourceNodeId == referenceNodeId
+        ? link.targetNodeId
+        : link.sourceNodeId;
+    final NodeGraphNodeState? state =
+        graphNodes.firstWhereOrNull((item) => item.node.id == otherId);
     return state?.node;
   }
 
   void _syncNodeDegrees() {
     final Map<int, int> degreeById = <int, int>{};
     for (final link in graphLinks) {
-      degreeById.update(link.sourceNodeId, (value) => value + 1, ifAbsent: () => 1);
-      degreeById.update(link.targetNodeId, (value) => value + 1, ifAbsent: () => 1);
+      degreeById.update(link.sourceNodeId, (value) => value + 1,
+          ifAbsent: () => 1);
+      degreeById.update(link.targetNodeId, (value) => value + 1,
+          ifAbsent: () => 1);
     }
 
     for (int index = 0; index < graphNodes.length; index++) {
       final NodeGraphNodeState current = graphNodes[index];
-      graphNodes[index] = current.copyWith(degree: degreeById[current.node.id] ?? 0);
+      graphNodes[index] =
+          current.copyWith(degree: degreeById[current.node.id] ?? 0);
     }
     graphNodes.refresh();
     graphLinks.refresh();
@@ -418,7 +463,8 @@ class NodeGraphController extends GetxController {
   void _ensureSelectedNodeVisible() {
     final int? selected = selectedNodeId.value;
     if (selected == null) return;
-    final bool stillVisible = visibleNodes.any((node) => node.node.id == selected);
+    final bool stillVisible =
+        visibleNodes.any((node) => node.node.id == selected);
     if (!stillVisible) selectedNodeId.value = null;
   }
 }

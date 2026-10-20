@@ -5,8 +5,6 @@ import 'package:unisinos_usp_app/controllers/connection_type/connection_type_ind
 import 'package:unisinos_usp_app/models/connection_type_model.dart';
 import 'package:unisinos_usp_app/policies/policies.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 
 class ConnectionTypeIndexScreen extends StatelessWidget {
   ConnectionTypeIndexScreen({super.key});
@@ -16,13 +14,14 @@ class ConnectionTypeIndexScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final canManage =
-        ConnectionTypePolicy(Get.find<UserController>().user.value).create();
+    final canManage = ConnectionTypePolicy(
+      Get.find<UserController>().user.value,
+    ).create();
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Tipos de conexão'),
@@ -37,18 +36,20 @@ class ConnectionTypeIndexScreen extends StatelessWidget {
       ),
       body: Stack(
         children: [
-          const Positioned.fill(child: StarfieldBackground()),
-          const Positioned.fill(child: CidigScenicBackground()),
           Obx(() {
             if (_controller.isLoading.value &&
                 _controller.connectionTypes.isEmpty) {
               return const Center(
-                  child: CircularProgressIndicator(color: Colors.white));
+                child: CircularProgressIndicator(color: Colors.white),
+              );
             }
             if (_controller.connectionTypes.isEmpty) {
               return const Center(
-                  child: Text('Nenhum tipo cadastrado.',
-                      style: TextStyle(color: Colors.white)));
+                child: Text(
+                  'Nenhum tipo cadastrado.',
+                  style: TextStyle(color: Colors.white),
+                ),
+              );
             }
             return Column(
               children: [
@@ -83,13 +84,15 @@ class ConnectionTypeIndexScreen extends StatelessWidget {
                                           .textTheme
                                           .titleMedium
                                           ?.copyWith(
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white),
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
                                     ),
                                   ),
                                   Chip(
-                                    backgroundColor:
-                                        Colors.blue.withValues(alpha: 0.2),
+                                    backgroundColor: Colors.blue.withValues(
+                                      alpha: 0.2,
+                                    ),
                                     label: Text(
                                       model.isDirectional
                                           ? 'Direcional'
@@ -171,8 +174,10 @@ class ConnectionTypeIndexScreen extends StatelessWidget {
   }
 
   Future<void> _goToUpdate(ConnectionTypeModel model) async {
-    await Get.toNamed('/connection_types/update',
-        parameters: {'id': model.id.toString()});
+    await Get.toNamed(
+      '/connection_types/update',
+      parameters: {'id': model.id.toString()},
+    );
     await _controller.loadConnectionTypes();
   }
 }

@@ -1,3 +1,5 @@
+import 'package:unisinos_usp_app/widgets/living_clue_location_button.dart';
+import 'package:unisinos_usp_app/widgets/living_clue_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pvalidator/pvalidator.dart';
@@ -8,10 +10,8 @@ import 'package:unisinos_usp_app/utils/quill_document_utils.dart';
 import 'package:unisinos_usp_app/webclients/category_webclient.dart';
 import 'package:unisinos_usp_app/webclients/file_webclient.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:unisinos_usp_app/widgets/living_clue_description_editor.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class LivingClueUpdateScreen extends StatefulWidget {
@@ -30,7 +30,6 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
   final QuillController _descriptionController = QuillController.basic();
   final TextEditingController _latitudeController = TextEditingController();
   final TextEditingController _longitudeController = TextEditingController();
-  final TextEditingController _imageUrlController = TextEditingController();
   final TextEditingController _categoryController = TextEditingController();
   final TextEditingController _linkController = TextEditingController();
   final MFileController _fileController = MFileController();
@@ -58,7 +57,6 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
     _descriptionController.dispose();
     _latitudeController.dispose();
     _longitudeController.dispose();
-    _imageUrlController.dispose();
     _categoryController.dispose();
     _linkController.dispose();
     _fileController.dispose();
@@ -69,9 +67,9 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Editar pista viva'),
@@ -89,23 +87,28 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
       ),
       body: Stack(
         children: [
-          const Positioned.fill(child: StarfieldBackground()),
-          const Positioned.fill(child: CidigScenicBackground()),
           Obx(() {
             if (_controller.livingClueId == null) {
               return const Center(
-                  child: Text('Pista não informada.',
-                      style: TextStyle(color: Colors.white)));
+                child: Text(
+                  'Pista não informada.',
+                  style: TextStyle(color: Colors.white),
+                ),
+              );
             }
             if (_controller.isLoading.value &&
                 _controller.livingClue.value == null) {
               return const Center(
-                  child: CircularProgressIndicator(color: Colors.white));
+                child: CircularProgressIndicator(color: Colors.white),
+              );
             }
             if (_controller.livingClue.value == null) {
               return const Center(
-                  child: Text('Pista não encontrada.',
-                      style: TextStyle(color: Colors.white)));
+                child: Text(
+                  'Pista não encontrada.',
+                  style: TextStyle(color: Colors.white),
+                ),
+              );
             }
 
             if (!_filled && _controller.livingClue.value != null) {
@@ -129,7 +132,7 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
             return Stack(
               children: [
                 SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
+                  padding: LivingClueLayout.pagePadding(context),
                   child: Form(
                     key: _formKey,
                     child: Column(
@@ -149,8 +152,9 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
                               child: Obx(() {
                                 final bool loading =
                                     _controller.isLoading.value;
-                                final String buttonTitle =
-                                    loading ? 'Atualizando...' : 'Atualizar';
+                                final String buttonTitle = loading
+                                    ? 'Atualizando...'
+                                    : 'Atualizar';
                                 return ActionButton(
                                   theme: ActionButtonTheme.blue,
                                   title: buttonTitle,
@@ -191,10 +195,7 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(
-          color: Color(0x8A46B6EC),
-          width: 1.2,
-        ),
+        side: const BorderSide(color: Color(0x8A46B6EC), width: 1.2),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -207,10 +208,9 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
                 const SizedBox(width: 8),
                 Text(
                   'Informações principais',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontWeight: FontWeight.w700),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ],
             ),
@@ -232,9 +232,7 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
                   _categoryId == null ? 'Categoria obrigatória' : null,
             ),
             Insets.large.height,
-            LivingClueDescriptionEditor(
-              controller: _descriptionController,
-            ),
+            LivingClueDescriptionEditor(controller: _descriptionController),
             Insets.large.height,
             if (_metadataTags.isNotEmpty) ...[
               const Text('Metadata (opcional)'),
@@ -259,10 +257,7 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(
-          color: Color(0x8A46B6EC),
-          width: 1.2,
-        ),
+        side: const BorderSide(color: Color(0x8A46B6EC), width: 1.2),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -273,30 +268,34 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
               children: [
                 const Icon(Icons.place_outlined, color: Colors.teal),
                 const SizedBox(width: 8),
-                const Text('Localização e status',
-                    style: TextStyle(fontWeight: FontWeight.w700)),
+                const Text(
+                  'Localização e status',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
               ],
             ),
             Insets.large.height,
+            TextButton.icon(
+              onPressed: () => setState(() {
+                _latitudeController.clear();
+                _longitudeController.clear();
+              }),
+              icon: const Icon(Icons.location_off_outlined),
+              label: const Text('Remover localização'),
+            ),
+            LivingClueLocationButton(
+              latitude: _latitudeController,
+              longitude: _longitudeController,
+            ),
+            const SizedBox(height: 12),
             InputNumber(
-              label: 'Latitude',
+              label: 'Latitude (opcional)',
               controller: _latitudeController,
-              validator: (value) => PValidator([
-                PRuleRequired(value, message: 'Obrigatório'),
-              ]).val(),
             ),
             Insets.large.height,
             InputNumber(
-              label: 'Longitude',
+              label: 'Longitude (opcional)',
               controller: _longitudeController,
-              validator: (value) => PValidator([
-                PRuleRequired(value, message: 'Obrigatório'),
-              ]).val(),
-            ),
-            Insets.large.height,
-            InputText(
-              hintText: 'URL da imagem (opcional)',
-              controller: _imageUrlController,
             ),
             Insets.medium.height,
             SwitchListTile(
@@ -315,10 +314,7 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(
-          color: Color(0x8A46B6EC),
-          width: 1.2,
-        ),
+        side: const BorderSide(color: Color(0x8A46B6EC), width: 1.2),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -357,10 +353,7 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(
-          color: Color(0x8A46B6EC),
-          width: 1.2,
-        ),
+        side: const BorderSide(color: Color(0x8A46B6EC), width: 1.2),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -371,14 +364,17 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
               children: [
                 const Icon(Icons.attachment_outlined, color: Colors.deepOrange),
                 const SizedBox(width: 8),
-                const Text('Arquivos e evidências',
-                    style: TextStyle(fontWeight: FontWeight.w700)),
+                const Text(
+                  'Arquivos e evidências',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
                 const Spacer(),
                 if (_uploadingFile || _loadingAttachments)
                   const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2)),
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
               ],
             ),
             const SizedBox(height: 10),
@@ -405,13 +401,15 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
                             children: [
                               Container(
                                 width: 200,
-                                constraints:
-                                    const BoxConstraints(minHeight: 140),
+                                constraints: const BoxConstraints(
+                                  minHeight: 140,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.grey.shade50,
                                   borderRadius: BorderRadius.circular(12),
-                                  border:
-                                      Border.all(color: Colors.grey.shade200),
+                                  border: Border.all(
+                                    color: Colors.grey.shade200,
+                                  ),
                                 ),
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(12),
@@ -425,8 +423,11 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
                                   color: Colors.black.withOpacity(0.55),
                                   shape: const CircleBorder(),
                                   child: IconButton(
-                                    icon: const Icon(Icons.close,
-                                        color: Colors.white, size: 18),
+                                    icon: const Icon(
+                                      Icons.close,
+                                      color: Colors.white,
+                                      size: 18,
+                                    ),
                                     onPressed: _uploadingFile
                                         ? null
                                         : () => _removeAttachment(file),
@@ -455,8 +456,9 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
                 const SizedBox(width: 10),
                 ElevatedButton.icon(
                   icon: const Icon(Icons.cloud_upload),
-                  label:
-                      Text(_uploadingFile ? 'Enviando...' : 'Enviar arquivo'),
+                  label: Text(
+                    _uploadingFile ? 'Enviando...' : 'Enviar arquivo',
+                  ),
                   onPressed: _uploadingFile ? null : _uploadSelectedFile,
                 ),
               ],
@@ -487,16 +489,17 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
       delta: model.descriptionDelta,
       plainText: model.description,
     );
-    _latitudeController.text = model.latitude.toString();
-    _longitudeController.text = model.longitude.toString();
-    _imageUrlController.text = model.imageUrl ?? '';
+    _latitudeController.text = model.latitude?.toString() ?? '';
+    _longitudeController.text = model.longitude?.toString() ?? '';
     _isActive = model.isActive;
     _categoryId = model.categoryId;
     _initialMetadata = model.metadata ?? {};
   }
 
   Future<void> _loadCategoryMetadata(
-      int categoryId, Map<String, dynamic> existingMetadata) async {
+    int categoryId,
+    Map<String, dynamic> existingMetadata,
+  ) async {
     setState(() => _loadingCategory = true);
     try {
       final category = await CategoryWebclient().fetchById(categoryId);
@@ -510,7 +513,9 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
       for (final tag in _metadataTags) {
         final initial = existingMetadata[tag]?.toString() ?? '';
         _metadataControllers.putIfAbsent(
-            tag, () => TextEditingController(text: initial));
+          tag,
+          () => TextEditingController(text: initial),
+        );
       }
       _metadataLoaded = true;
       setState(() {});
@@ -618,10 +623,29 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     final double? latitude = double.tryParse(_latitudeController.text.trim());
     final double? longitude = double.tryParse(_longitudeController.text.trim());
-    if (latitude == null || longitude == null || _categoryId == null) {
+    if (_categoryId == null) {
       return;
     }
 
+    final latText = _latitudeController.text.trim();
+    final lngText = _longitudeController.text.trim();
+    if ((latText.isEmpty != lngText.isEmpty) ||
+        (latText.isNotEmpty &&
+            (latitude == null ||
+                longitude == null ||
+                !latitude.isFinite ||
+                !longitude.isFinite ||
+                latitude.abs() > 90 ||
+                longitude.abs() > 180))) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Informe as duas coordenadas válidas ou deixe ambas vazias.',
+          ),
+        ),
+      );
+      return;
+    }
     final Map<String, dynamic> metadata = {};
     for (final entry in _metadataControllers.entries) {
       final value = entry.value.text.trim();
@@ -640,17 +664,14 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
       descriptionDelta: QuillDocumentUtils.encodeDelta(_descriptionController),
       latitude: latitude,
       longitude: longitude,
-      imageUrl: _imageUrlController.text.trim().isEmpty
-          ? null
-          : _imageUrlController.text.trim(),
+      imageUrl: _controller.livingClue.value?.imageUrl,
       metadata: metadata.isEmpty ? null : metadata,
       isActive: _isActive,
     );
 
     final bool saved = await _controller.save(model);
-    if (saved) {
-      Get.secureBack(result: true);
-    }
+    if (!mounted || !saved) return;
+    Get.offNamed('/living_clues/${model.id}');
   }
 
   String _formatTagLabel(String raw) {

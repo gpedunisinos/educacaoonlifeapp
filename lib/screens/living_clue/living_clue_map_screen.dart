@@ -1,3 +1,6 @@
+import 'package:unisinos_usp_app/widgets/ai_assistant_launcher.dart';
+import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
+import 'package:unisinos_usp_app/widgets/locker_panel.dart';
 import 'dart:async';
 import 'dart:ui' as ui;
 
@@ -13,9 +16,7 @@ import 'package:unisinos_usp_app/models/living_clue_model.dart';
 import 'package:unisinos_usp_app/models/nominatim_place_model.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
 import 'package:unisinos_usp_app/services/location_privacy_service.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
@@ -60,19 +61,25 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
   bool _hasRunSonarScan = false;
   bool _isUpdatingSearchText = false;
   Timer? _searchDebounce;
+  Worker? _routeWorker;
+  VoidCallback? _dismissTutorial;
   late final AnimationController _sonarPulseController;
 
   @override
   void initState() {
     super.initState();
-    _sonarPulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    )..addListener(() {
-        if (mounted) {
-          setState(() {});
-        }
-      });
+    _routeWorker = ever<String>(AiAssistantLauncher.activeRoute, (route) {
+      if (route != '/living_clues/map') _dismissTutorial?.call();
+    });
+    _sonarPulseController =
+        AnimationController(
+          vsync: this,
+          duration: const Duration(milliseconds: 1200),
+        )..addListener(() {
+          if (mounted) {
+            setState(() {});
+          }
+        });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadCurrentBounds();
       _environmentalController.load();
@@ -83,6 +90,8 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
   @override
   void dispose() {
     _searchDebounce?.cancel();
+    _routeWorker?.dispose();
+    _dismissTutorial?.call();
     _sonarPulseController.dispose();
     _searchController.dispose();
     _searchFocusNode.dispose();
@@ -169,9 +178,15 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
   }
 
   void _focusClueOnMap(LivingClueModel clue) {
-    final point = LatLng(clue.latitude, clue.longitude);
-    _mapController.move(point,
-        _mapController.camera.zoom < 14 ? 14 : _mapController.camera.zoom);
+    if (!clue.hasLocation) {
+      Get.toNamed('/living_clues/show', arguments: clue);
+      return;
+    }
+    final point = LatLng(clue.latitude!, clue.longitude!);
+    _mapController.move(
+      point,
+      _mapController.camera.zoom < 14 ? 14 : _mapController.camera.zoom,
+    );
     _searchFocusNode.unfocus();
   }
 
@@ -190,7 +205,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     if (!mounted || seen) return;
 
     await Future<void>.delayed(const Duration(milliseconds: 350));
-    if (!mounted) return;
+    if (!mounted || Get.currentRoute != '/living_clues/map') return;
     _showMapTutorial(markAsSeen: true);
   }
 
@@ -338,16 +353,15 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
           children: [
             Text(
               'Reposicionar pista viva',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleMedium
-                  ?.copyWith(fontWeight: FontWeight.w700),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 12),
             Text('Pista: ${_repositioningClue!.name}'),
             const SizedBox(height: 8),
             Text(
-              'Atual: ${_repositioningClue!.latitude.toStringAsFixed(6)}, ${_repositioningClue!.longitude.toStringAsFixed(6)}',
+              'Atual: ${_repositioningClue!.latitude!.toStringAsFixed(6)}, ${_repositioningClue!.longitude!.toStringAsFixed(6)}',
             ),
             Text(
               'Nova: ${point.latitude.toStringAsFixed(6)}, ${point.longitude.toStringAsFixed(6)}',
@@ -396,13 +410,18 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
       _buildAiContext,
     );
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Mapa de pistas'),
         actions: [
+          IconButton(
+            tooltip: 'Lista de pistas',
+            icon: const Icon(Icons.view_list_outlined),
+            onPressed: () => Get.toNamed('/living_clues'),
+          ),
           IconButton(
             tooltip: 'Ajuda do mapa',
             icon: const Icon(Icons.help_outline),
@@ -420,7 +439,10 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
               key: _repositionKey,
               tooltip: 'Reposicionar pista no mapa',
               icon: const Icon(Icons.open_with),
-              onPressed: _toggleRepositionMode,
+              onPressed:
+                  Get.find<UserController>().user.value?.canAuthor == true
+                  ? _toggleRepositionMode
+                  : null,
             ),
           if (_isConnectingMode)
             IconButton(
@@ -434,40 +456,44 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
               key: _connectionKey,
               tooltip: 'Criar conexão no mapa',
               icon: const Icon(Icons.hub_outlined),
-              onPressed: _toggleConnectionMode,
+              onPressed:
+                  Get.find<UserController>().user.value?.canAuthor == true
+                  ? _toggleConnectionMode
+                  : null,
             ),
-          IconButton(
-            key: _createPointKey,
-            tooltip: 'Criar pista por ponto',
-            icon: const Icon(Icons.add_location_alt),
-            onPressed: () async {
-              final center = _mapController.camera.center;
-              final created = await Get.toNamed(
-                '/living_clues/map/create',
-                arguments: {
-                  'latitude': center.latitude,
-                  'longitude': center.longitude,
-                },
-              );
-              if (_isCreatedResult(created)) {
-                await _refreshAfterCreate(created);
-              }
-            },
-          ),
+          if (Get.find<UserController>().user.value?.canAuthor == true)
+            IconButton(
+              key: _createPointKey,
+              tooltip: 'Criar pista por ponto',
+              icon: const Icon(Icons.add_location_alt),
+              onPressed: () async {
+                final center = _mapController.camera.center;
+                final created = await Get.toNamed(
+                  '/living_clues/map/create',
+                  arguments: {
+                    'latitude': center.latitude,
+                    'longitude': center.longitude,
+                  },
+                );
+                if (_isCreatedResult(created)) {
+                  await _refreshAfterCreate(created);
+                }
+              },
+            ),
         ],
       ),
       body: Stack(
         children: [
-          const Positioned.fill(child: StarfieldBackground()),
-          const Positioned.fill(child: CidigScenicBackground()),
           Column(
             children: [
               if (_isConnectingMode || _isRepositionMode)
                 Container(
                   width: double.infinity,
                   margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: _isRepositionMode
                         ? Colors.teal.withValues(alpha: 0.72)
@@ -478,11 +504,11 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                   child: Text(
                     _isRepositionMode
                         ? (_repositioningClue == null
-                            ? 'Modo reposicionamento: toque na pista que deseja mover.'
-                            : 'Reposicionando ${_repositioningClue!.name}. Agora pressione e segure no novo ponto do mapa.')
+                              ? 'Modo reposicionamento: toque na pista que deseja mover.'
+                              : 'Reposicionando ${_repositioningClue!.name}. Agora pressione e segure no novo ponto do mapa.')
                         : (_connectionSource == null
-                            ? 'Modo nova conexão: toque na pista de origem.'
-                            : 'Origem: ${_connectionSource!.name}. Agora toque na pista de destino.'),
+                              ? 'Modo nova conexão: toque na pista de origem.'
+                              : 'Origem: ${_connectionSource!.name}. Agora toque na pista de destino.'),
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
@@ -492,8 +518,10 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
               Container(
                 key: _sonarControlsKey,
                 margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.55),
                   borderRadius: BorderRadius.circular(16),
@@ -546,8 +574,9 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                                 label: const Text('Sonar'),
                                 style: TextButton.styleFrom(
                                   foregroundColor: Colors.white,
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 8),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                  ),
                                 ),
                                 onPressed: _searchByTap,
                               ),
@@ -560,7 +589,8 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                                     max: 1000000,
                                     divisions: 999,
                                     label: _formatRadius(
-                                        _controller.sonarRadius.value),
+                                      _controller.sonarRadius.value,
+                                    ),
                                     onChanged: (value) =>
                                         _controller.sonarRadius.value = value,
                                   );
@@ -592,12 +622,14 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
               ),
               Expanded(
                 child: Obx(() {
-                  final visibleClues = _controller.livingClues.toList();
+                  final visibleClues = _controller.livingClues
+                      .where((clue) => clue.hasLocation)
+                      .toList();
                   final visiblePlaces = _controller.mapPlaces.toList();
                   final markers = visibleClues
                       .map(
                         (item) => Marker(
-                          point: LatLng(item.latitude, item.longitude),
+                          point: LatLng(item.latitude!, item.longitude!),
                           width: 52,
                           height: 52,
                           child: GestureDetector(
@@ -611,10 +643,13 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                                     height: 44,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color:
-                                          Colors.blue.withValues(alpha: 0.22),
+                                      color: Colors.blue.withValues(
+                                        alpha: 0.22,
+                                      ),
                                       border: Border.all(
-                                          color: Colors.blueAccent, width: 2),
+                                        color: Colors.blueAccent,
+                                        width: 2,
+                                      ),
                                     ),
                                   ),
                                 if (_repositioningClue?.id == item.id)
@@ -623,8 +658,9 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                                     height: 46,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color:
-                                          Colors.teal.withValues(alpha: 0.22),
+                                      color: Colors.teal.withValues(
+                                        alpha: 0.22,
+                                      ),
                                       border: Border.all(
                                         color: Colors.tealAccent,
                                         width: 2,
@@ -637,10 +673,13 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                                     height: 44,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color:
-                                          Colors.orange.withValues(alpha: 0.22),
+                                      color: Colors.orange.withValues(
+                                        alpha: 0.22,
+                                      ),
                                       border: Border.all(
-                                          color: Colors.orangeAccent, width: 2),
+                                        color: Colors.orangeAccent,
+                                        width: 2,
+                                      ),
                                     ),
                                   ),
                                 Icon(
@@ -657,43 +696,43 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
 
                   final Map<int, LatLng> pointsById = {
                     for (final clue in visibleClues)
-                      clue.id: LatLng(clue.latitude, clue.longitude),
+                      clue.id: LatLng(clue.latitude!, clue.longitude!),
                   };
                   final Map<int, LivingClueModel> cluesById = {
                     for (final clue in visibleClues) clue.id: clue,
                   };
                   final connectionLines = _controller.connections
-                      .map(
-                        (conn) {
-                          final start = pointsById[conn.sourceClueId];
-                          final end = pointsById[conn.targetClueId];
-                          if (start == null || end == null) return null;
-                          final sourceClue = cluesById[conn.sourceClueId];
-                          final targetClue = cluesById[conn.targetClueId];
-                          return _connectionPolyline(
-                            points: [start, end],
-                            sourceColor: sourceClue == null
-                                ? Colors.redAccent
-                                : _categoryColor(sourceClue),
-                            targetColor: targetClue == null
-                                ? Colors.redAccent
-                                : _categoryColor(targetClue),
-                          );
-                        },
-                      )
+                      .map((conn) {
+                        final start = pointsById[conn.sourceClueId];
+                        final end = pointsById[conn.targetClueId];
+                        if (start == null || end == null) return null;
+                        final sourceClue = cluesById[conn.sourceClueId];
+                        final targetClue = cluesById[conn.targetClueId];
+                        return _connectionPolyline(
+                          points: [start, end],
+                          sourceColor: sourceClue == null
+                              ? Colors.redAccent
+                              : _categoryColor(sourceClue),
+                          targetColor: targetClue == null
+                              ? Colors.redAccent
+                              : _categoryColor(targetClue),
+                        );
+                      })
                       .whereType<Polyline>()
                       .toList();
 
                   if (_connectionSource != null && _connectionTarget != null) {
-                    final sourcePoint = pointsById[_connectionSource!.id] ??
+                    final sourcePoint =
+                        pointsById[_connectionSource!.id] ??
                         LatLng(
-                          _connectionSource!.latitude,
-                          _connectionSource!.longitude,
+                          _connectionSource!.latitude!,
+                          _connectionSource!.longitude!,
                         );
-                    final targetPoint = pointsById[_connectionTarget!.id] ??
+                    final targetPoint =
+                        pointsById[_connectionTarget!.id] ??
                         LatLng(
-                          _connectionTarget!.latitude,
-                          _connectionTarget!.longitude,
+                          _connectionTarget!.latitude!,
+                          _connectionTarget!.longitude!,
                         );
                     connectionLines.add(
                       _connectionPolyline(
@@ -776,10 +815,13 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                           else
                             TileLayer(
                               key: ValueKey(
-                                  'basemap-${_environmentalController.selectedBaseMapId.value}'),
+                                'basemap-${_environmentalController.selectedBaseMapId.value}',
+                              ),
                               urlTemplate: _environmentalController.webclient
-                                  .absoluteTileUrl(_environmentalController
-                                      .selectedExternalBaseMap!),
+                                  .absoluteTileUrl(
+                                    _environmentalController
+                                        .selectedExternalBaseMap!,
+                                  ),
                               tileProvider: NetworkTileProvider(
                                 headers: {
                                   'Authorization':
@@ -787,10 +829,12 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                                 },
                               ),
                               minZoom: _environmentalController
-                                  .selectedExternalBaseMap!.minZoom
+                                  .selectedExternalBaseMap!
+                                  .minZoom
                                   .toDouble(),
                               maxZoom: _environmentalController
-                                  .selectedExternalBaseMap!.maxZoom
+                                  .selectedExternalBaseMap!
+                                  .maxZoom
                                   .toDouble(),
                               userAgentPackageName:
                                   'com.br.spotecnologia.uniusp_app',
@@ -798,8 +842,9 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                           ..._environmentalController.activeLayers.map(
                             (layer) => Opacity(
                               key: ValueKey('environmental-${layer.id}'),
-                              opacity: _environmentalController
-                                      .opacities[layer.id] ??
+                              opacity:
+                                  _environmentalController.opacities[layer
+                                      .id] ??
                                   layer.defaultOpacity,
                               child: TileLayer(
                                 urlTemplate: _environmentalController.webclient
@@ -819,9 +864,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                           ),
                           if (circles.isNotEmpty) CircleLayer(circles: circles),
                           if (connectionLines.isNotEmpty)
-                            PolylineLayer(
-                              polylines: connectionLines,
-                            ),
+                            PolylineLayer(polylines: connectionLines),
                           MarkerLayer(
                             markers: [
                               ...markers,
@@ -886,12 +929,16 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                             tooltip: 'Camadas ambientais',
                             icon: Badge(
                               isLabelVisible: _environmentalController
-                                  .activeLayers.isNotEmpty,
-                              label: Text(_environmentalController
-                                  .activeLayers.length
-                                  .toString()),
-                              child:
-                                  const Icon(Icons.layers_outlined, size: 20),
+                                  .activeLayers
+                                  .isNotEmpty,
+                              label: Text(
+                                _environmentalController.activeLayers.length
+                                    .toString(),
+                              ),
+                              child: const Icon(
+                                Icons.layers_outlined,
+                                size: 20,
+                              ),
                             ),
                             onPressed: _showEnvironmentalLayers,
                           ),
@@ -913,11 +960,15 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                           ),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 7, vertical: 4),
+                              horizontal: 7,
+                              vertical: 4,
+                            ),
                             child: Text(
                               _environmentalController.baseMapAttribution,
                               style: const TextStyle(
-                                  color: Colors.white, fontSize: 10),
+                                color: Colors.white,
+                                fontSize: 10,
+                              ),
                             ),
                           ),
                         ),
@@ -1011,9 +1062,13 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                   child: Row(
                     children: [
                       const Expanded(
-                        child: Text('Camadas do mapa',
-                            style: TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold)),
+                        child: Text(
+                          'Camadas do mapa',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                       TextButton(
                         onPressed: controller.activeLayers.isEmpty
@@ -1026,7 +1081,8 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                 ),
                 if (controller.isLoading.value)
                   const Expanded(
-                      child: Center(child: CircularProgressIndicator()))
+                    child: Center(child: CircularProgressIndicator()),
+                  )
                 else if (controller.errorMessage.value != null)
                   Expanded(
                     child: Center(
@@ -1048,14 +1104,19 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                         if (index == 1) {
                           return const Padding(
                             padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
-                            child: Text('Camadas ambientais',
-                                style: TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.bold)),
+                            child: Text(
+                              'Camadas ambientais',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           );
                         }
                         final layer = controller.overlayLayers[index - 2];
-                        final enabled =
-                            controller.enabledIds.contains(layer.id);
+                        final enabled = controller.enabledIds.contains(
+                          layer.id,
+                        );
                         return ExpansionTile(
                           enabled: layer.available,
                           leading: Switch(
@@ -1065,22 +1126,31 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                                 : null,
                           ),
                           title: Text(layer.name),
-                          subtitle: Text(layer.available
-                              ? layer.description
-                              : 'Camada temporariamente indisponível'),
-                          childrenPadding:
-                              const EdgeInsets.fromLTRB(24, 0, 24, 16),
+                          subtitle: Text(
+                            layer.available
+                                ? layer.description
+                                : 'Camada temporariamente indisponível',
+                          ),
+                          childrenPadding: const EdgeInsets.fromLTRB(
+                            24,
+                            0,
+                            24,
+                            16,
+                          ),
                           children: [
                             Row(
                               children: [
                                 const Text('Opacidade'),
                                 Expanded(
                                   child: Slider(
-                                    value: controller.opacities[layer.id] ??
+                                    value:
+                                        controller.opacities[layer.id] ??
                                         layer.defaultOpacity,
                                     onChanged: enabled
                                         ? (value) => controller.setOpacity(
-                                            layer.id, value)
+                                            layer.id,
+                                            value,
+                                          )
                                         : null,
                                   ),
                                 ),
@@ -1114,8 +1184,10 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
         children: [
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 8),
-            child: Text('Mapa-base',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            child: Text(
+              'Mapa-base',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
           ),
           RadioListTile<String>(
             value: 'osm',
@@ -1132,9 +1204,11 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                   ? (value) => controller.selectBaseMap(value!)
                   : null,
               title: Text(layer.name),
-              subtitle: Text(layer.available
-                  ? layer.description
-                  : 'Configure a credencial Esri para habilitar'),
+              subtitle: Text(
+                layer.available
+                    ? layer.description
+                    : 'Configure a credencial Esri para habilitar',
+              ),
             ),
           ),
         ],
@@ -1166,28 +1240,35 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(layer.name,
-              style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.bold)),
-          ...layer.legend.map((item) => Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 12,
-                    height: 12,
-                    margin: const EdgeInsets.only(right: 6, top: 3),
-                    decoration: BoxDecoration(
-                      color: _hexColor(item.color),
-                      border: Border.all(color: Colors.white54),
-                    ),
+          Text(
+            layer.name,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          ...layer.legend.map(
+            (item) => Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 12,
+                  height: 12,
+                  margin: const EdgeInsets.only(right: 6, top: 3),
+                  decoration: BoxDecoration(
+                    color: _hexColor(item.color),
+                    border: Border.all(color: Colors.white54),
                   ),
-                  Flexible(
-                    child: Text(item.label,
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 11)),
+                ),
+                Flexible(
+                  child: Text(
+                    item.label,
+                    style: const TextStyle(color: Colors.white, fontSize: 11),
                   ),
-                ],
-              )),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -1293,7 +1374,11 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     int animationDirection = 1;
     late OverlayEntry entry;
 
+    bool closed = false;
     void close() {
+      if (closed) return;
+      closed = true;
+      _dismissTutorial = null;
       entry.remove();
       if (markAsSeen) {
         _markTutorialAsSeen();
@@ -1353,8 +1438,10 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                 top: calloutTop,
                 child: TweenAnimationBuilder<double>(
                   key: ValueKey(currentIndex),
-                  tween:
-                      Tween<double>(begin: animationDirection * 0.08, end: 0),
+                  tween: Tween<double>(
+                    begin: animationDirection * 0.08,
+                    end: 0,
+                  ),
                   duration: const Duration(milliseconds: 220),
                   curve: Curves.easeOutCubic,
                   builder: (context, offset, child) {
@@ -1385,6 +1472,8 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
       },
     );
 
+    _dismissTutorial?.call();
+    _dismissTutorial = close;
     overlay.insert(entry);
   }
 
@@ -1467,7 +1556,8 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
   }
 
   Color _categoryColor(LivingClueModel model) {
-    final String? hex = model.category?.colorHex ??
+    final String? hex =
+        model.category?.colorHex ??
         _controller.categoriesById[model.categoryId]?.colorHex;
     if (hex == null || hex.isEmpty) {
       return Colors.redAccent;
@@ -1601,10 +1691,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
         clue.category ?? _controller.categoriesById[clue.categoryId];
     return ListTile(
       dense: true,
-      leading: Icon(
-        Icons.location_on,
-        color: _categoryColor(clue),
-      ),
+      leading: Icon(Icons.location_on, color: _categoryColor(clue)),
       title: Text(
         clue.name,
         maxLines: 1,
@@ -1618,9 +1705,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
         category?.name ?? 'Categoria ${clue.categoryId}',
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          color: Colors.white.withValues(alpha: 0.72),
-        ),
+        style: TextStyle(color: Colors.white.withValues(alpha: 0.72)),
       ),
       trailing: const Icon(
         Icons.center_focus_strong,
@@ -1634,10 +1719,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
   Widget _buildPlaceSearchTile(NominatimPlaceModel place) {
     return ListTile(
       dense: true,
-      leading: const Icon(
-        Icons.public,
-        color: Colors.lightBlueAccent,
-      ),
+      leading: const Icon(Icons.public, color: Colors.lightBlueAccent),
       title: Text(
         place.displayName,
         maxLines: 1,
@@ -1651,15 +1733,9 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
         _placeSubtitle(place),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          color: Colors.white.withValues(alpha: 0.72),
-        ),
+        style: TextStyle(color: Colors.white.withValues(alpha: 0.72)),
       ),
-      trailing: const Icon(
-        Icons.travel_explore,
-        color: Colors.white,
-        size: 20,
-      ),
+      trailing: const Icon(Icons.travel_explore, color: Colors.white, size: 20),
       onTap: () => _focusMapPlace(place),
     );
   }
@@ -1698,10 +1774,11 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
               style: const TextStyle(color: Colors.black54),
             ),
             Text(
-              'Lat ${item.latitude.toStringAsFixed(5)} • Lng ${item.longitude.toStringAsFixed(5)}',
+              'Lat ${item.latitude?.toStringAsFixed(5) ?? '—'} • Lng ${item.longitude?.toStringAsFixed(5) ?? '—'}',
               style: const TextStyle(color: Colors.black54),
             ),
             const SizedBox(height: 14),
+            LockerButton(type: 'living_clue', id: item.id),
             Row(
               children: [
                 Expanded(
@@ -1715,36 +1792,39 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                   ),
                 ),
                 const SizedBox(width: 10),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    icon: const Icon(Icons.edit_location_alt_outlined),
-                    label: const Text('Editar'),
-                    onPressed: () async {
-                      Get.back();
-                      final updated = await Get.toNamed(
-                        '/living_clues/update',
-                        parameters: {'id': item.id.toString()},
-                      );
-                      if (updated == true) {
-                        _refreshActiveContext();
-                      }
-                    },
+                if (Get.find<UserController>().user.value?.canAuthor == true)
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.edit_location_alt_outlined),
+                      label: const Text('Editar'),
+                      onPressed: () async {
+                        Get.back();
+                        final updated = await Get.toNamed(
+                          '/living_clues/update',
+                          parameters: {'id': item.id.toString()},
+                        );
+                        if (updated == true) {
+                          _refreshActiveContext();
+                        }
+                      },
+                    ),
                   ),
-                ),
               ],
             ),
             const SizedBox(height: 10),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                icon: const Icon(Icons.open_with),
-                label: const Text('Mover no mapa'),
-                onPressed: () {
-                  Get.back();
-                  _toggleRepositionMode(item);
-                },
+            if (Get.find<UserController>().user.value?.canAuthor == true &&
+                item.hasLocation)
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  icon: const Icon(Icons.open_with),
+                  label: const Text('Mover no mapa'),
+                  onPressed: () {
+                    Get.back();
+                    _toggleRepositionMode(item);
+                  },
+                ),
               ),
-            ),
           ],
         ),
       ),
@@ -1849,9 +1929,9 @@ class _TutorialCard extends StatelessWidget {
                   child: Text(
                     title,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
                 Text(
@@ -1868,16 +1948,10 @@ class _TutorialCard extends StatelessWidget {
             const SizedBox(height: 16),
             Row(
               children: [
-                TextButton(
-                  onPressed: onSkip,
-                  child: const Text('Pular'),
-                ),
+                TextButton(onPressed: onSkip, child: const Text('Pular')),
                 const Spacer(),
                 if (canGoBack)
-                  TextButton(
-                    onPressed: onBack,
-                    child: const Text('Voltar'),
-                  ),
+                  TextButton(onPressed: onBack, child: const Text('Voltar')),
                 const SizedBox(width: 8),
                 ElevatedButton(
                   onPressed: onNext,

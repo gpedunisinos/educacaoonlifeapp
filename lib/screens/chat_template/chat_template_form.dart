@@ -37,9 +37,7 @@ class ChatTemplateForm extends StatefulWidget {
 }
 
 class _ChatTemplateFormState extends State<ChatTemplateForm> {
-  static const List<String> _availableMimeTypes = <String>[
-    'text/plain',
-  ];
+  static const List<String> _availableMimeTypes = <String>['text/plain'];
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
@@ -52,15 +50,22 @@ class _ChatTemplateFormState extends State<ChatTemplateForm> {
     super.initState();
     final ChatTemplateModel? initialValue = widget.initialValue;
     _nameController = TextEditingController(text: initialValue?.name ?? '');
-    _descriptionController = TextEditingController(text: initialValue?.description ?? '');
-    _systemInstructionController = TextEditingController(text: initialValue?.systemInstruction ?? '');
-    _fileEntries = (initialValue?.files ?? const <ChatTemplateFileModel>[]).map((file) => _ChatTemplateFileFormEntry.fromModel(file)).toList();
+    _descriptionController = TextEditingController(
+      text: initialValue?.description ?? '',
+    );
+    _systemInstructionController = TextEditingController(
+      text: initialValue?.systemInstruction ?? '',
+    );
+    _fileEntries = (initialValue?.files ?? const <ChatTemplateFileModel>[])
+        .map((file) => _ChatTemplateFileFormEntry.fromModel(file))
+        .toList();
   }
 
   @override
   void didUpdateWidget(covariant ChatTemplateForm oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.initialValue == widget.initialValue || widget.initialValue == null) {
+    if (oldWidget.initialValue == widget.initialValue ||
+        widget.initialValue == null) {
       return;
     }
 
@@ -71,7 +76,9 @@ class _ChatTemplateFormState extends State<ChatTemplateForm> {
     for (final entry in _fileEntries) {
       entry.dispose();
     }
-    _fileEntries = initialValue.files.map((file) => _ChatTemplateFileFormEntry.fromModel(file)).toList();
+    _fileEntries = initialValue.files
+        .map((file) => _ChatTemplateFileFormEntry.fromModel(file))
+        .toList();
   }
 
   @override
@@ -123,7 +130,11 @@ class _ChatTemplateFormState extends State<ChatTemplateForm> {
               border: OutlineInputBorder(),
             ),
             validator: (value) => PValidator([
-              PRuleMaxString(value, 10000, message: 'Máximo de 10000 caracteres'),
+              PRuleMaxString(
+                value,
+                10000,
+                message: 'Máximo de 10000 caracteres',
+              ),
             ]).val(),
           ),
           Insets.extraLarge.height,
@@ -132,7 +143,9 @@ class _ChatTemplateFormState extends State<ChatTemplateForm> {
               Expanded(
                 child: Text(
                   'Arquivos do template',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               TextButton.icon(
@@ -162,7 +175,9 @@ class _ChatTemplateFormState extends State<ChatTemplateForm> {
             width: double.infinity,
             child: ActionButton(
               theme: ActionButtonTheme.blue,
-              title: widget.isLoading ? '${widget.submitLabel}...' : widget.submitLabel,
+              title: widget.isLoading
+                  ? '${widget.submitLabel}...'
+                  : widget.submitLabel,
               onPressed: widget.isLoading ? null : _submit,
             ),
           ),
@@ -185,11 +200,15 @@ class _ChatTemplateFormState extends State<ChatTemplateForm> {
                 Expanded(
                   child: Text(
                     'Arquivo ${index + 1}',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 IconButton(
-                  onPressed: widget.isLoading ? null : () => _removeFileEntry(index),
+                  onPressed: widget.isLoading
+                      ? null
+                      : () => _removeFileEntry(index),
                   icon: const Icon(Icons.delete_outline),
                   tooltip: 'Remover arquivo',
                 ),
@@ -237,7 +256,11 @@ class _ChatTemplateFormState extends State<ChatTemplateForm> {
                 border: OutlineInputBorder(),
               ),
               validator: (value) => PValidator([
-                PRuleMaxString(value, 80000, message: 'Máximo de 80000 caracteres'),
+                PRuleMaxString(
+                  value,
+                  80000,
+                  message: 'Máximo de 80000 caracteres',
+                ),
               ]).val(),
             ),
           ],
@@ -263,14 +286,20 @@ class _ChatTemplateFormState extends State<ChatTemplateForm> {
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
-    final List<ChatTemplateFileModel> files =
-        _fileEntries.map((entry) => entry.toModel()).where((file) => file.name.isNotEmpty || file.content.isNotEmpty).toList();
+    final List<ChatTemplateFileModel> files = _fileEntries
+        .map((entry) => entry.toModel())
+        .where((file) => file.name.isNotEmpty || file.content.isNotEmpty)
+        .toList();
 
     await widget.onSubmit(
       ChatTemplateFormValue(
         name: _nameController.text.trim(),
-        description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
-        systemInstruction: _systemInstructionController.text.trim().isEmpty ? null : _systemInstructionController.text.trim(),
+        description: _descriptionController.text.trim().isEmpty
+            ? null
+            : _descriptionController.text.trim(),
+        systemInstruction: _systemInstructionController.text.trim().isEmpty
+            ? null
+            : _systemInstructionController.text.trim(),
         files: files,
       ),
     );
@@ -326,6 +355,8 @@ class _ChatTemplateFileFormEntry {
     const String fallbackMimeType = 'text/plain';
     if (mimeType == null || mimeType.isEmpty) return fallbackMimeType;
 
-    return _ChatTemplateFormState._availableMimeTypes.contains(mimeType) ? mimeType : fallbackMimeType;
+    return _ChatTemplateFormState._availableMimeTypes.contains(mimeType)
+        ? mimeType
+        : fallbackMimeType;
   }
 }

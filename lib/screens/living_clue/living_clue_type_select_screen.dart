@@ -6,8 +6,6 @@ import 'package:unisinos_usp_app/models/category_model.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class LivingClueTypeSelectScreen extends StatefulWidget {
@@ -32,17 +30,15 @@ class _LivingClueTypeSelectScreenState
     );
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Escolha o tipo da pista'),
       ),
       body: Stack(
         children: [
-          const Positioned.fill(child: StarfieldBackground()),
-          const Positioned.fill(child: CidigScenicBackground()),
           SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Form(
@@ -50,10 +46,7 @@ class _LivingClueTypeSelectScreenState
               child: Card(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
-                  side: const BorderSide(
-                    color: Color(0x8A46B6EC),
-                    width: 1.2,
-                  ),
+                  side: const BorderSide(color: Color(0x8A46B6EC), width: 1.2),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -62,14 +55,14 @@ class _LivingClueTypeSelectScreenState
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.alt_route_outlined,
-                              color: Colors.indigo),
+                          const Icon(
+                            Icons.alt_route_outlined,
+                            color: Colors.indigo,
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             'Defina o tipo da pista',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
+                            style: Theme.of(context).textTheme.titleMedium
                                 ?.copyWith(fontWeight: FontWeight.w700),
                           ),
                         ],
@@ -127,10 +120,7 @@ class _LivingClueTypeSelectScreenState
       route: Get.currentRoute,
       stage: 'pre-cadastro da pista',
       goal: 'selecionar o tipo da pista antes da categoria',
-      visibleFields: const <String>[
-        'tipo',
-        'continuar',
-      ],
+      visibleFields: const <String>['tipo', 'continuar'],
       filledFields: <String, String>{
         'tipo selecionado': _selectedType ?? 'nenhum',
       },

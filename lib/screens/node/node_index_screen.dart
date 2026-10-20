@@ -1,10 +1,10 @@
+import 'package:unisinos_usp_app/widgets/locker_panel.dart';
+import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/node/node_index_controller.dart';
 import 'package:unisinos_usp_app/models/node_model.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 
 class NodeIndexScreen extends StatefulWidget {
   NodeIndexScreen({super.key});
@@ -34,9 +34,9 @@ class _NodeIndexScreenState extends State<NodeIndexScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Problemáticas'),
@@ -46,17 +46,16 @@ class _NodeIndexScreenState extends State<NodeIndexScreen> {
             onPressed: () => Get.toNamed('/nodes/graph'),
             tooltip: 'Abrir grafo',
           ),
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: _goToCreate,
-            tooltip: 'Nova problemática',
-          ),
+          if (Get.find<UserController>().user.value?.canAuthor == true)
+            IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: _goToCreate,
+              tooltip: 'Nova problemática',
+            ),
         ],
       ),
       body: Stack(
         children: [
-          const Positioned.fill(child: StarfieldBackground()),
-          const Positioned.fill(child: CidigScenicBackground()),
           Column(
             children: [
               Padding(
@@ -70,7 +69,8 @@ class _NodeIndexScreenState extends State<NodeIndexScreen> {
                     prefixIcon: const Icon(Icons.search, color: Colors.white70),
                     suffixIcon: IconButton(
                       icon: const Icon(Icons.refresh, color: Colors.white70),
-                      onPressed: () => _controller.applySearch(_searchController.text),
+                      onPressed: () =>
+                          _controller.applySearch(_searchController.text),
                     ),
                     filled: true,
                     fillColor: Colors.white.withValues(alpha: 0.08),
@@ -85,18 +85,26 @@ class _NodeIndexScreenState extends State<NodeIndexScreen> {
               ),
               Expanded(
                 child: Obx(() {
-                  if (_controller.isLoading.value && _controller.nodes.isEmpty) {
-                    return const Center(child: CircularProgressIndicator(color: Colors.white));
+                  if (_controller.isLoading.value &&
+                      _controller.nodes.isEmpty) {
+                    return const Center(
+                      child: CircularProgressIndicator(color: Colors.white),
+                    );
                   }
                   if (_controller.nodes.isEmpty) {
                     return const Center(
-                      child: Text('Nenhuma problemática encontrada.', style: TextStyle(color: Colors.white)),
+                      child: Text(
+                        'Nenhuma problemática encontrada.',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     );
                   }
                   return ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                    itemCount: _controller.nodes.length + (_controller.isLoadingMore.value ? 1 : 0),
+                    itemCount:
+                        _controller.nodes.length +
+                        (_controller.isLoadingMore.value ? 1 : 0),
                     itemBuilder: (_, index) {
                       if (index >= _controller.nodes.length) {
                         return const Padding(
@@ -123,7 +131,8 @@ class _NodeIndexScreenState extends State<NodeIndexScreen> {
 
   void _onScroll() {
     if (!_scrollController.hasClients) return;
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       _controller.loadMore();
     }
   }
@@ -150,7 +159,10 @@ class _NodeIndexScreenState extends State<NodeIndexScreen> {
   }
 
   Future<void> _goToUpdate(NodeModel model) async {
-    final updated = await Get.toNamed('/nodes/update', parameters: {'id': model.id.toString()});
+    final updated = await Get.toNamed(
+      '/nodes/update',
+      parameters: {'id': model.id.toString()},
+    );
     if (updated == true) {
       await _controller.loadInitial();
     }
@@ -176,10 +188,7 @@ class _NodeCard extends StatelessWidget {
       color: Colors.black.withValues(alpha: 0.58),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(
-          color: Color(0x8A46B6EC),
-          width: 1.2,
-        ),
+        side: const BorderSide(color: Color(0x8A46B6EC), width: 1.2),
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -198,9 +207,9 @@ class _NodeCard extends StatelessWidget {
                   Text(
                     model.name,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -210,14 +219,17 @@ class _NodeCard extends StatelessWidget {
                 ],
               ),
             ),
-            IconButton(
-              onPressed: onEdit,
-              icon: const Icon(Icons.edit, color: Colors.white),
-            ),
-            IconButton(
-              onPressed: onDelete,
-              icon: const Icon(Icons.delete_outline, color: Colors.white),
-            ),
+            LockerButton(type: 'node', id: model.id),
+            if (Get.find<UserController>().user.value?.canAuthor == true)
+              IconButton(
+                onPressed: onEdit,
+                icon: const Icon(Icons.edit, color: Colors.white),
+              ),
+            if (Get.find<UserController>().user.value?.canAuthor == true)
+              IconButton(
+                onPressed: onDelete,
+                icon: const Icon(Icons.delete_outline, color: Colors.white),
+              ),
           ],
         ),
       ),

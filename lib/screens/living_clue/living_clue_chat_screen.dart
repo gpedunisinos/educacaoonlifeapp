@@ -6,7 +6,6 @@ import 'package:unisinos_usp_app/controllers/living_clue/living_clue_chat_contro
 import 'package:unisinos_usp_app/models/living_clue_chat_message_model.dart';
 import 'package:unisinos_usp_app/widgets/ai_assistant_launcher.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 class LivingClueChatScreen extends StatefulWidget {
@@ -37,8 +36,9 @@ class _LivingClueChatScreenState extends State<LivingClueChatScreen> {
       if (_controller.lastMutationType == 'prepend') return;
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
     });
-    _initialLoadWorker =
-        ever<bool>(_controller.initialLoadFinished, (finished) {
+    _initialLoadWorker = ever<bool>(_controller.initialLoadFinished, (
+      finished,
+    ) {
       if (!finished || _initialBottomDone || !mounted) return;
       _initialBottomDone = true;
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
@@ -63,13 +63,14 @@ class _LivingClueChatScreenState extends State<LivingClueChatScreen> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
-        title:
-            Obx(() => Text(_controller.livingClue.value?.name ?? 'Pista viva')),
+        title: Obx(
+          () => Text(_controller.livingClue.value?.name ?? 'Pista viva'),
+        ),
         actions: [
           IconButton(
             tooltip: 'Limpar conversa',
@@ -80,7 +81,6 @@ class _LivingClueChatScreenState extends State<LivingClueChatScreen> {
       ),
       body: Stack(
         children: [
-          const Positioned.fill(child: StarfieldBackground()),
           Column(
             children: [
               Obx(() {
@@ -114,14 +114,18 @@ class _LivingClueChatScreenState extends State<LivingClueChatScreen> {
                   if (_controller.isLoading.value &&
                       _controller.messages.isEmpty) {
                     return const Center(
-                        child: CircularProgressIndicator(color: Colors.white));
+                      child: CircularProgressIndicator(color: Colors.white),
+                    );
                   }
 
                   if (_controller.livingClue.value == null &&
                       _controller.livingClueId == null) {
                     return const Center(
-                        child: Text('Pista viva não informada.',
-                            style: TextStyle(color: Colors.white)));
+                      child: Text(
+                        'Pista viva não informada.',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    );
                   }
 
                   if (_controller.messages.isEmpty) {
@@ -140,20 +144,24 @@ class _LivingClueChatScreenState extends State<LivingClueChatScreen> {
                   return ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-                    itemCount: _controller.messages.length +
+                    itemCount:
+                        _controller.messages.length +
                         (_controller.isLoadingMore.value ? 1 : 0),
                     itemBuilder: (_, index) {
                       if (_controller.isLoadingMore.value && index == 0) {
                         return const Padding(
                           padding: EdgeInsets.only(bottom: 12),
                           child: Center(
-                              child: CircularProgressIndicator(
-                                  color: Colors.white)),
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
+                          ),
                         );
                       }
 
-                      final int messageIndex =
-                          _controller.isLoadingMore.value ? index - 1 : index;
+                      final int messageIndex = _controller.isLoadingMore.value
+                          ? index - 1
+                          : index;
                       final LivingClueChatMessageModel message =
                           _controller.messages[messageIndex];
                       return _buildMessageBubble(message, theme);
@@ -170,7 +178,9 @@ class _LivingClueChatScreenState extends State<LivingClueChatScreen> {
   }
 
   Widget _buildMessageBubble(
-      LivingClueChatMessageModel message, ThemeData theme) {
+    LivingClueChatMessageModel message,
+    ThemeData theme,
+  ) {
     final bool isUser = message.isUser;
     final Color bubbleColor = isUser ? theme.colorScheme.primary : Colors.white;
     final Color textColor = isUser ? Colors.white : Colors.grey.shade900;
@@ -178,8 +188,9 @@ class _LivingClueChatScreenState extends State<LivingClueChatScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
-        mainAxisAlignment:
-            isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isUser
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!isUser)
@@ -208,16 +219,19 @@ class _LivingClueChatScreenState extends State<LivingClueChatScreen> {
                 ],
               ),
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildMarkdownMessage(theme, message.text, textColor),
                     const SizedBox(height: 6),
                     Text(
-                      DateFormat('dd/MM HH:mm')
-                          .format(message.timestamp.toLocal()),
+                      DateFormat(
+                        'dd/MM HH:mm',
+                      ).format(message.timestamp.toLocal()),
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: textColor.withValues(alpha: 0.8),
                       ),
@@ -231,8 +245,9 @@ class _LivingClueChatScreenState extends State<LivingClueChatScreen> {
           if (isUser)
             CircleAvatar(
               radius: 16,
-              backgroundColor:
-                  theme.colorScheme.primary.withValues(alpha: 0.15),
+              backgroundColor: theme.colorScheme.primary.withValues(
+                alpha: 0.15,
+              ),
               child: Icon(Icons.person, color: theme.colorScheme.primary),
             ),
         ],
@@ -241,8 +256,10 @@ class _LivingClueChatScreenState extends State<LivingClueChatScreen> {
   }
 
   Widget _buildMarkdownMessage(ThemeData theme, String text, Color textColor) {
-    final baseStyle =
-        theme.textTheme.bodyMedium?.copyWith(color: textColor, height: 1.35);
+    final baseStyle = theme.textTheme.bodyMedium?.copyWith(
+      color: textColor,
+      height: 1.35,
+    );
     return MarkdownBody(
       data: text,
       styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
@@ -343,14 +360,17 @@ class _LivingClueChatScreenState extends State<LivingClueChatScreen> {
       AlertDialog(
         title: const Text('Limpar conversa'),
         content: const Text(
-            'Deseja apagar o histórico desta conversa com a pista viva?'),
+          'Deseja apagar o histórico desta conversa com a pista viva?',
+        ),
         actions: [
           TextButton(
-              onPressed: () => Get.back(result: false),
-              child: const Text('Cancelar')),
+            onPressed: () => Get.back(result: false),
+            child: const Text('Cancelar'),
+          ),
           ElevatedButton(
-              onPressed: () => Get.back(result: true),
-              child: const Text('Apagar')),
+            onPressed: () => Get.back(result: true),
+            child: const Text('Apagar'),
+          ),
         ],
       ),
     );

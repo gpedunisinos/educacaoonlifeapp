@@ -7,8 +7,6 @@ import 'package:unisinos_usp_app/models/node_type_model.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/widgets/color_preview_card.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class NodeTypeCreateScreen extends StatefulWidget {
@@ -24,8 +22,9 @@ class _NodeTypeCreateScreenState extends State<NodeTypeCreateScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _colorController =
-      TextEditingController(text: '#2563EB');
+  final TextEditingController _colorController = TextEditingController(
+    text: '#2563EB',
+  );
 
   @override
   void dispose() {
@@ -37,17 +36,15 @@ class _NodeTypeCreateScreenState extends State<NodeTypeCreateScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Novo tipo de problemática'),
       ),
       body: Stack(
         children: [
-          const Positioned.fill(child: StarfieldBackground()),
-          const Positioned.fill(child: CidigScenicBackground()),
           SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Form(
@@ -60,8 +57,11 @@ class _NodeTypeCreateScreenState extends State<NodeTypeCreateScreen> {
                     controller: _nameController,
                     validator: (value) => PValidator([
                       PRuleRequired(value, message: 'Obrigatório'),
-                      PRuleMaxString(value, 100,
-                          message: 'Máximo de 100 caracteres'),
+                      PRuleMaxString(
+                        value,
+                        100,
+                        message: 'Máximo de 100 caracteres',
+                      ),
                     ]).val(),
                   ),
                   Insets.large.height,

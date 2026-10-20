@@ -7,8 +7,6 @@ import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
 import 'package:unisinos_usp_app/services/location_privacy_service.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 
 class LivingClueMapCreateScreen extends StatefulWidget {
   const LivingClueMapCreateScreen({super.key});
@@ -55,8 +53,10 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
       }
       if (permission == LocationPermission.deniedForever ||
           permission == LocationPermission.denied) {
-        Get.snackbar('Permissão necessária',
-            'Habilite a localização para usar sua posição atual.');
+        Get.snackbar(
+          'Permissão necessária',
+          'Habilite a localização para usar sua posição atual.',
+        );
         return;
       }
       final Position position = await Geolocator.getCurrentPosition();
@@ -88,8 +88,10 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
 
   Future<void> _goToCreate() async {
     if (_selected == null) {
-      Get.snackbar('Selecione um ponto',
-          'Pressione e segure no mapa para marcar a localização.');
+      Get.snackbar(
+        'Selecione um ponto',
+        'Pressione e segure no mapa para marcar a localização.',
+      );
       return;
     }
     if (!await LocationPrivacyService.ensureAcknowledged(context)) return;
@@ -118,9 +120,9 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
         : 'Ponto selecionado: ${_selected!.latitude.toStringAsFixed(6)}, ${_selected!.longitude.toStringAsFixed(6)}';
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Escolher local da pista'),
@@ -140,8 +142,6 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
       ),
       body: Stack(
         children: [
-          const Positioned.fill(child: StarfieldBackground()),
-          const Positioned.fill(child: CidigScenicBackground()),
           FlutterMap(
             mapController: _mapController,
             options: MapOptions(
@@ -173,8 +173,11 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
                       point: _selected!,
                       width: 40,
                       height: 40,
-                      child: const Icon(Icons.location_on,
-                          color: Colors.blue, size: 36),
+                      child: const Icon(
+                        Icons.location_on,
+                        color: Colors.blue,
+                        size: 36,
+                      ),
                     ),
                   ],
                 ),
@@ -187,10 +190,7 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
             child: Card(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: const BorderSide(
-                  color: Color(0x8A46B6EC),
-                  width: 1.2,
-                ),
+                side: const BorderSide(color: Color(0x8A46B6EC), width: 1.2),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(12),
@@ -204,8 +204,10 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
                     const SizedBox(height: 6),
                     Text(
                       selectedText,
-                      style:
-                          const TextStyle(fontSize: 12, color: Colors.blueGrey),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.blueGrey,
+                      ),
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,

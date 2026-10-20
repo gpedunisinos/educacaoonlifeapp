@@ -8,8 +8,6 @@ import 'package:unisinos_usp_app/webclients/node_type_webclient.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/widgets/color_preview_card.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class NodeUpdateScreen extends StatefulWidget {
@@ -38,26 +36,36 @@ class _NodeUpdateScreenState extends State<NodeUpdateScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Editar problemática'),
       ),
       body: Stack(
         children: [
-          const Positioned.fill(child: StarfieldBackground()),
-          const Positioned.fill(child: CidigScenicBackground()),
           Obx(() {
             if (_controller.nodeId == null) {
-              return const Center(child: Text('Problemática não informada.', style: TextStyle(color: Colors.white)));
+              return const Center(
+                child: Text(
+                  'Problemática não informada.',
+                  style: TextStyle(color: Colors.white),
+                ),
+              );
             }
             if (_controller.isLoading.value && _controller.node.value == null) {
-              return const Center(child: CircularProgressIndicator(color: Colors.white));
+              return const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              );
             }
             if (_controller.node.value == null) {
-              return const Center(child: Text('Problemática não encontrada.', style: TextStyle(color: Colors.white)));
+              return const Center(
+                child: Text(
+                  'Problemática não encontrada.',
+                  style: TextStyle(color: Colors.white),
+                ),
+              );
             }
 
             if (!_filled) {
@@ -83,7 +91,11 @@ class _NodeUpdateScreenState extends State<NodeUpdateScreen> {
                       controller: _nameController,
                       validator: (value) => PValidator([
                         PRuleRequired(value, message: 'Obrigatório'),
-                        PRuleMaxString(value, 120, message: 'Máximo de 120 caracteres'),
+                        PRuleMaxString(
+                          value,
+                          120,
+                          message: 'Máximo de 120 caracteres',
+                        ),
                       ]).val(),
                     ),
                     Insets.large.height,
@@ -93,7 +105,8 @@ class _NodeUpdateScreenState extends State<NodeUpdateScreen> {
                       validator: (value) => PValidator([
                         PRuleRequired(value, message: 'Obrigatório'),
                       ]).val(),
-                      onFind: (search, offset, params) => NodeTypeWebclient().select(search, offset),
+                      onFind: (search, offset, params) =>
+                          NodeTypeWebclient().select(search, offset),
                     ),
                     Insets.large.height,
                     InputText(
@@ -159,7 +172,9 @@ class _NodeUpdateScreenState extends State<NodeUpdateScreen> {
     final int? nodeTypeId = _nodeTypeSelectController.selectedItem?.id;
     if (nodeTypeId == null) {
       Get.customSnackbar(
-          'Erro', 'Selecione um tipo de problemática para continuar.');
+        'Erro',
+        'Selecione um tipo de problemática para continuar.',
+      );
       return;
     }
 

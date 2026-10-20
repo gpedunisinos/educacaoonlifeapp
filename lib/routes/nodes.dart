@@ -38,7 +38,7 @@ List<GetPage> nodeRoutes() => [
         page: () => const NodeGraphScreen(),
         binding: NodeGraphBinding(),
         middlewares: [
-          AppRouteGuard(canActivate: (user) => NodePolicy(user).create()),
+          AppRouteGuard(canActivate: (user) => NodePolicy(user).viewAny()),
         ],
       ),
     ];

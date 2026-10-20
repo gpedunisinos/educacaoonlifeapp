@@ -27,6 +27,7 @@ class UserPolicy extends ModelPolicy<Object> {
 
   @override
   bool create() {
+    if (user?.canAuthor != true) return false;
     if (user == null) {
       return false;
     } else if (user!.isAdmin) {
@@ -38,6 +39,7 @@ class UserPolicy extends ModelPolicy<Object> {
 
   @override
   bool update(Object? model) {
+    if (user?.canAuthor != true) return false;
     if (user == null || model == null) {
       return false;
     } else if (user!.isAdmin) {
@@ -49,6 +51,7 @@ class UserPolicy extends ModelPolicy<Object> {
 
   @override
   bool delete(Object? model) {
+    if (user?.canAuthor != true) return false;
     if (user == null || model == null) {
       return false;
     } else if (user!.isAdmin) {

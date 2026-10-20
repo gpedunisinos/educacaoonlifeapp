@@ -61,7 +61,9 @@ class _UserFormState extends State<UserForm> {
     _emailController = TextEditingController(text: initial?.email ?? '');
     _phoneController = TextEditingController(text: initial?.phone ?? '');
     _passwordController = TextEditingController();
-    _selectedProfile = _profiles.any((p) => p.key == initial?.profile) ? initial!.profile : 10;
+    _selectedProfile = _profiles.any((p) => p.key == initial?.profile)
+        ? initial!.profile
+        : 10;
   }
 
   @override
@@ -104,10 +106,12 @@ class _UserFormState extends State<UserForm> {
               border: OutlineInputBorder(),
             ),
             items: _profiles
-                .map((entry) => DropdownMenuItem<int>(
-                      value: entry.key,
-                      child: Text(entry.value),
-                    ))
+                .map(
+                  (entry) => DropdownMenuItem<int>(
+                    value: entry.key,
+                    child: Text(entry.value),
+                  ),
+                )
                 .toList(),
             onChanged: widget.isLoading
                 ? null
@@ -119,10 +123,7 @@ class _UserFormState extends State<UserForm> {
                   },
           ),
           Insets.large.height,
-          InputText(
-            hintText: 'Telefone',
-            controller: _phoneController,
-          ),
+          InputText(hintText: 'Telefone', controller: _phoneController),
           Insets.large.height,
           InputText(
             hintText: widget.requirePassword ? 'Senha' : 'Senha (opcional)',
@@ -143,7 +144,9 @@ class _UserFormState extends State<UserForm> {
             width: double.infinity,
             child: ActionButton(
               theme: ActionButtonTheme.blue,
-              title: widget.isLoading ? '${widget.submitLabel}...' : widget.submitLabel,
+              title: widget.isLoading
+                  ? '${widget.submitLabel}...'
+                  : widget.submitLabel,
               onPressed: widget.isLoading ? null : _submit,
             ),
           ),
@@ -160,8 +163,12 @@ class _UserFormState extends State<UserForm> {
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),
         profile: _selectedProfile,
-        phone: _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
-        password: _passwordController.text.trim().isEmpty ? null : _passwordController.text.trim(),
+        phone: _phoneController.text.trim().isEmpty
+            ? null
+            : _phoneController.text.trim(),
+        password: _passwordController.text.trim().isEmpty
+            ? null
+            : _passwordController.text.trim(),
       ),
     );
   }

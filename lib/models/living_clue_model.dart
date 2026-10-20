@@ -1,16 +1,18 @@
+import 'package:unisinos_usp_app/models/file_model.dart';
 import 'dart:convert';
 
 import 'package:unisinos_usp_app/models/category_model.dart';
 import 'package:unisinos_usp_app/models/environmental_context_model.dart';
 
 class LivingClueModel {
+  List<FileModel> files;
   int id;
   String name;
   int categoryId;
   String? description;
   String? descriptionDelta;
-  double latitude;
-  double longitude;
+  double? latitude;
+  double? longitude;
   String? imageUrl;
   Map<String, dynamic>? metadata;
   bool isActive;
@@ -21,10 +23,11 @@ class LivingClueModel {
 
   LivingClueModel({
     required this.id,
+    this.files = const [],
     required this.name,
     required this.categoryId,
-    required this.latitude,
-    required this.longitude,
+    this.latitude,
+    this.longitude,
     this.description,
     this.descriptionDelta,
     this.imageUrl,
@@ -37,13 +40,16 @@ class LivingClueModel {
   });
 
   LivingClueModel.fromJson(Map<String, dynamic> json)
-      : id = json['id'] is int ? json['id'] : int.parse(json['id'].toString()),
+      : files = (json['files'] as List? ?? [])
+            .map((e) => FileModel.fromJson(Map<String, dynamic>.from(e)))
+            .toList(),
+        id = json['id'] is int ? json['id'] : int.parse(json['id'].toString()),
         name = json['name'] ?? '',
         categoryId = _parseCategoryId(json),
         description = json['description'],
         descriptionDelta = json['description_delta'],
-        latitude = double.parse(json['latitude'].toString()),
-        longitude = double.parse(json['longitude'].toString()),
+        latitude = double.tryParse(json['latitude']?.toString() ?? ''),
+        longitude = double.tryParse(json['longitude']?.toString() ?? ''),
         imageUrl = json['image_url'],
         metadata = json['metadata'],
         isActive = json['is_active'] == null ? true : json['is_active'] == true,
@@ -56,12 +62,15 @@ class LivingClueModel {
         category = _parseCategory(json),
         environmentalContext = _parseEnvironmentalContext(json);
 
+  bool get hasLocation => latitude != null && longitude != null;
+
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
         'category_id': categoryId,
         'description': description,
         'description_delta': descriptionDelta,
+        'remove_location': !hasLocation,
         'latitude': latitude,
         'longitude': longitude,
         'image_url': imageUrl,

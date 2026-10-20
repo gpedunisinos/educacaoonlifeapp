@@ -5,8 +5,6 @@ import 'package:unisinos_usp_app/controllers/chat_template/chat_template_index_c
 import 'package:unisinos_usp_app/models/chat_template_model.dart';
 import 'package:unisinos_usp_app/policies/policies.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 
 class ChatTemplateIndexScreen extends StatefulWidget {
   const ChatTemplateIndexScreen({super.key});
@@ -37,13 +35,14 @@ class _ChatTemplateIndexScreenState extends State<ChatTemplateIndexScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final canManage =
-        ChatTemplatePolicy(Get.find<UserController>().user.value).create();
+    final canManage = ChatTemplatePolicy(
+      Get.find<UserController>().user.value,
+    ).create();
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Agentes'),
@@ -58,12 +57,11 @@ class _ChatTemplateIndexScreenState extends State<ChatTemplateIndexScreen> {
       ),
       body: Stack(
         children: [
-          const Positioned.fill(child: StarfieldBackground()),
-          const Positioned.fill(child: CidigScenicBackground()),
           Obx(() {
             if (_controller.isLoading.value && _controller.templates.isEmpty) {
               return const Center(
-                  child: CircularProgressIndicator(color: Colors.white));
+                child: CircularProgressIndicator(color: Colors.white),
+              );
             }
 
             if (_controller.templates.isEmpty) {
@@ -73,8 +71,11 @@ class _ChatTemplateIndexScreenState extends State<ChatTemplateIndexScreen> {
                   children: const [
                     SizedBox(height: 220),
                     Center(
-                        child: Text('Nenhum template cadastrado.',
-                            style: TextStyle(color: Colors.white))),
+                      child: Text(
+                        'Nenhum template cadastrado.',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
                   ],
                 ),
               );
@@ -85,15 +86,16 @@ class _ChatTemplateIndexScreenState extends State<ChatTemplateIndexScreen> {
               child: ListView.builder(
                 controller: _scrollController,
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-                itemCount: _controller.templates.length +
+                itemCount:
+                    _controller.templates.length +
                     (_controller.isLoadingMore.value ? 1 : 0),
                 itemBuilder: (_, index) {
                   if (index >= _controller.templates.length) {
                     return const Padding(
                       padding: EdgeInsets.symmetric(vertical: 16),
                       child: Center(
-                          child:
-                              CircularProgressIndicator(color: Colors.white)),
+                        child: CircularProgressIndicator(color: Colors.white),
+                      ),
                     );
                   }
 
@@ -110,16 +112,19 @@ class _ChatTemplateIndexScreenState extends State<ChatTemplateIndexScreen> {
                     ),
                     color: Colors.black.withValues(alpha: 0.58),
                     child: ListTile(
-                      title: Text(template.name,
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold)),
+                      title: Text(
+                        template.name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       subtitle: Text(
                         template.description?.isNotEmpty ?? false
                             ? template.description!
                             : (template.systemInstruction?.isNotEmpty ?? false
-                                ? template.systemInstruction!
-                                : 'Sem descrição'),
+                                  ? template.systemInstruction!
+                                  : 'Sem descrição'),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(color: Colors.white70),

@@ -8,16 +8,16 @@ class LivingClueCreateController extends GetxController {
 
   final RxBool isLoading = false.obs;
 
-  Future<bool> save(LivingClueModel model) async {
+  Future<LivingClueModel?> save(LivingClueModel model) async {
     try {
       isLoading.value = true;
-      await _webclient.create(model);
+      final saved = await _webclient.create(model);
       Get.successSnackbar('Pista salva com sucesso.');
-      return true;
+      return saved;
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
       Get.customSnackbar('Erro', 'Não foi possível salvar a pista. $error');
-      return false;
+      return null;
     } finally {
       isLoading.value = false;
     }

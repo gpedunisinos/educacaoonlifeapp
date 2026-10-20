@@ -6,8 +6,6 @@ import 'package:unisinos_usp_app/controllers/category/category_update_controller
 import 'package:unisinos_usp_app/models/category_model.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class CategoryUpdateScreen extends StatefulWidget {
@@ -18,11 +16,14 @@ class CategoryUpdateScreen extends StatefulWidget {
 }
 
 class _CategoryUpdateScreenState extends State<CategoryUpdateScreen> {
-  final CategoryUpdateController _controller = Get.find<CategoryUpdateController>();
+  final CategoryUpdateController _controller =
+      Get.find<CategoryUpdateController>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _colorController = TextEditingController(text: '#');
+  final TextEditingController _colorController = TextEditingController(
+    text: '#',
+  );
   final TextEditingController _iconController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _metadataTagsController = TextEditingController();
@@ -50,28 +51,39 @@ class _CategoryUpdateScreenState extends State<CategoryUpdateScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Editar categoria'),
       ),
       body: Stack(
         children: [
-          const Positioned.fill(child: StarfieldBackground()),
-          const Positioned.fill(child: CidigScenicBackground()),
           Obx(() {
             if (_controller.categoryId == null) {
-              return const Center(child: Text('Categoria não informada.', style: TextStyle(color: Colors.white)));
+              return const Center(
+                child: Text(
+                  'Categoria não informada.',
+                  style: TextStyle(color: Colors.white),
+                ),
+              );
             }
 
-            if (_controller.isLoading.value && _controller.category.value == null) {
-              return const Center(child: CircularProgressIndicator(color: Colors.white));
+            if (_controller.isLoading.value &&
+                _controller.category.value == null) {
+              return const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              );
             }
 
             if (_controller.category.value == null) {
-              return const Center(child: Text('Categoria não encontrada.', style: TextStyle(color: Colors.white)));
+              return const Center(
+                child: Text(
+                  'Categoria não encontrada.',
+                  style: TextStyle(color: Colors.white),
+                ),
+              );
             }
 
             if (!_filledControllers && _controller.category.value != null) {
@@ -94,100 +106,112 @@ class _CategoryUpdateScreenState extends State<CategoryUpdateScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                    InputText(
-                      hintText: 'Nome',
-                      controller: _nameController,
-                      validator: (value) => PValidator([
-                        PRuleRequired(value, message: 'Obrigatório'),
-                        PRuleMaxString(value, 255, message: 'Máximo de 255 caracteres'),
-                      ]).val(),
-                    ),
-                    Insets.large.height,
-                    DropdownButtonFormField<String>(
-                      value: _selectedType,
-                      decoration: const InputDecoration(
-                        labelText: 'Tipo',
-                        border: OutlineInputBorder(),
-                      ),
-                      items: CategoryType.values
-                          .map(
-                            (type) => DropdownMenuItem<String>(
-                              value: type,
-                              child: Text(type),
+                        InputText(
+                          hintText: 'Nome',
+                          controller: _nameController,
+                          validator: (value) => PValidator([
+                            PRuleRequired(value, message: 'Obrigatório'),
+                            PRuleMaxString(
+                              value,
+                              255,
+                              message: 'Máximo de 255 caracteres',
                             ),
-                          )
-                          .toList(),
-                      onChanged: (value) => setState(() => _selectedType = value),
-                      validator: (value) => PValidator([
-                        PRuleRequired(value, message: 'Obrigatório'),
-                      ]).val(),
-                    ),
-                    Insets.large.height,
-                    InputText(
-                      hintText: 'Cor em hex (ex: #FF5733)',
-                      controller: _colorController,
-                      validator: (value) => PValidator([
-                        PRuleRequired(value, message: 'Obrigatório'),
-                        PRuleRegex(value, r'^#([A-Fa-f0-9]{6})$', message: 'Use o formato #RRGGBB'),
-                      ]).val(),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: _selectedColor,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.grey.shade300),
+                          ]).val(),
+                        ),
+                        Insets.large.height,
+                        DropdownButtonFormField<String>(
+                          value: _selectedType,
+                          decoration: const InputDecoration(
+                            labelText: 'Tipo',
+                            border: OutlineInputBorder(),
                           ),
+                          items: CategoryType.values
+                              .map(
+                                (type) => DropdownMenuItem<String>(
+                                  value: type,
+                                  child: Text(type),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (value) =>
+                              setState(() => _selectedType = value),
+                          validator: (value) => PValidator([
+                            PRuleRequired(value, message: 'Obrigatório'),
+                          ]).val(),
                         ),
-                        const SizedBox(width: 12),
-                        TextButton.icon(
-                          onPressed: _openColorPicker,
-                          icon: const Icon(Icons.color_lens_outlined),
-                          label: const Text('Selecionar cor'),
+                        Insets.large.height,
+                        InputText(
+                          hintText: 'Cor em hex (ex: #FF5733)',
+                          controller: _colorController,
+                          validator: (value) => PValidator([
+                            PRuleRequired(value, message: 'Obrigatório'),
+                            PRuleRegex(
+                              value,
+                              r'^#([A-Fa-f0-9]{6})$',
+                              message: 'Use o formato #RRGGBB',
+                            ),
+                          ]).val(),
                         ),
-                      ],
-                    ),
-                    Insets.large.height,
-                    InputText(
-                      hintText: 'Código do ícone (opcional)',
-                      controller: _iconController,
-                    ),
-                    Insets.large.height,
-                    InputText(
-                      hintText: 'Descrição (opcional)',
-                      controller: _descriptionController,
-                      maxLines: 4,
-                    ),
-                    Insets.large.height,
-                    InputText(
-                      hintText: 'Metadata tags (ex: tag_teste,tag_other)',
-                      controller: _metadataTagsController,
-                      validator: (value) => PValidator([
-                        PRuleRequired(value, message: 'Obrigatório'),
-                        PRuleRegex(
-                          value,
-                          r'^[A-Za-z0-9_]+(,[A-Za-z0-9_]+)*$',
-                          message: 'Use somente letras/números/_ separados por vírgula, sem espaços',
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: _selectedColor,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.grey.shade300),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            TextButton.icon(
+                              onPressed: _openColorPicker,
+                              icon: const Icon(Icons.color_lens_outlined),
+                              label: const Text('Selecionar cor'),
+                            ),
+                          ],
                         ),
-                      ]).val(),
-                    ),
-                    Insets.extraLarge.height,
-                    SizedBox(
-                      width: double.infinity,
-                      child: Obx(() {
-                        final bool loading = _controller.isLoading.value;
-                        final String buttonTitle = loading ? 'Atualizando...' : 'Atualizar';
-                        return ActionButton(
-                          theme: ActionButtonTheme.blue,
-                          title: buttonTitle,
-                          onPressed: loading ? null : _save,
-                        );
-                      }),
-                    ),
+                        Insets.large.height,
+                        InputText(
+                          hintText: 'Código do ícone (opcional)',
+                          controller: _iconController,
+                        ),
+                        Insets.large.height,
+                        InputText(
+                          hintText: 'Descrição (opcional)',
+                          controller: _descriptionController,
+                          maxLines: 4,
+                        ),
+                        Insets.large.height,
+                        InputText(
+                          hintText: 'Metadata tags (ex: tag_teste,tag_other)',
+                          controller: _metadataTagsController,
+                          validator: (value) => PValidator([
+                            PRuleRequired(value, message: 'Obrigatório'),
+                            PRuleRegex(
+                              value,
+                              r'^[A-Za-z0-9_]+(,[A-Za-z0-9_]+)*$',
+                              message:
+                                  'Use somente letras/números/_ separados por vírgula, sem espaços',
+                            ),
+                          ]).val(),
+                        ),
+                        Insets.extraLarge.height,
+                        SizedBox(
+                          width: double.infinity,
+                          child: Obx(() {
+                            final bool loading = _controller.isLoading.value;
+                            final String buttonTitle = loading
+                                ? 'Atualizando...'
+                                : 'Atualizar';
+                            return ActionButton(
+                              theme: ActionButtonTheme.blue,
+                              title: buttonTitle,
+                              onPressed: loading ? null : _save,
+                            );
+                          }),
+                        ),
                       ],
                     ),
                   ),
@@ -227,7 +251,10 @@ class _CategoryUpdateScreenState extends State<CategoryUpdateScreen> {
   }
 
   String _colorToHex(Color color) {
-    final String hex = color.value.toRadixString(16).padLeft(8, '0').substring(2);
+    final String hex = color.value
+        .toRadixString(16)
+        .padLeft(8, '0')
+        .substring(2);
     return '#${hex.toUpperCase()}';
   }
 

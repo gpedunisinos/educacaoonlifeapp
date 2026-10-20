@@ -31,7 +31,8 @@ List<GetPage> livingClueRoutes() => [
         page: () => const LivingClueMapScreen(),
         binding: LivingClueMapBinding(),
         middlewares: [
-          AppRouteGuard(canActivate: (user) => LivingCluePolicy(user).create()),
+          AppRouteGuard(
+              canActivate: (user) => LivingCluePolicy(user).viewAny()),
         ],
       ),
       GetPage(
@@ -92,4 +93,10 @@ List<GetPage> livingClueRoutes() => [
           AppRouteGuard(canActivate: (user) => LivingCluePolicy(user).create()),
         ],
       ),
+      GetPage(
+          name: '/living_clues/:id',
+          page: () => const LivingClueShowScreen(),
+          middlewares: [
+            AppRouteGuard(canActivate: (u) => LivingCluePolicy(u).viewAny())
+          ]),
     ];

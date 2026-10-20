@@ -22,11 +22,15 @@ class _SampleUpdateScreenState extends State<SampleUpdateScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _sampleStringController = TextEditingController();
   final TextEditingController _sampleUniqueController = TextEditingController();
-  final TextEditingController _nullableStringController = TextEditingController();
+  final TextEditingController _nullableStringController =
+      TextEditingController();
   final TextEditingController _sampleDoubleController = TextEditingController();
   final DateTimeController _sampleDateController = DateTimeController();
-  final TextEditingController _orderNumberController = TextEditingController(text: '0');
-  final ItemSelectController _sampleDetailSelectController = ItemSelectController();
+  final TextEditingController _orderNumberController = TextEditingController(
+    text: '0',
+  );
+  final ItemSelectController _sampleDetailSelectController =
+      ItemSelectController();
 
   bool _filledControllers = false;
 
@@ -92,7 +96,11 @@ class _SampleUpdateScreenState extends State<SampleUpdateScreen> {
                       controller: _nameController,
                       validator: (value) => PValidator([
                         PRuleRequired(value, message: 'Obrigatório'),
-                        PRuleMaxString(value, 255, message: 'Máximo de 255 caracteres'),
+                        PRuleMaxString(
+                          value,
+                          255,
+                          message: 'Máximo de 255 caracteres',
+                        ),
                       ]).val(),
                     ),
                     Insets.large.height,
@@ -101,7 +109,11 @@ class _SampleUpdateScreenState extends State<SampleUpdateScreen> {
                       controller: _sampleStringController,
                       validator: (value) => PValidator([
                         PRuleRequired(value, message: 'Obrigatório'),
-                        PRuleMaxString(value, 255, message: 'Máximo de 255 caracteres'),
+                        PRuleMaxString(
+                          value,
+                          255,
+                          message: 'Máximo de 255 caracteres',
+                        ),
                       ]).val(),
                     ),
                     Insets.large.height,
@@ -110,7 +122,11 @@ class _SampleUpdateScreenState extends State<SampleUpdateScreen> {
                       controller: _sampleUniqueController,
                       validator: (value) => PValidator([
                         PRuleRequired(value, message: 'Obrigatório'),
-                        PRuleMaxString(value, 255, message: 'Máximo de 255 caracteres'),
+                        PRuleMaxString(
+                          value,
+                          255,
+                          message: 'Máximo de 255 caracteres',
+                        ),
                       ]).val(),
                     ),
                     Insets.large.height,
@@ -118,7 +134,11 @@ class _SampleUpdateScreenState extends State<SampleUpdateScreen> {
                       hintText: 'Nullable string (opcional)',
                       controller: _nullableStringController,
                       validator: (value) => PValidator([
-                        PRuleMaxString(value, 255, message: 'Máximo de 255 caracteres'),
+                        PRuleMaxString(
+                          value,
+                          255,
+                          message: 'Máximo de 255 caracteres',
+                        ),
                       ]).val(),
                     ),
                     Insets.large.height,
@@ -144,7 +164,10 @@ class _SampleUpdateScreenState extends State<SampleUpdateScreen> {
                       label: 'Sample date',
                       controller: _sampleDateController,
                       validator: (value) => PValidator([
-                        PRuleRequiredDate(value, message: 'Use uma data válida'),
+                        PRuleRequiredDate(
+                          value,
+                          message: 'Use uma data válida',
+                        ),
                       ]).val(),
                     ),
                     Insets.large.height,
@@ -161,7 +184,9 @@ class _SampleUpdateScreenState extends State<SampleUpdateScreen> {
                       width: double.infinity,
                       child: Obx(() {
                         final bool loading = _controller.isLoading.value;
-                        final String buttonTitle = loading ? 'Atualizando...' : 'Atualizar';
+                        final String buttonTitle = loading
+                            ? 'Atualizando...'
+                            : 'Atualizar';
                         return ActionButton(
                           theme: ActionButtonTheme.blue,
                           title: buttonTitle,
@@ -189,7 +214,9 @@ class _SampleUpdateScreenState extends State<SampleUpdateScreen> {
   Future<void> _save() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
-    final double parsedDouble = double.parse(_sampleDoubleController.text.trim());
+    final double parsedDouble = double.parse(
+      _sampleDoubleController.text.trim(),
+    );
     final int parsedOrder = int.parse(_orderNumberController.text.trim());
 
     final model = SampleModel(
@@ -197,7 +224,9 @@ class _SampleUpdateScreenState extends State<SampleUpdateScreen> {
       name: _nameController.text.trim(),
       sampleString: _sampleStringController.text.trim(),
       sampleUnique: _sampleUniqueController.text.trim(),
-      nullableString: _nullableStringController.text.trim().isEmpty ? null : _nullableStringController.text.trim(),
+      nullableString: _nullableStringController.text.trim().isEmpty
+          ? null
+          : _nullableStringController.text.trim(),
       sampleDetailId: _sampleDetailSelectController.selectedItem!.id,
       sampleDouble: parsedDouble,
       sampleDate: _sampleDateController.value!,

@@ -7,8 +7,6 @@ import 'package:unisinos_usp_app/webclients/connection_type_webclient.dart';
 import 'package:unisinos_usp_app/webclients/living_clue_webclient.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class ClueConnectionCreateScreen extends StatefulWidget {
@@ -28,8 +26,9 @@ class _ClueConnectionCreateScreenState
   final ItemSelectController _sourceSelectController = ItemSelectController();
   final ItemSelectController _targetSelectController = ItemSelectController();
   final ItemSelectController _typeSelectController = ItemSelectController();
-  final TextEditingController _strengthController =
-      TextEditingController(text: '1');
+  final TextEditingController _strengthController = TextEditingController(
+    text: '1',
+  );
   final TextEditingController _evidenceController = TextEditingController();
 
   @override
@@ -67,17 +66,15 @@ class _ClueConnectionCreateScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Nova conexão'),
       ),
       body: Stack(
         children: [
-          const Positioned.fill(child: StarfieldBackground()),
-          const Positioned.fill(child: CidigScenicBackground()),
           SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Form(
@@ -138,8 +135,9 @@ class _ClueConnectionCreateScreenState
                     width: double.infinity,
                     child: Obx(() {
                       final bool loading = _controller.isLoading.value;
-                      final String buttonTitle =
-                          loading ? 'Salvando...' : 'Salvar';
+                      final String buttonTitle = loading
+                          ? 'Salvando...'
+                          : 'Salvar';
                       return ActionButton(
                         theme: ActionButtonTheme.blue,
                         title: buttonTitle,
@@ -161,9 +159,11 @@ class _ClueConnectionCreateScreenState
     final int? sourceId = _sourceSelectController.selectedItem?.id;
     final int? targetId = _targetSelectController.selectedItem?.id;
     final int? typeId = _typeSelectController.selectedItem?.id;
-    final int? strength = int.tryParse(_strengthController.text.trim().isEmpty
-        ? '1'
-        : _strengthController.text.trim());
+    final int? strength = int.tryParse(
+      _strengthController.text.trim().isEmpty
+          ? '1'
+          : _strengthController.text.trim(),
+    );
     if (sourceId == null ||
         targetId == null ||
         typeId == null ||

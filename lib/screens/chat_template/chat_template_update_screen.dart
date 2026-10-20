@@ -4,8 +4,6 @@ import 'package:unisinos_usp_app/controllers/chat_template/chat_template_update_
 import 'package:unisinos_usp_app/models/chat_template_model.dart';
 import 'package:unisinos_usp_app/screens/chat_template/chat_template_form.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 
 class ChatTemplateUpdateScreen extends StatelessWidget {
   const ChatTemplateUpdateScreen({super.key});
@@ -15,34 +13,39 @@ class ChatTemplateUpdateScreen extends StatelessWidget {
     final ChatTemplateUpdateController controller =
         Get.find<ChatTemplateUpdateController>();
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Editar agente'),
       ),
       body: Stack(
         children: [
-          const Positioned.fill(child: StarfieldBackground()),
-          const Positioned.fill(child: CidigScenicBackground()),
           Obx(() {
             if (controller.templateId == null) {
               return const Center(
-                  child: Text('Agente não informado.',
-                      style: TextStyle(color: Colors.white)));
+                child: Text(
+                  'Agente não informado.',
+                  style: TextStyle(color: Colors.white),
+                ),
+              );
             }
 
             if (controller.isLoading.value &&
                 controller.template.value == null) {
               return const Center(
-                  child: CircularProgressIndicator(color: Colors.white));
+                child: CircularProgressIndicator(color: Colors.white),
+              );
             }
 
             if (controller.template.value == null) {
               return const Center(
-                  child: Text('Template não encontrado.',
-                      style: TextStyle(color: Colors.white)));
+                child: Text(
+                  'Template não encontrado.',
+                  style: TextStyle(color: Colors.white),
+                ),
+              );
             }
 
             return Stack(
@@ -80,14 +83,15 @@ class ChatTemplateUpdateScreen extends StatelessWidget {
                           onPressed: controller.isLoading.value
                               ? null
                               : () =>
-                                  _confirmDeleteMessages(context, controller),
+                                    _confirmDeleteMessages(context, controller),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.red.shade300,
                             side: BorderSide(color: Colors.red.shade400),
                           ),
                           icon: const Icon(Icons.delete_sweep_outlined),
                           label: const Text(
-                              'Excluir todas as mensagens do template'),
+                            'Excluir todas as mensagens do template',
+                          ),
                         ),
                       ),
                     ],

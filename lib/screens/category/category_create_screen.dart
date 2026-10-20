@@ -6,8 +6,6 @@ import 'package:unisinos_usp_app/controllers/category/category_create_controller
 import 'package:unisinos_usp_app/models/category_model.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class CategoryCreateScreen extends StatefulWidget {
@@ -18,11 +16,14 @@ class CategoryCreateScreen extends StatefulWidget {
 }
 
 class _CategoryCreateScreenState extends State<CategoryCreateScreen> {
-  final CategoryCreateController _controller = Get.find<CategoryCreateController>();
+  final CategoryCreateController _controller =
+      Get.find<CategoryCreateController>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _colorController = TextEditingController(text: '#');
+  final TextEditingController _colorController = TextEditingController(
+    text: '#',
+  );
   final TextEditingController _iconController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _metadataTagsController = TextEditingController();
@@ -48,17 +49,15 @@ class _CategoryCreateScreenState extends State<CategoryCreateScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Nova categoria'),
       ),
       body: Stack(
         children: [
-          const Positioned.fill(child: StarfieldBackground()),
-          const Positioned.fill(child: CidigScenicBackground()),
           SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Form(
@@ -66,100 +65,111 @@ class _CategoryCreateScreenState extends State<CategoryCreateScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-              InputText(
-                hintText: 'Nome',
-                controller: _nameController,
-                validator: (value) => PValidator([
-                  PRuleRequired(value, message: 'Obrigatório'),
-                  PRuleMaxString(value, 255, message: 'Máximo de 255 caracteres'),
-                ]).val(),
-              ),
-              Insets.large.height,
-              DropdownButtonFormField<String>(
-                value: _selectedType,
-                decoration: const InputDecoration(
-                  labelText: 'Tipo',
-                  border: OutlineInputBorder(),
-                ),
-                items: CategoryType.values
-                    .map(
-                      (type) => DropdownMenuItem<String>(
-                        value: type,
-                        child: Text(type),
+                  InputText(
+                    hintText: 'Nome',
+                    controller: _nameController,
+                    validator: (value) => PValidator([
+                      PRuleRequired(value, message: 'Obrigatório'),
+                      PRuleMaxString(
+                        value,
+                        255,
+                        message: 'Máximo de 255 caracteres',
                       ),
-                    )
-                    .toList(),
-                onChanged: (value) => setState(() => _selectedType = value),
-                validator: (value) => PValidator([
-                  PRuleRequired(value, message: 'Obrigatório'),
-                ]).val(),
-              ),
-              Insets.large.height,
-              InputText(
-                hintText: 'Cor em hex (ex: #FF5733)',
-                controller: _colorController,
-                validator: (value) => PValidator([
-                  PRuleRequired(value, message: 'Obrigatório'),
-                  PRuleRegex(value, r'^#([A-Fa-f0-9]{6})$', message: 'Use o formato #RRGGBB'),
-                ]).val(),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: _selectedColor,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey.shade300),
+                    ]).val(),
+                  ),
+                  Insets.large.height,
+                  DropdownButtonFormField<String>(
+                    value: _selectedType,
+                    decoration: const InputDecoration(
+                      labelText: 'Tipo',
+                      border: OutlineInputBorder(),
                     ),
+                    items: CategoryType.values
+                        .map(
+                          (type) => DropdownMenuItem<String>(
+                            value: type,
+                            child: Text(type),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) => setState(() => _selectedType = value),
+                    validator: (value) => PValidator([
+                      PRuleRequired(value, message: 'Obrigatório'),
+                    ]).val(),
                   ),
-                  const SizedBox(width: 12),
-                  TextButton.icon(
-                    onPressed: _openColorPicker,
-                    icon: const Icon(Icons.color_lens_outlined),
-                    label: const Text('Selecionar cor'),
+                  Insets.large.height,
+                  InputText(
+                    hintText: 'Cor em hex (ex: #FF5733)',
+                    controller: _colorController,
+                    validator: (value) => PValidator([
+                      PRuleRequired(value, message: 'Obrigatório'),
+                      PRuleRegex(
+                        value,
+                        r'^#([A-Fa-f0-9]{6})$',
+                        message: 'Use o formato #RRGGBB',
+                      ),
+                    ]).val(),
                   ),
-                ],
-              ),
-              Insets.large.height,
-              InputText(
-                hintText: 'Código do ícone (opcional)',
-                controller: _iconController,
-              ),
-              Insets.large.height,
-              InputText(
-                hintText: 'Descrição (opcional)',
-                controller: _descriptionController,
-                maxLines: 4,
-              ),
-              Insets.large.height,
-              InputText(
-                hintText: 'Metadata tags (ex: tag_teste,tag_other)',
-                controller: _metadataTagsController,
-                validator: (value) => PValidator([
-                  PRuleRequired(value, message: 'Obrigatório'),
-                  PRuleRegex(
-                    value,
-                    r'^[A-Za-z0-9_]+(,[A-Za-z0-9_]+)*$',
-                    message: 'Use somente letras/números/_ separados por vírgula, sem espaços',
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: _selectedColor,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.grey.shade300),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      TextButton.icon(
+                        onPressed: _openColorPicker,
+                        icon: const Icon(Icons.color_lens_outlined),
+                        label: const Text('Selecionar cor'),
+                      ),
+                    ],
                   ),
-                ]).val(),
-              ),
-              Insets.extraLarge.height,
-              SizedBox(
-                width: double.infinity,
-                child: Obx(() {
-                  final bool loading = _controller.isLoading.value;
-                  final String buttonTitle = loading ? 'Salvando...' : 'Salvar';
-                  return ActionButton(
-                    theme: ActionButtonTheme.blue,
-                    title: buttonTitle,
-                    onPressed: loading ? null : _save,
-                  );
-                }),
-              ),
+                  Insets.large.height,
+                  InputText(
+                    hintText: 'Código do ícone (opcional)',
+                    controller: _iconController,
+                  ),
+                  Insets.large.height,
+                  InputText(
+                    hintText: 'Descrição (opcional)',
+                    controller: _descriptionController,
+                    maxLines: 4,
+                  ),
+                  Insets.large.height,
+                  InputText(
+                    hintText: 'Metadata tags (ex: tag_teste,tag_other)',
+                    controller: _metadataTagsController,
+                    validator: (value) => PValidator([
+                      PRuleRequired(value, message: 'Obrigatório'),
+                      PRuleRegex(
+                        value,
+                        r'^[A-Za-z0-9_]+(,[A-Za-z0-9_]+)*$',
+                        message:
+                            'Use somente letras/números/_ separados por vírgula, sem espaços',
+                      ),
+                    ]).val(),
+                  ),
+                  Insets.extraLarge.height,
+                  SizedBox(
+                    width: double.infinity,
+                    child: Obx(() {
+                      final bool loading = _controller.isLoading.value;
+                      final String buttonTitle = loading
+                          ? 'Salvando...'
+                          : 'Salvar';
+                      return ActionButton(
+                        theme: ActionButtonTheme.blue,
+                        title: buttonTitle,
+                        onPressed: loading ? null : _save,
+                      );
+                    }),
+                  ),
                 ],
               ),
             ),
@@ -189,7 +199,10 @@ class _CategoryCreateScreenState extends State<CategoryCreateScreen> {
   }
 
   String _colorToHex(Color color) {
-    final String hex = color.value.toRadixString(16).padLeft(8, '0').substring(2);
+    final String hex = color.value
+        .toRadixString(16)
+        .padLeft(8, '0')
+        .substring(2);
     return '#${hex.toUpperCase()}';
   }
 

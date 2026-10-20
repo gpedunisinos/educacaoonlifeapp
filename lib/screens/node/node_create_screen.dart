@@ -6,10 +6,8 @@ import 'package:unisinos_usp_app/controllers/node/node_create_controller.dart';
 import 'package:unisinos_usp_app/models/node_model.dart';
 import 'package:unisinos_usp_app/webclients/node_type_webclient.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:unisinos_usp_app/widgets/color_preview_card.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class NodeCreateScreen extends StatefulWidget {
@@ -24,7 +22,9 @@ class _NodeCreateScreenState extends State<NodeCreateScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _colorController = TextEditingController(text: '#0EA5E9');
+  final TextEditingController _colorController = TextEditingController(
+    text: '#0EA5E9',
+  );
   final ItemSelectController _nodeTypeSelectController = ItemSelectController();
 
   @override
@@ -37,17 +37,15 @@ class _NodeCreateScreenState extends State<NodeCreateScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Nova problemática'),
       ),
       body: Stack(
         children: [
-          const Positioned.fill(child: StarfieldBackground()),
-          const Positioned.fill(child: CidigScenicBackground()),
           SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Form(
@@ -60,7 +58,11 @@ class _NodeCreateScreenState extends State<NodeCreateScreen> {
                     controller: _nameController,
                     validator: (value) => PValidator([
                       PRuleRequired(value, message: 'Obrigatório'),
-                      PRuleMaxString(value, 120, message: 'Máximo de 120 caracteres'),
+                      PRuleMaxString(
+                        value,
+                        120,
+                        message: 'Máximo de 120 caracteres',
+                      ),
                     ]).val(),
                   ),
                   Insets.large.height,
@@ -70,7 +72,8 @@ class _NodeCreateScreenState extends State<NodeCreateScreen> {
                     validator: (value) => PValidator([
                       PRuleRequired(value, message: 'Obrigatório'),
                     ]).val(),
-                    onFind: (search, offset, params) => NodeTypeWebclient().select(search, offset),
+                    onFind: (search, offset, params) =>
+                        NodeTypeWebclient().select(search, offset),
                   ),
                   Insets.large.height,
                   InputText(
@@ -135,7 +138,9 @@ class _NodeCreateScreenState extends State<NodeCreateScreen> {
     final int? nodeTypeId = _nodeTypeSelectController.selectedItem?.id;
     if (nodeTypeId == null) {
       Get.customSnackbar(
-          'Erro', 'Selecione um tipo de problemática para continuar.');
+        'Erro',
+        'Selecione um tipo de problemática para continuar.',
+      );
       return;
     }
 

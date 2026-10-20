@@ -5,8 +5,6 @@ import 'package:unisinos_usp_app/controllers/node_type/node_type_index_controlle
 import 'package:unisinos_usp_app/models/node_type_model.dart';
 import 'package:unisinos_usp_app/policies/policies.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 
 class NodeTypeIndexScreen extends StatefulWidget {
   const NodeTypeIndexScreen({super.key});
@@ -36,13 +34,14 @@ class _NodeTypeIndexScreenState extends State<NodeTypeIndexScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final canManage =
-        NodeTypePolicy(Get.find<UserController>().user.value).create();
+    final canManage = NodeTypePolicy(
+      Get.find<UserController>().user.value,
+    ).create();
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Tipos de problemática'),
@@ -57,8 +56,6 @@ class _NodeTypeIndexScreenState extends State<NodeTypeIndexScreen> {
       ),
       body: Stack(
         children: [
-          const Positioned.fill(child: StarfieldBackground()),
-          const Positioned.fill(child: CidigScenicBackground()),
           Column(
             children: [
               Padding(
@@ -91,7 +88,8 @@ class _NodeTypeIndexScreenState extends State<NodeTypeIndexScreen> {
                   if (_controller.isLoading.value &&
                       _controller.nodeTypes.isEmpty) {
                     return const Center(
-                        child: CircularProgressIndicator(color: Colors.white));
+                      child: CircularProgressIndicator(color: Colors.white),
+                    );
                   }
                   if (_controller.nodeTypes.isEmpty) {
                     return const Center(
@@ -104,7 +102,8 @@ class _NodeTypeIndexScreenState extends State<NodeTypeIndexScreen> {
                   return ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                    itemCount: _controller.nodeTypes.length +
+                    itemCount:
+                        _controller.nodeTypes.length +
                         (_controller.isLoadingMore.value ? 1 : 0),
                     itemBuilder: (_, index) {
                       if (index >= _controller.nodeTypes.length) {
@@ -161,8 +160,10 @@ class _NodeTypeIndexScreenState extends State<NodeTypeIndexScreen> {
   }
 
   Future<void> _goToUpdate(NodeTypeModel model) async {
-    final updated = await Get.toNamed('/node_types/update',
-        parameters: {'id': model.id.toString()});
+    final updated = await Get.toNamed(
+      '/node_types/update',
+      parameters: {'id': model.id.toString()},
+    );
     if (updated == true) {
       await _controller.loadInitial();
     }
@@ -190,10 +191,7 @@ class _NodeTypeCard extends StatelessWidget {
       color: Colors.black.withValues(alpha: 0.58),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(
-          color: Color(0x8A46B6EC),
-          width: 1.2,
-        ),
+        side: const BorderSide(color: Color(0x8A46B6EC), width: 1.2),
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -202,10 +200,7 @@ class _NodeTypeCard extends StatelessWidget {
             Container(
               width: 18,
               height: 18,
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-              ),
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -215,9 +210,9 @@ class _NodeTypeCard extends StatelessWidget {
                   Text(
                     model.name,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(

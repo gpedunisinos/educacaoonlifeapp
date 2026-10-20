@@ -10,8 +10,6 @@ import 'package:unisinos_usp_app/webclients/connection_type_webclient.dart';
 import 'package:unisinos_usp_app/webclients/living_clue_webclient.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class LivingClueConnectScreen extends StatefulWidget {
@@ -30,8 +28,9 @@ class _LivingClueConnectScreenState extends State<LivingClueConnectScreen> {
 
   final ItemSelectController _targetSelectController = ItemSelectController();
   final ItemSelectController _typeSelectController = ItemSelectController();
-  final TextEditingController _strengthController =
-      TextEditingController(text: '1');
+  final TextEditingController _strengthController = TextEditingController(
+    text: '1',
+  );
   final TextEditingController _evidenceController = TextEditingController();
 
   LivingClueModel? _sourceClue;
@@ -61,17 +60,15 @@ class _LivingClueConnectScreenState extends State<LivingClueConnectScreen> {
       _buildAiContext,
     );
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Vincular pista viva'),
       ),
       body: Stack(
         children: [
-          const Positioned.fill(child: StarfieldBackground()),
-          const Positioned.fill(child: CidigScenicBackground()),
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
@@ -98,9 +95,7 @@ class _LivingClueConnectScreenState extends State<LivingClueConnectScreen> {
                           children: [
                             Text(
                               'Defina a conexão',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleMedium
+                              style: Theme.of(context).textTheme.titleMedium
                                   ?.copyWith(fontWeight: FontWeight.w700),
                             ),
                             const SizedBox(height: 12),
@@ -123,16 +118,20 @@ class _LivingClueConnectScreenState extends State<LivingClueConnectScreen> {
                                 PRuleRequired(value, message: 'Obrigatório'),
                               ]).val(),
                               onFind: (search, offset, params) =>
-                                  ConnectionTypeWebclient()
-                                      .select(search, offset),
+                                  ConnectionTypeWebclient().select(
+                                    search,
+                                    offset,
+                                  ),
                             ),
                             Insets.large.height,
                             InputNumber(
                               label: '',
                               controller: _strengthController,
                               validator: (value) => PValidator([
-                                PRuleInteger(value,
-                                    message: 'Use um número inteiro'),
+                                PRuleInteger(
+                                  value,
+                                  message: 'Use um número inteiro',
+                                ),
                               ]).val(),
                             ),
                             Insets.large.height,
@@ -196,9 +195,7 @@ class _LivingClueConnectScreenState extends State<LivingClueConnectScreen> {
         if (_evidenceController.text.trim().isNotEmpty)
           'evidência': _evidenceController.text.trim(),
       },
-      notes: const <String>[
-        'A pista destino deve ser diferente da origem.',
-      ],
+      notes: const <String>['A pista destino deve ser diferente da origem.'],
     );
   }
 
@@ -207,10 +204,7 @@ class _LivingClueConnectScreenState extends State<LivingClueConnectScreen> {
       return Card(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(
-            color: Color(0x8A46B6EC),
-            width: 1.2,
-          ),
+          side: const BorderSide(color: Color(0x8A46B6EC), width: 1.2),
         ),
         color: Colors.red.shade50,
         child: Padding(
@@ -227,10 +221,7 @@ class _LivingClueConnectScreenState extends State<LivingClueConnectScreen> {
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(
-          color: Color(0x8A46B6EC),
-          width: 1.2,
-        ),
+        side: const BorderSide(color: Color(0x8A46B6EC), width: 1.2),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -242,13 +233,18 @@ class _LivingClueConnectScreenState extends State<LivingClueConnectScreen> {
             Text(
               clue.name,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700, color: Colors.indigo.shade900),
+                fontWeight: FontWeight.w700,
+                color: Colors.indigo.shade900,
+              ),
             ),
             const SizedBox(height: 6),
             Row(
               children: [
-                Icon(Icons.category_outlined,
-                    size: 18, color: Colors.blueGrey.shade600),
+                Icon(
+                  Icons.category_outlined,
+                  size: 18,
+                  color: Colors.blueGrey.shade600,
+                ),
                 const SizedBox(width: 6),
                 Text(clue.category?.name ?? 'Categoria ${clue.categoryId}'),
               ],
@@ -256,11 +252,15 @@ class _LivingClueConnectScreenState extends State<LivingClueConnectScreen> {
             const SizedBox(height: 6),
             Row(
               children: [
-                const Icon(Icons.place_outlined,
-                    size: 18, color: Colors.blueGrey),
+                const Icon(
+                  Icons.place_outlined,
+                  size: 18,
+                  color: Colors.blueGrey,
+                ),
                 const SizedBox(width: 6),
                 Text(
-                    'Lat ${clue.latitude.toStringAsFixed(5)} • Lng ${clue.longitude.toStringAsFixed(5)}'),
+                  'Lat ${clue.latitude?.toStringAsFixed(5) ?? '—'} • Lng ${clue.longitude?.toStringAsFixed(5) ?? '—'}',
+                ),
               ],
             ),
           ],
@@ -275,14 +275,18 @@ class _LivingClueConnectScreenState extends State<LivingClueConnectScreen> {
 
     final int? targetId = _targetSelectController.selectedItem?.id;
     final int? typeId = _typeSelectController.selectedItem?.id;
-    final int? strength = int.tryParse(_strengthController.text.trim().isEmpty
-        ? '1'
-        : _strengthController.text.trim());
+    final int? strength = int.tryParse(
+      _strengthController.text.trim().isEmpty
+          ? '1'
+          : _strengthController.text.trim(),
+    );
 
     if (targetId == null || typeId == null || strength == null) return;
     if (targetId == _sourceClue!.id) {
       Get.customSnackbar(
-          'Atenção', 'A pista destino deve ser diferente da origem.');
+        'Atenção',
+        'A pista destino deve ser diferente da origem.',
+      );
       return;
     }
 

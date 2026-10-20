@@ -1,4 +1,9 @@
+import 'package:unisinos_usp_app/widgets/living_clue_layout.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
+import 'package:unisinos_usp_app/widgets/clue_participation.dart';
+import 'package:unisinos_usp_app/widgets/locker_panel.dart';
+import 'package:unisinos_usp_app/policies/living_clue_policy.dart';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -10,8 +15,6 @@ import 'package:unisinos_usp_app/webclients/clue_connection_webclient.dart';
 import 'package:unisinos_usp_app/webclients/living_clue_webclient.dart';
 import 'package:unisinos_usp_app/widgets/living_clue_description_view.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:unisinos_usp_app/widgets/environmental_context_card.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
@@ -24,6 +27,8 @@ class LivingClueShowScreen extends StatefulWidget {
 
 class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
   late LivingClueModel model;
+  bool _initialLoading = false;
+  String? _initialError;
   Timer? _refreshTimer;
   int _refreshAttempts = 0;
   List<ClueConnectionModel> _connections = <ClueConnectionModel>[];
@@ -34,7 +39,18 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
   void initState() {
     super.initState();
     final args = Get.arguments;
-    model = args is LivingClueModel ? args : args['model'] as LivingClueModel;
+    if (args is LivingClueModel) {
+      model = args;
+    } else if (args is Map && args['model'] is LivingClueModel) {
+      model = args['model'];
+    } else {
+      model = LivingClueModel(
+        id: int.tryParse(Get.parameters['id'] ?? '') ?? 0,
+        name: '',
+        categoryId: 0,
+      );
+      _initialLoading = true;
+    }
     _refreshContext();
     _loadConnections();
   }
@@ -47,14 +63,16 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
       });
     }
     try {
-      final connections =
-          await ClueConnectionWebclient().fetchForLivingClue(model.id);
+      final connections = await ClueConnectionWebclient().fetchForLivingClue(
+        model.id,
+      );
       if (!mounted) return;
       setState(() => _connections = connections);
     } catch (_) {
       if (!mounted) return;
       setState(
-          () => _connectionsError = 'Não foi possível carregar as relações.');
+        () => _connectionsError = 'Não foi possível carregar as relações.',
+      );
     } finally {
       if (mounted) setState(() => _isLoadingConnections = false);
     }
@@ -64,7 +82,11 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
     try {
       final refreshed = await LivingClueWebclient().fetchById(model.id);
       if (!mounted) return;
-      setState(() => model = refreshed);
+      setState(() {
+        model = refreshed;
+        _initialLoading = false;
+        _initialError = null;
+      });
       final status = model.environmentalContext?.status;
       if ((status == 'pending' || status == 'processing') &&
           _refreshAttempts < 6) {
@@ -72,7 +94,11 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
         _refreshTimer = Timer(const Duration(seconds: 5), _refreshContext);
       }
     } catch (_) {
-      // A pista já carregada permanece visível se a atualização falhar.
+      if (mounted && _initialLoading)
+        setState(() {
+          _initialLoading = false;
+          _initialError = 'Não foi possível abrir esta pista.';
+        });
     }
   }
 
@@ -90,33 +116,47 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_initialLoading)
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (_initialError != null)
+      return Scaffold(
+        appBar: AppBar(leading: const SafeBackButton()),
+        body: Center(child: Text(_initialError!)),
+      );
     final theme = Theme.of(context);
     final categoryName =
         model.category?.name ?? 'Categoria ${model.categoryId}';
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Pista viva'),
         actions: [
-          IconButton(
-            tooltip: 'Editar',
-            icon: const Icon(Icons.edit),
-            onPressed: () => Get.toNamed('/living_clues/update',
-                parameters: {'id': model.id.toString()}),
-          ),
+          LockerButton(type: 'living_clue', id: model.id),
+          if (LivingCluePolicy(
+            Get.find<UserController>().user.value,
+          ).update(model))
+            IconButton(
+              tooltip: 'Editar',
+              icon: const Icon(Icons.edit),
+              onPressed: () async {
+                await Get.toNamed(
+                  '/living_clues/update',
+                  parameters: {'id': model.id.toString()},
+                );
+                if (mounted) await _refreshContext();
+              },
+            ),
         ],
       ),
       body: Stack(
         children: [
-          const Positioned.fill(child: StarfieldBackground()),
-          const Positioned.fill(child: CidigScenicBackground()),
           SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              padding: LivingClueLayout.pagePadding(context),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -139,14 +179,16 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
                               Expanded(
                                 child: Text(
                                   model.name,
-                                  style: theme.textTheme.titleLarge
-                                      ?.copyWith(fontWeight: FontWeight.w700),
+                                  style: theme.textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 12),
                               Chip(
-                                label:
-                                    Text(model.isActive ? 'Ativa' : 'Inativa'),
+                                label: Text(
+                                  model.isActive ? 'Ativa' : 'Inativa',
+                                ),
                                 backgroundColor: model.isActive
                                     ? Colors.green.shade100
                                     : Colors.grey.shade200,
@@ -162,17 +204,23 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
                           const SizedBox(height: 8),
                           Row(
                             children: [
-                              Icon(Icons.category_outlined,
-                                  color: Colors.blueGrey.shade600, size: 18),
+                              Icon(
+                                Icons.category_outlined,
+                                color: Colors.blueGrey.shade600,
+                                size: 18,
+                              ),
                               const SizedBox(width: 6),
-                              Text(categoryName,
-                                  style: theme.textTheme.bodyMedium),
+                              Text(
+                                categoryName,
+                                style: theme.textTheme.bodyMedium,
+                              ),
                             ],
                           ),
                           if ((model.description ?? '').isNotEmpty ||
                               (model.descriptionDelta ?? '').isNotEmpty) ...[
                             const SizedBox(height: 12),
                             LivingClueDescriptionView(
+                              clueId: model.id,
                               plainText: model.description ?? '',
                               delta: model.descriptionDelta,
                             ),
@@ -182,10 +230,11 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  EnvironmentalContextCard(
-                    context: model.environmentalContext,
-                    onRetry: _reprocessContext,
-                  ),
+                  if (model.hasLocation)
+                    EnvironmentalContextCard(
+                      context: model.environmentalContext,
+                      onRetry: _reprocessContext,
+                    ),
                   const SizedBox(height: 12),
                   _buildConnectionsCard(context),
                   const SizedBox(height: 12),
@@ -202,24 +251,35 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Localização',
-                              style: TextStyle(fontWeight: FontWeight.w700)),
+                          const Text(
+                            'Localização',
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
                           const SizedBox(height: 8),
                           Row(
                             children: [
-                              const Icon(Icons.place_outlined,
-                                  size: 18, color: Colors.blueGrey),
+                              const Icon(
+                                Icons.place_outlined,
+                                size: 18,
+                                color: Colors.blueGrey,
+                              ),
                               const SizedBox(width: 6),
-                              Text('Lat: ${model.latitude.toStringAsFixed(6)}'),
+                              Text(
+                                'Lat: ${model.latitude?.toStringAsFixed(6) ?? 'Não informada'}',
+                              ),
                             ],
                           ),
                           Row(
                             children: [
-                              const Icon(Icons.place_outlined,
-                                  size: 18, color: Colors.transparent),
+                              const Icon(
+                                Icons.place_outlined,
+                                size: 18,
+                                color: Colors.transparent,
+                              ),
                               const SizedBox(width: 6),
                               Text(
-                                  'Lng: ${model.longitude.toStringAsFixed(6)}'),
+                                'Lng: ${model.longitude?.toStringAsFixed(6) ?? 'Não informada'}',
+                              ),
                             ],
                           ),
                         ],
@@ -294,9 +354,10 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
                                   const Center(child: Icon(Icons.broken_image)),
                               loadingBuilder: (context, child, progress) =>
                                   progress == null
-                                      ? child
-                                      : const Center(
-                                          child: CircularProgressIndicator()),
+                                  ? child
+                                  : const Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
                             ),
                           ),
                         ],
@@ -313,13 +374,16 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
                           width: 1.2,
                         ),
                       ),
-                      child: Padding(
+                      child: Container(
+                        width: double.infinity,
                         padding: const EdgeInsets.all(14),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Metadata',
-                                style: TextStyle(fontWeight: FontWeight.w700)),
+                            const Text(
+                              'Metadata',
+                              style: TextStyle(fontWeight: FontWeight.w700),
+                            ),
                             const SizedBox(height: 8),
                             ...model.metadata!.entries.map(
                               (entry) => Padding(
@@ -330,7 +394,8 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
                                     Text(
                                       _formatTagLabel(entry.key),
                                       style: const TextStyle(
-                                          fontWeight: FontWeight.w600),
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
                                     const SizedBox(height: 2),
                                     Text(entry.value?.toString() ?? ''),
@@ -343,6 +408,36 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
                       ),
                     ),
                   ],
+                  const SizedBox(height: 12),
+                  if (model.files.isNotEmpty)
+                    Card(
+                      child: Column(
+                        children: [
+                          const ListTile(
+                            leading: Icon(Icons.attach_file),
+                            title: Text('Anexos'),
+                          ),
+                          for (final file in model.files)
+                            ListTile(
+                              title: Text(file.name ?? 'Documento'),
+                              trailing: const Icon(Icons.open_in_new),
+                              onTap: () {
+                                final uri = Uri.tryParse(file.publicUrl ?? '');
+                                if (uri != null &&
+                                    ['https', 'http'].contains(uri.scheme))
+                                  launchUrl(
+                                    uri,
+                                    mode: LaunchMode.externalApplication,
+                                  );
+                              },
+                            ),
+                        ],
+                      ),
+                    ),
+                  ClueEditHistory(clueId: model.id),
+                  const SizedBox(height: 12),
+                  ClueParticipation(clueId: model.id),
+                  const SizedBox(height: 90),
                 ],
               ),
             ),
@@ -364,14 +459,18 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
   Widget _buildConnectionsCard(BuildContext context) {
     final policy = ClueConnectionPolicy(Get.find<UserController>().user.value);
     final outgoing = _connections
-        .where((item) =>
-            (item.connectionType?.isDirectional ?? true) &&
-            item.isOutgoingFrom(model.id))
+        .where(
+          (item) =>
+              (item.connectionType?.isDirectional ?? true) &&
+              item.isOutgoingFrom(model.id),
+        )
         .toList();
     final incoming = _connections
-        .where((item) =>
-            (item.connectionType?.isDirectional ?? true) &&
-            !item.isOutgoingFrom(model.id))
+        .where(
+          (item) =>
+              (item.connectionType?.isDirectional ?? true) &&
+              !item.isOutgoingFrom(model.id),
+        )
         .toList();
     final related = _connections
         .where((item) => !(item.connectionType?.isDirectional ?? true))
@@ -421,8 +520,9 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
             else if (_connections.isEmpty)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 8),
-                child:
-                    Text('Esta pista ainda não possui relações cadastradas.'),
+                child: Text(
+                  'Esta pista ainda não possui relações cadastradas.',
+                ),
               )
             else ...[
               if (outgoing.isNotEmpty)
@@ -480,13 +580,14 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
     ClueConnectionPolicy policy,
   ) {
     final relatedClue = connection.relatedClueFor(model.id);
-    final typeName = connection.connectionType?.name ??
+    final typeName =
+        connection.connectionType?.name ??
         'Tipo #${connection.connectionTypeId}';
     final isDirectional = connection.connectionType?.isDirectional ?? true;
     final directionIcon = isDirectional
         ? (connection.isOutgoingFrom(model.id)
-            ? Icons.arrow_forward
-            : Icons.arrow_back)
+              ? Icons.arrow_forward
+              : Icons.arrow_back)
         : Icons.sync_alt;
 
     return Container(
@@ -524,7 +625,9 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
                     const PopupMenuItem(value: 'edit', child: Text('Editar')),
                   if (policy.delete(connection))
                     const PopupMenuItem(
-                        value: 'delete', child: Text('Excluir')),
+                      value: 'delete',
+                      child: Text('Excluir'),
+                    ),
                 ],
               )
             : const Icon(Icons.chevron_right),
@@ -533,8 +636,10 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
   }
 
   Future<void> _createConnection() async {
-    final created =
-        await Get.toNamed('/living_clues/connect', arguments: model);
+    final created = await Get.toNamed(
+      '/living_clues/connect',
+      arguments: model,
+    );
     if (created == true) await _loadConnections();
   }
 

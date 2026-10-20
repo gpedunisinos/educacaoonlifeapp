@@ -1,10 +1,9 @@
+import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/clue_connection/clue_connection_index_controller.dart';
 import 'package:unisinos_usp_app/models/clue_connection_model.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 
 class ClueConnectionIndexScreen extends StatelessWidget {
   ClueConnectionIndexScreen({super.key});
@@ -15,34 +14,38 @@ class ClueConnectionIndexScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Conexões'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: _goToCreate,
+            onPressed: Get.find<UserController>().user.value?.canAuthor == true
+                ? _goToCreate
+                : null,
             tooltip: 'Nova conexão',
           ),
         ],
       ),
       body: Stack(
         children: [
-          const Positioned.fill(child: StarfieldBackground()),
-          const Positioned.fill(child: CidigScenicBackground()),
           Obx(() {
             if (_controller.isLoading.value &&
                 _controller.connections.isEmpty) {
               return const Center(
-                  child: CircularProgressIndicator(color: Colors.white));
+                child: CircularProgressIndicator(color: Colors.white),
+              );
             }
             if (_controller.connections.isEmpty) {
               return const Center(
-                  child: Text('Nenhuma conexão cadastrada.',
-                      style: TextStyle(color: Colors.white)));
+                child: Text(
+                  'Nenhuma conexão cadastrada.',
+                  style: TextStyle(color: Colors.white),
+                ),
+              );
             }
 
             return Column(
@@ -84,13 +87,16 @@ class ClueConnectionIndexScreen extends StatelessWidget {
                                     ),
                                   ),
                                   Chip(
-                                    backgroundColor:
-                                        Colors.orange.withValues(alpha: 0.2),
+                                    backgroundColor: Colors.orange.withValues(
+                                      alpha: 0.2,
+                                    ),
                                     label: Text(
                                       _controller.connectionTypeLabel(
-                                          model.connectionTypeId),
+                                        model.connectionTypeId,
+                                      ),
                                       style: TextStyle(
-                                          color: Colors.orange.shade900),
+                                        color: Colors.orange.shade900,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -107,7 +113,13 @@ class ClueConnectionIndexScreen extends StatelessWidget {
                                   IconButton(
                                     color: Colors.white,
                                     icon: const Icon(Icons.edit),
-                                    onPressed: _controller.isLoading.value
+                                    onPressed:
+                                        Get.find<UserController>()
+                                                    .user
+                                                    .value
+                                                    ?.canAuthor !=
+                                                true ||
+                                            _controller.isLoading.value
                                         ? null
                                         : () => _goToUpdate(model),
                                     tooltip: 'Editar',
@@ -115,7 +127,13 @@ class ClueConnectionIndexScreen extends StatelessWidget {
                                   IconButton(
                                     color: Colors.white,
                                     icon: const Icon(Icons.delete_outline),
-                                    onPressed: _controller.isLoading.value
+                                    onPressed:
+                                        Get.find<UserController>()
+                                                    .user
+                                                    .value
+                                                    ?.canAuthor !=
+                                                true ||
+                                            _controller.isLoading.value
                                         ? null
                                         : () => _confirmDelete(model),
                                     tooltip: 'Excluir',
@@ -162,8 +180,10 @@ class ClueConnectionIndexScreen extends StatelessWidget {
   }
 
   Future<void> _goToUpdate(ClueConnectionModel model) async {
-    await Get.toNamed('/clue_connections/update',
-        parameters: {'id': model.id.toString()});
+    await Get.toNamed(
+      '/clue_connections/update',
+      parameters: {'id': model.id.toString()},
+    );
     await _controller.loadConnections();
   }
 }

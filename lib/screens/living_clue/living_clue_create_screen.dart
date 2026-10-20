@@ -1,3 +1,5 @@
+import 'package:unisinos_usp_app/widgets/living_clue_location_button.dart';
+import 'package:unisinos_usp_app/widgets/living_clue_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pvalidator/pvalidator.dart';
@@ -9,8 +11,6 @@ import 'package:unisinos_usp_app/utils/quill_document_utils.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/widgets/living_clue_description_editor.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class LivingClueCreateScreen extends StatefulWidget {
@@ -89,19 +89,17 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
       _buildAiContext,
     );
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Nova pista viva'),
       ),
       body: Stack(
         children: [
-          const Positioned.fill(child: StarfieldBackground()),
-          const Positioned.fill(child: CidigScenicBackground()),
           SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: LivingClueLayout.pagePadding(context),
             child: Form(
               key: _formKey,
               child: Column(
@@ -122,14 +120,14 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
                         children: [
                           Row(
                             children: [
-                              const Icon(Icons.bolt_outlined,
-                                  color: Colors.indigo),
+                              const Icon(
+                                Icons.bolt_outlined,
+                                color: Colors.indigo,
+                              ),
                               const SizedBox(width: 8),
                               Text(
                                 'Dados principais',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
+                                style: Theme.of(context).textTheme.titleMedium
                                     ?.copyWith(fontWeight: FontWeight.w700),
                               ),
                             ],
@@ -140,8 +138,11 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
                             controller: _nameController,
                             validator: (value) => PValidator([
                               PRuleRequired(value, message: 'Obrigatório'),
-                              PRuleMaxString(value, 255,
-                                  message: 'Máximo de 255 caracteres'),
+                              PRuleMaxString(
+                                value,
+                                255,
+                                message: 'Máximo de 255 caracteres',
+                              ),
                             ]).val(),
                           ),
                           Insets.large.height,
@@ -191,29 +192,31 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
                         children: [
                           Row(
                             children: [
-                              const Icon(Icons.place_outlined,
-                                  color: Colors.teal),
+                              const Icon(
+                                Icons.place_outlined,
+                                color: Colors.teal,
+                              ),
                               const SizedBox(width: 8),
-                              const Text('Localização',
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.w700)),
+                              const Text(
+                                'Localização',
+                                style: TextStyle(fontWeight: FontWeight.w700),
+                              ),
                             ],
                           ),
                           Insets.large.height,
+                          LivingClueLocationButton(
+                            latitude: _latitudeController,
+                            longitude: _longitudeController,
+                          ),
+                          const SizedBox(height: 12),
                           InputNumber(
-                            label: 'Latitude',
+                            label: 'Latitude (opcional)',
                             controller: _latitudeController,
-                            validator: (value) => PValidator([
-                              PRuleRequired(value, message: 'Obrigatório'),
-                            ]).val(),
                           ),
                           Insets.large.height,
                           InputNumber(
-                            label: 'Longitude',
+                            label: 'Longitude (opcional)',
                             controller: _longitudeController,
-                            validator: (value) => PValidator([
-                              PRuleRequired(value, message: 'Obrigatório'),
-                            ]).val(),
                           ),
                           Insets.large.height,
                           InputText(
@@ -236,8 +239,9 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
                     width: double.infinity,
                     child: Obx(() {
                       final bool loading = _controller.isLoading.value;
-                      final String buttonTitle =
-                          loading ? 'Salvando...' : 'Salvar';
+                      final String buttonTitle = loading
+                          ? 'Salvando...'
+                          : 'Salvar';
                       return ActionButton(
                         theme: ActionButtonTheme.blue,
                         title: buttonTitle,
@@ -302,10 +306,29 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     final double? latitude = double.tryParse(_latitudeController.text.trim());
     final double? longitude = double.tryParse(_longitudeController.text.trim());
-    if (latitude == null || longitude == null || _categoryId == null) {
+    if (_categoryId == null) {
       return;
     }
 
+    final latText = _latitudeController.text.trim();
+    final lngText = _longitudeController.text.trim();
+    if ((latText.isEmpty != lngText.isEmpty) ||
+        (latText.isNotEmpty &&
+            (latitude == null ||
+                longitude == null ||
+                !latitude.isFinite ||
+                !longitude.isFinite ||
+                latitude.abs() > 90 ||
+                longitude.abs() > 180))) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Informe as duas coordenadas válidas ou deixe ambas vazias.',
+          ),
+        ),
+      );
+      return;
+    }
     final Map<String, dynamic> metadata = {};
     for (final entry in _metadataControllers.entries) {
       final value = entry.value.text.trim();
@@ -331,16 +354,9 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
       isActive: _isActive,
     );
 
-    final bool saved = await _controller.save(model);
-    if (saved) {
-      Get.secureBack(
-        result: {
-          'created': true,
-          'latitude': latitude,
-          'longitude': longitude,
-        },
-      );
-    }
+    final saved = await _controller.save(model);
+    if (!mounted || saved == null) return;
+    Get.offNamed('/living_clues/${saved.id}', arguments: saved);
   }
 
   String _formatTagLabel(String raw) {
