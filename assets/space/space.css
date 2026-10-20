@@ -910,7 +910,7 @@ dialog::backdrop {
   border-radius: 7px;
   border: 3px solid #263d49;
   outline: 1px solid #526572;
-  background: linear-gradient(140deg, #10252df5, #070e19fa);
+  background: linear-gradient(140deg, #10252d, #070e19);
   box-shadow:
     0 -10px 0 #060e16,
     0 -12px 0 #425360,
@@ -1072,4 +1072,9 @@ dialog::backdrop {
 .reduced.disembarking .console,
 .reduced.disembarking #universe {
   transform: none;
+}
+
+/* Jump particles live behind the opaque 3D hull; avoid washing over metal. */
+#warp {
+  display: none;
 }

@@ -506,7 +506,63 @@ function buildCockpit() {
     cockpitRig.add(mesh);
     return mesh;
   }
+  // A continuous opaque pressure shell surrounds the windshield. It extends
+  // beyond the widest jump FOV, so widening the lens reveals cabin, never gaps.
+  function panel(width, height, depth, x, y, z, material = hull) {
+    const mesh = new THREE.Mesh(
+      new THREE.BoxGeometry(width, height, depth),
+      material,
+    );
+    mesh.position.set(x, y, z);
+    cockpitRig.add(mesh);
+    return mesh;
+  }
+  panel(6, 2, 0.22, 0, 1.58, -1.52);
+  panel(6, 2.2, 0.32, 0, -1.53, -1.32);
+  const amber = new THREE.MeshBasicMaterial({ color: 0xffbe73 });
+  const screen = new THREE.MeshStandardMaterial({
+    color: 0x102c35,
+    emissive: 0x0a333a,
+    emissiveIntensity: 0.65,
+    metalness: 0.25,
+    roughness: 0.3,
+  });
   for (const side of [-1, 1]) {
+    panel(2.55, 4, 0.22, side * 1.735, 0, -1.52);
+    // Layered service covers, recessed instruments and illuminated switches.
+    panel(0.24, 0.84, 0.065, side * 0.59, -0.04, -1.36);
+    panel(0.19, 0.28, 0.035, side * 0.59, 0.13, -1.31, inset);
+    panel(0.16, 0.23, 0.018, side * 0.59, 0.13, -1.285, screen);
+    for (let row = 0; row < 5; row++) {
+      panel(
+        0.1 - row * 0.011,
+        0.006,
+        0.008,
+        side * 0.59,
+        0.205 - row * 0.035,
+        -1.27,
+        strip,
+      );
+      panel(0.13, 0.012, 0.016, side * 0.59, -0.17 - row * 0.035, -1.3, inset);
+    }
+    for (let row = 0; row < 3; row++) {
+      panel(
+        0.04,
+        0.025,
+        0.03,
+        side * 0.55,
+        -0.065 - row * 0.035,
+        -1.28,
+        row === 0 ? amber : strip,
+      );
+      panel(0.04, 0.025, 0.03, side * 0.63, -0.065 - row * 0.035, -1.28, inset);
+    }
+    // Outer ribs and ceiling equipment become visible as the jump lens widens.
+    for (let rib = 0; rib < 3; rib++) {
+      panel(0.035, 2.4, 0.12, side * (0.78 + rib * 0.25), 0, -1.34, inset);
+    }
+    panel(0.26, 0.12, 0.08, side * 0.28, 0.66, -1.35, inset);
+    panel(0.19, 0.012, 0.012, side * 0.28, 0.65, -1.3, strip);
     beam([side * 0.47, 0.63, -1.5], [side * 0.38, -0.48, -1.1], 0.085);
     beam([side * 0.49, 0.6, -1.5], [side * 0.4, -0.5, -1.1], 0.014, strip);
     beam([side * 0.25, 0.64, -1.5], [side * 0.34, 0.12, -1.4], 0.045);

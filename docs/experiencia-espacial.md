@@ -84,3 +84,9 @@ Validação desta revisão no navegador: abertura sem corpos celestes; salto at�
 ### Alinhamento suave antes do salto
 
 A virada interpola a orientação da câmera por quaternion com curva quintic smootherstep, partindo da orientação efetivamente exibida. Isso evita que a distância entre os alvos concentre a rotação no início. O alinhamento dura 3,6 s, com aceleração e desaceleração progressivas; carga sonora, partículas e início do salto usam os mesmos tempos. Validado no navegador em cruzeiro → Terra e Terra → Pesquisa. Bundle regenerado; análise Dart sem erros, com avisos legados.
+
+### Cabine fechada e opaca
+
+Casco contínuo nas laterais, teto e base, dimensionado para cobrir também o campo de visão máximo do salto. Painéis com camadas de revestimento, telas de instrumentação, interruptores, nervuras e luminárias embutidas. Console com fundo opaco. O brilho CSS sobre a tela foi removido para que não atravesse visualmente a estrutura; os rastros 3D permanecem atrás do casco.
+
+Validação visual em desktop e largura móvel, incluindo salto Terra → Pesquisa com lente aberta: as bordas mostram a cabine, sem vãos para o espaço. Bundle regenerado e análise Dart sem erros, com avisos legados. Evidências: `space-solid-cockpit.jpg` e `space-solid-warp.jpg`.
