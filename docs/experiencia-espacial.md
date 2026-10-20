@@ -138,3 +138,9 @@ A estação de Conexões agora abre `/space/connections`, um ambiente Flutter co
 Reutiliza os webclients autenticados e a política de visualização de Conexões. Tem estados explícitos de carregamento, falha com nova tentativa, lista vazia e busca sem resultados. A Iareté recebe contexto da sala, busca e seleção. A nave continua pausada e preservada ao entrar pela estação; Voltar ao cockpit retoma a mesma cena. Acesso direto à URL sem histórico retorna a `/space`. Transições respeitam movimento reduzido.
 
 Validação: 5 testes de widget aprovados cobrindo busca, seleção de detalhes, falha/nova tentativa/lista vazia, detalhes móveis, ponte cockpit → sala → cockpit e viewport imersivo. Build web concluído; análise Dart sem erros, com avisos legados. Navegador: 14 conexões reais carregadas; busca CVV retornou 5 itens; detalhes em desktop e celular; retorno ao cockpit; entrada pelo painel da Estação de Conexões. Evidência: `space-connections-room.jpg`.
+
+### Fade do resumo superior de destino
+
+Nome, descrição e setor do destino agora apagam juntos em 180 ms antes da atualização e reaparecem em 500 ms com deslocamento discreto. Trocas rápidas cancelam a transição anterior e mantêm a última seleção. Movimento reduzido atualiza os dados imediatamente, inclusive ao ser ativado durante um fade. A seleção da rota continua imediata e independente da animação visual.
+
+Validado no navegador: Terra → Pesquisa, sequência rápida Observatório → Terra → Observatório e ativação de movimento reduzido durante a troca para Pesquisa. Bundle regenerado; análise Dart sem erros, com avisos legados. Evidência: `space-destination-fade.jpg`.

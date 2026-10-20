@@ -180,6 +180,7 @@ function updateSound() {
   $("sound").setAttribute("aria-pressed", String(audio.enabled));
 }
 function setMotion() {
+  if (reduced) updateMission(selected);
   document.body.classList.toggle("reduced", reduced);
   $("motion").textContent = reduced ? "Movimento reduzido" : "Movimento suave";
   $("motion").setAttribute("aria-pressed", String(reduced));
@@ -288,6 +289,48 @@ function renderDestinations() {
       $("destinations").append(button);
     });
 }
+let missionId = "earth",
+  missionAnimation = null,
+  missionRevision = 0;
+function updateMission(destination) {
+  const panel = $("destination-summary"),
+    revision = ++missionRevision;
+  const opacity = getComputedStyle(panel).opacity;
+  const pending = missionAnimation?.playState === "running";
+  missionAnimation?.cancel();
+  const update = () => {
+    $("destination-title").textContent = destination.name;
+    $("destination-subtitle").textContent = destination.subtitle;
+    $("coordinates").textContent = destination.sector;
+    missionId = destination.id;
+  };
+  if (reduced || (!pending && missionId === destination.id)) {
+    update();
+    return;
+  }
+  missionAnimation = panel.animate(
+    [
+      { opacity, transform: "translateY(0)" },
+      { opacity: 0, transform: "translateY(-4px)" },
+    ],
+    { duration: 180, easing: "ease-in", fill: "forwards" },
+  );
+  missionAnimation.finished
+    .then(() => {
+      if (revision !== missionRevision) return;
+      update();
+      missionAnimation.cancel();
+      if (!reduced)
+        missionAnimation = panel.animate(
+          [
+            { opacity: 0, transform: "translateY(6px)" },
+            { opacity: 1, transform: "translateY(0)" },
+          ],
+          { duration: 500, easing: "cubic-bezier(.2,.7,.2,1)" },
+        );
+    })
+    .catch(() => {}); // Fast destination changes supersede the pending fade.
+}
 function select(d) {
   if (travelling || transferTime >= 0 || !allowed.includes(d.id)) return;
   selected = d;
@@ -296,10 +339,8 @@ function select(d) {
   $("navigate").hidden = arrived && current === d.id;
   $("direct").hidden = arrived && current === d.id;
   $("skip").hidden = true;
-  $("destination-title").textContent = d.name;
-  $("destination-subtitle").textContent = d.subtitle;
+  updateMission(d);
   $("module-title").textContent = d.module;
-  $("coordinates").textContent = d.sector;
   $("distance").textContent = `0${destinations.indexOf(d) + 1} / 05`;
   $("navigate").textContent =
     arrived && current === d.id
