@@ -6,6 +6,8 @@ import 'package:widgets_spo/models/mfile_base_model.dart';
 class FileModel extends MFileBase {
   final int? livingClueId;
   final int? postId;
+  final String? storageProvider;
+  final String? mimeType;
 
   FileModel({
     required super.id,
@@ -22,6 +24,8 @@ class FileModel extends MFileBase {
     super.isDeleted = false,
     this.livingClueId,
     this.postId,
+    this.storageProvider,
+    this.mimeType,
   });
 
   factory FileModel.fromJson(Map<String, dynamic> json) {
@@ -33,7 +37,9 @@ class FileModel extends MFileBase {
     }
 
     return FileModel(
-      id: json['id'] is int ? json['id'] : int.tryParse(json['id']?.toString() ?? '') ?? 0,
+      id: json['id'] is int
+          ? json['id']
+          : int.tryParse(json['id']?.toString() ?? '') ?? 0,
       extension: json['extension']?.toString() ?? '',
       path: json['path'],
       publicUrl: json['public_url'],
@@ -41,12 +47,16 @@ class FileModel extends MFileBase {
       createdAt: DateTime.tryParse(json['created_at']?.toString() ?? ''),
       updatedAt: DateTime.tryParse(json['updated_at']?.toString() ?? ''),
       base64: json['base64'],
+      size: json['size'] is num ? (json['size'] as num).toInt() : null,
+      storageProvider: json['storage_provider']?.toString(),
+      mimeType: json['mime_type']?.toString(),
       bytes: decodedBytes,
       livingClueId: json['living_clue_id'] is int
           ? json['living_clue_id']
           : int.tryParse(json['living_clue_id']?.toString() ?? ''),
-      postId:
-          json['post_id'] is int ? json['post_id'] : int.tryParse(json['post_id']?.toString() ?? ''),
+      postId: json['post_id'] is int
+          ? json['post_id']
+          : int.tryParse(json['post_id']?.toString() ?? ''),
     );
   }
 

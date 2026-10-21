@@ -1,7 +1,7 @@
 import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
 import 'package:unisinos_usp_app/widgets/living_clue_layout.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:unisinos_usp_app/widgets/clue_attachment_tile.dart';
 import 'dart:async';
 import 'package:unisinos_usp_app/widgets/clue_participation.dart';
 import 'package:unisinos_usp_app/widgets/locker_panel.dart';
@@ -49,16 +49,18 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
   Timer? _refreshTimer;
   int _refreshAttempts = 0;
   late final String _route = Get.currentRoute;
-  late final AiAssistantContextProvider _provider = () =>
-      AiAssistantScreenContext(
-        screenName: 'Registro de pista na nave',
-        route: _route,
-        stage: 'visualização completa de pista',
-        goal: 'explorar a pista, suas relações, contexto e COMpartilhAÇÕES',
-        references: {'living_clue_id': model.id},
-        filledFields: {'pista': model.name, 'id': model.id.toString()},
-        notes: const ['O backend deve consultar a versão atual da pista, com suas relações e fontes. Não enviar conversas coletivas ou Locker por padrão.'],
-      );
+  late final AiAssistantContextProvider
+  _provider = () => AiAssistantScreenContext(
+    screenName: 'Registro de pista na nave',
+    route: _route,
+    stage: 'visualização completa de pista',
+    goal: 'explorar a pista, suas relações, contexto e COMpartilhAÇÕES',
+    references: {'living_clue_id': model.id},
+    filledFields: {'pista': model.name, 'id': model.id.toString()},
+    notes: const [
+      'O backend deve consultar a versão atual da pista, com suas relações e fontes. Não enviar conversas coletivas ou Locker por padrão.',
+    ],
+  );
   List<ClueConnectionModel> _connections = <ClueConnectionModel>[];
   bool _isLoadingConnections = true;
   String? _connectionsError;
@@ -475,19 +477,7 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
                             title: Text('Anexos'),
                           ),
                           for (final file in model.files)
-                            ListTile(
-                              title: Text(file.name ?? 'Documento'),
-                              trailing: const Icon(Icons.open_in_new),
-                              onTap: () {
-                                final uri = Uri.tryParse(file.publicUrl ?? '');
-                                if (uri != null &&
-                                    ['https', 'http'].contains(uri.scheme))
-                                  launchUrl(
-                                    uri,
-                                    mode: LaunchMode.externalApplication,
-                                  );
-                              },
-                            ),
+                            ClueAttachmentTile(file: file),
                         ],
                       ),
                     ),

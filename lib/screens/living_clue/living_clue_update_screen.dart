@@ -1,5 +1,8 @@
+import 'package:file_picker/file_picker.dart';
+import 'package:unisinos_usp_app/widgets/clue_attachment_tile.dart';
 import 'package:unisinos_usp_app/screens/management/management_input.dart';
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:unisinos_usp_app/screens/space/space_record_shell.dart';
 import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
@@ -486,70 +489,36 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
                 style: TextStyle(color: Colors.grey.shade600),
               )
             else
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: _attachments
-                      .map(
-                        (file) => Padding(
-                          padding: const EdgeInsets.only(right: 12),
-                          child: Stack(
-                            alignment: Alignment.topRight,
-                            children: [
-                              Container(
-                                width: 200,
-                                constraints: const BoxConstraints(
-                                  minHeight: 140,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade50,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: Colors.grey.shade200,
-                                  ),
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: FilePreviewComponent(file),
-                                ),
-                              ),
-                              Positioned(
-                                top: 4,
-                                right: 4,
-                                child: Material(
-                                  color: Colors.black.withOpacity(0.55),
-                                  shape: const CircleBorder(),
-                                  child: IconButton(
-                                    icon: const Icon(
-                                      Icons.close,
-                                      color: Colors.white,
-                                      size: 18,
-                                    ),
-                                    onPressed: _uploadingFile
-                                        ? null
-                                        : () => _removeAttachment(file),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
-                      .toList(),
-                ),
+              Column(
+                children: [
+                  for (final file in _attachments)
+                    ClueAttachmentTile(
+                      file: file,
+                      onRemove: _uploadingFile
+                          ? null
+                          : () => _removeAttachment(file),
+                    ),
+                ],
               ),
             const SizedBox(height: 12),
             Text(
-              'Adicionar novo',
+              'Adicionar arquivo (até 25 MB)',
               style: TextStyle(
-                color: Colors.grey.shade800,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 8),
-            Row(
+            Wrap(
+              spacing: 10,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                InputFile(mFileController: _fileController),
+                OutlinedButton.icon(
+                  onPressed: _uploadingFile ? null : _pickAttachment,
+                  icon: const Icon(Icons.attach_file),
+                  label: const Text('Selecionar arquivo'),
+                ),
                 const SizedBox(width: 10),
                 ElevatedButton.icon(
                   icon: const Icon(Icons.cloud_upload),
@@ -560,6 +529,13 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
                 ),
               ],
             ),
+            if (_fileController.file != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  _fileController.file!.name ?? 'Arquivo selecionado',
+                ),
+              ),
             const SizedBox(height: 12),
             ManagementInput(
               hintText: 'Ou cole um link público',
@@ -659,6 +635,57 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
     }
   }
 
+  Future<void> _pickAttachment() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: FileWebclient.allowedExtensions,
+        allowMultiple: false,
+        withData: false,
+        withReadStream: true,
+      );
+      if (result == null || result.files.isEmpty || !mounted) return;
+      final picked = result.files.single;
+      if (picked.size > FileWebclient.maxBytes) {
+        Get.customSnackbar('Arquivos', 'O arquivo deve ter no máximo 25 MB.');
+        return;
+      }
+      final builder = BytesBuilder(copy: false);
+      if (picked.readStream != null) {
+        await for (final chunk in picked.readStream!) {
+          if (builder.length + chunk.length > FileWebclient.maxBytes) {
+            throw const AttachmentException(
+              'O arquivo deve ter no máximo 25 MB.',
+            );
+          }
+          builder.add(chunk);
+        }
+      } else {
+        builder.add(await picked.xFile.readAsBytes());
+      }
+      final bytes = builder.takeBytes();
+      if (!mounted) return;
+      setState(
+        () => _fileController.setFile(
+          FileModel(
+            id: 0,
+            extension: picked.extension ?? '',
+            name: picked.name,
+            bytes: bytes,
+            size: bytes.length,
+          ),
+        ),
+      );
+    } catch (error) {
+      Get.customSnackbar(
+        'Arquivos',
+        error is AttachmentException
+            ? error.message
+            : 'Não foi possível selecionar o arquivo.',
+      );
+    }
+  }
+
   Future<void> _uploadSelectedFile() async {
     if (_controller.livingClue.value == null) return;
     final file = _fileController.file;
@@ -682,13 +709,19 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
           livingClueId: _controller.livingClue.value!.id,
         ),
       );
+      if (!mounted) return;
       setState(() {
         _attachments.insert(0, uploaded);
         _fileController.clearFile();
       });
       Get.successSnackbar('Arquivo enviado com sucesso.');
-    } catch (_) {
-      Get.customSnackbar('Arquivos', 'Não foi possível enviar o arquivo.');
+    } catch (error) {
+      Get.customSnackbar(
+        'Arquivos',
+        error is AttachmentException
+            ? error.message
+            : 'Não foi possível enviar o arquivo.',
+      );
     } finally {
       if (mounted) setState(() => _uploadingFile = false);
     }
@@ -713,6 +746,7 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
           livingClueId: _controller.livingClue.value!.id,
         ),
       );
+      if (!mounted) return;
       setState(() {
         _attachments.insert(0, uploaded);
         _linkController.clear();

@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:widgets_spo/models/mfile_base_model.dart';
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:widgets_spo/services/services.dart' show LoggingInterceptor;
 import 'package:widgets_spo/services/webclient_base.dart';
@@ -71,6 +72,21 @@ class WebClient extends WebClientBase {
     List<InterceptorContract>? interceptors, {
     int? timeOut,
   }) => super.delete(uri, _privateInterceptors(interceptors), timeOut: timeOut);
+
+  @override
+  Future<Response> postMultipart(
+    String uri,
+    MFileBase file,
+    List<InterceptorContract> interceptors, {
+    int? timeOut,
+    Map<String, String?> fileFields = const {},
+  }) => super.postMultipart(
+    uri,
+    file,
+    _privateInterceptors(interceptors)!,
+    timeOut: timeOut,
+    fileFields: fileFields,
+  );
 
   @override
   void reportError(

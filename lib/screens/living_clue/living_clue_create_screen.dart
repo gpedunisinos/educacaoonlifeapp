@@ -254,6 +254,20 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
                         ),
                       ),
                       Insets.extraLarge.height,
+                      const Text(
+                        'Para anexar documentos, imagens, áudio ou vídeo, salve a pista e continue em Arquivos e evidências.',
+                      ),
+                      const SizedBox(height: 8),
+                      Obx(
+                        () => OutlinedButton.icon(
+                          onPressed: _controller.isLoading.value
+                              ? null
+                              : () => _save(addFiles: true),
+                          icon: const Icon(Icons.attach_file),
+                          label: const Text('Salvar e adicionar arquivos'),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
                       SizedBox(
                         width: double.infinity,
                         child: Obx(() {
@@ -264,7 +278,7 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
                           return ActionButton(
                             theme: ActionButtonTheme.blue,
                             title: buttonTitle,
-                            onPressed: loading ? null : _save,
+                            onPressed: loading ? null : () => _save(),
                           );
                         }),
                       ),
@@ -335,7 +349,7 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
     );
   }
 
-  Future<void> _save() async {
+  Future<void> _save({bool addFiles = false}) async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     final double? latitude = double.tryParse(_latitudeController.text.trim());
     final double? longitude = double.tryParse(_longitudeController.text.trim());
@@ -389,7 +403,12 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
 
     final saved = await _controller.save(model);
     if (!mounted || saved == null) return;
-    Get.offNamed('/living_clues/${saved.id}', arguments: saved);
+    Get.offNamed(
+      addFiles
+          ? '/living_clues/update?id=${saved.id}'
+          : '/living_clues/${saved.id}',
+      arguments: saved,
+    );
   }
 
   String _formatTagLabel(String raw) {
