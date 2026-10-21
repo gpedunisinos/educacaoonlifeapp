@@ -122,6 +122,109 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
+  for (final width in [390.0, 1280.0]) {
+    testWidgets(
+      'guide targets align inside an offset overlay and remain clear at $width',
+      (tester) async {
+        tester.view.physicalSize = Size(width, 900);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        Get.put<LivingClueMapController>(MapData());
+        final side = width < 700 ? 12.0 : 88.0;
+        await tester.pumpWidget(
+          GetMaterialApp(
+            builder: (context, child) => Padding(
+              padding: EdgeInsets.fromLTRB(side, 48, side, 24),
+              child: child!,
+            ),
+            home: LivingClueMapScreen(tileProvider: OfflineTiles()),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final targets = [
+          find.byType(FlutterMap),
+          find.byType(Slider),
+          find
+              .ancestor(
+                of: find.text('Sonar'),
+                matching: find.byWidgetPredicate(
+                  (widget) => widget is TextButton,
+                ),
+              )
+              .first,
+          find
+              .ancestor(
+                of: find.byTooltip('Usar minha localização'),
+                matching: find.byType(IconButton),
+              )
+              .first,
+          find
+              .ancestor(
+                of: find.byTooltip('Atualizar área'),
+                matching: find.byType(IconButton),
+              )
+              .first,
+          find
+              .ancestor(
+                of: find.byTooltip('Criar pista por ponto'),
+                matching: find.byType(IconButton),
+              )
+              .first,
+          find
+              .ancestor(
+                of: find.byTooltip('Criar conexão no mapa'),
+                matching: find.byType(IconButton),
+              )
+              .first,
+          find
+              .ancestor(
+                of: find.byTooltip('Reposicionar pista no mapa'),
+                matching: find.byType(IconButton),
+              )
+              .first,
+        ];
+        await tester.tap(find.byTooltip('Ajuda do mapa'));
+        for (var index = 0; index < targets.length; index++) {
+          await tester.pump(const Duration(milliseconds: 300));
+          final target = tester.getRect(targets[index]);
+          final highlight = tester.getRect(
+            find.byKey(const ValueKey('map-guide-highlight')),
+          );
+          expect(highlight.left, closeTo(target.left - 6, .1));
+          expect(highlight.top, closeTo(target.top - 6, .1));
+          expect(highlight.width, closeTo(target.width + 12, .1));
+          final card = tester.getRect(
+            find.byKey(const ValueKey('map-guide-card-viewport')),
+          );
+          expect(card.left, greaterThanOrEqualTo(side + 16));
+          expect(card.right, lessThanOrEqualTo(width - side - 16 + .1));
+          expect(card.top, greaterThanOrEqualTo(48 + 16));
+          expect(card.bottom, lessThanOrEqualTo(900 - 24 - 16 + .1));
+          if (index > 0)
+            expect(
+              card.overlaps(target.inflate(8)),
+              isFalse,
+              reason: 'step ${index + 1} obscures its control',
+            );
+          if (index < targets.length - 1)
+            await tester.tap(find.text('Próximo'));
+        }
+        // Re-layout while the last step is open must re-anchor to its moved control.
+        tester.view.physicalSize = Size(width + 120, 820);
+        await tester.pump(const Duration(milliseconds: 300));
+        final movedTarget = tester.getRect(targets.last);
+        final movedHighlight = tester.getRect(
+          find.byKey(const ValueKey('map-guide-highlight')),
+        );
+        expect(movedHighlight.top, closeTo(movedTarget.top - 6, .1));
+        expect(movedHighlight.left, closeTo(movedTarget.left - 6, .1));
+        await tester.tap(find.text('Pular'));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
   for (final fromCockpit in [true, false]) {
     testWidgets('map returns to cockpit with existing scene: $fromCockpit', (
       tester,

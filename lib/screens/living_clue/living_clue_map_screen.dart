@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/widgets/anchored_tutorial_layout.dart';
 import 'package:unisinos_usp_app/widgets/iarete_reply.dart';
 import 'package:unisinos_usp_app/widgets/space_conversation.dart';
 import 'package:unisinos_usp_app/services/ship_audio_preferences.dart';
@@ -543,7 +544,6 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                   ),
                 ),
               Container(
-                key: _sonarControlsKey,
                 margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 14,
@@ -611,6 +611,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                               Expanded(
                                 child: Obx(() {
                                   return Slider(
+                                    key: _sonarControlsKey,
                                     activeColor: mapIce,
                                     value: _controller.sonarRadius.value,
                                     min: 1000,
@@ -1427,7 +1428,10 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
 
   void _showMapTutorial({bool markAsSeen = false}) {
     final overlay = Overlay.of(context);
-    final steps = _tutorialSteps();
+    FocusManager.instance.primaryFocus?.unfocus();
+    final steps = _tutorialSteps()
+        .where((step) => step.targetKey.currentContext != null)
+        .toList();
     if (steps.isEmpty) return;
 
     final tutorialAudio = TypingAudio();
@@ -1437,7 +1441,6 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
         tutorialAudio.prepare();
     });
     int currentIndex = 0;
-    int animationDirection = 1;
     late OverlayEntry entry;
 
     void close() {
@@ -1457,7 +1460,6 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
         close();
         return;
       }
-      animationDirection = 1;
       currentIndex++;
       entry.markNeedsBuild();
     }
@@ -1465,97 +1467,93 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     void previous() {
       if (ShipAudioPreferences.enabled.value) tutorialAudio.prepare();
       if (currentIndex == 0) return;
-      animationDirection = -1;
       currentIndex--;
       entry.markNeedsBuild();
     }
 
     entry = OverlayEntry(
-      builder: (context) {
-        final step = steps[currentIndex];
-        final targetRect = _targetRect(step.targetKey);
-        final screenSize = MediaQuery.of(context).size;
-        final calloutAbove = targetRect.center.dy > screenSize.height / 2;
-        final cardHeight = (screenSize.height - 32).clamp(120.0, 350.0);
-        final calloutTop =
-            (calloutAbove
-                    ? targetRect.top - cardHeight - 12
-                    : targetRect.bottom + 12)
-                .clamp(
-                  16.0,
-                  (screenSize.height - cardHeight - 16).clamp(
-                    16.0,
-                    double.infinity,
+      builder: (context) => LayoutBuilder(
+        builder: (context, constraints) {
+          final step = steps[currentIndex];
+          final overlayBox = overlay.context.findRenderObject() as RenderBox;
+          final viewport = Offset.zero & constraints.biggest;
+          final targetRect = _targetRect(
+            step.targetKey,
+            overlayBox,
+          ).intersect(viewport);
+          final media = MediaQuery.of(context);
+          final bottomInset = media.viewInsets.bottom > media.padding.bottom
+              ? media.viewInsets.bottom
+              : media.padding.bottom;
+          return Material(
+            color: Colors.transparent,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: _TutorialOverlayPainter(targetRect),
                   ),
-                );
-
-        return Material(
-          color: Colors.transparent,
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: CustomPaint(
-                  painter: _TutorialOverlayPainter(targetRect),
                 ),
-              ),
-              Positioned.fromRect(
-                rect: targetRect.inflate(6),
-                child: IgnorePointer(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: _sonarBlue, width: 2),
-                      borderRadius: BorderRadius.circular(12),
+                if (!targetRect.isEmpty)
+                  Positioned.fromRect(
+                    key: const ValueKey('map-guide-highlight'),
+                    rect: targetRect.inflate(6),
+                    child: IgnorePointer(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: _sonarBlue, width: 2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-              Positioned(
-                left: 16,
-                right: 16,
-                top: calloutTop,
-                child: TweenAnimationBuilder<double>(
-                  key: ValueKey(currentIndex),
-                  tween: Tween<double>(
-                    begin: animationDirection * 0.08,
-                    end: 0,
-                  ),
-                  duration: const Duration(milliseconds: 220),
-                  curve: Curves.easeOutCubic,
-                  builder: (context, offset, child) {
-                    return Opacity(
-                      opacity: 1 - (offset.abs() / 0.08).clamp(0.0, 1.0),
-                      child: FractionalTranslation(
-                        translation: Offset(offset, 0),
-                        child: child,
+                Positioned.fill(
+                  child: CustomSingleChildLayout(
+                    delegate: AnchoredTutorialLayout(
+                      target: targetRect,
+                      insets: EdgeInsets.fromLTRB(
+                        16 + media.padding.left,
+                        16 + media.padding.top,
+                        16 + media.padding.right,
+                        16 + bottomInset,
                       ),
-                    );
-                  },
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(maxHeight: cardHeight),
-                    child: SingleChildScrollView(
-                      child: _TutorialCard(
-                        onType: () {
-                          if (ShipAudioPreferences.enabled.value)
-                            tutorialAudio.tick();
-                        },
-                        current: currentIndex + 1,
-                        total: steps.length,
-                        title: step.title,
-                        description: step.description,
-                        canGoBack: currentIndex > 0,
-                        isLast: currentIndex == steps.length - 1,
-                        onBack: previous,
-                        onNext: next,
-                        onSkip: close,
+                    ),
+                    child: TweenAnimationBuilder<double>(
+                      key: ValueKey(currentIndex),
+                      tween: Tween(begin: 0, end: 1),
+                      duration: media.disableAnimations
+                          ? Duration.zero
+                          : const Duration(milliseconds: 220),
+                      builder: (context, opacity, child) =>
+                          Opacity(opacity: opacity, child: child),
+                      child: SingleChildScrollView(
+                        key: const ValueKey('map-guide-card-viewport'),
+                        child: _TutorialCard(
+                          key: const ValueKey('map-guide-card'),
+                          onType: () {
+                            if (ShipAudioPreferences.enabled.value)
+                              tutorialAudio.tick();
+                          },
+                          current: currentIndex + 1,
+                          total: steps.length,
+                          title: step.title,
+                          description: step.description,
+                          canGoBack: currentIndex > 0,
+                          isLast: currentIndex == steps.length - 1,
+                          onBack: previous,
+                          onNext: next,
+                          onSkip: close,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        );
-      },
+              ],
+            ),
+          );
+        },
+      ),
     );
 
     _dismissTutorial?.call();
@@ -1626,29 +1624,10 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
         .toList();
   }
 
-  Rect _targetRect(GlobalKey key) {
-    final context = key.currentContext;
-    if (context == null) {
-      final size = MediaQuery.of(this.context).size;
-      return Rect.fromCenter(
-        center: size.center(Offset.zero),
-        width: size.width * 0.72,
-        height: 96,
-      );
-    }
-
-    final box = context.findRenderObject() as RenderBox?;
-    if (box == null || !box.hasSize) {
-      final size = MediaQuery.of(this.context).size;
-      return Rect.fromCenter(
-        center: size.center(Offset.zero),
-        width: size.width * 0.72,
-        height: 96,
-      );
-    }
-
-    final offset = box.localToGlobal(Offset.zero);
-    return offset & box.size;
+  Rect _targetRect(GlobalKey key, RenderBox overlayBox) {
+    final box = key.currentContext?.findRenderObject();
+    if (box is! RenderBox || !box.hasSize || !box.attached) return Rect.zero;
+    return box.localToGlobal(Offset.zero, ancestor: overlayBox) & box.size;
   }
 
   Color _categoryColor(LivingClueModel model) {
@@ -1984,6 +1963,13 @@ class _TutorialOverlayPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final overlayPath = ui.Path()
       ..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
+    if (targetRect.isEmpty) {
+      canvas.drawPath(
+        overlayPath,
+        Paint()..color = Colors.black.withValues(alpha: 0.72),
+      );
+      return;
+    }
     final targetPath = ui.Path()
       ..addRRect(
         RRect.fromRectAndRadius(
@@ -2011,6 +1997,7 @@ class _TutorialOverlayPainter extends CustomPainter {
 
 class _TutorialCard extends StatelessWidget {
   const _TutorialCard({
+    super.key,
     required this.current,
     required this.total,
     required this.title,
@@ -2094,10 +2081,27 @@ class _TutorialCard extends StatelessWidget {
               key: ValueKey(current),
               text: description,
               animate: true,
+              reserveCompletionSpace: true,
               onType: onType,
-              builder: (visible) => Text(
-                visible,
-                style: const TextStyle(color: Colors.white70, height: 1.35),
+              builder: (visible) => Stack(
+                children: [
+                  ExcludeSemantics(
+                    child: Opacity(
+                      opacity: 0,
+                      child: Text(
+                        description,
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          height: 1.35,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Text(
+                    visible,
+                    style: const TextStyle(color: Colors.white70, height: 1.35),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 16),

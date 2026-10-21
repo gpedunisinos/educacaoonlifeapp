@@ -8,10 +8,12 @@ class IareteReply extends StatefulWidget {
     required this.text,
     required this.animate,
     required this.builder,
+    this.reserveCompletionSpace = false,
     this.onType,
     this.onProgress,
     this.onComplete,
   });
+  final bool reserveCompletionSpace;
   final String text;
   final bool animate;
   final Widget Function(String visibleText) builder;
@@ -128,11 +130,16 @@ class _IareteReplyState extends State<IareteReply> with WidgetsBindingObserver {
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       widget.builder(_characters.take(_visible).join()),
-      if (_visible < _characters.length)
-        TextButton.icon(
-          onPressed: _finish,
-          icon: const Icon(Icons.fast_forward, size: 15),
-          label: const Text('Exibir resposta completa'),
+      if (_visible < _characters.length || widget.reserveCompletionSpace)
+        SizedBox(
+          height: widget.reserveCompletionSpace ? 48 : null,
+          child: _visible < _characters.length
+              ? TextButton.icon(
+                  onPressed: _finish,
+                  icon: const Icon(Icons.fast_forward, size: 15),
+                  label: const Text('Exibir resposta completa'),
+                )
+              : const SizedBox.shrink(),
         ),
     ],
   );
