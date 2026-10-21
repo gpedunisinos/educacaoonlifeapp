@@ -37,7 +37,7 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
     final user = Get.find<UserController>().user.value;
     return {
       if (LivingCluePolicy(user).viewAny()) 'earth': '/living_clues/map',
-      if (LivingCluePolicy(user).viewAny()) 'research': '/living_clues',
+      if (LivingCluePolicy(user).viewAny()) 'research': '/space/research',
       if (NodePolicy(user).viewAny()) 'observatory': '/nodes/graph',
       if (ClueConnectionPolicy(user).viewAny())
         'connections': '/space/connections',

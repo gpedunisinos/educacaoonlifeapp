@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/screens/space/clue_research_room_screen.dart';
 import 'package:unisinos_usp_app/screens/space/intelligence_chamber_screen.dart';
 import 'package:unisinos_usp_app/models/chat_template_model.dart';
 import 'package:unisinos_usp_app/screens/space/connections_room_screen.dart';
@@ -30,6 +31,15 @@ List<GetPage> appRoutes() =>
         middlewares: [AppRouteGuard(canActivate: (u) => u != null)],
       ),
       GetPage(name: '/space', page: () => const SpaceScreen()),
+      GetPage(
+        name: '/space/research',
+        page: () => const ClueResearchRoomScreen(),
+        transition: Transition.fadeIn,
+        transitionDuration: const Duration(milliseconds: 600),
+        middlewares: [
+          AppRouteGuard(canActivate: (u) => LivingCluePolicy(u).viewAny()),
+        ],
+      ),
       GetPage(
         name: '/space/connections',
         page: () => const ConnectionsRoomScreen(),

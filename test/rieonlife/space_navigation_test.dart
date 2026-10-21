@@ -48,6 +48,15 @@ void main() {
               ),
             ),
             GetPage(
+              name: '/space/research',
+              page: () => Scaffold(
+                body: TextButton(
+                  onPressed: Get.back,
+                  child: const Text('Sair da pesquisa'),
+                ),
+              ),
+            ),
+            GetPage(
               name: '/space/connections',
               page: () => Scaffold(
                 body: TextButton(
@@ -101,6 +110,12 @@ void main() {
       expect(Get.currentRoute, '/space/connections');
       expect(find.text('Sair da sala'), findsOneWidget);
       await tester.tap(find.text('Sair da sala'));
+      await tester.pumpAndSettle();
+      expect(tester.widget<SpaceView>(find.byType(SpaceView)), same(view));
+      view.onMessage({'type': 'open', 'destination': 'research'});
+      await tester.pumpAndSettle();
+      expect(Get.currentRoute, '/space/research');
+      await tester.tap(find.text('Sair da pesquisa'));
       await tester.pumpAndSettle();
       expect(tester.widget<SpaceView>(find.byType(SpaceView)), same(view));
       view.onMessage({'type': 'open', 'destination': 'agents'});
