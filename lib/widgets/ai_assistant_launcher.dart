@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/themes/app_theme.dart';
 import 'package:unisinos_usp_app/services/mode_switch_routes.dart';
 import 'package:unisinos_usp_app/screens/management/management_shell.dart';
 import 'package:unisinos_usp_app/policies/clue_connection_policy.dart';
@@ -153,7 +154,7 @@ class _AiAssistantLauncherState extends State<AiAssistantLauncher> {
         canSwitchModeOnRoute(route) &&
         !AiAssistantLauncher.modeOverlayBlocked.value;
     final explorer = u?.usageMode == 'explorer';
-    final accent = explorer ? const Color(0xFF65DFD2) : const Color(0xFFB5A0FF);
+    final accent = explorer ? const Color(0xFF65DFD2) : AppTheme.inventorAccent;
     return Material(
       color: const Color(0xFF0A1123),
       child: Stack(

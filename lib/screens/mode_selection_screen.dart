@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/themes/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
@@ -103,7 +104,7 @@ class _ModeSelectionScreenState extends State<ModeSelectionScreen> {
                               'Dê forma às possibilidades',
                               'Crie e organize vivências, conecte materiais e construa novas pistas em colaboração.',
                               Icons.handyman_outlined,
-                              const Color(0xFFB5A0FF),
+                              AppTheme.inventorAccent,
                               user.usageMode,
                             ),
                           ];

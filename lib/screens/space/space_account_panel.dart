@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/themes/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
@@ -9,6 +10,10 @@ class SpaceAccountPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = Get.find<UserController>().user.value;
+    final inventor = user?.usageMode == 'inventor';
+    final modeAccent = inventor
+        ? AppTheme.inventorAccent
+        : const Color(0xFF65DFD2);
     return Theme(
       data: spaceRecordTheme(),
       child: Material(
@@ -42,9 +47,13 @@ class SpaceAccountPanel extends StatelessWidget {
                 const SizedBox(height: 16),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.explore_outlined),
+                  leading: Icon(
+                    inventor ? Icons.handyman_outlined : Icons.explore_outlined,
+                    color: modeAccent,
+                  ),
                   title: Text(
-                    'Modo ${user?.usageMode == 'inventor' ? 'Inventor' : 'Explorador'}',
+                    'Modo ${inventor ? 'Inventor' : 'Explorador'}',
+                    style: TextStyle(color: modeAccent),
                   ),
                   subtitle: const Text('Usar seletor no console de bordo'),
                   trailing: const Icon(Icons.chevron_right),

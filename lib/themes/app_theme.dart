@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
+  // Same amber used by the cockpit flight-mode selector (#efbf79).
+  static const inventorAccent = Color(0xFFEFBF79);
+
   static ThemeData theme = ThemeData(
     brightness: Brightness.light,
     primarySwatch: Colors.blue,
