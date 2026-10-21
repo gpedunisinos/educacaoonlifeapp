@@ -357,4 +357,84 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+  for (final width in [390.0, 1280.0]) {
+    testWidgets(
+      'search list collapses on selection and reopens without losing map or search at $width',
+      (tester) async {
+        tester.view.physicalSize = Size(width, 900);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final data = Get.put<LivingClueMapController>(MapData()) as MapData;
+        data.livingClues.add(
+          LivingClueModel(
+            id: 7,
+            name: 'Pista selecionada',
+            categoryId: 1,
+            latitude: -29.718,
+            longitude: -51.143,
+          ),
+        );
+        await tester.pumpWidget(
+          GetMaterialApp(
+            home: LivingClueMapScreen(tileProvider: OfflineTiles()),
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.enterText(find.byType(TextField), 'Pista');
+        await tester.pump(const Duration(milliseconds: 700));
+        await tester.pumpAndSettle();
+        expect(
+          find.byKey(const ValueKey('map-search-results-panel')),
+          findsOneWidget,
+        );
+        await tester.tap(find.text('Pista selecionada'));
+        await tester.pumpAndSettle();
+        expect(
+          find.byKey(const ValueKey('map-search-results-panel')),
+          findsNothing,
+        );
+        expect(find.text('Mostrar lista'), findsOneWidget);
+        expect(
+          tester.widget<TextField>(find.byType(TextField)).controller!.text,
+          'Pista',
+        );
+        final map = tester
+            .widget<FlutterMap>(find.byType(FlutterMap))
+            .mapController!;
+        final center = map.camera.center;
+        final zoom = map.camera.zoom;
+        expect(zoom, greaterThanOrEqualTo(14));
+        await tester.tap(find.text('Mostrar lista'));
+        await tester.pumpAndSettle();
+        expect(find.text('Pista selecionada'), findsOneWidget);
+        expect(map.camera.center, center);
+        expect(map.camera.zoom, zoom);
+        expect(data.query, 'Pista');
+        await tester.tap(find.byTooltip('Recolher lista'));
+        await tester.pumpAndSettle();
+        expect(find.text('Mostrar lista'), findsOneWidget);
+        await tester.enterText(find.byType(TextField), 'Nova pesquisa');
+        await tester.pump(const Duration(milliseconds: 700));
+        await tester.pumpAndSettle();
+        expect(
+          find.byKey(const ValueKey('map-search-results-panel')),
+          findsOneWidget,
+        );
+        await tester.tap(find.byKey(const ValueKey('map-clue-7')));
+        await tester.pumpAndSettle();
+        expect(find.text('Ver pista'), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('map-search-results-panel')),
+          findsNothing,
+        );
+        Get.back();
+        await tester.pumpAndSettle();
+        await tester.tap(find.byTooltip('Limpar pesquisa'));
+        await tester.pumpAndSettle();
+        expect(find.text('Mostrar lista'), findsNothing);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
 }

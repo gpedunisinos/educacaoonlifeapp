@@ -65,6 +65,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
   LivingClueModel? _repositioningClue;
   LatLng? _pendingRepositionPoint;
   String _searchQuery = '';
+  bool _searchResultsExpanded = true;
   bool _hasRunSonarScan = false;
   bool _isUpdatingSearchText = false;
   Timer? _searchDebounce;
@@ -171,6 +172,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     _isUpdatingSearchText = false;
     setState(() {
       _searchQuery = '';
+      _searchResultsExpanded = true;
     });
   }
 
@@ -180,6 +182,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     final query = value.trim();
     setState(() {
       _searchQuery = query;
+      _searchResultsExpanded = true;
     });
 
     _searchDebounce?.cancel();
@@ -193,7 +196,15 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     });
   }
 
+  void _collapseSearchResults() {
+    if (_searchQuery.isNotEmpty && _searchResultsExpanded) {
+      setState(() => _searchResultsExpanded = false);
+    }
+    _searchFocusNode.unfocus();
+  }
+
   void _focusClueOnMap(LivingClueModel clue) {
+    _collapseSearchResults();
     if (!clue.hasLocation) {
       Get.toNamed('/living_clues/show', arguments: clue);
       return;
@@ -279,6 +290,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
   }
 
   Future<void> _handleMarkerTap(LivingClueModel item) async {
+    _collapseSearchResults();
     if (_isRepositionMode) {
       setState(() {
         _repositioningClue = item;
@@ -982,12 +994,16 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                       if (_environmentalController.activeLayers.isNotEmpty)
                         Positioned(
                           left: 12,
-                          bottom: _searchQuery.isNotEmpty ? 190 : 12,
+                          bottom: _searchQuery.isNotEmpty
+                              ? (_searchResultsExpanded ? 338 : 64)
+                              : 12,
                           child: _buildEnvironmentalLegend(),
                         ),
                       Positioned(
                         right: 12,
-                        bottom: _searchQuery.isNotEmpty ? 190 : 12,
+                        bottom: _searchQuery.isNotEmpty
+                            ? (_searchResultsExpanded ? 338 : 64)
+                            : 12,
                         child: DecoratedBox(
                           decoration: BoxDecoration(
                             color: Colors.black.withValues(alpha: 0.62),
@@ -1715,35 +1731,84 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
   }) {
     final bool hasResults = clues.isNotEmpty || places.isNotEmpty;
 
-    return Material(
-      color: mapPanel,
-      borderRadius: BorderRadius.circular(14),
-      clipBehavior: Clip.antiAlias,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxHeight: 320),
-        child: !hasResults
-            ? const Padding(
-                padding: EdgeInsets.all(14),
-                child: Text(
-                  'Nenhuma pista ou local encontrado para esta pesquisa.',
-                  style: TextStyle(color: Colors.white),
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 240),
+      curve: Curves.easeInOutCubic,
+      alignment: Alignment.bottomCenter,
+      child: !_searchResultsExpanded
+          ? Align(
+              alignment: Alignment.bottomCenter,
+              child: Material(
+                color: mapPanel,
+                borderRadius: BorderRadius.circular(24),
+                child: TextButton.icon(
+                  key: const ValueKey('map-show-search-results'),
+                  onPressed: () =>
+                      setState(() => _searchResultsExpanded = true),
+                  icon: const Icon(Icons.keyboard_arrow_up),
+                  label: const Text('Mostrar lista'),
                 ),
-              )
-            : ListView(
-                padding: EdgeInsets.zero,
-                shrinkWrap: true,
-                children: [
-                  if (clues.isNotEmpty) ...[
-                    _buildSearchSectionHeader('Pistas'),
-                    ...clues.map(_buildClueSearchTile),
-                  ],
-                  if (places.isNotEmpty) ...[
-                    _buildSearchSectionHeader('Locais'),
-                    ...places.map(_buildPlaceSearchTile),
-                  ],
-                ],
               ),
-      ),
+            )
+          : Material(
+              key: const ValueKey('map-search-results-panel'),
+              color: mapPanel,
+              borderRadius: BorderRadius.circular(14),
+              clipBehavior: Clip.antiAlias,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 320),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(left: 14, right: 4),
+                      child: Row(
+                        children: [
+                          const Expanded(
+                            child: Text(
+                              'Resultados da pesquisa',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            tooltip: 'Recolher lista',
+                            icon: const Icon(Icons.keyboard_arrow_down),
+                            onPressed: _collapseSearchResults,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Flexible(
+                      child: !hasResults
+                          ? const Padding(
+                              padding: EdgeInsets.all(14),
+                              child: Text(
+                                'Nenhuma pista ou local encontrado para esta pesquisa.',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            )
+                          : ListView(
+                              padding: EdgeInsets.zero,
+                              shrinkWrap: true,
+                              children: [
+                                if (clues.isNotEmpty) ...[
+                                  _buildSearchSectionHeader('Pistas'),
+                                  ...clues.map(_buildClueSearchTile),
+                                ],
+                                if (places.isNotEmpty) ...[
+                                  _buildSearchSectionHeader('Locais'),
+                                  ...places.map(_buildPlaceSearchTile),
+                                ],
+                              ],
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
     );
   }
 
