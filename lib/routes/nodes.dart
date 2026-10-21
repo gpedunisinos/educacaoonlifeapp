@@ -34,7 +34,9 @@ List<GetPage> nodeRoutes() => [
       ),
       GetPage(
         name: '/nodes/graph',
-        page: () => NodeGraphScreen(),
+        page: () => NodeGraphScreen(
+          fromClue: Get.arguments is Map && Get.arguments['from_clue'] == true,
+        ),
         middlewares: [
           AppRouteGuard(canActivate: (user) => NodePolicy(user).viewAny()),
         ],

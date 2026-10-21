@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/widgets/clue_node_integration.dart';
 import 'package:unisinos_usp_app/widgets/clue_agent_integration.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
@@ -13,6 +14,7 @@ import 'package:unisinos_usp_app/widgets/clue_media.dart';
 import 'package:unisinos_usp_app/screens/space/space_record_shell.dart';
 
 IconData integrationIcon(String provider) => switch (provider) {
+  'node' => Icons.hub_outlined,
   'agent' => Icons.psychology_outlined,
   'youtube' => Icons.smart_display_outlined,
   'genially' => Icons.auto_awesome_outlined,
@@ -37,6 +39,7 @@ class ClueIntegrationCards extends StatelessWidget {
       final providers = [
         'youtube',
         'agent',
+        'node',
         if (kIsWeb) ...ClueIntegration.providers,
       ];
       final margin =
@@ -151,6 +154,14 @@ Future<void> editClueIntegration(
   ClueIntegration? initial,
   int? offset,
 }) async {
+  if (provider == 'node') {
+    return editClueNodeIntegration(
+      context,
+      controller,
+      initial: initial,
+      offset: offset,
+    );
+  }
   if (provider == 'agent') {
     await editClueAgentIntegration(
       context,
@@ -276,8 +287,12 @@ Future<void> editClueIntegration(
 }
 
 class ClueIntegrationBuilder extends EmbedBuilder {
-  const ClueIntegrationBuilder({this.hideAgentsInEditor = false});
+  const ClueIntegrationBuilder({
+    this.hideAgentsInEditor = false,
+    this.hideNodesInEditor = false,
+  });
   final bool hideAgentsInEditor;
+  final bool hideNodesInEditor;
   @override
   String get key => 'onlife';
   @override
@@ -295,6 +310,31 @@ class ClueIntegrationBuilder extends EmbedBuilder {
         editing: editing,
         onEdit: editing
             ? () => editClueAgentIntegration(
+                context,
+                embedContext.controller,
+                initial: block,
+                offset: embedContext.node.documentOffset,
+              )
+            : null,
+        onRemove: editing
+            ? () => embedContext.controller.replaceText(
+                embedContext.node.documentOffset,
+                1,
+                '',
+                TextSelection.collapsed(
+                  offset: embedContext.node.documentOffset,
+                ),
+              )
+            : null,
+      );
+    }
+    if (block.provider == 'node') {
+      if (editing && hideNodesInEditor) return const SizedBox.shrink();
+      return ClueNodeIntegrationCard(
+        block: block,
+        editing: editing,
+        onEdit: editing
+            ? () => editClueNodeIntegration(
                 context,
                 embedContext.controller,
                 initial: block,

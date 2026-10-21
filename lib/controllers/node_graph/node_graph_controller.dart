@@ -56,6 +56,9 @@ class NodeGraphController extends GetxController {
       graphLinks.assignAll(map.links);
       if (focus != null && map.nodes.any((n) => n.node.id == focus))
         selectedNodeId.value = focus;
+      if (focus != null && !map.nodes.any((n) => n.node.id == focus)) {
+        errorMessage.value = 'A problemática vinculada não está disponível. Você pode explorar as demais ou voltar à pista.';
+      }
       nodeTypes.assignAll(types);
       selectedTypeIds
         ..clear()

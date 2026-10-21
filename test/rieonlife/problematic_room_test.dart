@@ -61,6 +61,18 @@ void main() {
     );
   });
   tearDown(Get.reset);
+  testWidgets('linked graph returns to pista without losing its state', (tester) async {
+    await tester.pumpWidget(GetMaterialApp(home: const Scaffold(body: Text('Pista preservada'))));
+    await tester.pumpAndSettle();
+    graph.selectedNodeId.value = 2;
+    Get.to(() => NodeGraphScreen(fromClue: true, controllerFactory: () => graph));
+    await tester.pumpAndSettle();
+    expect(graph.selectedNodeId.value, 2);
+    expect(find.text('Voltar à pista'), findsOneWidget);
+    await tester.tap(find.text('Voltar à pista'));
+    await tester.pumpAndSettle();
+    expect(find.text('Pista preservada'), findsOneWidget);
+  });
   test(
     'search composes with type and degree filters without losing positions',
     () {

@@ -29,6 +29,9 @@ class NodeWebclient {
       },
     );
 
+    if (response.statusCode != 200) {
+      throw Exception('Não foi possível carregar as problemáticas.');
+    }
     return NodeModel.fromResponseBody(response.body);
   }
 

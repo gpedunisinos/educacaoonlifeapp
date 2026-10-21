@@ -17,7 +17,8 @@ import 'package:unisinos_usp_app/screens/space/space_record_shell.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class NodeGraphScreen extends StatefulWidget {
-  const NodeGraphScreen({super.key, this.controllerFactory});
+  const NodeGraphScreen({super.key, this.controllerFactory, this.fromClue = false});
+  final bool fromClue;
   final NodeGraphController Function()? controllerFactory;
 
   @override
@@ -83,7 +84,7 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
                         OutlinedButton.icon(
                           onPressed: _returnToCockpit,
                           icon: const Icon(Icons.arrow_back, size: 18),
-                          label: const Text('Cockpit'),
+                          label: Text(widget.fromClue ? 'Voltar à pista' : 'Cockpit'),
                         ),
                         const SizedBox(width: 14),
                         const Expanded(
@@ -459,6 +460,10 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
   Size _viewport = Size.zero;
 
   void _returnToCockpit() {
+    if (widget.fromClue && Navigator.of(context).canPop()) {
+      Get.back();
+      return;
+    }
     var found = false;
     Get.until((route) {
       found = route.settings.name == '/space';

@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/widgets/clue_node_integration.dart';
 import 'package:unisinos_usp_app/widgets/clue_agent_integration.dart';
 import 'package:flutter/material.dart';
 import 'package:unisinos_usp_app/widgets/clue_media.dart';
@@ -51,7 +52,10 @@ class LivingClueDescriptionEditor extends StatelessWidget {
                   config: const QuillEditorConfig(
                     embedBuilders: [
                       ClueVideoBuilder(hideInEditor: true),
-                      ClueIntegrationBuilder(hideAgentsInEditor: true),
+                      ClueIntegrationBuilder(
+                        hideAgentsInEditor: true,
+                        hideNodesInEditor: true,
+                      ),
                     ],
                     unknownEmbedBuilder: UnknownClueEmbedBuilder(),
                     minHeight: 140,
@@ -65,6 +69,7 @@ class LivingClueDescriptionEditor extends StatelessWidget {
         ClueIntegrationCards(controller: controller),
         ClueVideoCards(controller: controller),
         ClueAgentCards(controller: controller),
+        ClueNodeCards(controller: controller),
         ClueLinkPreviews(controller: controller),
       ],
     );

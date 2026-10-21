@@ -21,12 +21,16 @@ class ClueIntegration {
     'vircadia',
   ];
   bool get supported =>
-      version == 1 && (provider == 'agent' || providers.contains(provider));
+      version == 1 &&
+      (provider == 'agent' ||
+          provider == 'node' ||
+          providers.contains(provider));
   bool get inline => provider == 'genially' || provider == 'padlet';
   bool get desktopClient => provider == 'overte' || provider == 'vircadia';
   String get name =>
       const {
         'agent': 'Agente da plataforma',
+        'node': 'Problemática',
         'genially': 'Genially',
         'padlet': 'Padlet',
         'framevr': 'FrameVR',
@@ -36,6 +40,8 @@ class ClueIntegration {
       'Integração';
   static String explanation(String provider) =>
       const {
+        'node':
+            'Vincule uma problemática para explorar suas conexões a partir desta pista.',
         'agent':
             'Vincule um agente da plataforma para conversar a partir desta pista.',
         'genially': 'Inclua uma apresentação ou experiência interativa.',
@@ -78,7 +84,17 @@ class ClueIntegration {
       ? int.tryParse(url.split('/').last)
       : null;
 
+  int? get nodeId => provider == 'node' && validateURL(provider, url) == null
+      ? int.tryParse(Uri.parse(url).queryParameters['focus'] ?? '')
+      : null;
+
   static String? validateURL(String provider, String raw) {
+    if (provider == 'node') {
+      return raw == raw.trim() &&
+              RegExp(r'^/nodes/graph\?focus=[1-9][0-9]{0,14}$').hasMatch(raw)
+          ? null
+          : 'Selecione uma problemática válida da plataforma.';
+    }
     if (provider == 'agent') {
       return raw == raw.trim() &&
               RegExp(r'^/space/agents/[1-9][0-9]{0,14}$').hasMatch(raw)
@@ -137,6 +153,7 @@ class ClueIntegration {
   Uri? get embedURI {
     if (!supported ||
         provider == 'agent' ||
+        provider == 'node' ||
         validateURL(provider, url) != null ||
         desktopClient)
       return null;
