@@ -1,7 +1,7 @@
-# Experiência espacial eCOnectiva — UU-95
+# Experiência espacial Educação Onlife — UU-95
 
 Demonstração implementada na branch `UU-95-primeira-versao-plataforma-econectiva`.
-Entrada: Home → **Entre na nave eCOnectiva**. Rota autenticada: `/space`.
+Entrada: nave (`/space`), após autenticação e escolha de modo.
 
 ## Percurso de validação
 
@@ -298,3 +298,12 @@ Validação: onze testes aprovados (Central → lista → detalhe → lista com 
 - O botão “Módulos” foi substituído por “Conta”. O painel permite trocar o modo e sair da sessão; abrir/fechar a conta pausa e retoma a mesma cena, sem retornar ao menu antigo. O atalho nativo também abre esse painel.
 - Validação: dez testes aprovados para inicialização nos dois modos, primeiro acesso/sem sessão, compatibilidade de `/home`, conta/troca de modo, pausa/retorno e atalhos globais; análise Dart sem erros; build web concluído. Na prévia, a abertura por `/splash` chegou diretamente a `/space`, sem passar pelo menu anterior.
 - Evidência: `space-default-entry.jpg`.
+
+
+### Identificação da plataforma — Educação Onlife
+
+- Substituída a identificação visível anterior por **Educação Onlife**: login, seleção de modo, cabeçalho global, tela legada, boas-vindas e marca da nave, título e identificação acessível do cockpit e contexto da Iareté.
+- Atualizados título/descrição do app, metadados e manifesto web/PWA, nome configurado para instalação no Android/iOS e título da janela Linux.
+- Mantidos os identificadores internos de comunicação e caminhos de assets para preservar compatibilidade; não são apresentados como nome da plataforma.
+- Validação: seis testes existentes aprovados (cabeçalho, layout da home e navegação espacial), análise Dart sem erros, build web concluído, conferência da marca e do título na prévia e validação estrutural dos metadados web/iOS/Android. Builds nativos não foram executados.
+- Evidência: `educacao-onlife-identidade.jpg`.

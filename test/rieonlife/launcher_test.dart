@@ -55,7 +55,7 @@ void main() {
       );
       await tester.pump();
       expect(find.text('Explorador'), findsOneWidget);
-      expect(find.text('Plataforma eCOnectiva'), findsOneWidget);
+      expect(find.text('Educação Onlife'), findsOneWidget);
       await tester.pumpAndSettle();
       final modeButton = tester.widget<TextButton>(
         find.byWidgetPredicate(

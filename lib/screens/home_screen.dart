@@ -230,7 +230,7 @@ class _HomeTopBar extends StatelessWidget {
       builder: (context, constraints) {
         final compact = constraints.maxWidth < 760;
         final title = Text(
-          'Plataforma eCOnectiva',
+          'Educação Onlife',
           maxLines: compact ? 2 : 1,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
@@ -507,7 +507,7 @@ class _SpaceEntry extends StatelessWidget {
   const _SpaceEntry();
   @override
   Widget build(BuildContext context) => Semantics(
-    label: 'Experiência espacial: entrar na nave eCOnectiva',
+    label: 'Experiência espacial: entrar na nave Educação Onlife',
     button: true,
     child: Material(
       color: const Color(0xFF0C2333),
@@ -546,7 +546,7 @@ class _SpaceEntry extends StatelessWidget {
                     ),
                     SizedBox(height: 8),
                     Text(
-                      'Entre na nave eCOnectiva',
+                      'Entre na nave Educação Onlife',
                       style: TextStyle(
                         fontSize: 23,
                         fontWeight: FontWeight.w600,

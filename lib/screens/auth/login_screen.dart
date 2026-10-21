@@ -47,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Seja bem-vindo à Plataforma eCOnectiva',
+                          'Seja bem-vindo à plataforma Educação Onlife',
                           style: boldTextStyle(size: 22, color: Colors.white),
                         ),
                         Insets.small.height,

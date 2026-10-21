@@ -1,4 +1,4 @@
-# Plataforma eCOnectiva — experiência de exploração e autoria
+# Educação Onlife — experiência de exploração e autoria
 
 Implementação dos REQ-01 a REQ-06 do [planejamento consolidado](https://wiki.spotec.app/index.php/Plataforma_Rieonlife_-_Planejamento_de_altera%C3%A7%C3%B5es_e_requisitos), revisão 2589, com a reunião de 19/10/2026 como contexto. Base Flutter confirmada: `origin/main` em `6daf964`, neste repositório. Branch local: `UU-95-primeira-versao-plataforma-econectiva`.
 
@@ -91,3 +91,6 @@ Menu inicial ampliado: ícones de 30 px em blocos de 60 px, títulos de 20 px, d
 Tarefa: [UU-95](https://spo-tec.atlassian.net/browse/UU-95). Branch: `UU-95-primeira-versao-plataforma-econectiva`, compartilhada com o repositório da API. Inclui os ajustes de interface aprovados durante a validação. Sem merge ou deploy de produção.
 
 Verificação final da UU-95: suíte Flutter completa com 30 testes aprovados e análise Dart sem erros. Build web concluído. A branch contém a primeira versão consolidada e os ajustes aprovados durante a validação.
+
+
+Identificação atual da plataforma: **Educação Onlife**. A alteração substitui a denominação anterior nas interfaces e metadados do aplicativo; registros históricos acima documentam as etapas anteriores.

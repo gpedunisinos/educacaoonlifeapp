@@ -23,7 +23,7 @@ Future<void> main() async {
       runApp(
         GetMaterialApp(
           debugShowCheckedModeBanner: false,
-          title: 'Plataforma eCOnectiva',
+          title: 'Educação Onlife',
           initialRoute: '/splash',
           unknownRoute: GetPage(
             name: '/not_found',
