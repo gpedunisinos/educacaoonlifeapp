@@ -2040,7 +2040,7 @@ body.reduced .mode-handle, body.reduced .console, body.reduced .console-top, bod
 .mode-error #mode-status { position: static; width: auto; height: auto; clip: auto; clip-path: none; overflow: visible; white-space: normal; flex-basis: 100%; max-width: 260px; }
 @media (max-width: 1100px) {
   .console-content, .at-current-destination .console-content { grid-template-columns: 1fr; gap: 10px; }
-  .console-footer { justify-content: space-between; }
+  .console-footer { justify-content: flex-start; }
   .console-footer .navigation { flex: 1 1 auto; }
   .console-footer .actions .secondary { display: none; }
 }
@@ -2054,4 +2054,23 @@ body.reduced .mode-handle, body.reduced .console, body.reduced .console-top, bod
   .console-links .text-button { min-height: 36px; }
   .console-footer .actions .secondary { display: initial; }
   .destination strong { font-size: 11px; }
+}
+
+/* Keep the arrival action visible above the compact console on short screens. */
+@media (min-width: 761px) and (min-height: 520px) and (max-height: 800px) {
+  .port-instrument .local-emblem { display: none; }
+}
+/* The growing tool strip must wrap instead of leaving the mobile viewport. */
+@media (max-width: 760px) {
+  header { flex-wrap: wrap; row-gap: 8px; }
+  .brand { width: 100%; white-space: nowrap; }
+  .tools { width: calc(100% + 44px); margin-left: -44px; flex-wrap: wrap; justify-content: flex-end; }
+}
+
+@media (min-width: 761px) and (min-height: 520px) {
+  .glass-instrument.port-instrument { display: flex; flex-direction: column; }
+  .port-instrument .instrument-heading, .port-instrument .local-emblem { flex-shrink: 0; }
+  .port-instrument #local-details { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+  .port-instrument .local-copy { min-height: 0; overflow-y: auto; scrollbar-width: thin; }
+  .port-instrument .local-open { flex-shrink: 0; }
 }

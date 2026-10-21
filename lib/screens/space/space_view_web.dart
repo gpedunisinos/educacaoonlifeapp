@@ -24,7 +24,9 @@ class _SpaceViewState extends State<SpaceView> {
   void initState() {
     super.initState();
     frame = web.HTMLIFrameElement()
-      ..src = Uri.base.resolve('assets/assets/space/index.html').toString()
+      ..src = Uri.base
+          .resolve('assets/assets/space/index.html?v=compact-footer-3')
+          .toString()
       ..title = 'Cockpit da nave Educação Onlife'
       ..allow = 'autoplay'
       ..style.border = '0'
