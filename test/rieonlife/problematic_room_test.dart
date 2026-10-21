@@ -104,6 +104,19 @@ void main() {
       graph.selectNode(1);
       await tester.pumpAndSettle();
       expect(find.text('1 conexões'), findsOneWidget);
+      final graphRect = tester.getRect(find.byType(InteractiveViewer));
+      expect(graphRect.width, greaterThan(size.width * .9));
+      if (size.width >= 1000) {
+        expect(
+          tester.getRect(find.text('1 conexões')).bottom,
+          lessThan(graphRect.top),
+        );
+        expect(
+          tester.getRect(find.byType(TextField)).right,
+          lessThan(tester.getRect(find.text('1 conexões')).left),
+        );
+      }
+
       expect(
         tester
             .widget<OutlinedButton>(

@@ -107,7 +107,7 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
                         final neighbors = _controller.neighborNodeIds;
                         return LayoutBuilder(
                           builder: (context, constraints) {
-                            final wide = constraints.maxWidth >= 1000;
+                            final wide = constraints.maxWidth >= 700;
                             final panel = AnimatedSwitcher(
                               duration: const Duration(milliseconds: 250),
                               child: _controller.selectedNodeId.value == null
@@ -153,19 +153,12 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
                                       onDelete: _confirmDeleteSelectedNode,
                                     ),
                             );
+                            final filters = _GraphFilters(
+                              searchController: _searchController,
+                              controller: _controller,
+                            );
                             final graph = Column(
                               children: [
-                                ConstrainedBox(
-                                  constraints: BoxConstraints(
-                                    maxHeight: constraints.maxHeight * .33,
-                                  ),
-                                  child: SingleChildScrollView(
-                                    child: _GraphFilters(
-                                      searchController: _searchController,
-                                      controller: _controller,
-                                    ),
-                                  ),
-                                ),
                                 if (_controller.errorMessage.value != null)
                                   Padding(
                                     padding: const EdgeInsets.all(8),
@@ -391,32 +384,50 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
                                 ),
                               ],
                             );
-                            if (wide)
-                              return Row(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  Expanded(child: graph),
-                                  const SizedBox(width: 16),
-                                  SizedBox(
-                                    width: 320,
-                                    child: Card(
-                                      child: SingleChildScrollView(
-                                        child: panel,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              );
+                            final hasSelection =
+                                _controller.selectedNodeId.value != null;
+                            final headerHeight = math.min(
+                              wide ? 280.0 : (hasSelection ? 320.0 : 240.0),
+                              constraints.maxHeight *
+                                  (wide ? .36 : (hasSelection ? .46 : .33)),
+                            );
                             return Column(
                               children: [
+                                SizedBox(
+                                  height: headerHeight,
+                                  child: wide
+                                      ? Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          children: [
+                                            Expanded(
+                                              flex: 3,
+                                              child: SingleChildScrollView(
+                                                child: filters,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 16),
+                                            Expanded(
+                                              flex: 2,
+                                              child: Card(
+                                                child: SingleChildScrollView(
+                                                  child: panel,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        )
+                                      : SingleChildScrollView(
+                                          child: Column(
+                                            children: [
+                                              if (hasSelection) panel,
+                                              filters,
+                                            ],
+                                          ),
+                                        ),
+                                ),
+                                const SizedBox(height: 12),
                                 Expanded(child: graph),
-                                if (_controller.selectedNodeId.value != null)
-                                  ConstrainedBox(
-                                    constraints: BoxConstraints(
-                                      maxHeight: constraints.maxHeight * .36,
-                                    ),
-                                    child: SingleChildScrollView(child: panel),
-                                  ),
                               ],
                             );
                           },

@@ -355,8 +355,10 @@ Validação: quatro testes de posicionamento do guia, três testes Flutter de na
 
 ### Piloto da Sala de Problemáticas
 
-A rota `/nodes/graph` reutiliza o grafo e as ações existentes dentro do ambiente da nave. Busca local por nome se combina com tipo e conexões mínimas; os botões de zoom mantêm o centro e o reenquadramento considera os limites dos nodos visíveis. O desktop reserva uma coluna para análise, sem deslocar o grafo ao selecionar. Em telas menores os detalhes ficam abaixo com rolagem própria. As relações selecionadas ganham destaque ciano e os demais elementos perdem intensidade; as cores cadastradas são preservadas.
+A rota `/nodes/graph` reutiliza o grafo e as ações existentes dentro do ambiente da nave. Busca local por nome se combina com tipo e conexões mínimas; os botões de zoom mantêm o centro e o reenquadramento considera os limites dos nodos visíveis. No desktop, filtros e análise dividem uma faixa superior de altura estável; o grafo ocupa toda a largura abaixo. Em telas menores os filtros e detalhes ficam empilhados na faixa superior, com rolagem própria. A seleção mantém a transformação e as posições do grafo. As relações selecionadas ganham destaque ciano e os demais elementos perdem intensidade; as cores cadastradas são preservadas.
 
 O piloto mantém seleção, zoom, pan, persistência do arraste para Inventores, Locker, criação, edição e gestão das conexões. O botão Cockpit retorna à cena existente quando disponível. O modelo atual não fornece descrição; não foram inventados dados. Leitura completa, redesenho dos formulários e integração sonora são etapas posteriores.
 
 Validação: quatro testes cobrindo composição dos filtros, posições preservadas, seleção, zoom, permissões de Explorador e layouts 1440×900, 390×844 e 844×390. Prévia conferida com 22 nodos e 37 conexões reais do ambiente local. Captura local ignorada em `docs/evidencias/sala-problematicas-piloto.png`.
+
+Ajuste do piloto: painel contextual movido para a direita dos filtros na faixa superior. Testes também conferem a largura do grafo e a posição dos dois painéis acima dele no desktop.
