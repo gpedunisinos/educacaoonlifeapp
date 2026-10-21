@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/services/ship_audio_preferences.dart';
 import 'package:unisinos_usp_app/models/meeting_room.dart';
 import 'package:unisinos_usp_app/screens/space/meeting_room_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -84,7 +85,12 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
 
   Future<void> onMessage(Map<String, dynamic> data) async {
     if (!mounted) return;
+    if (data['type'] == 'audio-state' && data['enabled'] is bool) {
+      await ShipAudioPreferences.setEnabled(data['enabled'] as bool);
+      return;
+    }
     if (data['type'] == 'ready') {
+      await ShipAudioPreferences.restore();
       var tutorialSeen = false;
       try {
         tutorialSeen =
@@ -96,6 +102,7 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
       if (!mounted) return;
       send('configure', {
         'tutorialSeen': tutorialSeen,
+        'audioEnabled': ShipAudioPreferences.enabled.value,
         'meetings': kIsWeb && MeetingRoom.enabled && MeetingRoom.configured,
         'mode': Get.find<UserController>().user.value?.usageMode,
         'destinations': destinations.keys.toList(),
@@ -191,7 +198,10 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
       opening = false;
       if (mounted) {
         contextService.registerProvider('/space', contextProvider);
-        send('resume', {'returned': true});
+        send('resume', {
+          'returned': true,
+          'audioEnabled': ShipAudioPreferences.enabled.value,
+        });
       }
     }
   }
@@ -215,7 +225,11 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
       }
     } finally {
       opening = false;
-      if (mounted) send('resume', {'returned': true});
+      if (mounted)
+        send('resume', {
+          'returned': true,
+          'audioEnabled': ShipAudioPreferences.enabled.value,
+        });
     }
   }
 

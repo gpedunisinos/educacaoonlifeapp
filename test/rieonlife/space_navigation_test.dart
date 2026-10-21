@@ -202,7 +202,11 @@ void main() {
     await tester.tap(find.text('Voltar à nave'));
     await tester.pumpAndSettle();
     expect(tester.widget<SpaceView>(find.byType(SpaceView)), same(view));
-    expect(commands.last, {'type': 'resume', 'returned': true});
+    expect(commands.last, {
+      'type': 'resume',
+      'returned': true,
+      'audioEnabled': true,
+    });
     view.onMessage({'type': 'open', 'destination': 'connections'});
     await tester.pumpAndSettle();
     expect(find.text('Sair da gestão'), findsNothing);
@@ -234,7 +238,11 @@ void main() {
     await tester.tap(find.byTooltip('Voltar à nave'));
     await tester.pumpAndSettle();
     expect(tester.widget<SpaceView>(find.byType(SpaceView)), same(view));
-    expect(commands.last, {'type': 'resume', 'returned': true});
+    expect(commands.last, {
+      'type': 'resume',
+      'returned': true,
+      'audioEnabled': true,
+    });
     await tester.tap(find.byTooltip('Conta e modo de navegação'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Usar seletor no console de bordo'));
@@ -242,7 +250,11 @@ void main() {
     expect(find.text('Voltar do modo'), findsNothing);
     expect(commands.any((command) => command['type'] == 'focus-mode'), isTrue);
     expect(tester.widget<SpaceView>(find.byType(SpaceView)), same(view));
-    expect(commands.last, {'type': 'resume', 'returned': true});
+    expect(commands.last, {
+      'type': 'resume',
+      'returned': true,
+      'audioEnabled': true,
+    });
     expect(find.byTooltip('Voltar aos módulos'), findsNothing);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());

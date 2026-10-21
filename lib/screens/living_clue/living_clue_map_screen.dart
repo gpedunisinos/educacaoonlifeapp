@@ -87,7 +87,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
         });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadCurrentBounds();
-      _environmentalController.load();
+      _environmentalController.openWithSatellite();
       _showInitialTutorialIfNeeded();
     });
   }
@@ -95,7 +95,10 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
   @override
   void dispose() {
     if (Get.isRegistered<AiAssistantContextService>()) {
-      Get.find<AiAssistantContextService>().unregisterProvider(_contextRoute, _contextProvider);
+      Get.find<AiAssistantContextService>().unregisterProvider(
+        _contextRoute,
+        _contextProvider,
+      );
     }
     _searchDebounce?.cancel();
     _routeWorker?.dispose();
@@ -1363,8 +1366,19 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     return AiAssistantScreenContext(
       screenName: _screenName,
       route: _contextRoute,
-      references: {if (_contextClue != null) 'living_clue_id': _contextClue!.id},
-      visibleRecords: _controller.livingClues.take(20).map((clue) => AiRecordReference(kind: 'living_clue', id: clue.id, name: clue.name)).toList(),
+      references: {
+        if (_contextClue != null) 'living_clue_id': _contextClue!.id,
+      },
+      visibleRecords: _controller.livingClues
+          .take(20)
+          .map(
+            (clue) => AiRecordReference(
+              kind: 'living_clue',
+              id: clue.id,
+              name: clue.name,
+            ),
+          )
+          .toList(),
       stage: 'exploração do mapa',
       goal: 'buscar pistas próximas e iniciar o cadastro de um novo ponto',
       visibleFields: const <String>[
@@ -1903,7 +1917,9 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
         ),
       ),
       isScrollControlled: true,
-    ).whenComplete(() { if (identical(_contextClue, item)) _contextClue = null; });
+    ).whenComplete(() {
+      if (identical(_contextClue, item)) _contextClue = null;
+    });
   }
 }
 

@@ -5,7 +5,7 @@ import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
 import 'package:unisinos_usp_app/models/category_model.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
-import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'package:unisinos_usp_app/widgets/space_conversation.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class LivingClueTypeSelectScreen extends StatefulWidget {
@@ -29,15 +29,10 @@ class _LivingClueTypeSelectScreenState
       _buildAiContext,
     );
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
-        leading: const SafeBackButton(),
-        title: const Text('Escolha o tipo da pista'),
-      ),
-      body: Stack(
+    return SpaceConversationRoom(
+      title: const Text('Escolha o tipo da pista'),
+      eyebrow: 'EC–01 / NOVA PISTA',
+      child: Stack(
         children: [
           SingleChildScrollView(
             padding: const EdgeInsets.all(16),
@@ -57,20 +52,23 @@ class _LivingClueTypeSelectScreenState
                         children: [
                           const Icon(
                             Icons.alt_route_outlined,
-                            color: Colors.indigo,
+                            color: spaceChatAccent,
                           ),
                           const SizedBox(width: 8),
                           Text(
                             'Defina o tipo da pista',
                             style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(fontWeight: FontWeight.w700),
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: spaceChatText,
+                                ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 12),
                       Text(
                         'A proxima etapa exibira apenas categorias compativeis com o tipo selecionado.',
-                        style: TextStyle(color: Colors.grey.shade700),
+                        style: TextStyle(color: spaceChatMuted),
                       ),
                       Insets.large.height,
                       DropdownButtonFormField<String>(

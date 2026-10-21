@@ -59,7 +59,9 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
     route: _contextRoute,
     stage: !_filled
         ? 'carregamento do registro'
-        : _hasUnsavedChanges ? 'edição de rascunho' : 'revisão do registro',
+        : _hasUnsavedChanges
+        ? 'edição de rascunho'
+        : 'revisão do registro',
     goal:
         'ajudar a revisar a pista sem confundir alterações locais com o registro salvo',
     references: {
@@ -373,14 +375,24 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
               longitude: _longitudeController,
             ),
             const SizedBox(height: 12),
-            InputNumber(
-              label: 'Latitude (opcional)',
-              controller: _latitudeController,
-            ),
-            Insets.large.height,
-            InputNumber(
-              label: 'Longitude (opcional)',
-              controller: _longitudeController,
+            ListenableBuilder(
+              listenable: Listenable.merge([
+                _latitudeController,
+                _longitudeController,
+              ]),
+              builder: (_, __) =>
+                  _latitudeController.text.isNotEmpty &&
+                      _longitudeController.text.isNotEmpty
+                  ? SelectableText(
+                      'Latitude: ${_latitudeController.text}  ·  Longitude: ${_longitudeController.text}',
+                      style: const TextStyle(
+                        color: Color(0xFFB5D7DC),
+                        height: 1.5,
+                      ),
+                    )
+                  : const Text(
+                      'Sem localização definida. Escolha um ponto no mapa, se desejar.',
+                    ),
             ),
             Insets.medium.height,
             SwitchListTile(
@@ -418,7 +430,7 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
                   SizedBox(height: 2),
                   Text(
                     'Conecte esta pista viva a outras pistas.',
-                    style: TextStyle(color: Colors.black54),
+                    style: TextStyle(color: Color(0xFF9DB9C7)),
                   ),
                 ],
               ),
@@ -577,11 +589,14 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
     'category_id': _categoryId,
   });
 
-  bool get _hasUnsavedChanges => _filled && (
-    _formSnapshot() != _initialFormSnapshot ||
-    _metadataControllers.entries.any((entry) =>
-      entry.value.text != (_initialMetadata[entry.key]?.toString() ?? ''))
-  );
+  bool get _hasUnsavedChanges =>
+      _filled &&
+      (_formSnapshot() != _initialFormSnapshot ||
+          _metadataControllers.entries.any(
+            (entry) =>
+                entry.value.text !=
+                (_initialMetadata[entry.key]?.toString() ?? ''),
+          ));
 
   void _fillFromModel(LivingClueModel model) {
     _nameController.text = model.name;

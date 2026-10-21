@@ -1,3 +1,6 @@
+import 'package:unisinos_usp_app/services/ship_audio_preferences.dart';
+import 'package:unisinos_usp_app/services/iarete_audio/typing_audio.dart';
+import 'package:unisinos_usp_app/widgets/iarete_reply.dart';
 import 'package:unisinos_usp_app/widgets/space_conversation.dart';
 import 'package:unisinos_usp_app/screens/space/space_record_shell.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -21,14 +24,27 @@ class _AiAssistantPanelState extends State<AiAssistantPanel> {
   final ScrollController _scrollController = ScrollController();
   final FocusNode _inputFocusNode = FocusNode();
   late final Worker _worker;
+  final _typingAudio = TypingAudio();
+  bool _historyReady = false;
+  final Set<Object> _seenReplies = {};
+  Object _messageKey(AiAssistantMessageModel message) => message.id ?? message;
+  AiAssistantMessageModel? _revealing;
 
   @override
   void initState() {
     super.initState();
-    _worker = ever<List<AiAssistantMessageModel>>(
-      _controller.messages,
-      (_) => _scrollToBottom(),
-    );
+    _worker = ever<List<AiAssistantMessageModel>>(_controller.messages, (
+      messages,
+    ) {
+      if (_historyReady &&
+          messages.isNotEmpty &&
+          !messages.last.isUser &&
+          !_seenReplies.contains(_messageKey(messages.last))) {
+        setState(() => _revealing = messages.last);
+      }
+      _seenReplies.addAll(messages.map(_messageKey));
+      _scrollToBottom();
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializePanel();
     });
@@ -37,6 +53,7 @@ class _AiAssistantPanelState extends State<AiAssistantPanel> {
   @override
   void dispose() {
     _worker.dispose();
+    _typingAudio.dispose();
     _textController.dispose();
     _scrollController.dispose();
     _inputFocusNode.dispose();
@@ -73,6 +90,23 @@ class _AiAssistantPanelState extends State<AiAssistantPanel> {
                         ),
                       ),
                       actions: [
+                        ValueListenableBuilder<bool>(
+                          valueListenable: ShipAudioPreferences.enabled,
+                          builder: (_, enabled, _) => IconButton(
+                            tooltip: enabled
+                                ? 'Silenciar Iareté'
+                                : 'Ativar som da Iareté',
+                            icon: Icon(
+                              enabled
+                                  ? Icons.volume_up_outlined
+                                  : Icons.volume_off_outlined,
+                            ),
+                            onPressed: () {
+                              ShipAudioPreferences.setEnabled(!enabled);
+                              if (!enabled) _typingAudio.prepare();
+                            },
+                          ),
+                        ),
                         IconButton(
                           tooltip: 'Fechar Iareté',
                           onPressed: () => Navigator.of(context).pop(),
@@ -111,9 +145,23 @@ class _AiAssistantPanelState extends State<AiAssistantPanel> {
                           controller: _scrollController,
                           padding: const EdgeInsets.fromLTRB(18, 14, 18, 16),
                           itemCount: _controller.messages.length,
-                          itemBuilder: (_, index) => _MessageBubble(
-                            message: _controller.messages[index],
-                          ),
+                          itemBuilder: (_, index) {
+                            final message = _controller.messages[index];
+                            return _MessageBubble(
+                              message: message,
+                              animate: identical(_revealing, message),
+                              onType: () {
+                                if (ShipAudioPreferences.enabled.value)
+                                  _typingAudio.tick();
+                              },
+                              onProgress: _followReply,
+                              onComplete: () {
+                                if (mounted && identical(_revealing, message)) {
+                                  setState(() => _revealing = null);
+                                }
+                              },
+                            );
+                          },
                         );
                       }),
                     ),
@@ -209,13 +257,29 @@ class _AiAssistantPanelState extends State<AiAssistantPanel> {
   void _submit() {
     final String value = _textController.text.trim();
     if (value.isEmpty || _controller.isSending.value) return;
+    if (ShipAudioPreferences.enabled.value) _typingAudio.prepare();
+    setState(() => _revealing = null);
     _textController.clear();
     _controller.sendMessage(value);
   }
 
   Future<void> _initializePanel() async {
+    await ShipAudioPreferences.restore();
     await _controller.ensureHistoryLoaded();
+    if (!mounted) return;
+    _seenReplies.addAll(_controller.messages.map(_messageKey));
+    _historyReady = true;
     _scrollToBottom(animated: false);
+  }
+
+  void _followReply() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted &&
+          _scrollController.hasClients &&
+          _scrollController.position.extentAfter < 160) {
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+      }
+    });
   }
 
   void _scrollToBottom({bool animated = true}) {
@@ -236,7 +300,15 @@ class _AiAssistantPanelState extends State<AiAssistantPanel> {
 }
 
 class _MessageBubble extends StatelessWidget {
-  const _MessageBubble({required this.message});
+  const _MessageBubble({
+    required this.message,
+    this.animate = false,
+    this.onType,
+    this.onProgress,
+    this.onComplete,
+  });
+  final bool animate;
+  final VoidCallback? onType, onProgress, onComplete;
 
   final AiAssistantMessageModel message;
 
@@ -280,38 +352,45 @@ class _MessageBubble extends StatelessWidget {
                         ),
                       )
                     else
-                      Semantics(
-                        label: message.content,
-                        child: MarkdownBody(
-                          data: message.content,
-                          selectable: true,
-                          styleSheet:
-                              MarkdownStyleSheet.fromTheme(
-                                Theme.of(context),
-                              ).copyWith(
-                                p: const TextStyle(
-                                  color: Colors.white,
-                                  height: 1.45,
+                      IareteReply(
+                        text: message.content,
+                        animate: animate,
+                        onType: onType,
+                        onProgress: onProgress,
+                        onComplete: onComplete,
+                        builder: (visibleText) => Semantics(
+                          label: visibleText,
+                          child: MarkdownBody(
+                            data: visibleText,
+                            selectable: true,
+                            styleSheet:
+                                MarkdownStyleSheet.fromTheme(
+                                  Theme.of(context),
+                                ).copyWith(
+                                  p: const TextStyle(
+                                    color: Colors.white,
+                                    height: 1.45,
+                                  ),
+                                  code: const TextStyle(
+                                    color: Color(0xFFD9F5F2),
+                                    backgroundColor: Color(0xFF152E38),
+                                    fontFamily: 'monospace',
+                                  ),
+                                  listBullet: const TextStyle(
+                                    color: Color(0xFF9CE7DF),
+                                  ),
+                                  a: const TextStyle(
+                                    color: Color(0xFF9CE7DF),
+                                    decoration: TextDecoration.underline,
+                                  ),
                                 ),
-                                code: const TextStyle(
-                                  color: Color(0xFFD9F5F2),
-                                  backgroundColor: Color(0xFF152E38),
-                                  fontFamily: 'monospace',
-                                ),
-                                listBullet: const TextStyle(
-                                  color: Color(0xFF9CE7DF),
-                                ),
-                                a: const TextStyle(
-                                  color: Color(0xFF9CE7DF),
-                                  decoration: TextDecoration.underline,
-                                ),
-                              ),
-                          sizedImageBuilder: (_) => const Text(
-                            '[Imagem externa — abra a referência para visualizar]',
-                          ),
-                          onTapLink: (_, href, _) => openAiReference(
-                            href,
-                            beforeNavigate: () => Navigator.of(context).pop(),
+                            sizedImageBuilder: (_) => const Text(
+                              '[Imagem externa — abra a referência para visualizar]',
+                            ),
+                            onTapLink: (_, href, _) => openAiReference(
+                              href,
+                              beforeNavigate: () => Navigator.of(context).pop(),
+                            ),
                           ),
                         ),
                       ),

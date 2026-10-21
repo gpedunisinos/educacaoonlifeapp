@@ -69,6 +69,15 @@ Widget app(CluesFake source) => GetMaterialApp(
   home: ClueResearchRoomScreen(source: source),
   getPages: [
     GetPage(
+      name: '/living_clues/type_select',
+      page: () => Scaffold(
+        body: TextButton(
+          onPressed: () => Get.back(result: true),
+          child: const Text('Concluir criação de teste'),
+        ),
+      ),
+    ),
+    GetPage(
       name: '/living_clues/:id',
       page: () => LivingClueShowScreen(source: RecordFake(source)),
     ),
@@ -98,6 +107,32 @@ void main() {
     Get.put(LockerService());
   });
   tearDown(Get.reset);
+  testWidgets('inventor starts clue creation and explorer cannot', (
+    tester,
+  ) async {
+    final source = CluesFake();
+    await tester.pumpWidget(app(source));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Nova pista'));
+    await tester.pumpAndSettle();
+    expect(Get.currentRoute, '/living_clues/type_select');
+    await tester.tap(find.text('Concluir criação de teste'));
+    await tester.pumpAndSettle();
+    expect(find.byType(ClueResearchRoomScreen), findsOneWidget);
+    final user = Get.find<UserController>();
+    user.user.value = const AuthUser(
+      id: 1,
+      name: 'Teste',
+      email: 'test@example.com',
+      token: 'test',
+      profile: 10,
+      usageMode: 'explorer',
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Criar pista'), findsNothing);
+    expect(find.text('Nova pista'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
   testWidgets(
     'selection highlights its moon card and detail returns to same search and selection',
     (tester) async {

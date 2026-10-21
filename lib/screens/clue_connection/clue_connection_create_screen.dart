@@ -6,7 +6,8 @@ import 'package:unisinos_usp_app/models/clue_connection_model.dart';
 import 'package:unisinos_usp_app/webclients/connection_type_webclient.dart';
 import 'package:unisinos_usp_app/webclients/living_clue_webclient.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
-import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'package:unisinos_usp_app/widgets/space_conversation.dart';
+import 'package:unisinos_usp_app/screens/management/management_input.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class ClueConnectionCreateScreen extends StatefulWidget {
@@ -65,15 +66,13 @@ class _ClueConnectionCreateScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
-        leading: const SafeBackButton(),
-        title: const Text('Nova conexão'),
+    return SpaceConversationRoom(
+      title: const Text('Vincular pistas'),
+      eyebrow: 'EC–01 / REDE DE PISTAS',
+      subtitle: const Text(
+        'Conecte vivências e registre o que aproxima estas pistas.',
       ),
-      body: Stack(
+      child: Stack(
         children: [
           SingleChildScrollView(
             padding: const EdgeInsets.all(16),
@@ -117,15 +116,16 @@ class _ClueConnectionCreateScreenState
                         ConnectionTypeWebclient().select(search, offset),
                   ),
                   Insets.large.height,
-                  InputNumber(
-                    label: '',
+                  ManagementInput(
+                    hintText: 'Intensidade da conexão',
+                    keyboardType: TextInputType.number,
                     controller: _strengthController,
                     validator: (value) => PValidator([
                       PRuleInteger(value, message: 'Use um número inteiro'),
                     ]).val(),
                   ),
                   Insets.large.height,
-                  InputText(
+                  ManagementInput(
                     hintText: 'Evidência (opcional)',
                     controller: _evidenceController,
                     maxLines: 3,

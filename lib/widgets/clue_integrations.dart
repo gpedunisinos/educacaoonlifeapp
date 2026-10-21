@@ -33,6 +33,47 @@ class ClueIntegrationCards extends StatelessWidget {
           : 1;
       final width = (constraints.maxWidth - (columns - 1) * 12) / columns;
       final providers = ['youtube', if (kIsWeb) ...ClueIntegration.providers];
+      final margin =
+          Theme.of(context).cardTheme.margin ?? const EdgeInsets.all(4);
+      final textWidth = (width - margin.horizontal - 86).clamp(
+        1.0,
+        double.infinity,
+      );
+      final base =
+          Theme.of(context).textTheme.bodyMedium ??
+          const TextStyle(fontSize: 14);
+      double measure(String text, TextStyle style) {
+        final painter = TextPainter(
+          text: TextSpan(text: text, style: style),
+          textDirection: Directionality.of(context),
+          textScaler: MediaQuery.textScalerOf(context),
+        )..layout(maxWidth: textWidth);
+        final height = painter.height;
+        painter.dispose();
+        return height;
+      }
+
+      final cardHeight = providers
+          .map(
+            (provider) =>
+                32 +
+                margin.vertical +
+                6 +
+                measure(
+                  provider == 'youtube'
+                      ? 'YouTube'
+                      : ClueIntegration(provider: provider, url: '').name,
+                  base.copyWith(fontWeight: FontWeight.w700, fontSize: 16),
+                ) +
+                measure(
+                  provider == 'youtube'
+                      ? 'Adicione um vídeo à pista e compartilhe novas perspectivas.'
+                      : ClueIntegration.explanation(provider),
+                  base.copyWith(height: 1.4),
+                ),
+          )
+          .reduce((a, b) => a > b ? a : b);
+
       return Wrap(
         spacing: 12,
         runSpacing: 12,
@@ -42,6 +83,7 @@ class ClueIntegrationCards extends StatelessWidget {
               : ClueIntegration(provider: provider, url: '').name;
           return SizedBox(
             width: width,
+            height: cardHeight,
             child: Card(
               clipBehavior: Clip.antiAlias,
               child: InkWell(
@@ -76,7 +118,7 @@ class ClueIntegrationCards extends StatelessWidget {
                             const SizedBox(height: 6),
                             Text(
                               provider == 'youtube'
-                                  ? 'Adicione um vídeo à pista.'
+                                  ? 'Adicione um vídeo à pista e compartilhe novas perspectivas.'
                                   : ClueIntegration.explanation(provider),
                               style: const TextStyle(height: 1.4),
                             ),

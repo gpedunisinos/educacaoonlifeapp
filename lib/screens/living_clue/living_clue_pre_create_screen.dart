@@ -7,7 +7,7 @@ import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
 import 'package:unisinos_usp_app/webclients/category_select_webclient.dart';
 import 'package:unisinos_usp_app/webclients/category_webclient.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
-import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'package:unisinos_usp_app/widgets/space_conversation.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class LivingCluePreCreateScreen extends StatefulWidget {
@@ -45,15 +45,10 @@ class _LivingCluePreCreateScreenState extends State<LivingCluePreCreateScreen> {
       Get.currentRoute,
       _buildAiContext,
     );
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
-        leading: const SafeBackButton(),
-        title: const Text('Escolha a categoria'),
-      ),
-      body: Stack(
+    return SpaceConversationRoom(
+      title: const Text('Escolha a categoria da pista'),
+      eyebrow: 'EC–01 / NOVA PISTA',
+      child: Stack(
         children: [
           SingleChildScrollView(
             padding: const EdgeInsets.all(16),
@@ -79,7 +74,7 @@ class _LivingCluePreCreateScreenState extends State<LivingCluePreCreateScreen> {
                             children: [
                               const Icon(
                                 Icons.category_outlined,
-                                color: Colors.indigo,
+                                color: spaceChatAccent,
                               ),
                               const SizedBox(width: 8),
                               Text(
@@ -87,7 +82,10 @@ class _LivingCluePreCreateScreenState extends State<LivingCluePreCreateScreen> {
                                     ? 'Selecione a categoria base'
                                     : 'Selecione a categoria base de $_selectedType',
                                 style: Theme.of(context).textTheme.titleMedium
-                                    ?.copyWith(fontWeight: FontWeight.w700),
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                      color: spaceChatText,
+                                    ),
                               ),
                             ],
                           ),
@@ -96,7 +94,7 @@ class _LivingCluePreCreateScreenState extends State<LivingCluePreCreateScreen> {
                             _selectedType == null
                                 ? 'Os campos dinâmicos e o visual da pista seguirão a categoria escolhida.'
                                 : 'Serão exibidas apenas categorias do tipo $_selectedType.',
-                            style: TextStyle(color: Colors.grey.shade700),
+                            style: TextStyle(color: spaceChatMuted),
                           ),
                           Insets.large.height,
                           InputSelectApi(

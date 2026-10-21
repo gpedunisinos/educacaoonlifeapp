@@ -25,7 +25,8 @@ class EnvironmentalLayersController extends GetxController {
   EnvironmentalLayerModel? get selectedExternalBaseMap {
     if (selectedBaseMapId.value == 'osm') return null;
     return baseMaps.firstWhereOrNull(
-        (layer) => layer.id == selectedBaseMapId.value && layer.available);
+      (layer) => layer.id == selectedBaseMapId.value && layer.available,
+    );
   }
 
   String get baseMapAttribution {
@@ -48,21 +49,25 @@ class EnvironmentalLayersController extends GetxController {
       final loaded = await webclient.fetch();
       layers.assignAll(loaded);
       final savedBaseMap = preferences.getString(_baseMapKey) ?? 'osm';
-      selectedBaseMapId.value = savedBaseMap == 'osm' ||
-              loaded.any((layer) =>
-                  layer.id == savedBaseMap &&
-                  layer.mapRole == 'basemap' &&
-                  layer.available)
+      selectedBaseMapId.value =
+          savedBaseMap == 'osm' ||
+              loaded.any(
+                (layer) =>
+                    layer.id == savedBaseMap &&
+                    layer.mapRole == 'basemap' &&
+                    layer.available,
+              )
           ? savedBaseMap
           : 'osm';
       enabledIds.assignAll(
         (preferences.getStringList(_enabledKey) ?? const <String>[]).where(
-            (id) => loaded.any((layer) => layer.id == id && layer.available)),
+          (id) => loaded.any((layer) => layer.id == id && layer.available),
+        ),
       );
       for (final layer in loaded) {
         opacities[layer.id] =
             preferences.getDouble('$_opacityPrefix${layer.id}') ??
-                layer.defaultOpacity;
+            layer.defaultOpacity;
       }
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
@@ -70,6 +75,15 @@ class EnvironmentalLayersController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  /// Each new map visit starts in orbital imagery when the provider is available.
+  Future<void> openWithSatellite() async {
+    await load();
+    selectedBaseMapId.value =
+        baseMaps.any((layer) => layer.id == 'satellite' && layer.available)
+        ? 'satellite'
+        : 'osm';
   }
 
   Future<void> toggle(String id, bool enabled) async {

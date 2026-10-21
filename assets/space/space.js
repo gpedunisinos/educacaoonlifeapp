@@ -37,7 +37,7 @@ const destinations = [
     message:
       "A Terra guarda as pistas dos nossos territórios. Vamos nos aproximar e explorar essas conexões?",
     arrival:
-      "Chegamos à Terra. O observatório territorial está pronto. Abra o Mapa de Pistas para explorar em tela cheia.",
+      "Chegamos à Terra. O observatório territorial está pronto. Conecte-se ao Mapa de Pistas para explorar em tela cheia.",
   },
   {
     id: "research",
@@ -56,7 +56,7 @@ const destinations = [
     message:
       "Rota para a Lua de Pistas. Cada fragmento dessa pequena lua é um card: vivências e descobertas que se aproximam e formam novas paisagens.",
     arrival:
-      "Chegamos à Lua de Pistas. Os cards flutuam ao nosso redor. Abra as Pistas para explorar as vivências e descobertas dos territórios.",
+      "Chegamos à Lua de Pistas. Os cards flutuam ao nosso redor. Conecte-se à Lua de Pistas para explorar as vivências e descobertas dos territórios.",
   },
   {
     id: "observatory",
@@ -75,7 +75,7 @@ const destinations = [
     message:
       "O Observatório é uma rede viva de problemáticas. Cada nodo mantém suas conexões enquanto exploramos novas perspectivas.",
     arrival:
-      "Chegamos à rede do Observatório. Os nodos e suas conexões revelam relações entre problemáticas. Abra o grafo para explorar.",
+      "Chegamos à rede do Observatório. Os nodos e suas conexões revelam relações entre problemáticas. Conecte-se às Problemáticas para explorar.",
   },
   {
     id: "agents",
@@ -252,6 +252,10 @@ function offerTutorial() {
   tutorialOffered = true;
   if (!tutorialSeen) tutorial.start();
 }
+function connectLabel(destination) {
+  return {earth: 'Conecte-se ao Mapa de Pistas', research: 'Conecte-se à Lua de Pistas',
+    observatory: 'Conecte-se às Problemáticas', agents: 'Conecte-se aos Agentes'}[destination.id] || 'Conecte-se ao destino';
+}
 function emit(type, extra = {}) {
   const data = JSON.stringify({ channel: "econectiva-space", type, ...extra });
   if (window.SpaceBridge) window.SpaceBridge.postMessage(data);
@@ -302,6 +306,7 @@ function say(text, inTutorial = false) {
   step();
 }
 function updateSound() {
+  emit("audio-state", {enabled: audio.enabled});
   $("sound").textContent = audio.enabled ? "Som ligado" : "Som desligado";
   $("sound").setAttribute("aria-pressed", String(audio.enabled));
 }
@@ -473,7 +478,7 @@ function select(d) {
     `0${destinations.indexOf(d) + 1} / ${String(destinations.length).padStart(2, "0")}`;
   $("navigate").textContent =
     arrived && current === d.id
-      ? `Abrir ${d.module} ↗`
+      ? `${connectLabel(d)} ↗`
       : d.id === "earth"
         ? "Navegar até a Terra →"
         : d.id === "agents"
@@ -591,7 +596,7 @@ function finishTravel() {
   $("navigate").hidden = true;
   $("direct").hidden = true;
   $("skip").hidden = true;
-  $("navigate").textContent = `Abrir ${selected.module} ↗`;
+  $("navigate").textContent = `${connectLabel(selected)} ↗`;
   $("flight-status").textContent =
     selected.id === "earth"
       ? "Órbita terrestre estabelecida"
@@ -638,7 +643,7 @@ function renderLocalPanel() {
       );
       $("local-open").hidden = !allowed.includes(destination.id);
       $("local-open").disabled = travelling || transferTime >= 0;
-      $("local-open").textContent = `Abrir ${destination.module} ↗`;
+      $("local-open").textContent = `${connectLabel(destination)} ↗`;
       localPanelId = destination.id;
       if (changed && !travelling)
         $("local-open").focus({ preventScroll: true });
@@ -746,6 +751,7 @@ window.receiveSpaceCommand = (data) => {
   if (data?.channel !== "econectiva-space") return;
   if (data.type === "configure" && Array.isArray(data.destinations)) {
     flightMode.update({mode: data.mode});
+    if (typeof data.audioEnabled === "boolean") $("start-sound").checked = data.audioEnabled;
     tutorialConfigured = true;
     tutorialSeen = data.tutorialSeen === true;
     $("management").hidden = data.management !== true;
@@ -767,6 +773,7 @@ window.receiveSpaceCommand = (data) => {
     setPaused(true);
   }
   if (data.type === "resume") {
+    if (typeof data.audioEnabled === "boolean" && audio.enabled !== data.audioEnabled) audio.enable(data.audioEnabled).then(updateSound);
     hostPaused = false;
     restoreCockpit();
     setPaused(document.hidden);

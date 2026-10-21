@@ -38,64 +38,43 @@ class SpaceMapShell extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Align(alignment: Alignment.centerLeft, child: back),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        const Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'TERRA / EXPLORAÇÃO',
-                                style: TextStyle(
-                                  color: mapIce,
-                                  fontSize: 10,
-                                  letterSpacing: 1.7,
-                                ),
-                              ),
-                              SizedBox(height: 3),
-                              Text(
-                                'Mapa de pistas',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 25,
-                                  fontWeight: FontWeight.w300,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (!compact)
-                          const Text(
-                            'EC–01 / CARTOGRAFIA',
-                            style: TextStyle(
-                              color: Color(0xFF9BB4C5),
-                              fontSize: 10,
-                              letterSpacing: 1.3,
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
                     Container(
-                      width: double.infinity,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,
-                        vertical: 2,
+                        vertical: 6,
                       ),
                       decoration: BoxDecoration(
                         color: mapPanel,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: const Color(0xFF2F5661)),
                       ),
-                      child: Wrap(
-                        alignment: WrapAlignment.end,
-                        spacing: 5,
-                        children: actions,
-                      ),
+                      child: compact
+                          ? Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    back,
+                                    const SizedBox(width: 12),
+                                    const Expanded(child: _MapIdentity()),
+                                  ],
+                                ),
+                                Wrap(
+                                  alignment: WrapAlignment.end,
+                                  spacing: 2,
+                                  children: actions,
+                                ),
+                              ],
+                            )
+                          : Row(
+                              children: [
+                                back,
+                                const SizedBox(width: 18),
+                                const Expanded(child: _MapIdentity()),
+                                ...actions,
+                              ],
+                            ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
                     Expanded(
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(16),
@@ -117,5 +96,29 @@ class SpaceMapShell extends StatelessWidget {
         ),
       );
     },
+  );
+}
+
+class _MapIdentity extends StatelessWidget {
+  const _MapIdentity();
+  @override
+  Widget build(BuildContext context) => const Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        'TERRA / EXPLORAÇÃO',
+        style: TextStyle(color: mapIce, fontSize: 9, letterSpacing: 1.2),
+      ),
+      Text(
+        'Mapa de pistas',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 19,
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+    ],
   );
 }

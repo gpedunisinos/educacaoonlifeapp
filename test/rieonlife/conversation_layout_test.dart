@@ -1,3 +1,5 @@
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:unisinos_usp_app/services/ship_audio_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
@@ -55,11 +57,60 @@ class PreviewClue extends LivingClueChatController {
 
 void main() {
   setUp(() {
+    SharedPreferences.setMockInitialValues({'space_audio_enabled': false});
     Get.testMode = true;
     Get.put(AiAssistantContextService());
   });
   tearDown(Get.reset);
 
+  testWidgets(
+    'Iareté reveals only new replies and does not replay completed history',
+    (tester) async {
+      final assistant = PreviewAssistant();
+      assistant.messages.add(
+        AiAssistantMessageModel(
+          id: 1,
+          role: 'assistant',
+          content: 'Histórico completo.',
+          createdAt: DateTime.now(),
+        ),
+      );
+      Get.put<AiAssistantController>(assistant);
+      await ShipAudioPreferences.setEnabled(false);
+      await tester.pumpWidget(
+        const GetMaterialApp(home: Scaffold(body: AiAssistantPanel())),
+      );
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+      });
+      await tester.pump();
+      expect(find.text('Histórico completo.'), findsOneWidget);
+      assistant.messages.add(
+        AiAssistantMessageModel(
+          id: 2,
+          role: 'assistant',
+          content: 'Nova resposta que aparece aos poucos.',
+          createdAt: DateTime.now(),
+        ),
+      );
+      await tester.pump();
+      expect(find.text('Exibir resposta completa'), findsOneWidget);
+      expect(find.text('Nova resposta que aparece aos poucos.'), findsNothing);
+      await tester.tap(find.text('Exibir resposta completa'));
+      await tester.pump();
+      await tester.pump();
+      expect(
+        find.text('Nova resposta que aparece aos poucos.'),
+        findsOneWidget,
+      );
+      assistant.messages.refresh();
+      await tester.pump();
+      expect(find.text('Exibir resposta completa'), findsNothing);
+      await tester.pumpWidget(const SizedBox());
+      await tester.pump(const Duration(seconds: 1));
+      expect(tester.takeException(), isNull);
+    },
+  );
   for (final size in [
     const Size(1280, 800),
     const Size(390, 844),

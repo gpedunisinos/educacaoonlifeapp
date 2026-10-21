@@ -1,3 +1,5 @@
+import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
+import 'package:unisinos_usp_app/policies/living_clue_policy.dart';
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
@@ -41,6 +43,7 @@ class _ClueResearchRoomScreenState extends State<ClueResearchRoomScreen>
   bool failed = false;
   bool more = false;
   bool loadingMore = false;
+  bool creating = false;
   String get route => '/space/research';
   int request = 0;
   Timer? debounce;
@@ -49,7 +52,16 @@ class _ClueResearchRoomScreenState extends State<ClueResearchRoomScreen>
     screenName: 'Sala da Lua de Pistas',
     route: route,
     references: {if (selected != null) 'living_clue_id': selected!.id},
-    visibleRecords: clues.take(20).map((clue) => AiRecordReference(kind: 'living_clue', id: clue.id, name: clue.name)).toList(),
+    visibleRecords: clues
+        .take(20)
+        .map(
+          (clue) => AiRecordReference(
+            kind: 'living_clue',
+            id: clue.id,
+            name: clue.name,
+          ),
+        )
+        .toList(),
     stage: 'busca de pistas',
     goal: 'pesquisar pistas e localizar sua representação na lua holográfica',
     filledFields: {
@@ -153,6 +165,21 @@ class _ClueResearchRoomScreenState extends State<ClueResearchRoomScreen>
     if (mounted && !MediaQuery.disableAnimationsOf(context)) motion.repeat();
   }
 
+  Future<void> createClue() async {
+    if (creating) return;
+    setState(() => creating = true);
+    motion.stop();
+    try {
+      await Get.toNamed('/living_clues/type_select');
+      if (mounted) await load();
+    } finally {
+      if (mounted) {
+        setState(() => creating = false);
+        if (!MediaQuery.disableAnimationsOf(context)) motion.repeat();
+      }
+    }
+  }
+
   void leave() {
     if (Navigator.of(context).canPop()) {
       Get.back();
@@ -204,26 +231,69 @@ class _ClueResearchRoomScreenState extends State<ClueResearchRoomScreen>
                       Row(
                         children: [
                           OutlinedButton.icon(
+                            style: compact
+                                ? OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                    ),
+                                    textStyle: const TextStyle(fontSize: 12),
+                                  )
+                                : null,
                             onPressed: leave,
                             icon: const Icon(Icons.arrow_back, size: 17),
                             label: Text(
                               compact ? 'Cockpit' : 'Voltar ao cockpit',
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          const Expanded(
-                            child: Text(
-                              'EC–01 / LUA DE PISTAS',
-                              textAlign: TextAlign.right,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: _ice,
-                                fontSize: 10,
-                                letterSpacing: 1.6,
+                          if (Get.isRegistered<UserController>())
+                            Obx(
+                              () =>
+                                  LivingCluePolicy(
+                                    Get.find<UserController>().user.value,
+                                  ).create()
+                                  ? Padding(
+                                      padding: const EdgeInsets.only(left: 10),
+                                      child: FilledButton.icon(
+                                        onPressed: creating ? null : createClue,
+                                        icon: const Icon(Icons.add, size: 18),
+                                        label: Text(
+                                          compact
+                                              ? 'Nova pista'
+                                              : 'Criar pista',
+                                        ),
+                                        style: FilledButton.styleFrom(
+                                          padding: compact
+                                              ? const EdgeInsets.symmetric(
+                                                  horizontal: 10,
+                                                )
+                                              : null,
+                                          textStyle: compact
+                                              ? const TextStyle(fontSize: 12)
+                                              : null,
+                                          backgroundColor: _ice,
+                                          foregroundColor: const Color(
+                                            0xFF09202A,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  : const SizedBox.shrink(),
+                            ),
+                          if (!compact) const SizedBox(width: 12),
+                          if (!compact)
+                            const Expanded(
+                              child: Text(
+                                'EC–01 / LUA DE PISTAS',
+                                textAlign: TextAlign.right,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: _ice,
+                                  fontSize: 10,
+                                  letterSpacing: 1.6,
+                                ),
                               ),
                             ),
-                          ),
                         ],
                       ),
                       Padding(
