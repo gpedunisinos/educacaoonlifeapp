@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
+import 'package:unisinos_usp_app/widgets/living_clue_description_view.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
 import 'package:unisinos_usp_app/screens/space/clue_research_room_screen.dart';
 import 'package:unisinos_usp_app/screens/space/clue_moon_hologram.dart';
@@ -18,6 +19,12 @@ class CluesFake extends ClueResearchSource {
       description: i == 42 ? 'Memória distante' : 'Vivência do território $i',
     ),
   );
+  @override
+  Future<LivingClueModel> clue(int id) async {
+    if (fail) throw Exception('offline');
+    return items.firstWhere((clue) => clue.id == id);
+  }
+
   @override
   Future<List<LivingClueModel>> search(String query, int offset) async {
     if (fail) throw Exception('offline');
@@ -40,6 +47,18 @@ Widget app(CluesFake source) => GetMaterialApp(
     child: child!,
   ),
   home: ClueResearchRoomScreen(source: source),
+  getPages: [
+    GetPage(
+      name: '/space/research/:id',
+      page: () => ClueResearchRoomScreen(
+        source: source,
+        clueId: int.parse(Get.parameters['id']!),
+        initialClue: Get.arguments is LivingClueModel
+            ? Get.arguments as LivingClueModel
+            : null,
+      ),
+    ),
+  ],
 );
 void main() {
   setUp(() => Get.testMode = true);
@@ -72,6 +91,8 @@ void main() {
       await tester.tap(find.text('Abrir pista'));
       await tester.pumpAndSettle();
       expect(find.text('Abrir registro completo'), findsOneWidget);
+      expect(Get.currentRoute, '/space/research/43');
+      expect(find.byType(ClueMoonHologram), findsNothing);
       expect(find.text('Memória distante', findRichText: true), findsWidgets);
       await tester.tap(find.text('Voltar à lista'));
       await tester.pumpAndSettle();
@@ -84,6 +105,31 @@ void main() {
         'Pista 42',
       );
       expect(tester.takeException(), isNull);
+    },
+  );
+  testWidgets(
+    'detail loads directly by id without a moon and retries failures',
+    (tester) async {
+      final source = CluesFake();
+      await tester.pumpWidget(app(source));
+      await tester.pumpAndSettle();
+      source.fail = true;
+      Get.toNamed('/space/research/43');
+      await tester.pumpAndSettle();
+      expect(find.text('Tentar novamente'), findsOneWidget);
+      expect(find.byType(ClueMoonHologram), findsNothing);
+      source.fail = false;
+      await tester.tap(find.text('Tentar novamente'));
+      await tester.pumpAndSettle();
+      expect(find.text('Memória distante', findRichText: true), findsOneWidget);
+      expect(
+        tester
+            .getSize(
+              find.byWidgetPredicate((w) => w is LivingClueDescriptionView),
+            )
+            .width,
+        greaterThan(600),
+      );
     },
   );
   testWidgets('pagination, empty search, clear and stale responses', (
@@ -144,6 +190,7 @@ void main() {
     await tester.tap(find.text('Abrir pista'));
     await tester.pumpAndSettle();
     expect(find.text('Voltar à lista'), findsOneWidget);
+    expect(find.byType(ClueMoonHologram), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

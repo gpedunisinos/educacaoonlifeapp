@@ -13,13 +13,21 @@ const _ice = Color(0xFF9CE7DF);
 const _muted = Color(0xFFA1B8C7);
 
 class ClueResearchSource {
+  Future<LivingClueModel> clue(int id) => LivingClueWebclient().fetchById(id);
   Future<List<LivingClueModel>> search(String query, int offset) =>
       LivingClueWebclient().search(search: query, offset: offset, limit: 20);
 }
 
 class ClueResearchRoomScreen extends StatefulWidget {
-  const ClueResearchRoomScreen({super.key, this.source});
+  const ClueResearchRoomScreen({
+    super.key,
+    this.source,
+    this.clueId,
+    this.initialClue,
+  });
   final ClueResearchSource? source;
+  final int? clueId;
+  final LivingClueModel? initialClue;
   @override
   State<ClueResearchRoomScreen> createState() => _ClueResearchRoomScreenState();
 }
@@ -40,13 +48,17 @@ class _ClueResearchRoomScreenState extends State<ClueResearchRoomScreen>
   bool failed = false;
   bool more = false;
   bool loadingMore = false;
-  bool detail = false;
+  bool get detail => widget.clueId != null;
+  String get route =>
+      detail ? '/space/research/${widget.clueId}' : '/space/research';
   int request = 0;
   Timer? debounce;
   late final AiAssistantContextProvider provider = buildContext;
   AiAssistantScreenContext buildContext() => AiAssistantScreenContext(
-    screenName: 'Sala de Pesquisa da nave',
-    route: '/space/research',
+    screenName: detail
+        ? 'Leitura de pista na nave'
+        : 'Sala de Pesquisa da nave',
+    route: route,
     stage: detail ? 'visualização de pista' : 'busca de pistas',
     goal: 'pesquisar pistas e localizar sua representação na lua holográfica',
     filledFields: {
@@ -61,18 +73,20 @@ class _ClueResearchRoomScreenState extends State<ClueResearchRoomScreen>
   void initState() {
     super.initState();
     if (Get.isRegistered<AiAssistantContextService>()) {
-      Get.find<AiAssistantContextService>().registerProvider(
-        '/space/research',
-        provider,
-      );
+      Get.find<AiAssistantContextService>().registerProvider(route, provider);
     }
-    load();
+    if (detail && widget.initialClue?.id == widget.clueId) {
+      selected = widget.initialClue;
+      loading = false;
+    } else {
+      load();
+    }
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (MediaQuery.disableAnimationsOf(context)) {
+    if (detail || MediaQuery.disableAnimationsOf(context)) {
       motion.stop();
     } else if (!motion.isAnimating) {
       motion.repeat();
@@ -86,7 +100,6 @@ class _ClueResearchRoomScreenState extends State<ClueResearchRoomScreen>
       loading = true;
       failed = false;
       loadingMore = false;
-      detail = false;
     });
     debounce = Timer(const Duration(milliseconds: 300), load);
   }
@@ -105,7 +118,9 @@ class _ClueResearchRoomScreenState extends State<ClueResearchRoomScreen>
       }
     });
     try {
-      final result = await source.search(query, next ? clues.length : 0);
+      final result = detail
+          ? [await source.clue(widget.clueId!)]
+          : await source.search(query, next ? clues.length : 0);
       if (!mounted || ticket != request) return;
       setState(() {
         if (next) {
@@ -147,25 +162,25 @@ class _ClueResearchRoomScreenState extends State<ClueResearchRoomScreen>
     }
   }
 
+  Future<void> openClue(LivingClueModel clue) async {
+    setState(() => selected = clue);
+    motion.stop();
+    await Get.toNamed('/space/research/${clue.id}', arguments: clue);
+    if (mounted && !MediaQuery.disableAnimationsOf(context)) motion.repeat();
+  }
+
   void leave() {
-    if (detail) {
-      setState(() => detail = false);
-      return;
-    }
     if (Navigator.of(context).canPop()) {
       Get.back();
     } else {
-      Get.offNamed('/space');
+      Get.offNamed(detail ? '/space/research' : '/space');
     }
   }
 
   @override
   void dispose() {
     if (Get.isRegistered<AiAssistantContextService>()) {
-      Get.find<AiAssistantContextService>().unregisterProvider(
-        '/space/research',
-        provider,
-      );
+      Get.find<AiAssistantContextService>().unregisterProvider(route, provider);
     }
     debounce?.cancel();
     search.dispose();
@@ -238,7 +253,9 @@ class _ClueResearchRoomScreenState extends State<ClueResearchRoomScreen>
                         child: Column(
                           children: [
                             Text(
-                              'Cada pista, um novo olhar.',
+                              detail
+                                  ? 'Leitura de pista'
+                                  : 'Cada pista, um novo olhar.',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: Colors.white,
@@ -247,10 +264,15 @@ class _ClueResearchRoomScreenState extends State<ClueResearchRoomScreen>
                               ),
                             ),
                             const SizedBox(height: 7),
-                            const Text(
-                              'Explore o arquivo e encontre seu lugar na Lua de Pistas.',
+                            Text(
+                              detail
+                                  ? 'Territórios, histórias e descobertas.'
+                                  : 'Explore o arquivo e encontre seu lugar na Lua de Pistas.',
                               textAlign: TextAlign.center,
-                              style: TextStyle(color: _muted, fontSize: 13),
+                              style: const TextStyle(
+                                color: _muted,
+                                fontSize: 13,
+                              ),
                             ),
                           ],
                         ),
@@ -292,7 +314,9 @@ class _ClueResearchRoomScreenState extends State<ClueResearchRoomScreen>
                           ),
                         ),
                       Expanded(
-                        child: compact
+                        child: detail
+                            ? screen()
+                            : compact
                             ? Column(
                                 children: [
                                   SizedBox(
@@ -470,10 +494,7 @@ class _ClueResearchRoomScreenState extends State<ClueResearchRoomScreen>
                                         Icons.open_in_full,
                                         size: 18,
                                       ),
-                                      onPressed: () => setState(() {
-                                        selected = clue;
-                                        detail = true;
-                                      }),
+                                      onPressed: () => openClue(clue),
                                     ),
                                   ],
                                 ),
@@ -521,7 +542,7 @@ class _ClueResearchRoomScreenState extends State<ClueResearchRoomScreen>
               if (!detail) ...[
                 const SizedBox(height: 10),
                 FilledButton.icon(
-                  onPressed: () => setState(() => detail = true),
+                  onPressed: () => openClue(selected!),
                   icon: const Icon(Icons.open_in_new, size: 17),
                   label: const Text('Abrir pista'),
                 ),

@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/models/living_clue_model.dart';
 import 'package:unisinos_usp_app/screens/space/clue_research_room_screen.dart';
 import 'package:unisinos_usp_app/screens/space/intelligence_chamber_screen.dart';
 import 'package:unisinos_usp_app/models/chat_template_model.dart';
@@ -36,6 +37,20 @@ List<GetPage> appRoutes() =>
         page: () => const ClueResearchRoomScreen(),
         transition: Transition.fadeIn,
         transitionDuration: const Duration(milliseconds: 600),
+        middlewares: [
+          AppRouteGuard(canActivate: (u) => LivingCluePolicy(u).viewAny()),
+        ],
+      ),
+      GetPage(
+        name: '/space/research/:id',
+        page: () => ClueResearchRoomScreen(
+          clueId: int.tryParse(Get.parameters['id'] ?? '') ?? -1,
+          initialClue: Get.arguments is LivingClueModel
+              ? Get.arguments as LivingClueModel
+              : null,
+        ),
+        transition: Transition.fadeIn,
+        transitionDuration: const Duration(milliseconds: 400),
         middlewares: [
           AppRouteGuard(canActivate: (u) => LivingCluePolicy(u).viewAny()),
         ],
