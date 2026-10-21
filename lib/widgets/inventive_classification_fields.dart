@@ -297,7 +297,11 @@ class InventiveClassificationFields extends StatelessWidget {
                           maxWidth: (MediaQuery.sizeOf(context).width - 180)
                               .clamp(110.0, 650.0),
                         ),
-                        child: Text(InventiveCatalog.label(key, code)),
+                        child: Text(
+                          InventiveCatalog.label(key, code),
+                          softWrap: true,
+                          maxLines: 6,
+                        ),
                       ),
                       onPressed: () {
                         final concept = InventiveCatalog.find(key, code);
