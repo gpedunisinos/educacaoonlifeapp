@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/chat_template/chat_template_update_controller.dart';
 import 'package:unisinos_usp_app/models/chat_template_model.dart';
 import 'package:unisinos_usp_app/screens/chat_template/chat_template_form.dart';
-import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'package:unisinos_usp_app/screens/management/management_record_scaffold.dart';
 
 class ChatTemplateUpdateScreen extends StatelessWidget {
   const ChatTemplateUpdateScreen({super.key});
@@ -12,14 +12,12 @@ class ChatTemplateUpdateScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final ChatTemplateUpdateController controller =
         Get.find<ChatTemplateUpdateController>();
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
-        leading: const SafeBackButton(),
-        title: const Text('Editar agente'),
-      ),
+    return ManagementRecordScaffold(
+      section: 'chat_templates',
+      title: 'Editar agente',
+      subtitle: 'Configure identidades, instruções e referências dos agentes.',
+      form: true,
+
       body: Stack(
         children: [
           Obx(() {

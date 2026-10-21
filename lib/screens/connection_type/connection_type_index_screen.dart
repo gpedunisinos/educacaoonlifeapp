@@ -4,7 +4,7 @@ import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 import 'package:unisinos_usp_app/controllers/connection_type/connection_type_index_controller.dart';
 import 'package:unisinos_usp_app/models/connection_type_model.dart';
 import 'package:unisinos_usp_app/policies/policies.dart';
-import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'package:unisinos_usp_app/screens/management/management_record_scaffold.dart';
 
 class ConnectionTypeIndexScreen extends StatelessWidget {
   ConnectionTypeIndexScreen({super.key});
@@ -18,22 +18,18 @@ class ConnectionTypeIndexScreen extends StatelessWidget {
       Get.find<UserController>().user.value,
     ).create();
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
-        leading: const SafeBackButton(),
-        title: const Text('Tipos de conexão'),
-        actions: [
-          if (canManage)
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: _goToCreate,
-              tooltip: 'Novo tipo',
-            ),
-        ],
-      ),
+    return ManagementRecordScaffold(
+      section: 'connection_types',
+      title: 'Tipos de conexão',
+      subtitle: 'Defina os significados e a direção das relações entre pistas.',
+      actions: [
+        if (canManage)
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: _goToCreate,
+            tooltip: 'Novo tipo',
+          ),
+      ],
       body: Stack(
         children: [
           Obx(() {

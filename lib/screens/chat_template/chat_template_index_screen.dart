@@ -4,7 +4,7 @@ import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 import 'package:unisinos_usp_app/controllers/chat_template/chat_template_index_controller.dart';
 import 'package:unisinos_usp_app/models/chat_template_model.dart';
 import 'package:unisinos_usp_app/policies/policies.dart';
-import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'package:unisinos_usp_app/screens/management/management_record_scaffold.dart';
 
 class ChatTemplateIndexScreen extends StatefulWidget {
   const ChatTemplateIndexScreen({super.key});
@@ -39,22 +39,18 @@ class _ChatTemplateIndexScreenState extends State<ChatTemplateIndexScreen> {
       Get.find<UserController>().user.value,
     ).create();
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
-        leading: const SafeBackButton(),
-        title: const Text('Agentes'),
-        actions: [
-          if (canManage)
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: _goToCreate,
-              tooltip: 'Novo agente',
-            ),
-        ],
-      ),
+    return ManagementRecordScaffold(
+      section: 'chat_templates',
+      title: 'Agentes',
+      subtitle: 'Configure identidades, instruções e referências dos agentes.',
+      actions: [
+        if (canManage)
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: _goToCreate,
+            tooltip: 'Novo agente',
+          ),
+      ],
       body: Stack(
         children: [
           Obx(() {

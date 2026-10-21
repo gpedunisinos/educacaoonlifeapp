@@ -262,3 +262,13 @@ Nova entrada `/management` com visão geral, navegação lateral no desktop e me
 O cockpit perdeu o elemento físico e o card de destino Conexões. São quatro destinos: Terra, Pesquisa, Observatório e Inteligências. Mapa esquemático, fio vermelho, numeração, grade e atalhos 1–4 acompanham essa remoção. O botão Gestão no cabeçalho do cockpit abre a Central e pausa/retoma a mesma cena. Há também atalho no cabeçalho das telas comuns e entrada Central de Gestão em Módulos. Ir ao cockpit reaproveita a rota existente quando ela está na pilha.
 
 Validação: onze testes aprovados (Central → lista → detalhe → lista com busca preservada, estrutura visível conforme perfil, menu móvel, erro/nova tentativa, acesso Gestão pela ponte do cockpit e retomada da cena, quatro destinos sem Conexões e regressões da antiga sala). Análise Dart sem erros, com 127 avisos/informações preexistentes; bundle e build web concluídos. Navegador: visão geral, 14 conexões reais, busca CVV e detalhe #13 no painel. Evidências: `management-central.jpg`, `management-connections.jpg`, `management-connection-detail.jpg`.
+
+### Central de Gestão — demais parametrizações
+
+- Ativadas as áreas Categorias, Tipos de conexão, Tipos de problemática, Agentes de IA e Usuários na visão geral e no menu lateral da Central.
+- Integradas as 15 telas de listagem, criação e edição ao mesmo ambiente azul/ciano, com seção ativa, retorno à lista, formulários com largura de leitura e menu adaptável para celular. As rotas antigas e seus bindings/guards foram preservados, inclusive acessos de consulta já permitidos.
+- Mantidos os campos, validações, paginação, buscas existentes, confirmações de exclusão e integração com a API. Instruções e arquivos dos agentes continuam disponíveis; a conversa com os agentes permanece no ambiente próprio.
+- A lista de usuários agora respeita o modo Explorador também nos botões de criação, edição e exclusão. As permissões das rotas permanecem inalteradas.
+- Corrigida a largura do seletor de tipo de categoria em celulares e removido o atalho redundante da Central nas próprias telas administrativas. Os campos antigos com texto preto fixo foram substituídos por campos que seguem o tema, garantindo contraste também na edição de registros.
+- Validação: 15 testes de widgets aprovados (cinco formulários a 390/1280 px, permissões de usuários, Central/conexões e navegação espacial); análise Dart sem erros; build web local. Conferência visual da visão geral, categorias/cadastro e agentes com dados da prévia, sem gravar ou excluir registros.
+- Evidências: `management-all-sections.jpg`, `management-categories.jpg`, `management-category-form.jpg` e `management-agents.jpg` nesta pasta.

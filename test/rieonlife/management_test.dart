@@ -1,3 +1,16 @@
+import 'package:unisinos_usp_app/controllers/user/user_index_controller.dart';
+import 'package:unisinos_usp_app/models/user_model.dart';
+import 'package:unisinos_usp_app/screens/user/user_index_screen.dart';
+import 'package:unisinos_usp_app/controllers/category/category_create_controller.dart';
+import 'package:unisinos_usp_app/screens/category/category_create_screen.dart';
+import 'package:unisinos_usp_app/controllers/connection_type/connection_type_create_controller.dart';
+import 'package:unisinos_usp_app/screens/connection_type/connection_type_create_screen.dart';
+import 'package:unisinos_usp_app/controllers/node_type/node_type_create_controller.dart';
+import 'package:unisinos_usp_app/screens/node_type/node_type_create_screen.dart';
+import 'package:unisinos_usp_app/controllers/chat_template/chat_template_create_controller.dart';
+import 'package:unisinos_usp_app/screens/chat_template/chat_template_create_screen.dart';
+import 'package:unisinos_usp_app/controllers/user/user_create_controller.dart';
+import 'package:unisinos_usp_app/screens/user/user_create_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
@@ -8,6 +21,12 @@ import 'package:unisinos_usp_app/screens/management/management_home_screen.dart'
 import 'package:unisinos_usp_app/screens/space/connections_room_screen.dart';
 
 class ManagementUser extends UserController {
+  @override
+  // ignore: must_call_super
+  void onInit() {}
+}
+
+class ManagementUsers extends UserIndexController {
   @override
   // ignore: must_call_super
   void onInit() {}
@@ -62,6 +81,73 @@ Widget app(Future<List<RoomConnection>> Function() loader) => GetMaterialApp(
 void main() {
   setUp(() => Get.testMode = true);
   tearDown(Get.reset);
+  for (final mode in ['explorer', 'inventor']) {
+    testWidgets('user actions respect $mode mode', (tester) async {
+      user(40);
+      Get.find<UserController>().user.value = AuthUser(
+        id: 1,
+        name: 'Teste',
+        email: 'test@example.com',
+        token: 'test',
+        profile: 40,
+        usageMode: mode,
+      );
+      Get.put<UserIndexController>(ManagementUsers()).users.add(
+        UserModel(
+          id: 2,
+          name: 'Pessoa teste',
+          email: 'person@example.com',
+          profile: 10,
+        ),
+      );
+      await tester.pumpWidget(const GetMaterialApp(home: UserIndexScreen()));
+      await tester.pumpAndSettle();
+      expect(find.text('Pessoa teste'), findsOneWidget);
+      expect(
+        find.byTooltip('Novo usuário'),
+        mode == 'inventor' ? findsOneWidget : findsNothing,
+      );
+      expect(
+        find.byIcon(Icons.edit),
+        mode == 'inventor' ? findsOneWidget : findsNothing,
+      );
+      expect(
+        find.byIcon(Icons.delete_outline),
+        mode == 'inventor' ? findsOneWidget : findsNothing,
+      );
+      expect(tester.takeException(), isNull);
+    });
+  }
+  for (final width in [390.0, 1280.0]) {
+    testWidgets('administrative forms remain usable at width $width', (
+      tester,
+    ) async {
+      tester.view.physicalSize = Size(width, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      user(40);
+      Get.put(CategoryCreateController());
+      Get.put(ConnectionTypeCreateController());
+      Get.put(NodeTypeCreateController());
+      Get.put(ChatTemplateCreateController());
+      Get.put(UserCreateController());
+      for (final screen in <Widget>[
+        const CategoryCreateScreen(),
+        const ConnectionTypeCreateScreen(),
+        const NodeTypeCreateScreen(),
+        const ChatTemplateCreateScreen(),
+        const UserCreateScreen(),
+      ]) {
+        await tester.pumpWidget(GetMaterialApp(home: screen));
+        await tester.pumpAndSettle();
+        expect(find.text('Voltar à lista'), findsOneWidget);
+        expect(find.byType(Form), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+      }
+    });
+  }
   testWidgets(
     'central opens connections, searches and keeps state after detail',
     (tester) async {
@@ -72,7 +158,12 @@ void main() {
       user(40);
       await tester.pumpWidget(app(() async => items));
       await tester.pumpAndSettle();
-      expect(find.text('Organização da pesquisa'), findsWidgets);
+      expect(find.text('Categorias'), findsWidgets);
+      expect(find.text('Tipos de conexão'), findsWidgets);
+      expect(find.text('Tipos de problemática'), findsWidgets);
+      expect(find.text('Agentes de IA'), findsWidgets);
+      expect(find.text('Usuários'), findsWidgets);
+      expect(find.text('EM BREVE'), findsNothing);
       await tester.tap(find.text('Abrir conexões'));
       await tester.pumpAndSettle();
       expect(Get.currentRoute, '/management/connections');
@@ -98,8 +189,8 @@ void main() {
       await tester.pumpWidget(app(() async => items));
       await tester.pumpAndSettle();
       expect(find.text('Conexões entre pistas'), findsOneWidget);
-      expect(find.text('Pessoas'), findsNothing);
-      expect(find.text('Inteligências'), findsNothing);
+      expect(find.text('Usuários'), findsNothing);
+      expect(find.text('Agentes de IA'), findsNothing);
     },
   );
   testWidgets('mobile central uses drawer and connection loading can retry', (

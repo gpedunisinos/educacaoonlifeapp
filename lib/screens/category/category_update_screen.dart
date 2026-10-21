@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/screens/management/management_input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:get/get.dart';
@@ -5,7 +6,7 @@ import 'package:pvalidator/pvalidator.dart';
 import 'package:unisinos_usp_app/controllers/category/category_update_controller.dart';
 import 'package:unisinos_usp_app/models/category_model.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
-import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'package:unisinos_usp_app/screens/management/management_record_scaffold.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class CategoryUpdateScreen extends StatefulWidget {
@@ -50,14 +51,12 @@ class _CategoryUpdateScreenState extends State<CategoryUpdateScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
-        leading: const SafeBackButton(),
-        title: const Text('Editar categoria'),
-      ),
+    return ManagementRecordScaffold(
+      section: 'categories',
+      title: 'Editar categoria',
+      subtitle: 'Classifique as pistas com cores, tipos e marcadores.',
+      form: true,
+
       body: Stack(
         children: [
           Obx(() {
@@ -106,7 +105,7 @@ class _CategoryUpdateScreenState extends State<CategoryUpdateScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        InputText(
+                        ManagementInput(
                           hintText: 'Nome',
                           controller: _nameController,
                           validator: (value) => PValidator([
@@ -120,6 +119,7 @@ class _CategoryUpdateScreenState extends State<CategoryUpdateScreen> {
                         ),
                         Insets.large.height,
                         DropdownButtonFormField<String>(
+                          isExpanded: true,
                           value: _selectedType,
                           decoration: const InputDecoration(
                             labelText: 'Tipo',
@@ -140,7 +140,7 @@ class _CategoryUpdateScreenState extends State<CategoryUpdateScreen> {
                           ]).val(),
                         ),
                         Insets.large.height,
-                        InputText(
+                        ManagementInput(
                           hintText: 'Cor em hex (ex: #FF5733)',
                           controller: _colorController,
                           validator: (value) => PValidator([
@@ -173,18 +173,18 @@ class _CategoryUpdateScreenState extends State<CategoryUpdateScreen> {
                           ],
                         ),
                         Insets.large.height,
-                        InputText(
+                        ManagementInput(
                           hintText: 'Código do ícone (opcional)',
                           controller: _iconController,
                         ),
                         Insets.large.height,
-                        InputText(
+                        ManagementInput(
                           hintText: 'Descrição (opcional)',
                           controller: _descriptionController,
                           maxLines: 4,
                         ),
                         Insets.large.height,
-                        InputText(
+                        ManagementInput(
                           hintText: 'Metadata tags (ex: tag_teste,tag_other)',
                           controller: _metadataTagsController,
                           validator: (value) => PValidator([

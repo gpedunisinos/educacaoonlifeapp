@@ -1,10 +1,11 @@
+import 'package:unisinos_usp_app/screens/management/management_input.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pvalidator/pvalidator.dart';
 import 'package:unisinos_usp_app/controllers/connection_type/connection_type_update_controller.dart';
 import 'package:unisinos_usp_app/models/connection_type_model.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
-import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'package:unisinos_usp_app/screens/management/management_record_scaffold.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class ConnectionTypeUpdateScreen extends StatefulWidget {
@@ -35,14 +36,12 @@ class _ConnectionTypeUpdateScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
-        leading: const SafeBackButton(),
-        title: const Text('Editar tipo de conexão'),
-      ),
+    return ManagementRecordScaffold(
+      section: 'connection_types',
+      title: 'Editar tipo de conexão',
+      subtitle: 'Defina os significados e a direção das relações entre pistas.',
+      form: true,
+
       body: Stack(
         children: [
           Obx(() {
@@ -85,7 +84,7 @@ class _ConnectionTypeUpdateScreenState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    InputText(
+                    ManagementInput(
                       hintText: 'Nome',
                       controller: _nameController,
                       validator: (value) => PValidator([
@@ -98,7 +97,7 @@ class _ConnectionTypeUpdateScreenState
                       ]).val(),
                     ),
                     Insets.large.height,
-                    InputText(
+                    ManagementInput(
                       hintText: 'Estilo de linha (solid/dashed/dotted)',
                       controller: _strokeStyleController,
                     ),

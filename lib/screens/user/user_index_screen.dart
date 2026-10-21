@@ -1,8 +1,10 @@
+import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
+import 'package:unisinos_usp_app/policies/user_policy.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/user/user_index_controller.dart';
 import 'package:unisinos_usp_app/models/user_model.dart';
-import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'package:unisinos_usp_app/screens/management/management_record_scaffold.dart';
 
 class UserIndexScreen extends StatefulWidget {
   const UserIndexScreen({super.key});
@@ -31,21 +33,21 @@ class _UserIndexScreenState extends State<UserIndexScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
-        leading: const SafeBackButton(),
-        title: const Text('Usuários'),
-        actions: [
+    final canManage = UserPolicy(
+      Get.find<UserController>().user.value,
+    ).create();
+    return ManagementRecordScaffold(
+      section: 'users',
+      title: 'Usuários',
+      subtitle: 'Gerencie pessoas e seus perfis de acesso à plataforma.',
+      actions: [
+        if (canManage)
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: _goToCreate,
             tooltip: 'Novo usuário',
           ),
-        ],
-      ),
+      ],
       body: Stack(
         children: [
           Column(
@@ -109,6 +111,7 @@ class _UserIndexScreenState extends State<UserIndexScreen> {
                       final model = _controller.users[index];
                       return _UserCard(
                         model: model,
+                        canManage: canManage,
                         onEdit: () => _goToUpdate(model),
                         onDelete: () => _confirmDelete(model),
                       );
@@ -166,11 +169,13 @@ class _UserIndexScreenState extends State<UserIndexScreen> {
 class _UserCard extends StatelessWidget {
   const _UserCard({
     required this.model,
+    required this.canManage,
     required this.onEdit,
     required this.onDelete,
   });
 
   final UserModel model;
+  final bool canManage;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -223,14 +228,16 @@ class _UserCard extends StatelessWidget {
                 ],
               ),
             ),
-            IconButton(
-              onPressed: onEdit,
-              icon: const Icon(Icons.edit, color: Colors.white),
-            ),
-            IconButton(
-              onPressed: onDelete,
-              icon: const Icon(Icons.delete_outline, color: Colors.white),
-            ),
+            if (canManage)
+              IconButton(
+                onPressed: onEdit,
+                icon: const Icon(Icons.edit, color: Colors.white),
+              ),
+            if (canManage)
+              IconButton(
+                onPressed: onDelete,
+                icon: const Icon(Icons.delete_outline, color: Colors.white),
+              ),
           ],
         ),
       ),

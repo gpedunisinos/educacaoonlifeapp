@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/user/user_update_controller.dart';
 import 'package:unisinos_usp_app/models/user_model.dart';
 import 'package:unisinos_usp_app/screens/user/user_form.dart';
-import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'package:unisinos_usp_app/screens/management/management_record_scaffold.dart';
 
 class UserUpdateScreen extends StatelessWidget {
   const UserUpdateScreen({super.key});
@@ -11,14 +11,12 @@ class UserUpdateScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final UserUpdateController controller = Get.find<UserUpdateController>();
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
-        leading: const SafeBackButton(),
-        title: const Text('Editar usuário'),
-      ),
+    return ManagementRecordScaffold(
+      section: 'users',
+      title: 'Editar usuário',
+      subtitle: 'Gerencie pessoas e seus perfis de acesso à plataforma.',
+      form: true,
+
       body: Stack(
         children: [
           Obx(() {

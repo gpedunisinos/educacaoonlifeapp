@@ -4,7 +4,7 @@ import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 import 'package:unisinos_usp_app/controllers/node_type/node_type_index_controller.dart';
 import 'package:unisinos_usp_app/models/node_type_model.dart';
 import 'package:unisinos_usp_app/policies/policies.dart';
-import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'package:unisinos_usp_app/screens/management/management_record_scaffold.dart';
 
 class NodeTypeIndexScreen extends StatefulWidget {
   const NodeTypeIndexScreen({super.key});
@@ -38,22 +38,18 @@ class _NodeTypeIndexScreenState extends State<NodeTypeIndexScreen> {
       Get.find<UserController>().user.value,
     ).create();
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
-        leading: const SafeBackButton(),
-        title: const Text('Tipos de problemática'),
-        actions: [
-          if (canManage)
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: _goToCreate,
-              tooltip: 'Novo tipo',
-            ),
-        ],
-      ),
+    return ManagementRecordScaffold(
+      section: 'node_types',
+      title: 'Tipos de problemática',
+      subtitle: 'Organize as problemáticas com identificadores e cores.',
+      actions: [
+        if (canManage)
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: _goToCreate,
+            tooltip: 'Novo tipo',
+          ),
+      ],
       body: Stack(
         children: [
           Column(

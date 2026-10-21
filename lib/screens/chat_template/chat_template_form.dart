@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/screens/management/management_input.dart';
 import 'package:flutter/material.dart';
 import 'package:pvalidator/pvalidator.dart';
 import 'package:unisinos_usp_app/models/chat_template_model.dart';
@@ -99,7 +100,7 @@ class _ChatTemplateFormState extends State<ChatTemplateForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          InputText(
+          ManagementInput(
             hintText: 'Nome',
             controller: _nameController,
             validator: (value) => PValidator([
@@ -215,7 +216,7 @@ class _ChatTemplateFormState extends State<ChatTemplateForm> {
               ],
             ),
             const SizedBox(height: 8),
-            InputText(
+            ManagementInput(
               hintText: 'Nome do arquivo',
               controller: entry.nameController,
               validator: (value) => PValidator([

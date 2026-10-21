@@ -9,34 +9,17 @@ class ManagementHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = Get.find<UserController>().user.value;
-    final entries = <(IconData, String, String, bool)>[
+    final entries = <(IconData, String, String, String)>[
       if (ClueConnectionPolicy(user).viewAny())
         (
           Icons.hub_outlined,
           'Conexões entre pistas',
           'Consulte relações, tipos e evidências que aproximam os territórios.',
-          true,
+          '/management/connections',
         ),
-      if (user?.isAdmin ?? false) ...[
-        (
-          Icons.category_outlined,
-          'Organização da pesquisa',
-          'Categorias e tipos que dão estrutura ao arquivo.',
-          false,
-        ),
-        (
-          Icons.psychology_outlined,
-          'Inteligências',
-          'Parametrização dos agentes, instruções e referências.',
-          false,
-        ),
-        (
-          Icons.people_outline,
-          'Pessoas',
-          'Usuários e perfis de acesso à plataforma.',
-          false,
-        ),
-      ],
+      if (user?.isAdmin ?? false)
+        for (final entry in managementSections)
+          (entry.icon, entry.label, entry.description, '/${entry.route}'),
     ];
     return ManagementShell(
       title: 'Central de Gestão',
@@ -67,23 +50,17 @@ class ManagementHomeScreen extends StatelessWidget {
                             ? box.maxWidth - 44
                             : (box.maxWidth - 60) / 2,
                         child: Material(
-                          color: entry.$4
-                              ? const Color(0xFF15333B)
-                              : const Color(0xFF0D1D2C),
+                          color: const Color(0xFF15333B),
                           borderRadius: BorderRadius.circular(12),
                           child: InkWell(
-                            onTap: entry.$4
-                                ? () => Get.toNamed('/management/connections')
-                                : null,
+                            onTap: () => Get.toNamed(entry.$4),
                             borderRadius: BorderRadius.circular(12),
                             child: Container(
                               padding: const EdgeInsets.all(22),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: entry.$4
-                                      ? const Color(0xFF639C9D)
-                                      : const Color(0xFF263E4D),
+                                  color: const Color(0xFF639C9D),
                                 ),
                               ),
                               child: Column(
@@ -93,18 +70,14 @@ class ManagementHomeScreen extends StatelessWidget {
                                     children: [
                                       Icon(
                                         entry.$1,
-                                        color: entry.$4
-                                            ? managementIce
-                                            : managementMuted,
+                                        color: managementIce,
                                         size: 28,
                                       ),
                                       const Spacer(),
                                       Text(
-                                        entry.$4 ? 'DISPONÍVEL' : 'EM BREVE',
+                                        'DISPONÍVEL',
                                         style: TextStyle(
-                                          color: entry.$4
-                                              ? managementIce
-                                              : managementMuted,
+                                          color: managementIce,
                                           fontSize: 9,
                                           letterSpacing: 1,
                                         ),
@@ -115,9 +88,7 @@ class ManagementHomeScreen extends StatelessWidget {
                                   Text(
                                     entry.$2,
                                     style: TextStyle(
-                                      color: entry.$4
-                                          ? Colors.white
-                                          : managementMuted,
+                                      color: Colors.white,
                                       fontSize: 20,
                                     ),
                                   ),
@@ -131,23 +102,22 @@ class ManagementHomeScreen extends StatelessWidget {
                                     ),
                                   ),
                                   const SizedBox(height: 18),
-                                  if (entry.$4)
-                                    const Row(
-                                      children: [
-                                        Text(
-                                          'Abrir conexões',
-                                          style: TextStyle(
-                                            color: managementIce,
-                                          ),
-                                        ),
-                                        SizedBox(width: 8),
-                                        Icon(
-                                          Icons.arrow_forward,
-                                          size: 16,
-                                          color: managementIce,
-                                        ),
-                                      ],
-                                    ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        entry.$4 == '/management/connections'
+                                            ? 'Abrir conexões'
+                                            : 'Abrir área',
+                                        style: TextStyle(color: managementIce),
+                                      ),
+                                      SizedBox(width: 8),
+                                      Icon(
+                                        Icons.arrow_forward,
+                                        size: 16,
+                                        color: managementIce,
+                                      ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),

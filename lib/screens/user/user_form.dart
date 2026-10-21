@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/screens/management/management_input.dart';
 import 'package:flutter/material.dart';
 import 'package:pvalidator/pvalidator.dart';
 import 'package:unisinos_usp_app/models/user_model.dart';
@@ -81,7 +82,7 @@ class _UserFormState extends State<UserForm> {
       key: _formKey,
       child: Column(
         children: [
-          InputText(
+          ManagementInput(
             hintText: 'Nome',
             controller: _nameController,
             validator: (value) => PValidator([
@@ -90,7 +91,7 @@ class _UserFormState extends State<UserForm> {
             ]).val(),
           ),
           Insets.large.height,
-          InputText(
+          ManagementInput(
             hintText: 'E-mail',
             controller: _emailController,
             validator: (value) => PValidator([
@@ -123,9 +124,9 @@ class _UserFormState extends State<UserForm> {
                   },
           ),
           Insets.large.height,
-          InputText(hintText: 'Telefone', controller: _phoneController),
+          ManagementInput(hintText: 'Telefone', controller: _phoneController),
           Insets.large.height,
-          InputText(
+          ManagementInput(
             hintText: widget.requirePassword ? 'Senha' : 'Senha (opcional)',
             controller: _passwordController,
             obscureText: true,

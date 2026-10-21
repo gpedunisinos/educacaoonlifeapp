@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/screens/management/management_shell.dart';
 import 'package:unisinos_usp_app/policies/clue_connection_policy.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
@@ -135,6 +136,7 @@ class _AiAssistantLauncherState extends State<AiAssistantLauncher> {
             ),
           if (show &&
               !route.startsWith('/management') &&
+              !isManagementRecordRoute(route) &&
               ClueConnectionPolicy(u).viewAny())
             Positioned(
               right: 146,

@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/screens/management/management_shell.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/widgets/ai_assistant_launcher.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +18,8 @@ class AppPageViewport extends StatelessWidget {
     final immersive =
         (route == '/space' || route.startsWith('/space/')) ||
         (route == '/management' || route.startsWith('/management/')) ||
-        route == '/living_clues/map';
+        route == '/living_clues/map' ||
+        isManagementRecordRoute(route);
     return Stack(
       fit: StackFit.expand,
       children: [

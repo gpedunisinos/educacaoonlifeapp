@@ -6,6 +6,46 @@ import 'package:unisinos_usp_app/policies/clue_connection_policy.dart';
 const managementIce = Color(0xFF9CE7DF);
 const managementMuted = Color(0xFF9BB4C5);
 
+const managementSections =
+    <({String route, String label, String description, IconData icon})>[
+      (
+        route: 'categories',
+        label: 'Categorias',
+        description: 'Cores, classificações e marcadores das pistas.',
+        icon: Icons.category_outlined,
+      ),
+      (
+        route: 'connection_types',
+        label: 'Tipos de conexão',
+        description: 'Significados e direção das relações entre pistas.',
+        icon: Icons.account_tree_outlined,
+      ),
+      (
+        route: 'node_types',
+        label: 'Tipos de problemática',
+        description: 'Identificadores e cores das problemáticas.',
+        icon: Icons.scatter_plot_outlined,
+      ),
+      (
+        route: 'chat_templates',
+        label: 'Agentes de IA',
+        description: 'Identidades, instruções e arquivos de referência.',
+        icon: Icons.psychology_outlined,
+      ),
+      (
+        route: 'users',
+        label: 'Usuários',
+        description: 'Pessoas e perfis de acesso à plataforma.',
+        icon: Icons.people_outline,
+      ),
+    ];
+
+bool isManagementRecordRoute(String route) => managementSections.any(
+  (entry) =>
+      route == '/${entry.route}' ||
+      route.startsWith('/${entry.route}/') && route != '/chat_templates/chat',
+);
+
 class ManagementShell extends StatelessWidget {
   const ManagementShell({
     super.key,
@@ -13,6 +53,8 @@ class ManagementShell extends StatelessWidget {
     required this.subtitle,
     required this.child,
     this.connections = false,
+    this.section,
+    this.actions = const [],
     this.onBack,
     this.backLabel = 'Central de Gestão',
     this.onRefresh,
@@ -23,6 +65,8 @@ class ManagementShell extends StatelessWidget {
   final String backLabel;
   final Widget child;
   final bool connections;
+  final String? section;
+  final List<Widget> actions;
   final VoidCallback? onBack;
   final VoidCallback? onRefresh;
   final String? status;
@@ -71,12 +115,12 @@ class ManagementShell extends StatelessWidget {
             ),
             const SizedBox(height: 28),
             ListTile(
-              selected: !connections,
+              selected: !connections && section == null,
               leading: const Icon(Icons.space_dashboard_outlined),
               title: const Text('Visão geral'),
               onTap: () {
                 if (drawer) Navigator.pop(context);
-                if (connections) Get.toNamed('/management');
+                if (connections || section != null) Get.toNamed('/management');
               },
             ),
             const SizedBox(height: 16),
@@ -117,9 +161,21 @@ class ManagementShell extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              pending(Icons.category_outlined, 'Organização da pesquisa'),
-              pending(Icons.psychology_outlined, 'Inteligências'),
-              pending(Icons.people_outline, 'Pessoas'),
+              for (final entry in managementSections)
+                ListTile(
+                  selected: section == entry.route,
+                  leading: Icon(entry.icon, size: 20),
+                  title: Text(
+                    entry.label,
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                  onTap: () {
+                    if (drawer) Navigator.pop(context);
+                    if (Get.currentRoute != '/${entry.route}') {
+                      Get.toNamed('/${entry.route}');
+                    }
+                  },
+                ),
             ],
             const SizedBox(height: 34),
             const Divider(color: Color(0xFF28434F)),
@@ -133,25 +189,25 @@ class ManagementShell extends StatelessWidget {
       ),
     ),
   );
-  Widget pending(IconData icon, String name) => ListTile(
-    enabled: false,
-    contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-    leading: Icon(icon, color: const Color(0xFF53717E), size: 20),
-    title: Text(
-      name,
-      style: const TextStyle(fontSize: 12, color: Color(0xFF6B8794)),
-    ),
-    subtitle: const Text(
-      'Em breve',
-      style: TextStyle(fontSize: 10, color: Color(0xFF53717E)),
-    ),
-  );
   @override
   Widget build(BuildContext context) => Theme(
     data: ThemeData.dark(useMaterial3: true).copyWith(
       colorScheme: ColorScheme.fromSeed(
         seedColor: managementIce,
         brightness: Brightness.dark,
+      ),
+      inputDecorationTheme: const InputDecorationTheme(
+        filled: true,
+        fillColor: Color(0xFF0C2030),
+        labelStyle: TextStyle(color: managementMuted),
+        border: OutlineInputBorder(),
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Color(0xFF365562)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: managementIce),
+        ),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 18),
       ),
       scaffoldBackgroundColor: const Color(0xFF050C18),
       listTileTheme: const ListTileThemeData(
@@ -242,6 +298,7 @@ class ManagementShell extends StatelessWidget {
                                   ),
                                 ),
                               ),
+                              ...actions,
                               if (onRefresh != null)
                                 IconButton(
                                   tooltip: 'Atualizar',
