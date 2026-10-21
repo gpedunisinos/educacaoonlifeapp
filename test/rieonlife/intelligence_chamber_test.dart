@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
@@ -19,9 +20,19 @@ class ChamberFake extends IntelligenceSource {
     ChatTemplateModel(id: 2, name: 'Gaia', description: 'Investiga conexões.'),
   ];
   @override
-  Future<List<ChatTemplateModel>> agents(int offset) async {
+  Future<List<ChatTemplateModel>> agents(
+    int offset, {
+    String search = '',
+  }) async {
     if (failList) throw Exception('offline');
-    return offset == 0 ? entries : [];
+    final filtered = entries
+        .where(
+          (agent) => '${agent.name} ${agent.description}'
+              .toLowerCase()
+              .contains(search.toLowerCase()),
+        )
+        .toList();
+    return filtered.skip(offset).take(20).toList();
   }
 
   @override
@@ -54,6 +65,15 @@ class ChamberFake extends IntelligenceSource {
   }
 }
 
+class DelayedSearchFake extends ChamberFake {
+  final slow = Completer<List<ChatTemplateModel>>();
+  @override
+  Future<List<ChatTemplateModel>> agents(int offset, {String search = ''}) {
+    if (search == 'lenta') return slow.future;
+    return super.agents(offset, search: search);
+  }
+}
+
 Widget chamberApp(ChamberFake source) => GetMaterialApp(
   builder: (context, child) => MediaQuery(
     data: MediaQuery.of(context).copyWith(disableAnimations: true),
@@ -74,6 +94,92 @@ Widget chamberApp(ChamberFake source) => GetMaterialApp(
 void main() {
   setUp(() => Get.testMode = true);
   tearDown(Get.reset);
+  testWidgets(
+    'search reaches agents beyond the first page and paginates filtered results',
+    (tester) async {
+      tester.view.physicalSize = const Size(1280, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final source = ChamberFake();
+      source.entries.clear();
+      source.entries.addAll(
+        List.generate(
+          45,
+          (i) => ChatTemplateModel(
+            id: i + 1,
+            name: 'Agente $i',
+            description: 'Pesquisa territorial',
+          ),
+        ),
+      );
+      source.entries.add(
+        ChatTemplateModel(
+          id: 99,
+          name: 'Oceano',
+          description: 'Exploração oceânica',
+        ),
+      );
+      await tester.pumpWidget(chamberApp(source));
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('20 inteligências disponíveis'),
+        findsOneWidget,
+      );
+      await tester.enterText(find.byType(TextField), 'oceânica');
+      await tester.pumpAndSettle();
+      expect(find.text('Exploração oceânica'), findsOneWidget);
+      expect(find.textContaining('1 inteligência disponível'), findsOneWidget);
+      await tester.enterText(find.byType(TextField), 'Pesquisa');
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('Mais inteligências'),
+        700,
+        scrollable: find.descendant(
+          of: find.byType(ListView),
+          matching: find.byType(Scrollable),
+        ),
+      );
+      await tester.tap(find.text('Mais inteligências'));
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('40 inteligências disponíveis'),
+        findsOneWidget,
+      );
+      await tester.enterText(find.byType(TextField), 'inexistente');
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Nenhuma inteligência encontrada para “inexistente”.'),
+        findsOneWidget,
+      );
+      await tester.tap(find.byTooltip('Limpar busca'));
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('20 inteligências disponíveis'),
+        findsOneWidget,
+      );
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        isEmpty,
+      );
+    },
+  );
+  testWidgets('a late search response never replaces a newer result', (
+    tester,
+  ) async {
+    final source = DelayedSearchFake();
+    await tester.pumpWidget(chamberApp(source));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'lenta');
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.enterText(find.byType(TextField), 'Gaia');
+    await tester.pumpAndSettle();
+    expect(find.text('Investiga conexões.'), findsOneWidget);
+    source.slow.complete([source.entries.first]);
+    await tester.pumpAndSettle();
+    expect(find.text('Investiga conexões.'), findsOneWidget);
+    expect(find.text('Explora territórios.'), findsNothing);
+  });
   testWidgets(
     'real agent selection leads to its conversation and sends through the source',
     (tester) async {

@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -17,8 +18,8 @@ const _soft = Color(0xFF9FB5CF);
 /// Shares the authenticated platform APIs, with an injectable source for widget tests.
 class IntelligenceSource {
   final _api = ChatTemplateWebclient();
-  Future<List<ChatTemplateModel>> agents(int offset) =>
-      _api.fetch(offset: offset);
+  Future<List<ChatTemplateModel>> agents(int offset, {String search = ''}) =>
+      _api.fetch(offset: offset, search: search);
   Future<ChatTemplateModel> agent(int id) => _api.fetchById(id);
   Future<List<ChatMessageModel>> history(int id, int offset) =>
       _api.fetchMessages(id, offset: offset);
@@ -49,6 +50,10 @@ class _IntelligenceChamberScreenState extends State<IntelligenceChamberScreen>
     duration: const Duration(seconds: 32),
   );
   final draft = TextEditingController();
+  final agentSearch = TextEditingController();
+  Timer? searchDebounce;
+  String agentQuery = '';
+  int agentsRequest = 0;
   final messagesScroll = ScrollController();
   List<ChatTemplateModel> agents = [];
   List<ChatMessageModel> messages = [];
@@ -99,10 +104,24 @@ class _IntelligenceChamberScreenState extends State<IntelligenceChamberScreen>
     }
   }
 
+  void changeAgentSearch(String value) {
+    searchDebounce?.cancel();
+    agentsRequest++;
+    setState(() {
+      agentQuery = value.trim();
+      loading = true;
+      failed = false;
+      loadingMore = false;
+    });
+    searchDebounce = Timer(const Duration(milliseconds: 300), load);
+  }
+
   Future<void> load() async {
+    final request = ++agentsRequest;
     setState(() {
       loading = true;
       failed = false;
+      loadingMore = false;
     });
     try {
       if (inConversation) {
@@ -116,17 +135,22 @@ class _IntelligenceChamberScreenState extends State<IntelligenceChamberScreen>
         });
         await loadHistory();
       } else {
-        final result = await source.agents(0);
-        if (!mounted) return;
+        final result = await source.agents(0, search: agentQuery);
+        if (!mounted || request != agentsRequest) return;
         setState(() {
+          final matching = result.where((agent) => agent.id == selected?.id);
           agents = result;
-          selected = result.isEmpty ? null : result.first;
+          selected = matching.isNotEmpty
+              ? matching.first
+              : result.isEmpty
+              ? null
+              : result.first;
           hasMore = result.length == 20;
           loading = false;
         });
       }
     } catch (_) {
-      if (mounted) {
+      if (mounted && request == agentsRequest) {
         setState(() {
           loading = false;
           failed = true;
@@ -136,17 +160,18 @@ class _IntelligenceChamberScreenState extends State<IntelligenceChamberScreen>
   }
 
   Future<void> moreAgents() async {
-    if (loadingMore || !hasMore) return;
+    if (loading || loadingMore || !hasMore) return;
+    final request = agentsRequest;
     setState(() => loadingMore = true);
     try {
-      final result = await source.agents(agents.length);
-      if (!mounted) return;
+      final result = await source.agents(agents.length, search: agentQuery);
+      if (!mounted || request != agentsRequest) return;
       setState(() {
         agents.addAll(result);
         hasMore = result.length == 20;
       });
     } catch (_) {
-      if (mounted) {
+      if (mounted && request == agentsRequest) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
@@ -156,7 +181,9 @@ class _IntelligenceChamberScreenState extends State<IntelligenceChamberScreen>
         );
       }
     } finally {
-      if (mounted) setState(() => loadingMore = false);
+      if (mounted && request == agentsRequest) {
+        setState(() => loadingMore = false);
+      }
     }
   }
 
@@ -282,6 +309,8 @@ class _IntelligenceChamberScreenState extends State<IntelligenceChamberScreen>
         contextProvider,
       );
     }
+    searchDebounce?.cancel();
+    agentSearch.dispose();
     motion.dispose();
     draft.dispose();
     messagesScroll.dispose();
@@ -421,6 +450,7 @@ class _IntelligenceChamberScreenState extends State<IntelligenceChamberScreen>
                             ],
                           ),
                         ),
+                      if (!inConversation) agentSearchField(compact),
                       Expanded(
                         child: loading
                             ? const Center(
@@ -444,17 +474,26 @@ class _IntelligenceChamberScreenState extends State<IntelligenceChamberScreen>
                                 ),
                               )
                             : selected == null
-                            ? const Center(
-                                child: Text(
-                                  'Nenhum agente disponível.',
-                                  style: TextStyle(color: _soft),
+                            ? Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(20),
+                                  child: Text(
+                                    agentQuery.isEmpty
+                                        ? 'Nenhum agente disponível.'
+                                        : 'Nenhuma inteligência encontrada para “$agentQuery”.',
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(color: _soft),
+                                  ),
                                 ),
                               )
                             : inConversation
                             ? conversation(compact)
                             : selection(compact),
                       ),
-                      if (!inConversation && agents.isNotEmpty)
+                      if (!inConversation &&
+                          !loading &&
+                          !failed &&
+                          agents.isNotEmpty)
                         SizedBox(
                           height: compact ? 110 : 132,
                           child: ListView.separated(
@@ -549,6 +588,64 @@ class _IntelligenceChamberScreenState extends State<IntelligenceChamberScreen>
             ],
           );
         },
+      ),
+    ),
+  );
+
+  Widget agentSearchField(bool compact) => Padding(
+    padding: EdgeInsets.only(bottom: compact ? 8 : 12),
+    child: Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 600),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextField(
+              controller: agentSearch,
+              onChanged: changeAgentSearch,
+              textInputAction: TextInputAction.search,
+              onSubmitted: (_) {
+                searchDebounce?.cancel();
+                load();
+              },
+              style: const TextStyle(color: Colors.white, fontSize: 14),
+              decoration: InputDecoration(
+                hintText: 'Buscar agentes por nome ou descrição',
+                hintStyle: const TextStyle(color: _soft, fontSize: 13),
+                prefixIcon: const Icon(Icons.search, color: _light),
+                suffixIcon: agentSearch.text.isEmpty
+                    ? null
+                    : IconButton(
+                        tooltip: 'Limpar busca',
+                        icon: const Icon(Icons.close, color: _light),
+                        onPressed: () {
+                          agentSearch.clear();
+                          changeAgentSearch('');
+                        },
+                      ),
+                filled: true,
+                fillColor: const Color(0xE6091525),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFF324B65)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              loading
+                  ? 'Buscando inteligências…'
+                  : failed
+                  ? 'Busca indisponível. Tente novamente.'
+                  : '${agents.length} ${agents.length == 1 ? 'inteligência disponível' : 'inteligências disponíveis'}${hasMore ? ' · há mais resultados' : ''}',
+              style: const TextStyle(color: _soft, fontSize: 11),
+            ),
+          ],
+        ),
       ),
     ),
   );
