@@ -8,10 +8,32 @@ keytool -genkey -v -keystore unisinos_usp_app.jks -keyalg RSA -keysize 2048 -val
 CN=SPO Tecnologia, OU=Mobile, O=SPO Tecnologia, L=Tupandi, ST=Rio Grande do Sul, C=BR
 Senha em key.properties
 
-### Deploy app 
-flutter build web --release
-ssh -o IdentitiesOnly=yes -o IdentityAgent=none -i ~/.ssh/aws_spo.pem ubuntu@54.94.142.29 "rm -rf /var/www/usp_app/*"
-scp -o IdentitiesOnly=yes -o IdentityAgent=none -i ~/.ssh/aws_spo.pem -r build/web/. ubuntu@54.94.142.29:/var/www/usp_app/
+### Publicação web
+
+Siga o procedimento em [docs/publicacao-web.md](docs/publicacao-web.md), incluindo build, validação das fontes, publicação com backup e conferência dos dois domínios.
+
+**Todo build web de publicação deve usar `--no-tree-shake-icons` e `--pwa-strategy=none`.** A pipeline já contém esses parâmetros; builds manuais também precisam deles.
+
+```bash
+flutter build web --release \
+  --no-tree-shake-icons \
+  --no-web-resources-cdn \
+  --pwa-strategy=none \
+  --output build/production-release \
+  --dart-define=API_HOST=api.uniusp.gpedu.com.br \
+  --dart-define=API_SCHEME=https \
+  --dart-define=JITSI_ENABLED=true
+```
+
+Publicar somente o artefato validado e correspondente à revisão informada:
+
+```bash
+python3 scripts/deploy-web-release.py \
+  --build build/production-release \
+  --revision "$(git rev-parse HEAD)"
+```
+
+O comando acima pressupõe que o build foi gerado dessa revisão, sem alterações locais não registradas. Não compilar ou publicar simultaneamente com outra sessão usando o mesmo diretório de saída.
 
 ## Integration tests (with screenshot)
 
@@ -45,7 +67,7 @@ Quando o `integration_test` Linux falhar por dependência de linker do Flutter s
 1. Build web
 
 ```bash
-flutter build web
+flutter build web --no-tree-shake-icons --pwa-strategy=none
 ```
 
 2. Subir servidor local do build
