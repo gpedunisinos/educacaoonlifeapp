@@ -73,7 +73,7 @@ export class RemoteFleet {
     this.ships.clear();
     this.bodyGeometry.dispose();this.wingGeometry.dispose();this.engineGeometry.dispose();this.trimGeometry.dispose();this.trailGeometry.dispose();this.trailMaterial.dispose();this.material.dispose();this.light.dispose();
   }
-  draw(dt,camera,reduced,showLabels=true) {
+  draw(dt,camera,reduced,showLabels=true,area="") {
     this.time+=dt;
     const occupied=[];
     const forward=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
@@ -90,10 +90,12 @@ export class RemoteFleet {
       let target;
       if(destination) {
         const radius=destination.radius;
-        target=new THREE.Vector3(...destination.position).add(new THREE.Vector3(Math.sin(angle)*radius*(.85+ring*.17),-radius*.45+Math.cos(angle)*radius*.22, radius*(1.15+ring*.2)));
+        target=new THREE.Vector3(...destination.position).add(new THREE.Vector3(Math.sin(angle)*radius*(.85+ring*.17),radius*.05+Math.cos(angle)*radius*.12, radius*(1.15+ring*.2)));
       } else {
         target=camera.position.clone().addScaledVector(forward,19+ring*3).addScaledVector(right,Math.cos(angle)*7);
         target.y+=Math.sin(angle)*2.3;
+        if(area && ship.cruiseTarget) target.copy(ship.cruiseTarget);
+        else if(!area) ship.cruiseTarget=target.clone();
       }
       if(!reduced)target.y+=Math.sin(this.time*.5+angle)*.13;
       if(!ship.initialized || reduced) {ship.object.position.copy(target);ship.initialized=true;} else ship.object.position.lerp(target,1-Math.exp(-dt*1.4));

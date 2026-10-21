@@ -1523,7 +1523,7 @@ function tick(now) {
         easedAlignment,
       );
     }
-    remoteFleet.draw(dt, camera, reduced, started && !tutorial.active && !travelling);
+    remoteFleet.draw(dt, camera, reduced, started && !tutorial.active && !travelling, arrived ? current : travelling ? "jump" : "");
     renderer.render(scene, camera);
   }
   updateMapShip();
