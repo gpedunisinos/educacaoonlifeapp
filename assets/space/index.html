@@ -260,6 +260,7 @@
         <div class="console-footer">
           <span id="log">EC-01 · Conexão com a nave estabelecida</span
           ><span class="keyboard-help">1–4 DESTINOS <span>↵ NAVEGAR</span></span
+          ><button id="tour-replay" class="text-button">Guia da Iareté</button
           ><button
             id="journal-toggle"
             class="text-button"
@@ -290,6 +291,34 @@
       </div>
       <small>Uma viagem guiada por você. Sem pressa, com curiosidade.</small>
     </section>
+    <div
+      id="ship-tutorial"
+      hidden
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="tour-title"
+      aria-describedby="tour-text"
+    >
+      <svg class="tour-shade" aria-hidden="true">
+        <path id="tour-mask" fill-rule="evenodd" />
+      </svg>
+      <div id="tour-ring" aria-hidden="true"></div>
+      <section id="tour-card">
+        <div class="tour-heading">
+          <span>✧ IARETÉ / GUIA DE BORDO</span><span id="tour-count"></span>
+        </div>
+        <h2 id="tour-title"></h2>
+        <p id="tour-text" aria-live="polite" aria-atomic="true"></p>
+        <div class="tour-actions">
+          <button id="tour-skip" class="text-button">Pular tutorial</button>
+          <button id="tour-back">Voltar</button>
+          <button id="tour-next" class="primary">Próximo</button>
+        </div>
+        <small
+          >No seu ritmo. Use também ← → para avançar e Esc para sair.</small
+        >
+      </section>
+    </div>
     <dialog id="journal">
       <div class="dialog-heading">
         <div>

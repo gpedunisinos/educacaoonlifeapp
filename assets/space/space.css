@@ -1944,3 +1944,32 @@ dialog::backdrop {
   .assistant p { min-height: 44px; }
   .assistant-name { text-align: center; }
 }
+
+/* Iareté's first-flight guide: real controls stay visible in a spotlight. */
+.console-footer { flex-wrap: wrap; }
+#ship-tutorial { position: fixed; inset: 0; z-index: 30; }
+#ship-tutorial[hidden] { display: none; }
+.tour-shade { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+#tour-mask { fill: #020a14c4; }
+#tour-ring { position: absolute; pointer-events: none; border: 1px solid #9ce7df; border-radius: 12px; box-shadow: 0 0 24px #72e6d64d, inset 0 0 18px #72e6d619; transition: left .3s ease, top .3s ease, width .3s ease, height .3s ease; }
+#tour-card { position: absolute; box-sizing: border-box; width: min(370px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow-y: auto; background: linear-gradient(140deg, #12333ff7, #071522fc); border: 1px solid #699f9e; border-radius: 16px; padding: 22px; box-shadow: 0 18px 70px #0009; }
+.tour-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: #9ce7df; font-size: 10px; letter-spacing: 1.1px; }
+#tour-title { margin: 16px 0 12px; font-size: 24px; font-weight: 400; color: #efffff; }
+#tour-text { color: #d0e5ec; font-size: 15px; line-height: 1.65; margin: 0 0 18px; }
+.tour-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
+.tour-actions button { font-size: 13px; padding: 11px 13px; min-height: 42px; }
+#tour-skip { margin-right: auto; color: #a6c8d0; }
+#tour-card > small { display: block; margin-top: 14px; font-size: 10px; line-height: 1.5; color: #8caeb8; }
+.reduced #tour-ring { transition: none; }
+@media (prefers-reduced-motion: reduce) { #tour-ring { transition: none; } }
+@media (max-width: 760px) { #tour-card { padding: 18px; } #tour-title { font-size: 22px; } #tour-text { font-size: 14px; line-height: 1.55; } }
+@media (max-height: 560px) {
+  .console-footer { display: flex; }
+  .console-footer #log, .console-footer .keyboard-help { display: none; }
+}
+
+@media (max-width: 760px) {
+  .tour-actions button { font-size: 12px; padding: 10px 11px; }
+  #tour-skip { font-size: 11px; padding: 8px 0; }
+  #tour-card > small { display: none; }
+}

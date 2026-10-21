@@ -1,3 +1,4 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -21,6 +22,7 @@ void main() {
     'cockpit opens allowed routes, pauses and resumes the same scene',
     (tester) async {
       Get.testMode = true;
+      SharedPreferences.setMockInitialValues({});
       debugDefaultTargetPlatformOverride = TargetPlatform.linux;
       addTearDown(() => debugDefaultTargetPlatformOverride = null);
       addTearDown(Get.reset);
@@ -96,6 +98,30 @@ void main() {
       expect(commands.last['destinations'], contains('earth'));
       expect(commands.last['destinations'], isNot(contains('connections')));
       expect(commands.last['management'], isTrue);
+      expect(commands.last['tutorialSeen'], isFalse);
+      view.onMessage({'type': 'tutorial-complete', 'version': 1});
+      await tester.pumpAndSettle();
+      expect(
+        (await SharedPreferences.getInstance()).getBool('space_tutorial_v1_1'),
+        isTrue,
+      );
+      view.onMessage({'type': 'ready'});
+      await tester.pumpAndSettle();
+      expect(commands.last['tutorialSeen'], isTrue);
+      final originalUser = user.user.value;
+      user.user.value = const AuthUser(
+        id: 2,
+        name: 'Outra pessoa',
+        email: 'other@example.com',
+        token: 'test',
+        profile: 40,
+        usageMode: 'explorer',
+      );
+      view.onMessage({'type': 'ready'});
+      await tester.pumpAndSettle();
+      expect(commands.last['tutorialSeen'], isFalse);
+      user.user.value = originalUser;
+
       final count = commands.length;
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
       await tester.pump();

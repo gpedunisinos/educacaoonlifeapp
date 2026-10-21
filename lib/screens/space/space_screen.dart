@@ -1,3 +1,4 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:unisinos_usp_app/screens/space/space_account_panel.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:async';
@@ -67,15 +68,39 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
     }
   }
 
+  String get tutorialKey =>
+      'space_tutorial_v1_${Get.find<UserController>().user.value?.id}';
+
   Future<void> onMessage(Map<String, dynamic> data) async {
     if (!mounted) return;
     if (data['type'] == 'ready') {
+      var tutorialSeen = false;
+      try {
+        tutorialSeen =
+            (await SharedPreferences.getInstance()).getBool(tutorialKey) ??
+            false;
+      } catch (_) {
+        /* First-flight guidance remains available without storage. */
+      }
+      if (!mounted) return;
       send('configure', {
+        'tutorialSeen': tutorialSeen,
         'destinations': destinations.keys.toList(),
         'management': ClueConnectionPolicy(
           Get.find<UserController>().user.value,
         ).viewAny(),
       });
+      return;
+    }
+    if (data['type'] == 'tutorial-complete' && data['version'] == 1) {
+      try {
+        await (await SharedPreferences.getInstance()).setBool(
+          tutorialKey,
+          true,
+        );
+      } catch (_) {
+        /* Replay remains available if preferences are unavailable. */
+      }
       return;
     }
     if (data['type'] == 'select' && data['name'] is String) {

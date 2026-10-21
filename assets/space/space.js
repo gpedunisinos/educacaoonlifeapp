@@ -1,3 +1,4 @@
+import { ShipTutorial } from "./ship-tutorial.js";
 import * as THREE from "./vendor/three.module.js";
 import { SpaceAudio } from "./audio.js";
 import { IareteFlow } from "./iarete-flow.js";
@@ -38,8 +39,7 @@ const destinations = [
   },
   {
     id: "research",
-    description:
-      "Pistas cadastradas",
+    description: "Pistas cadastradas",
     contents: ["Pistas", "Vivências e descobertas"],
     name: "Lua de Pistas",
     module: "Pistas cadastradas",
@@ -123,6 +123,112 @@ let renderer,
   rotationFrom,
   lookTo;
 const look = new THREE.Vector3(0, 0, -14);
+let tutorialSeen = false,
+  tutorialConfigured = parent === window,
+  tutorialOffered = false;
+if (parent === window) {
+  try {
+    tutorialSeen = localStorage.getItem("onlife-ship-guide-v1") === "seen";
+  } catch (_) {}
+}
+function tutorialSteps() {
+  const steps = [
+    {
+      targets: ["#assistant-orb"],
+      title: "Bem-vindo a bordo!",
+      text: "Olá, sou a Iareté, sua inteligência de bordo. Vou mostrar como explorar a Educação Onlife. A nave já segue pelo espaço: você escolhe o próximo destino, no seu ritmo.",
+    },
+    {
+      targets: ["#destinations"],
+      title: "Escolha sua próxima descoberta",
+      text: "Estes são os destinos da nossa expedição. Toque em um card para selecionar onde deseja ir. Isso prepara a rota; o salto só começa quando você decide navegar.",
+    },
+  ];
+  const descriptions = {
+    earth: [
+      "Terra: os territórios",
+      "Na Terra, abrimos o Mapa de Pistas. Explore os territórios, encontre pistas georreferenciadas e suas conexões. O mapa se abre em tela cheia; ao voltar, estarei esperando aqui na nave.",
+    ],
+    research: [
+      "Lua de Pistas",
+      "Esta lua é formada pelos cards das pistas cadastradas. Sua sala permite buscar e selecionar uma pista, localizar seu card na lua holográfica e abrir o registro completo.",
+    ],
+    observatory: [
+      "Observatório: as problemáticas",
+      "No Observatório, os nodos representam problemáticas e as linhas mostram suas conexões. Entre para explorar o grafo e investigar as relações entre os desafios dos territórios.",
+    ],
+    agents: [
+      "Campo de Inteligências",
+      "Aqui vivem os agentes de inteligência artificial. Escolha uma inteligência, conheça sua proposta e abra uma conversa. Uma luz da constelação indica o agente selecionado.",
+    ],
+  };
+  for (const id of allowed) {
+    const [title, text] = descriptions[id];
+    steps.push({ targets: [`[data-destination="${id}"]`], title, text });
+  }
+  steps.push(
+    {
+      targets: [".navigation"],
+      title: "Prepare o salto",
+      text: "Depois de escolher um destino, use Navegar para iniciar o salto. Ao chegar, o painel do local oferece o acesso ao módulo. Se preferir entrar sem a viagem, use Acesso direto.",
+    },
+    {
+      targets: [".port-instrument", "#destinations"],
+      title: "O que podemos explorar aqui?",
+      text: "Na chegada, o painel do local mostra seu nome, uma descrição e o botão de entrada com brilho pulsante. Em telas menores, ele aparece quando chegamos ao destino.",
+    },
+    {
+      targets: [".starboard-instrument", "#destinations"],
+      title: "Encontre nosso lugar na expedição",
+      text: "O mapa lateral mostra os destinos e o ponto que representa a nave. Assim você acompanha nossa posição e a próxima rota. Em telas menores, os cards continuam sendo sua referência de navegação.",
+    },
+    {
+      targets: [".tools"],
+      title: "Uma viagem do seu jeito",
+      text: "No alto da tela, ajuste o som e reduza o movimento quando quiser. Em Conta, você pode trocar entre Explorador e Inventor ou sair da sessão. Quando disponível, Gestão abre as parametrizações da plataforma.",
+    },
+    {
+      targets: ["#tour-replay"],
+      title: "Podemos começar?",
+      text: "Pronto! Escolha um destino e vamos explorar. Você pode conversar comigo pelo console e rever estas orientações a qualquer momento em Guia da Iareté. Estarei por aqui.",
+    },
+  );
+  return steps;
+}
+const tutorial = new ShipTutorial({
+  steps: tutorialSteps,
+  say,
+  sound: () => audio.select(),
+  complete: (skipped) => {
+    tutorialSeen = true;
+    try {
+      if (parent === window)
+        localStorage.setItem("onlife-ship-guide-v1", "seen");
+    } catch (_) {}
+    emit("tutorial-complete", { version: 1 });
+    record(
+      skipped
+        ? "Guia da Iareté encerrado · disponível para rever"
+        : "Primeiro voo · guia da Iareté concluído",
+    );
+    say(
+      "A nave está pronta. Escolha um destino para nossa próxima descoberta. Se precisar, o Guia da Iareté continua disponível no console.",
+    );
+  },
+});
+function offerTutorial() {
+  if (
+    !started ||
+    !tutorialConfigured ||
+    tutorialOffered ||
+    paused ||
+    travelling ||
+    transferTime >= 0
+  )
+    return;
+  tutorialOffered = true;
+  if (!tutorialSeen) tutorial.start();
+}
 function emit(type, extra = {}) {
   const data = JSON.stringify({ channel: "econectiva-space", type, ...extra });
   if (window.SpaceBridge) window.SpaceBridge.postMessage(data);
@@ -255,6 +361,7 @@ function updateMapShip() {
   );
 }
 function renderDestinations() {
+  $("tour-replay").disabled = travelling;
   document.body.classList.toggle("at-destination", Boolean(current));
   document.body.classList.toggle(
     "at-current-destination",
@@ -267,6 +374,7 @@ function renderDestinations() {
     .forEach((d, i) => {
       const button = document.createElement("button");
       button.className = "destination";
+      button.dataset.destination = d.id;
       button.setAttribute("aria-pressed", String(d === selected));
       button.setAttribute("aria-label", `${d.name}: ${d.module}`);
       const symbol = document.createElement("span");
@@ -476,6 +584,7 @@ function finishTravel() {
   record("Chegada · " + selected.name);
   say(selected.arrival);
   renderDestinations();
+  offerTutorial();
 }
 let localPanelId = null,
   localPanelAnimation = null,
@@ -611,6 +720,8 @@ function setPaused(value) {
 window.receiveSpaceCommand = (data) => {
   if (data?.channel !== "econectiva-space") return;
   if (data.type === "configure" && Array.isArray(data.destinations)) {
+    tutorialConfigured = true;
+    tutorialSeen = data.tutorialSeen === true;
     $("management").hidden = data.management !== true;
     allowed = data.destinations.filter((id) =>
       destinations.some((d) => d.id === id),
@@ -620,6 +731,7 @@ window.receiveSpaceCommand = (data) => {
     $("navigate").disabled = !allowed.length;
     $("direct").disabled = !allowed.length;
     renderDestinations();
+    offerTutorial();
   }
   if (data.type === "pause") {
     hostPaused = true;
@@ -1385,6 +1497,7 @@ $("start").onclick = async () => {
     "Olá, sou a Iareté, sua inteligência de bordo. Já estamos em uma rota contínua de exploração. Escolha a Terra ou uma estação e eu preparo nosso salto.",
   );
   $("navigate").focus({ preventScroll: true });
+  offerTutorial();
 };
 $("sound").onclick = async () => {
   await audio.enable(!audio.enabled);
@@ -1409,6 +1522,10 @@ $("ask").onclick = $("assistant-orb").onclick = () => {
   audio.select();
   emit("assistant");
 };
+$("tour-replay").onclick = () => {
+  if (!started || paused || travelling || transferTime >= 0) return;
+  tutorial.start();
+};
 $("journal-toggle").onclick = () => {
   audio.select();
   $("journal").showModal();
@@ -1423,6 +1540,7 @@ window.addEventListener("keydown", (event) => {
   if (
     !started ||
     paused ||
+    tutorial.active ||
     $("journal").open ||
     event.altKey ||
     event.ctrlKey ||

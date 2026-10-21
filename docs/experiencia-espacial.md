@@ -320,3 +320,12 @@ Validação: onze testes aprovados (Central → lista → detalhe → lista com 
 - Substituído “Pesquisa” por “Lua de Pistas” no seletor de destinos e no mapa da expedição. A descrição e a identificação do módulo passam a ser “Pistas cadastradas”. Atualizados também o cabeçalho da sala e as mensagens de entrada para manter a mesma nomenclatura.
 - Bundle da cena regenerado e build web concluído. Conferidos na prévia o card, a seleção, o título e a descrição do destino, além do nome no mapa lateral. Análise Dart sem erros.
 - Evidência: `lua-de-pistas-identificacao.jpg`.
+
+### Primeiro voo guiado pela Iareté
+
+- Implementado o Guia da Iareté, aberto automaticamente após “Iniciar expedição” no primeiro voo. A Iareté permanece animada no console e acompanha as explicações com a digitação sonora existente; os sons respeitam a configuração de áudio.
+- Onze etapas apresentam a Iareté, os destinos, Terra, Lua de Pistas, Observatório, Inteligências, salto/acesso direto, painel do local, mapa da expedição e controles. Uma máscara escurece o restante do cockpit, enquanto o elemento explicado recebe uma moldura luminosa; a orientação se posiciona procurando não cobrir o destaque.
+- Botões Próximo/Voltar, Pular tutorial, conclusão, setas e Esc; foco contido na orientação e leitura acessível. Movimentos reduzidos são respeitados. Em telas compactas, os painéis que ficam ocultos usam os cards dos destinos como referência e as instruções explicam essa diferença.
+- Progresso concluído/pulado armazenado localmente por usuário e versão no Flutter, por meio da ponte já existente, sem alteração de API. A apresentação não se repete automaticamente depois de concluída/pulada. “Guia da Iareté” no console permite rever; a cena independente usa armazenamento local próprio. Durante saltos, o botão de revisão fica indisponível.
+- Validação: nove testes Flutter aprovados, incluindo persistência e separação de usuários, entrada e navegação, e quatro testes de posicionamento em desktop/celular/paisagem. Build web e bundle regenerados, análise Dart sem erros. Conferidos na prévia o primeiro acesso, todas as etapas, avanço/retorno, conclusão, recarga sem repetição, revisão, saída e apresentação compacta. O guia está aberto para validação na prévia do app.
+- Evidências: `iarete-guide-welcome.jpg` e `iarete-guide-mobile.jpg`.
