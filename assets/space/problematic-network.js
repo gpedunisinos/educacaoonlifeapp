@@ -85,7 +85,17 @@ export function createProblematicNetwork(destination) {
   ctx.fillRect(0, 0, 64, 64);
   const texture = new THREE.CanvasTexture(haloCanvas);
   const sphere = new THREE.SphereGeometry(1, 12, 10);
-  const palette = [0x9be9ef, 0xbca7ff, 0x86d5ff, 0xb4efdf];
+  // Cool tones remain predominant, with restrained rose and amber accents.
+  const palette = [
+    0x58d9eb, // cyan
+    0xac8ce3, // violet
+    0x6ba5f3, // blue
+    0x6cddbb, // jade
+    0xd99cbd, // muted rose
+    0x899ee5, // periwinkle
+    0xd8ba78, // soft amber
+    0x9ad7be, // mint
+  ];
   const nodes = points.map((_, i) => {
     const tint = palette[i % palette.length];
     const degree = edges.filter(([a, b]) => a === i || b === i).length;
