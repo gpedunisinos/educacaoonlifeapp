@@ -57,6 +57,15 @@ void main() {
               ),
             ),
             GetPage(
+              name: '/choose_mode',
+              page: () => Scaffold(
+                body: TextButton(
+                  onPressed: Get.back,
+                  child: const Text('Voltar do modo'),
+                ),
+              ),
+            ),
+            GetPage(
               name: '/management',
               page: () => Scaffold(
                 body: TextButton(
@@ -129,6 +138,27 @@ void main() {
       await tester.tap(find.text('Sair da câmara'));
       await tester.pumpAndSettle();
       expect(tester.widget<SpaceView>(find.byType(SpaceView)), same(view));
+      view.onMessage({'type': 'exit'});
+      await tester.pumpAndSettle();
+      expect(find.text('Conta'), findsOneWidget);
+      expect(find.text('Modo Explorador'), findsOneWidget);
+      expect(find.text('Sair da conta'), findsOneWidget);
+      expect(commands.last['type'], 'pause');
+      await tester.tap(find.byTooltip('Voltar à nave'));
+      await tester.pumpAndSettle();
+      expect(tester.widget<SpaceView>(find.byType(SpaceView)), same(view));
+      expect(commands.last, {'type': 'resume', 'returned': true});
+      await tester.tap(find.byTooltip('Conta e modo de navegação'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Trocar modo de navegação'));
+      await tester.pumpAndSettle();
+      expect(Get.currentRoute, '/choose_mode');
+      expect(commands.last['type'], 'pause');
+      await tester.tap(find.text('Voltar do modo'));
+      await tester.pumpAndSettle();
+      expect(tester.widget<SpaceView>(find.byType(SpaceView)), same(view));
+      expect(commands.last, {'type': 'resume', 'returned': true});
+      expect(find.byTooltip('Voltar aos módulos'), findsNothing);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
       debugDefaultTargetPlatformOverride = null;

@@ -22,11 +22,12 @@ class AppRouteGuard extends GetMiddleware {
     if (user.usageMode == null)
       return const RouteSettings(name: '/choose_mode');
 
-    final authorRoute =
-        RegExp(r'/(create|update|connect|pre_create|type_select)(/|$)')
-            .hasMatch(route ?? '');
+    final authorRoute = RegExp(
+      r'/(create|update|connect|pre_create|type_select)(/|$)',
+    ).hasMatch(route ?? '');
     if (canActivate(user) && (!authorRoute || user.canAuthor)) {
-      return null;
+      // Existing home links are aliases of the new cockpit entry.
+      return route == '/home' ? RouteSettings(name: controller.modeHome) : null;
     }
 
     Future<void>.microtask(() {
@@ -42,6 +43,6 @@ class AppRouteGuard extends GetMiddleware {
       }
     });
 
-    return const RouteSettings(name: '/home');
+    return const RouteSettings(name: '/space');
   }
 }

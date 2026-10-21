@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/screens/space/space_account_panel.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -83,7 +84,7 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
     }
     if (opening) return;
     if (data['type'] == 'exit') {
-      exitCockpit();
+      await openAccount();
       return;
     }
     final management =
@@ -121,11 +122,26 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
     }
   }
 
-  void exitCockpit() {
-    if (Navigator.of(context).canPop()) {
-      Get.back();
-    } else {
-      Get.offNamed('/home');
+  Future<void> openAccount() async {
+    if (opening) return;
+    opening = true;
+    send('pause', {'cover': true});
+    try {
+      final action = await showModalBottomSheet<String>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => const SpaceAccountPanel(),
+      );
+      if (!mounted) return;
+      if (action == 'mode') {
+        await Get.toNamed('/choose_mode');
+      } else if (action == 'logout') {
+        await Get.find<UserController>().logout();
+      }
+    } finally {
+      opening = false;
+      if (mounted) send('resume', {'returned': true});
     }
   }
 
@@ -150,13 +166,13 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
             top: 8,
             left: 8,
             child: IconButton.filledTonal(
-              tooltip: 'Voltar aos módulos',
-              onPressed: exitCockpit,
+              tooltip: 'Conta e modo de navegação',
+              onPressed: openAccount,
               style: IconButton.styleFrom(
                 backgroundColor: const Color(0xFF10232D),
                 foregroundColor: const Color(0xFFA3EFD9),
               ),
-              icon: const Icon(Icons.arrow_back),
+              icon: const Icon(Icons.person_outline),
             ),
           ),
         ],

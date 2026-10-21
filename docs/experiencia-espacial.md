@@ -290,3 +290,11 @@ Validação: onze testes aprovados (Central → lista → detalhe → lista com 
 - Os atalhos de lista e leitura agora abrem a sala de pesquisa e o registro completo no novo layout. O retorno à nave e os controles do tutorial mantêm os fluxos anteriores. Corrigido o espaço dos botões do tutorial em celular.
 - Validação: 13 testes de widgets aprovados (mapa em 390/1280 px, teclado, busca, zoom, sonar, seleção/movimentação/conexão em modo, ativação de camada, legenda, tutorial e permissões de Explorador, além de pesquisa/registro, seleção de localização e navegação espacial); análise Dart sem erros; build web local concluído. Conferência visual do mapa e painel de pista na prévia, sem salvar alterações em registros nem solicitar a localização do usuário.
 - Evidência: `space-map-console.jpg` nesta pasta.
+
+### Nave como entrada principal da plataforma
+
+- A nave (`/space`) passa a ser o destino inicial para usuários autenticados com modo definido, incluindo login, cadastro, sessão restaurada, escolha de modo e recuperação de senha. O primeiro acesso ainda exige a escolha entre Explorador e Inventor; visitantes sem sessão continuam no login.
+- O resolvedor de retorno geral agora respeita esse mesmo destino. A rota antiga `/home` é mantida como endereço compatível, mas redireciona para a nave antes de renderizar o menu anterior. Acesso negado também retorna à nave.
+- O botão “Módulos” foi substituído por “Conta”. O painel permite trocar o modo e sair da sessão; abrir/fechar a conta pausa e retoma a mesma cena, sem retornar ao menu antigo. O atalho nativo também abre esse painel.
+- Validação: dez testes aprovados para inicialização nos dois modos, primeiro acesso/sem sessão, compatibilidade de `/home`, conta/troca de modo, pausa/retorno e atalhos globais; análise Dart sem erros; build web concluído. Na prévia, a abertura por `/splash` chegou diretamente a `/space`, sem passar pelo menu anterior.
+- Evidência: `space-default-entry.jpg`.

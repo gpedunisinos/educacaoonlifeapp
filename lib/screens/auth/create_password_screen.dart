@@ -87,7 +87,7 @@ class CreatePasswordScreen extends StatelessWidget {
       );
 
       await _controller.savePrefs(user);
-      Get.offAllNamed('/home');
+      Get.offAllNamed(_controller.modeHome);
     }
   }
 }

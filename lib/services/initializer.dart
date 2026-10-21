@@ -42,7 +42,7 @@ class Initializer {
     NavigationObserver.initialize(
       homeResolver: () {
         final controller = Get.find<UserController>();
-        return controller.isLoggedIn ? '/home' : '/login';
+        return controller.isLoggedIn ? controller.modeHome : '/login';
       },
     );
   }

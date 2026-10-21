@@ -24,7 +24,7 @@ class UserController extends GetxController {
   }
 
   String get modeHome =>
-      user.value?.usageMode == null ? '/choose_mode' : '/home';
+      user.value?.usageMode == null ? '/choose_mode' : '/space';
   Future<void> chooseMode(String mode) async {
     final current = user.value!;
     await EconectivaApi().write('PUT', '/me/preferences', {'usage_mode': mode});
