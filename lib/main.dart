@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/services/presence/presence_service.dart';
 import 'package:unisinos_usp_app/widgets/app_page_viewport.dart';
 import 'dart:async';
 import 'dart:ui';
@@ -31,7 +32,14 @@ Future<void> main() async {
           ),
           navigatorObservers: [NavigationObserver.instance],
           getPages: appRoutes(),
-          routingCallback: AiAssistantLauncher.didNavigate,
+          routingCallback: (routing) {
+            AiAssistantLauncher.didNavigate(routing);
+            if (routing?.isDialog != true &&
+                routing?.isBottomSheet != true &&
+                Get.isRegistered<PresenceService>()) {
+              Get.find<PresenceService>().route(routing?.current ?? '');
+            }
+          },
           theme: AppTheme.theme,
           localizationsDelegates: const [
             FlutterQuillLocalizations.delegate,

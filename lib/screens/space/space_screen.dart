@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/services/presence/presence_service.dart';
 import 'package:unisinos_usp_app/services/ship_audio_preferences.dart';
 import 'package:unisinos_usp_app/models/meeting_room.dart';
 import 'package:unisinos_usp_app/screens/space/meeting_room_dialog.dart';
@@ -24,6 +25,7 @@ class SpaceScreen extends StatefulWidget {
 class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
   final commands = StreamController<Map<String, dynamic>>.broadcast();
   final contextService = Get.find<AiAssistantContextService>();
+  Worker? presenceWatch;
   bool opening = false;
   bool changingMode = false;
   String destination = 'Terra';
@@ -61,6 +63,10 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    if (Get.isRegistered<PresenceService>()) {
+      final presence = Get.find<PresenceService>();
+      presenceWatch = everAll([presence.available, presence.participants], (_) => send('presence', presence.sceneState));
+    }
     contextService.registerProvider('/space', contextProvider);
   }
 
@@ -85,6 +91,10 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
 
   Future<void> onMessage(Map<String, dynamic> data) async {
     if (!mounted) return;
+    if (data['type'] == 'presence-interaction') {
+      if (Get.isRegistered<PresenceService>()) Get.find<PresenceService>().interact();
+      return;
+    }
     if (data['type'] == 'audio-state' && data['enabled'] is bool) {
       await ShipAudioPreferences.setEnabled(data['enabled'] as bool);
       return;
@@ -100,6 +110,7 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
         /* First-flight guidance remains available without storage. */
       }
       if (!mounted) return;
+      if (Get.isRegistered<PresenceService>()) send('presence', Get.find<PresenceService>().sceneState);
       send('configure', {
         'tutorialSeen': tutorialSeen,
         'audioEnabled': ShipAudioPreferences.enabled.value,
@@ -237,6 +248,7 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     contextService.unregisterProvider('/space', contextProvider);
+    presenceWatch?.dispose();
     commands.close();
     super.dispose();
   }

@@ -2074,3 +2074,15 @@ body.reduced .mode-handle, body.reduced .console, body.reduced .console-top, bod
   .port-instrument .local-copy { min-height: 0; overflow-y: auto; scrollbar-width: thin; }
   .port-instrument .local-open { flex-shrink: 0; }
 }
+
+/* Names live only over the central canopy. The full accessible list stays available. */
+#presence-labels { position: fixed; inset: 0; pointer-events: none; z-index: 7; }
+.presence-name { position: absolute; transform: translateX(-50%); pointer-events: auto; border: 1px solid #82dedb66; border-radius: 20px; padding: 4px 10px; color: #c5f7ee; background: #071725df; font-size: 12px; max-width: 155px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; box-shadow: 0 0 14px #79eadb18; }
+.presence-name:hover, .presence-name:focus-visible { border-color: #a2f7e5; box-shadow: 0 0 20px #79eadb40; outline: 2px solid #a2f7e5; }
+#presence-dialog { width: min(520px, calc(100vw - 32px)); max-height: 75vh; }
+.presence-note { color: #a9c3cf; line-height: 1.5; }
+#presence-list { list-style: none; margin: 0; padding: 0; max-height: 48vh; overflow-y: auto; }
+#presence-list li { padding: 14px; border-top: 1px solid #83ddcf22; display: flex; flex-direction: column; gap: 6px; }
+#presence-list li span { color: #a5c7d3; font-size: 13px; }
+#presence-list .presence-selected { background: #80ecdc16; border-radius: 12px; outline: 1px solid #80ecdc80; outline-offset: -1px; }
+body:has(#welcome:not([hidden])) #presence-labels, body:has(#ship-tutorial:not([hidden])) #presence-labels { visibility: hidden; }

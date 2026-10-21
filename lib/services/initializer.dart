@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/services/presence/presence_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:unisinos_usp_app/services/locker_service.dart';
 import 'package:flutter/foundation.dart';
@@ -25,6 +26,10 @@ class Initializer {
       UserController(),
       permanent: true,
     );
+    Get.put<PresenceService>(
+      PresenceService(),
+      permanent: true,
+    ).attach(userController);
     // Resolve the account preference before guards evaluate an initial deep link.
     await userController.initialization;
     Get.put<AiAssistantContextService>(

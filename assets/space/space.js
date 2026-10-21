@@ -1,3 +1,4 @@
+import { RemoteFleet } from "./remote-fleet.js";
 import { FlightModeSwitch } from "./flight-mode.js";
 import { ShipTutorial } from "./ship-tutorial.js";
 import * as THREE from "./vendor/three.module.js";
@@ -766,6 +767,7 @@ window.receiveSpaceCommand = (data) => {
     renderDestinations();
     offerTutorial();
   }
+  if (data.type === "presence") remoteFleet.update(data);
   if (data.type === "mode-state") flightMode.update(data);
   if (data.type === "focus-mode") flightMode.focus();
   if (data.type === "pause") {
@@ -790,6 +792,11 @@ window.addEventListener("message", (event) => {
   try {
     window.receiveSpaceCommand(JSON.parse(event.data));
   } catch (_) {}
+});
+const remoteFleet = new RemoteFleet(destinations, emit);
+let lastPresenceInteraction = 0;
+for (const event of ["pointerdown", "keydown"]) document.addEventListener(event, () => {
+  if (performance.now() - lastPresenceInteraction > 2000) { lastPresenceInteraction = performance.now(); emit("presence-interaction"); }
 });
 let problematicNetwork, clueMoon;
 let intelligenceClock = 0;
@@ -1238,6 +1245,7 @@ function buildCockpit() {
 function initScene() {
   try {
     scene = new THREE.Scene();
+    scene.add(remoteFleet.group);
     camera = new THREE.PerspectiveCamera(
       48,
       innerWidth / innerHeight,
@@ -1515,6 +1523,7 @@ function tick(now) {
         easedAlignment,
       );
     }
+    remoteFleet.draw(dt, camera, reduced, started && !tutorial.active && !travelling);
     renderer.render(scene, camera);
   }
   updateMapShip();
@@ -1612,6 +1621,7 @@ window.addEventListener("pagehide", () => {
   setPaused(true);
   consoleObserver.disconnect();
   audio.dispose();
+  remoteFleet.dispose();
   renderer?.dispose();
 });
 setMotion();
