@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:unisinos_usp_app/widgets/clue_media.dart';
 import 'package:flutter_quill/flutter_quill.dart';
+import 'package:unisinos_usp_app/widgets/clue_integrations.dart';
 import 'package:unisinos_usp_app/utils/quill_document_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -44,7 +45,9 @@ class _LivingClueDescriptionViewState extends State<LivingClueDescriptionView> {
     if (oldWidget.delta != widget.delta ||
         oldWidget.plainText != widget.plainText) {
       _controller.document = QuillDocumentUtils.fromStored(
-          delta: widget.delta, plainText: widget.plainText);
+        delta: widget.delta,
+        plainText: widget.plainText,
+      );
     }
   }
 
@@ -57,18 +60,22 @@ class _LivingClueDescriptionViewState extends State<LivingClueDescriptionView> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      QuillEditor.basic(
-        controller: _controller,
-        focusNode: _focusNode,
-        config: QuillEditorConfig(
-          embedBuilders: const [ClueVideoBuilder()],
-          showCursor: false,
-          onLaunchUrl: (url) => _openUrl(context, url),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        QuillEditor.basic(
+          controller: _controller,
+          focusNode: _focusNode,
+          config: QuillEditorConfig(
+            embedBuilders: const [ClueVideoBuilder(), ClueIntegrationBuilder()],
+            unknownEmbedBuilder: const UnknownClueEmbedBuilder(),
+            showCursor: false,
+            onLaunchUrl: (url) => _openUrl(context, url),
+          ),
         ),
-      ),
-      ClueLinkPreviews(controller: _controller, clueId: widget.clueId)
-    ]);
+        ClueLinkPreviews(controller: _controller, clueId: widget.clueId),
+      ],
+    );
   }
 
   Future<void> _openUrl(BuildContext context, String url) async {

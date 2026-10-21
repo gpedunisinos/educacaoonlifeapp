@@ -40,44 +40,45 @@ class LivingClueModel {
   });
 
   LivingClueModel.fromJson(Map<String, dynamic> json)
-      : files = (json['files'] as List? ?? [])
-            .map((e) => FileModel.fromJson(Map<String, dynamic>.from(e)))
-            .toList(),
-        id = json['id'] is int ? json['id'] : int.parse(json['id'].toString()),
-        name = json['name'] ?? '',
-        categoryId = _parseCategoryId(json),
-        description = json['description'],
-        descriptionDelta = json['description_delta'],
-        latitude = double.tryParse(json['latitude']?.toString() ?? ''),
-        longitude = double.tryParse(json['longitude']?.toString() ?? ''),
-        imageUrl = json['image_url'],
-        metadata = json['metadata'],
-        isActive = json['is_active'] == null ? true : json['is_active'] == true,
-        createdAt = json['created_at'] != null
-            ? DateTime.parse(json['created_at'])
-            : null,
-        updatedAt = json['updated_at'] != null
-            ? DateTime.parse(json['updated_at'])
-            : null,
-        category = _parseCategory(json),
-        environmentalContext = _parseEnvironmentalContext(json);
+    : files = (json['files'] as List? ?? [])
+          .map((e) => FileModel.fromJson(Map<String, dynamic>.from(e)))
+          .toList(),
+      id = json['id'] is int ? json['id'] : int.parse(json['id'].toString()),
+      name = json['name'] ?? '',
+      categoryId = _parseCategoryId(json),
+      description = json['description'],
+      descriptionDelta = json['description_delta'],
+      latitude = double.tryParse(json['latitude']?.toString() ?? ''),
+      longitude = double.tryParse(json['longitude']?.toString() ?? ''),
+      imageUrl = json['image_url'],
+      metadata = json['metadata'],
+      isActive = json['is_active'] == null ? true : json['is_active'] == true,
+      createdAt = json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
+          : null,
+      updatedAt = json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'])
+          : null,
+      category = _parseCategory(json),
+      environmentalContext = _parseEnvironmentalContext(json);
 
   bool get hasLocation => latitude != null && longitude != null;
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'category_id': categoryId,
-        'description': description,
-        'description_delta': descriptionDelta,
-        'remove_location': !hasLocation,
-        'latitude': latitude,
-        'longitude': longitude,
-        'image_url': imageUrl,
-        'metadata': metadata,
-        'is_active': isActive,
-        // categoria é enviada apenas por id
-      };
+    'id': id,
+    'name': name,
+    'category_id': categoryId,
+    'description': description,
+    'description_delta': descriptionDelta,
+    'description_format_version': 1,
+    'remove_location': !hasLocation,
+    'latitude': latitude,
+    'longitude': longitude,
+    'image_url': imageUrl,
+    'metadata': metadata,
+    'is_active': isActive,
+    // categoria é enviada apenas por id
+  };
 
   static List<LivingClueModel> fromJsonArray(String str) {
     return List<LivingClueModel>.from(
@@ -113,7 +114,8 @@ class LivingClueModel {
     final value = json['environmental_context'];
     if (value is Map) {
       return EnvironmentalContextModel.fromJson(
-          Map<String, dynamic>.from(value));
+        Map<String, dynamic>.from(value),
+      );
     }
     return null;
   }

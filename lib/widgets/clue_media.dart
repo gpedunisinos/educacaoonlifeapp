@@ -2,6 +2,7 @@ import 'package:unisinos_usp_app/widgets/living_clue_layout.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:unisinos_usp_app/models/clue_integration.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
@@ -45,6 +46,10 @@ Set<String> documentLinks(QuillController controller) {
     final insert = op['insert'];
     if (insert is Map && insert['video'] is String) {
       videos.add(canonicalLink(insert['video']));
+    }
+    if (insert is Map && insert.containsKey('onlife')) {
+      final block = ClueIntegration.decode(insert['onlife']);
+      if (block != null) videos.add(canonicalLink(block.url));
     }
     if (insert is String) {
       for (final match in RegExp(
