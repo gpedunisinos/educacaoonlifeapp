@@ -21,8 +21,8 @@ class AiAssistantContextService extends GetxService {
 
   void registerProvider(String route, AiAssistantContextProvider provider) {
     final providers = _providers.putIfAbsent(_routeKey(route), () => []);
-    providers.removeWhere((item) => item == provider);
-    providers.add(provider);
+    // Rebuilding a covered screen must not promote it above an open overlay.
+    if (!providers.any((item) => item == provider)) providers.add(provider);
   }
 
   void unregisterProvider(String route, AiAssistantContextProvider provider) {

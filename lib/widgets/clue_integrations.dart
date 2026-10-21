@@ -1,3 +1,6 @@
+import 'package:get/get.dart';
+import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
+import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -399,11 +402,21 @@ class ClueIntegrationView extends StatelessWidget {
                 children: [
                   if (!block.desktopClient && block.embedURI != null)
                     OutlinedButton.icon(
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => _IntegrationRoom(block: block),
-                        ),
-                      ),
+                      onPressed: () {
+                        final origin =
+                            Get.isRegistered<AiAssistantContextService>()
+                            ? Get.find<AiAssistantContextService>()
+                                  .resolveCurrentContext()
+                            : null;
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => ClueIntegrationRoom(
+                              block: block,
+                              originContext: origin,
+                            ),
+                          ),
+                        );
+                      },
                       icon: Icon(
                         block.inline
                             ? Icons.fullscreen
@@ -461,43 +474,200 @@ class ClueIntegrationView extends StatelessWidget {
   );
 }
 
-class _IntegrationRoom extends StatelessWidget {
-  const _IntegrationRoom({required this.block});
+/// Full reading/entry surface. A 3D world must not stay alive behind another
+/// application route or after handing the user to its external site.
+class ClueIntegrationRoom extends StatefulWidget {
+  const ClueIntegrationRoom({
+    super.key,
+    required this.block,
+    this.originContext,
+  });
   final ClueIntegration block;
+  final AiAssistantScreenContext? originContext;
+
   @override
-  Widget build(BuildContext context) => Theme(
-    data: spaceRecordTheme(),
-    child: Scaffold(
-      appBar: AppBar(
-        title: Text(block.title.isEmpty ? block.name : block.title),
-        actions: [
-          TextButton.icon(
-            onPressed: () =>
-                launchUrl(Uri.parse(block.url), webOnlyWindowName: '_blank'),
-            icon: const Icon(Icons.open_in_new),
-            label: const Text('Abrir na origem'),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Text(
-              block.provider == 'framevr'
-                  ? 'Você está entrando em um ambiente externo. Câmera e microfone serão solicitados pelo provedor quando necessários. Ao voltar, o ambiente será encerrado.'
-                  : 'As permissões deste conteúdo são controladas pelo provedor.',
-            ),
-          ),
-          Expanded(
-            child: IntegrationFrame(
-              uri: block.embedURI!,
-              title: block.name,
-              media: block.provider == 'framevr',
-            ),
-          ),
-        ],
-      ),
-    ),
+  State<ClueIntegrationRoom> createState() => _ClueIntegrationRoomState();
+}
+
+class _ClueIntegrationRoomState extends State<ClueIntegrationRoom>
+    with WidgetsBindingObserver {
+  bool _requiresReentry = false;
+  bool get _isWorld => widget.block.provider == 'framevr';
+  late final String _contextRoute = Get.currentRoute.isNotEmpty
+      ? Get.currentRoute
+      : widget.originContext?.route ??
+            (Get.isRegistered<AiAssistantContextService>()
+                ? Get.find<AiAssistantContextService>().currentRoute.value
+                : '');
+  late final AiAssistantContextProvider
+  _contextProvider = () => AiAssistantScreenContext(
+    screenName: '${widget.block.name} — conteúdo da pista',
+    route: _contextRoute,
+    stage: _requiresReentry
+        ? 'janela do ambiente encerrada'
+        : 'visualização de conteúdo externo',
+    goal:
+        'ajudar com os controles e com a pista de origem, respeitando os limites do conteúdo incorporado',
+    references: widget.originContext?.references ?? const {},
+    visibleFields: [
+      'voltar à pista',
+      'abrir na origem',
+      if (_requiresReentry) 'entrar novamente',
+    ],
+    filledFields: {
+      'provedor': widget.block.name,
+      'título': widget.block.title,
+      'estado da janela': _requiresReentry
+          ? 'aguardando reentrada'
+          : 'incorporação exibida',
+    },
+    notes: const [
+      'A Iareté não observa o mundo, as pessoas, as mensagens, a câmera ou o áudio do provedor.',
+      'A janela exibida não comprova conexão ou ingresso no ambiente externo; não afirmar isso sem informação da pessoa.',
+    ],
   );
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // The navigator disables tickers when an opaque route covers this room.
+    // This rebuild removes the iframe rather than only hiding its rendering.
+    if (_isWorld && !TickerMode.of(context)) _requiresReentry = true;
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (_isWorld &&
+        !_requiresReentry &&
+        (state == AppLifecycleState.hidden ||
+            state == AppLifecycleState.paused ||
+            state == AppLifecycleState.detached)) {
+      setState(() => _requiresReentry = true);
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    if (Get.isRegistered<AiAssistantContextService>()) {
+      Get.find<AiAssistantContextService>().unregisterProvider(
+        _contextRoute,
+        _contextProvider,
+      );
+    }
+    super.dispose();
+  }
+
+  Future<void> _openOrigin() async {
+    // Prevent two simultaneous world instances when the external site opens.
+    if (_isWorld) setState(() => _requiresReentry = true);
+    var opened = false;
+    try {
+      opened = await launchUrl(
+        Uri.parse(widget.block.url),
+        mode: LaunchMode.externalApplication,
+        webOnlyWindowName: '_blank',
+      );
+    } catch (_) {
+      // The explicit reentry control remains available if the popup is blocked.
+    }
+    if (!opened && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Não foi possível abrir a origem. Você pode tentar novamente.',
+          ),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final block = widget.block;
+    if (Get.isRegistered<AiAssistantContextService>()) {
+      final service = Get.find<AiAssistantContextService>();
+      service.registerProvider(_contextRoute, _contextProvider);
+      final route = ModalRoute.of(context);
+      if (route?.isCurrent == true) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && route?.isCurrent == true)
+            service.setCurrentRoute(_contextRoute);
+        });
+      }
+    }
+    return Theme(
+      data: spaceRecordTheme(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            block.title.isEmpty ? block.name : block.title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          actions: [
+            TextButton.icon(
+              onPressed: _openOrigin,
+              icon: const Icon(Icons.open_in_new),
+              label: const Text('Abrir na origem'),
+            ),
+          ],
+        ),
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Text(
+                _isWorld
+                    ? 'Você está entrando em um ambiente externo. Câmera e microfone serão solicitados pelo provedor quando necessários. Ao voltar ou mudar de tela, o ambiente será encerrado.'
+                    : 'As permissões deste conteúdo são controladas pelo provedor.',
+              ),
+            ),
+            Expanded(
+              child: _requiresReentry
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.view_in_ar_outlined, size: 42),
+                            const SizedBox(height: 16),
+                            const Text(
+                              'Ambiente encerrado',
+                              style: TextStyle(fontSize: 20),
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Entre novamente quando quiser continuar a exploração.',
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
+                            FilledButton.icon(
+                              onPressed: () =>
+                                  setState(() => _requiresReentry = false),
+                              icon: const Icon(Icons.play_arrow),
+                              label: const Text('Entrar novamente'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : IntegrationFrame(
+                      uri: block.embedURI!,
+                      title: block.name,
+                      media: _isWorld,
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

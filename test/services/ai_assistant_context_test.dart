@@ -47,6 +47,10 @@ void main() {
         '/nodes/graph',
         overlay,
       ); // Rebuild is not a new owner.
+      service.registerProvider(
+        '/nodes/graph',
+        original,
+      ); // Covered screen rebuild.
       service.setCurrentRoute('/nodes/graph?focus=5');
       expect(service.resolveCurrentContext().screenName, 'seleção');
       service.unregisterProvider('/nodes/graph', overlay);
