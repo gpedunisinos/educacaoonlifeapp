@@ -32,7 +32,7 @@ export class RemoteFleet {
     this.trimGeometry = new THREE.BoxGeometry(.88, .015, .025);
     this.trailGeometry = new THREE.ConeGeometry(.065, .9, 6);
     this.trailMaterial = new THREE.MeshBasicMaterial({color:0x7de8e4,transparent:true,opacity:.28,depthWrite:false,blending:THREE.AdditiveBlending});
-    this.material = new THREE.MeshStandardMaterial({color:0x54788c,metalness:.8,roughness:.36,emissive:0x0d2839,emissiveIntensity:.7});
+    this.material = new THREE.MeshStandardMaterial({color:0x54788c,metalness:.35,roughness:.45,emissive:0x183d4a,emissiveIntensity:1.2});
     this.light = new THREE.MeshBasicMaterial({color:0x93f4e5});
     this.button.onclick = () => this.showList();
     document.getElementById('presence-close').onclick = () => this.dialog.close();
@@ -102,7 +102,17 @@ export class RemoteFleet {
     if(x<.2||x>.8||y<.18||y>.58)return;
     this.pointer.set(x*2-1,-y*2+1);this.raycaster.setFromCamera(this.pointer,camera);
     const hit=this.raycaster.intersectObjects([...this.ships.values()].map(s=>s.object),true)[0];
-    if(!hit)return;let object=hit.object;while(object&&!object.userData.participant)object=object.parent;
+    if(!hit) {
+      // Keep small ships usable by touch; the name and list remain keyboard alternatives.
+      let nearest=null,distance=24;
+      for(const ship of this.ships.values()) {
+        const p=ship.object.position.clone().project(camera);if(p.z<=-1||p.z>=1)continue;
+        const pixels=Math.hypot((p.x*.5+.5)*innerWidth-event.clientX,(-p.y*.5+.5)*innerHeight-event.clientY);
+        if(pixels<distance){distance=pixels;nearest=ship.person.id;}
+      }
+      if(nearest)this.showParticipant(nearest);return;
+    }
+    let object=hit.object;while(object&&!object.userData.participant)object=object.parent;
     if(object?.userData.participant)this.showParticipant(object.userData.participant);
   }
   dispose() {
@@ -130,7 +140,7 @@ export class RemoteFleet {
         const radius=destination.radius;
         target=new THREE.Vector3(...destination.position).add(new THREE.Vector3(Math.sin(angle)*radius*(.85+ring*.17),radius*.05+Math.cos(angle)*radius*.12, radius*(1.15+ring*.2)));
       } else {
-        target=camera.position.clone().addScaledVector(forward,19+ring*3).addScaledVector(right,Math.cos(angle)*7);
+        target=camera.position.clone().addScaledVector(forward,19+ring*3).addScaledVector(right,Math.cos(angle)*4.5);
         target.addScaledVector(up,1.4+Math.sin(angle)*1.2);
         if(area && ship.cruiseTarget) target.copy(ship.cruiseTarget);
         else if(!area) ship.cruiseTarget=target.clone();
