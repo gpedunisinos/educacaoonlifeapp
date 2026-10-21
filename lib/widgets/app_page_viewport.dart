@@ -16,6 +16,7 @@ class AppPageViewport extends StatelessWidget {
     final route = AiAssistantLauncher.activeRoute.value;
     final immersive =
         (route == '/space' || route.startsWith('/space/')) ||
+        (route == '/management' || route.startsWith('/management/')) ||
         route == '/living_clues/map';
     return Stack(
       fit: StackFit.expand,

@@ -13,7 +13,7 @@ class HomeScreen extends StatelessWidget {
     'Mapa de Pistas',
     'Problemáticas',
     'Agentes',
-    'Conexões',
+    'Central de Gestão',
     'Pistas',
   };
 
@@ -63,11 +63,11 @@ class HomeScreen extends StatelessWidget {
             isVisible: livingCluePolicy.viewAny(),
           ),
           _HomeMenu(
-            title: 'Conexões',
-            subtitle: 'Relacionar pistas e contexto',
+            title: 'Central de Gestão',
+            subtitle: 'Relações e parametrizações',
             icon: Icons.hub_rounded,
             color: const Color(0xFFEF6EB0),
-            onTap: () => Get.toNamed('/clue_connections'),
+            onTap: () => Get.toNamed('/management'),
             isVisible: clueConnectionPolicy.viewAny(),
           ),
           _HomeMenu(

@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/screens/management/management_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
@@ -25,9 +26,11 @@ class ConnectionsRoomScreen extends StatefulWidget {
   const ConnectionsRoomScreen({
     super.key,
     this.loader,
+    this.management = false,
     this.connectionId,
     this.initialConnection,
   });
+  final bool management;
   final int? connectionId;
   final RoomConnection? initialConnection;
   final Future<List<RoomConnection>> Function()? loader;
@@ -38,9 +41,10 @@ class ConnectionsRoomScreen extends StatefulWidget {
 class _ConnectionsRoomScreenState extends State<ConnectionsRoomScreen> {
   List<RoomConnection> items = [];
   bool get isDetail => widget.connectionId != null;
-  String get route => isDetail
-      ? '/space/connections/${widget.connectionId}'
-      : '/space/connections';
+  String get baseRoute =>
+      widget.management ? '/management/connections' : '/space/connections';
+  String get route =>
+      isDetail ? '$baseRoute/${widget.connectionId}' : baseRoute;
   final listScroll = ScrollController();
   bool loading = true;
   bool failed = false;
@@ -48,7 +52,9 @@ class _ConnectionsRoomScreenState extends State<ConnectionsRoomScreen> {
   final search = TextEditingController();
   late final AiAssistantContextProvider contextProvider = buildContext;
   AiAssistantScreenContext buildContext() => AiAssistantScreenContext(
-    screenName: 'Sala de Conexões da nave',
+    screenName: widget.management
+        ? 'Central de Gestão / Conexões'
+        : 'Sala de Conexões da nave',
     route: route,
     stage: 'exploração de conexões',
     goal: 'explorar vínculos entre pistas na tela da sala',
@@ -153,7 +159,13 @@ class _ConnectionsRoomScreenState extends State<ConnectionsRoomScreen> {
     if (Navigator.of(context).canPop()) {
       Get.back();
     } else {
-      Get.offNamed(isDetail ? '/space/connections' : '/space');
+      Get.offNamed(
+        isDetail
+            ? baseRoute
+            : widget.management
+            ? '/management'
+            : '/space',
+      );
     }
   }
 
@@ -167,11 +179,16 @@ class _ConnectionsRoomScreenState extends State<ConnectionsRoomScreen> {
         )
         .toList();
     return _RoomShell(
+      management: widget.management,
       title: isDetail ? 'Detalhes da conexão' : 'Conexões',
       subtitle: isDetail
           ? 'Os vínculos que conectam nossos territórios.'
           : 'Explore os vínculos entre as pistas.',
-      backLabel: isDetail ? 'Voltar à lista' : 'Voltar ao cockpit',
+      backLabel: isDetail
+          ? 'Voltar à lista'
+          : widget.management
+          ? 'Central de Gestão'
+          : 'Voltar ao cockpit',
       onBack: leave,
       onRefresh: loading ? null : load,
       status: loading
@@ -269,7 +286,7 @@ class _ConnectionsRoomScreenState extends State<ConnectionsRoomScreen> {
                         child: InkWell(
                           borderRadius: BorderRadius.circular(5),
                           onTap: () => Get.toNamed(
-                            '/space/connections/${c.model.id}',
+                            '$baseRoute/${c.model.id}',
                             arguments: c,
                           ),
                           child: Padding(
@@ -329,6 +346,7 @@ class _ConnectionsRoomScreenState extends State<ConnectionsRoomScreen> {
 /// Both routes occupy the same ship room and wall display.
 class _RoomShell extends StatelessWidget {
   const _RoomShell({
+    this.management = false,
     required this.title,
     required this.subtitle,
     required this.backLabel,
@@ -337,6 +355,7 @@ class _RoomShell extends StatelessWidget {
     required this.status,
     required this.child,
   });
+  final bool management;
   final String title;
   final String subtitle;
   final String backLabel;
@@ -345,234 +364,250 @@ class _RoomShell extends StatelessWidget {
   final VoidCallback? onRefresh;
   final Widget child;
   @override
-  Widget build(BuildContext context) => Theme(
-    data: ThemeData.dark(useMaterial3: true).copyWith(
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: _ice,
-        brightness: Brightness.dark,
+  Widget build(BuildContext context) {
+    if (management) {
+      return ManagementShell(
+        title: title,
+        subtitle: subtitle,
+        connections: true,
+        onBack: onBack,
+        backLabel: backLabel,
+        onRefresh: onRefresh,
+        status: status,
+        child: child,
+      );
+    }
+    return Theme(
+      data: ThemeData.dark(useMaterial3: true).copyWith(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: _ice,
+          brightness: Brightness.dark,
+        ),
+        scaffoldBackgroundColor: const Color(0xFF030811),
       ),
-      scaffoldBackgroundColor: const Color(0xFF030811),
-    ),
-    child: Scaffold(
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final compact = constraints.maxWidth < 760;
-          final low = constraints.maxHeight < 600;
-          return Stack(
-            children: [
-              const Positioned.fill(
-                child: CustomPaint(painter: _RoomPainter()),
-              ),
-              SafeArea(
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(
-                        compact ? 12 : 28,
-                        12,
-                        compact ? 12 : 28,
-                        8,
-                      ),
-                      child: Row(
-                        children: [
-                          OutlinedButton.icon(
-                            onPressed: onBack,
-                            icon: const Icon(Icons.arrow_back, size: 17),
-                            label: Text(backLabel),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Text(
-                              compact
-                                  ? 'SALA DE CONEXÕES'
-                                  : 'EC–01  /  DECK 02  /  SALA DE CONEXÕES',
-                              textAlign: TextAlign.right,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: _ice,
-                                letterSpacing: compact ? 1 : 2,
-                                fontSize: compact ? 9 : 11,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      child: Padding(
+      child: Scaffold(
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            final compact = constraints.maxWidth < 760;
+            final low = constraints.maxHeight < 600;
+            return Stack(
+              children: [
+                const Positioned.fill(
+                  child: CustomPaint(painter: _RoomPainter()),
+                ),
+                SafeArea(
+                  child: Column(
+                    children: [
+                      Padding(
                         padding: EdgeInsets.fromLTRB(
-                          compact ? 12 : constraints.maxWidth * .10,
-                          low ? 8 : 24,
-                          compact ? 12 : constraints.maxWidth * .10,
-                          compact || low ? 20 : constraints.maxHeight * .15,
+                          compact ? 12 : 28,
+                          12,
+                          compact ? 12 : 28,
+                          8,
                         ),
-                        child: TweenAnimationBuilder<double>(
-                          tween: Tween(
-                            begin: MediaQuery.disableAnimationsOf(context)
-                                ? 1
-                                : 0,
-                            end: 1,
-                          ),
-                          duration: const Duration(milliseconds: 700),
-                          curve: Curves.easeOutCubic,
-                          builder: (context, value, child) => Opacity(
-                            opacity: value,
-                            child: Transform.scale(
-                              scale: .97 + value * .03,
-                              child: child,
+                        child: Row(
+                          children: [
+                            OutlinedButton.icon(
+                              onPressed: onBack,
+                              icon: const Icon(Icons.arrow_back, size: 17),
+                              label: Text(backLabel),
                             ),
-                          ),
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF061521),
-                              borderRadius: BorderRadius.circular(9),
-                              border: Border.all(
-                                color: const Color(0xFF4C7887),
-                                width: 3,
-                              ),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color(0x9923A8C9),
-                                  blurRadius: 35,
-                                  spreadRadius: -14,
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Text(
+                                compact
+                                    ? 'SALA DE CONEXÕES'
+                                    : 'EC–01  /  DECK 02  /  SALA DE CONEXÕES',
+                                textAlign: TextAlign.right,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: _ice,
+                                  letterSpacing: compact ? 1 : 2,
+                                  fontSize: compact ? 9 : 11,
                                 ),
-                                BoxShadow(blurRadius: 8, spreadRadius: 7),
-                              ],
+                              ),
                             ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(3),
-                              child: Column(
-                                children: [
-                                  Container(
-                                    padding: EdgeInsets.all(compact ? 12 : 20),
-                                    decoration: const BoxDecoration(
-                                      border: Border(
-                                        bottom: BorderSide(
-                                          color: Color(0xFF234657),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(
+                            compact ? 12 : constraints.maxWidth * .10,
+                            low ? 8 : 24,
+                            compact ? 12 : constraints.maxWidth * .10,
+                            compact || low ? 20 : constraints.maxHeight * .15,
+                          ),
+                          child: TweenAnimationBuilder<double>(
+                            tween: Tween(
+                              begin: MediaQuery.disableAnimationsOf(context)
+                                  ? 1
+                                  : 0,
+                              end: 1,
+                            ),
+                            duration: const Duration(milliseconds: 700),
+                            curve: Curves.easeOutCubic,
+                            builder: (context, value, child) => Opacity(
+                              opacity: value,
+                              child: Transform.scale(
+                                scale: .97 + value * .03,
+                                child: child,
+                              ),
+                            ),
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF061521),
+                                borderRadius: BorderRadius.circular(9),
+                                border: Border.all(
+                                  color: const Color(0xFF4C7887),
+                                  width: 3,
+                                ),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x9923A8C9),
+                                    blurRadius: 35,
+                                    spreadRadius: -14,
+                                  ),
+                                  BoxShadow(blurRadius: 8, spreadRadius: 7),
+                                ],
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(3),
+                                child: Column(
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.all(
+                                        compact ? 12 : 20,
+                                      ),
+                                      decoration: const BoxDecoration(
+                                        border: Border(
+                                          bottom: BorderSide(
+                                            color: Color(0xFF234657),
+                                          ),
+                                        ),
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            Color(0xFF143241),
+                                            Color(0xFF071622),
+                                          ],
                                         ),
                                       ),
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          Color(0xFF143241),
-                                          Color(0xFF071622),
+                                      child: Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.hub_outlined,
+                                            color: _ice,
+                                            size: 27,
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  title,
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: compact ? 22 : 30,
+                                                    fontWeight: FontWeight.w300,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  subtitle,
+                                                  style: const TextStyle(
+                                                    color: _muted,
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          IconButton(
+                                            tooltip: 'Atualizar conexões',
+                                            onPressed: onRefresh,
+                                            icon: const Icon(
+                                              Icons.refresh,
+                                              color: _ice,
+                                            ),
+                                          ),
                                         ],
                                       ),
                                     ),
-                                    child: Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.hub_outlined,
-                                          color: _ice,
-                                          size: 27,
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                title,
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: compact ? 22 : 30,
-                                                  fontWeight: FontWeight.w300,
-                                                ),
-                                              ),
-                                              Text(
-                                                subtitle,
-                                                style: const TextStyle(
-                                                  color: _muted,
-                                                  fontSize: 12,
-                                                ),
-                                              ),
-                                            ],
+                                    Expanded(child: child),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 9,
+                                      ),
+                                      decoration: const BoxDecoration(
+                                        border: Border(
+                                          top: BorderSide(
+                                            color: Color(0xFF234657),
                                           ),
-                                        ),
-                                        IconButton(
-                                          tooltip: 'Atualizar conexões',
-                                          onPressed: onRefresh,
-                                          icon: const Icon(
-                                            Icons.refresh,
-                                            color: _ice,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Expanded(child: child),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 9,
-                                    ),
-                                    decoration: const BoxDecoration(
-                                      border: Border(
-                                        top: BorderSide(
-                                          color: Color(0xFF234657),
                                         ),
                                       ),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.circle,
-                                          size: 5,
-                                          color: _ice,
-                                        ),
-                                        const SizedBox(width: 7),
-                                        const Flexible(
-                                          child: Text(
-                                            'REDE DE CONEXÕES',
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
-                                              color: _muted,
-                                              fontSize: 8,
-                                              letterSpacing: 1.3,
+                                      child: Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.circle,
+                                            size: 5,
+                                            color: _ice,
+                                          ),
+                                          const SizedBox(width: 7),
+                                          const Flexible(
+                                            child: Text(
+                                              'REDE DE CONEXÕES',
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                color: _muted,
+                                                fontSize: 8,
+                                                letterSpacing: 1.3,
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                        const Spacer(),
-                                        Text(
-                                          status,
-                                          style: const TextStyle(
-                                            color: _ice,
-                                            fontSize: 9,
-                                            letterSpacing: 1,
+                                          const Spacer(),
+                                          Text(
+                                            status,
+                                            style: const TextStyle(
+                                              color: _ice,
+                                              fontSize: 9,
+                                              letterSpacing: 1,
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    if (!compact && !low)
-                      const Padding(
-                        padding: EdgeInsets.only(bottom: 25),
-                        child: Text(
-                          'IARETÉ  /  Cada vínculo revela uma nova perspectiva.',
-                          style: TextStyle(
-                            color: _muted,
-                            fontSize: 11,
-                            letterSpacing: 1,
+                      if (!compact && !low)
+                        const Padding(
+                          padding: EdgeInsets.only(bottom: 25),
+                          child: Text(
+                            'IARETÉ  /  Cada vínculo revela uma nova perspectiva.',
+                            style: TextStyle(
+                              color: _muted,
+                              fontSize: 11,
+                              letterSpacing: 1,
+                            ),
                           ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _EmptyRoom extends StatelessWidget {

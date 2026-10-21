@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/screens/management/management_home_screen.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
 import 'package:unisinos_usp_app/screens/space/clue_research_room_screen.dart';
 import 'package:unisinos_usp_app/screens/space/intelligence_chamber_screen.dart';
@@ -31,6 +32,39 @@ List<GetPage> appRoutes() =>
         page: () => HomeScreen(),
         middlewares: [AppRouteGuard(canActivate: (u) => u != null)],
       ),
+      GetPage(
+        name: '/management',
+        page: () => const ManagementHomeScreen(),
+        transition: Transition.fadeIn,
+        middlewares: [
+          AppRouteGuard(
+            canActivate: (u) =>
+                (u?.isAdmin ?? false) || ClueConnectionPolicy(u).viewAny(),
+          ),
+        ],
+      ),
+      GetPage(
+        name: '/management/connections',
+        page: () => const ConnectionsRoomScreen(management: true),
+        transition: Transition.fadeIn,
+        middlewares: [
+          AppRouteGuard(canActivate: (u) => ClueConnectionPolicy(u).viewAny()),
+        ],
+      ),
+      GetPage(
+        name: '/management/connections/:id',
+        page: () => ConnectionsRoomScreen(
+          management: true,
+          connectionId: int.tryParse(Get.parameters['id'] ?? '') ?? -1,
+          initialConnection: Get.arguments is RoomConnection
+              ? Get.arguments as RoomConnection
+              : null,
+        ),
+        transition: Transition.fadeIn,
+        middlewares: [
+          AppRouteGuard(canActivate: (u) => ClueConnectionPolicy(u).viewAny()),
+        ],
+      ),
       GetPage(name: '/space', page: () => const SpaceScreen()),
       GetPage(
         name: '/space/research',
@@ -57,7 +91,7 @@ List<GetPage> appRoutes() =>
       ),
       GetPage(
         name: '/space/connections',
-        page: () => const ConnectionsRoomScreen(),
+        page: () => const ConnectionsRoomScreen(management: true),
         transition: Transition.fadeIn,
         transitionDuration: const Duration(milliseconds: 700),
         middlewares: [
@@ -67,6 +101,7 @@ List<GetPage> appRoutes() =>
       GetPage(
         name: '/space/connections/:id',
         page: () => ConnectionsRoomScreen(
+          management: true,
           connectionId: int.tryParse(Get.parameters['id'] ?? '') ?? -1,
           initialConnection: Get.arguments is RoomConnection
               ? Get.arguments as RoomConnection

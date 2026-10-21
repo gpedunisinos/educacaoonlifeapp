@@ -39,8 +39,6 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
       if (LivingCluePolicy(user).viewAny()) 'earth': '/living_clues/map',
       if (LivingCluePolicy(user).viewAny()) 'research': '/space/research',
       if (NodePolicy(user).viewAny()) 'observatory': '/nodes/graph',
-      if (ClueConnectionPolicy(user).viewAny())
-        'connections': '/space/connections',
       if (ChatTemplatePolicy(user).viewAny()) 'agents': '/space/agents',
     };
   }
@@ -71,7 +69,12 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
   Future<void> onMessage(Map<String, dynamic> data) async {
     if (!mounted) return;
     if (data['type'] == 'ready') {
-      send('configure', {'destinations': destinations.keys.toList()});
+      send('configure', {
+        'destinations': destinations.keys.toList(),
+        'management': ClueConnectionPolicy(
+          Get.find<UserController>().user.value,
+        ).viewAny(),
+      });
       return;
     }
     if (data['type'] == 'select' && data['name'] is String) {
@@ -83,8 +86,14 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
       exitCockpit();
       return;
     }
-    final route = destinations[data['destination']];
-    if (data['type'] != 'assistant' &&
+    final management =
+        data['type'] == 'management' &&
+        ClueConnectionPolicy(Get.find<UserController>().user.value).viewAny();
+    final route = management
+        ? '/management'
+        : destinations[data['destination']];
+    if (!management &&
+        data['type'] != 'assistant' &&
         (data['type'] != 'open' || route == null)) {
       return;
     }

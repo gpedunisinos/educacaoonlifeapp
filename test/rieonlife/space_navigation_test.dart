@@ -57,11 +57,11 @@ void main() {
               ),
             ),
             GetPage(
-              name: '/space/connections',
+              name: '/management',
               page: () => Scaffold(
                 body: TextButton(
                   onPressed: Get.back,
-                  child: const Text('Sair da sala'),
+                  child: const Text('Sair da gestão'),
                 ),
               ),
             ),
@@ -85,6 +85,8 @@ void main() {
       view.onMessage({'type': 'ready'});
       await tester.pump();
       expect(commands.last['destinations'], contains('earth'));
+      expect(commands.last['destinations'], isNot(contains('connections')));
+      expect(commands.last['management'], isTrue);
       final count = commands.length;
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
       await tester.pump();
@@ -107,9 +109,12 @@ void main() {
       expect(commands.last, {'type': 'resume', 'returned': true});
       view.onMessage({'type': 'open', 'destination': 'connections'});
       await tester.pumpAndSettle();
-      expect(Get.currentRoute, '/space/connections');
-      expect(find.text('Sair da sala'), findsOneWidget);
-      await tester.tap(find.text('Sair da sala'));
+      expect(find.text('Sair da gestão'), findsNothing);
+      view.onMessage({'type': 'management'});
+      await tester.pumpAndSettle();
+      expect(Get.currentRoute, '/management');
+      expect(find.text('Sair da gestão'), findsOneWidget);
+      await tester.tap(find.text('Sair da gestão'));
       await tester.pumpAndSettle();
       expect(tester.widget<SpaceView>(find.byType(SpaceView)), same(view));
       view.onMessage({'type': 'open', 'destination': 'research'});
@@ -149,7 +154,8 @@ void main() {
     expect(tester.getSize(find.byKey(key)).width, 1040);
     for (final route in [
       '/space',
-      '/space/connections',
+      '/management',
+      '/management/connections',
       '/living_clues/map',
       '/space',
       '/home',

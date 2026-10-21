@@ -76,25 +76,6 @@ const destinations = [
       "Chegamos à rede do Observatório. Os nodos e suas conexões revelam relações entre problemáticas. Abra o grafo para explorar.",
   },
   {
-    id: "connections",
-    description:
-      "Descubra vínculos entre pistas e construa novos sentidos para suas explorações.",
-    contents: ["Conexões entre pistas", "Relações e vínculos"],
-    name: "Estação de Conexões",
-    module: "Conexões",
-    short: "Conexões",
-    symbol: "⌘",
-    sector: "SETOR · 18",
-    subtitle: "Nada existe sozinho. Tudo pode se conectar.",
-    position: [22, 8, 30],
-    radius: 2.7,
-    color: 0xffc485,
-    message:
-      "Traçando uma rota para a Estação de Conexões. É aqui que as pistas encontram novos sentidos.",
-    arrival:
-      "Conexão orbital estabelecida. Podemos explorar os vínculos entre as pistas.",
-  },
-  {
     id: "agents",
     description:
       "Conheça os agentes de inteligência artificial que acompanham suas explorações.",
@@ -355,7 +336,8 @@ function select(d) {
   $("skip").hidden = true;
   updateMission(d);
   $("module-title").textContent = d.module;
-  $("distance").textContent = `0${destinations.indexOf(d) + 1} / 05`;
+  $("distance").textContent =
+    `0${destinations.indexOf(d) + 1} / ${String(destinations.length).padStart(2, "0")}`;
   $("navigate").textContent =
     arrived && current === d.id
       ? `Abrir ${d.module} ↗`
@@ -629,6 +611,7 @@ function setPaused(value) {
 window.receiveSpaceCommand = (data) => {
   if (data?.channel !== "econectiva-space") return;
   if (data.type === "configure" && Array.isArray(data.destinations)) {
+    $("management").hidden = data.management !== true;
     allowed = data.destinations.filter((id) =>
       destinations.some((d) => d.id === id),
     );
@@ -1418,6 +1401,10 @@ $("navigate").onclick = navigate;
 $("skip").onclick = finishTravel;
 $("direct").onclick = openModule;
 $("exit").onclick = () => emit("exit");
+$("management").onclick = () => {
+  audio.select();
+  emit("management");
+};
 $("ask").onclick = $("assistant-orb").onclick = () => {
   audio.select();
   emit("assistant");
@@ -1442,7 +1429,7 @@ window.addEventListener("keydown", (event) => {
     event.metaKey
   )
     return;
-  if (event.key >= "1" && event.key <= "5") {
+  if (event.key >= "1" && event.key <= String(destinations.length)) {
     const d = destinations[Number(event.key) - 1];
     if (allowed.includes(d.id)) {
       event.preventDefault();

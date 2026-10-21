@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/policies/clue_connection_policy.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -130,6 +131,22 @@ class _AiAssistantLauncherState extends State<AiAssistantLauncher> {
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                 ),
+              ),
+            ),
+          if (show &&
+              !route.startsWith('/management') &&
+              ClueConnectionPolicy(u).viewAny())
+            Positioned(
+              right: 146,
+              top: MediaQuery.paddingOf(context).top + 4,
+              child: IconButton(
+                tooltip: 'Central de Gestão',
+                icon: const Icon(
+                  Icons.tune_rounded,
+                  color: Color(0xFF9DC6D8),
+                  size: 19,
+                ),
+                onPressed: () => Get.toNamed('/management'),
               ),
             ),
           if (show) ...[
