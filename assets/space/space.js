@@ -1,6 +1,7 @@
 import * as THREE from "./vendor/three.module.js";
 import { SpaceAudio } from "./audio.js";
 import { IareteFlow } from "./iarete-flow.js";
+import { createProblematicNetwork } from "./problematic-network.js";
 const $ = (id) => document.getElementById(id);
 const audio = new SpaceAudio();
 const iareteFlow = new IareteFlow($("iarete-flow"));
@@ -57,7 +58,7 @@ const destinations = [
     id: "observatory",
     description:
       "Explore problemáticas e observe as relações entre os desafios dos territórios.",
-    contents: ["Problemáticas", "Questões dos territórios"],
+    contents: ["Problemáticas", "Conexões entre problemáticas"],
     name: "Observatório",
     module: "Problemáticas",
     short: "Observatório",
@@ -68,9 +69,9 @@ const destinations = [
     radius: 2.7,
     color: 0xb5a0ff,
     message:
-      "O Observatório revela relações entre problemáticas. Vamos buscar uma nova perspectiva?",
+      "O Observatório é uma rede viva de problemáticas. Cada nodo mantém suas conexões enquanto exploramos novas perspectivas.",
     arrival:
-      "Chegamos ao Observatório. As problemáticas e suas relações estão à sua espera.",
+      "Chegamos à rede do Observatório. Os nodos e suas conexões revelam relações entre problemáticas. Abra o grafo para explorar.",
   },
   {
     id: "connections",
@@ -360,7 +361,9 @@ function select(d) {
         ? "Navegar até a Terra →"
         : d.id === "agents"
           ? "Navegar até Inteligências →"
-          : "Navegar até a estação →";
+          : d.id === "observatory"
+            ? "Navegar até o Observatório →"
+            : "Navegar até a estação →";
   $("reticle-label").textContent =
     current === d.id
       ? `${d.short.toUpperCase()} / SINAL ESTÁVEL`
@@ -471,7 +474,9 @@ function finishTravel() {
       ? "Órbita terrestre estabelecida"
       : selected.id === "agents"
         ? "Campo de Inteligências alcançado"
-        : "Acoplamento concluído";
+        : selected.id === "observatory"
+          ? "Rede de Problemáticas alcançada"
+          : "Acoplamento concluído";
   $("speed").textContent = "ÓRBITA";
   $("progress").style.width = "100%";
   $("reticle-label").textContent =
@@ -641,6 +646,7 @@ window.addEventListener("message", (event) => {
     window.receiveSpaceCommand(JSON.parse(event.data));
   } catch (_) {}
 });
+let problematicNetwork;
 let intelligenceClock = 0;
 const intelligenceOrbits = [];
 function intelligenceField(destination) {
@@ -1202,11 +1208,13 @@ function initScene() {
     orbit.rotation.x = 1.15;
     orbit.rotation.y = 0.22;
     destinationWorld.add(orbit);
-    destinations
-      .slice(1)
-      .forEach((d, i) =>
-        d.id === "agents" ? intelligenceField(d) : station(d, i),
-      );
+    destinations.slice(1).forEach((d, i) => {
+      if (d.id === "agents") intelligenceField(d);
+      else if (d.id === "observatory") {
+        problematicNetwork = createProblematicNetwork(d);
+        destinationWorld.add(problematicNetwork.group);
+      } else station(d, i);
+    });
     researchThread();
     renderer.domElement.addEventListener("webglcontextlost", (event) => {
       event.preventDefault();
@@ -1329,6 +1337,7 @@ function tick(now) {
   if (camera && rendered) {
     if (!reduced) {
       updateIntelligenceField(dt);
+      problematicNetwork?.update(dt);
       earth.rotation.y += dt * 0.012;
       stations.forEach((s, i) => {
         s.rotation.y += dt * (0.025 + i * 0.005);
