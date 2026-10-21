@@ -66,7 +66,7 @@ class _AiAssistantPanelState extends State<AiAssistantPanel> {
                       const SizedBox(width: 10),
                       const Expanded(
                         child: Text(
-                          'Assistente do app',
+                          'Iareté · Inteligência de bordo',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 18,
@@ -243,28 +243,39 @@ class _MessageBubble extends StatelessWidget {
                         ),
                       )
                     else
-                      MarkdownBody(
-                        data: message.content,
-                        selectable: true,
-                        styleSheet:
-                            MarkdownStyleSheet.fromTheme(
-                              Theme.of(context),
-                            ).copyWith(
-                              p: const TextStyle(
-                                color: Colors.white,
-                                height: 1.45,
+                      Semantics(
+                        label: message.content,
+                        child: MarkdownBody(
+                          data: message.content,
+                          selectable: true,
+                          styleSheet:
+                              MarkdownStyleSheet.fromTheme(
+                                Theme.of(context),
+                              ).copyWith(
+                                p: const TextStyle(
+                                  color: Colors.white,
+                                  height: 1.45,
+                                ),
+                                code: const TextStyle(
+                                  color: Color(0xFFD9F5F2),
+                                  backgroundColor: Color(0xFF152E38),
+                                  fontFamily: 'monospace',
+                                ),
+                                listBullet: const TextStyle(
+                                  color: Color(0xFF9CE7DF),
+                                ),
+                                a: const TextStyle(
+                                  color: Color(0xFF9CE7DF),
+                                  decoration: TextDecoration.underline,
+                                ),
                               ),
-                              a: const TextStyle(
-                                color: Color(0xFF9CE7DF),
-                                decoration: TextDecoration.underline,
-                              ),
-                            ),
-                        imageBuilder: (_, _, _) => const Text(
-                          '[Imagem externa — abra a referência para visualizar]',
-                        ),
-                        onTapLink: (_, href, _) => openAiReference(
-                          href,
-                          beforeNavigate: () => Navigator.of(context).pop(),
+                          imageBuilder: (_, _, _) => const Text(
+                            '[Imagem externa — abra a referência para visualizar]',
+                          ),
+                          onTapLink: (_, href, _) => openAiReference(
+                            href,
+                            beforeNavigate: () => Navigator.of(context).pop(),
+                          ),
                         ),
                       ),
                     const SizedBox(height: 6),
@@ -286,8 +297,9 @@ class _MessageBubble extends StatelessWidget {
   }
 
   String _formatTime(DateTime dateTime) {
-    final String hour = dateTime.hour.toString().padLeft(2, '0');
-    final String minute = dateTime.minute.toString().padLeft(2, '0');
+    final local = dateTime.toLocal();
+    final String hour = local.hour.toString().padLeft(2, '0');
+    final String minute = local.minute.toString().padLeft(2, '0');
     return '$hour:$minute';
   }
 }
