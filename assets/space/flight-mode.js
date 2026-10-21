@@ -36,8 +36,7 @@ export class FlightModeSwitch {
       button.disabled = false;
       button.setAttribute('aria-pressed', String(index === (mode === 'inventor' ? 1 : 0)));
     });
-    this.root.querySelector('#mode-label').textContent = mode === 'inventor' ? 'Inventor' : 'Explorador';
-    this.root.querySelector('#mode-status').textContent = error || (mode === 'inventor' ? 'Crie e conecte descobertas.' : 'Explore e guarde referências.');
+    this.root.querySelector('#mode-status').textContent = error || '';
     this.root.classList.toggle('mode-error', Boolean(error));
     if (!error && announce && mode !== previous) this.changed(mode);
   }

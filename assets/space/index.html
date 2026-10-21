@@ -216,15 +216,6 @@
           <span><i class="live-dot"></i> CONSOLE DE BORDO</span
           ><span id="flight-status" role="status">Aguardando destino</span>
         </div>
-        <section id="flight-mode" aria-label="Modo de navegação">
-          <div class="mode-caption"><span class="eyebrow">COMANDO DE EXPEDIÇÃO</span><strong id="mode-label">Explorador</strong></div>
-          <div class="mode-lever" role="group" aria-label="Selecionar modo">
-            <i class="mode-handle" aria-hidden="true"></i>
-            <button id="mode-explorer" type="button" aria-pressed="true" disabled><span aria-hidden="true">◈</span> Explorador</button>
-            <button id="mode-inventor" type="button" aria-pressed="false" disabled><span aria-hidden="true">⚒</span> Inventor</button>
-          </div>
-          <p id="mode-status" role="status" aria-live="polite">Sincronizando modo…</p>
-        </section>
         <div class="console-content">
           <section class="assistant">
             <button
@@ -267,16 +258,19 @@
         </div>
         <nav id="destinations" aria-label="Destinos da expedição"></nav>
         <div class="console-footer">
-          <span id="log">EC-01 · Conexão com a nave estabelecida</span
-          ><span class="keyboard-help">1–4 DESTINOS <span>↵ NAVEGAR</span></span
-          ><button id="tour-replay" class="text-button">Guia da Iareté</button
-          ><button
-            id="journal-toggle"
-            class="text-button"
-            aria-expanded="false"
-          >
-            Diário de bordo +
-          </button>
+        <section id="flight-mode" aria-label="Modo de navegação">
+          <div class="mode-lever" role="group" aria-label="Selecionar modo">
+            <i class="mode-handle" aria-hidden="true"></i>
+            <button id="mode-explorer" type="button" aria-pressed="true" disabled><span aria-hidden="true">◈</span> Explorador</button>
+            <button id="mode-inventor" type="button" aria-pressed="false" disabled><span aria-hidden="true">⚒</span> Inventor</button>
+          </div>
+          <p id="mode-status" role="status" aria-live="polite"></p>
+        </section>
+          <div class="console-links">
+            <button id="tour-replay" class="text-button">Guia da Iareté</button>
+            <button id="journal-toggle" class="text-button" aria-expanded="false">Diário de bordo +</button>
+          </div>
+          <span id="log" class="sr-only">EC-01 · Conexão com a nave estabelecida</span>
         </div>
       </section>
     </main>
