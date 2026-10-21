@@ -1,3 +1,5 @@
+import 'package:unisinos_usp_app/models/inventive/inventive_catalog.dart';
+import 'package:unisinos_usp_app/widgets/inventive_classification_fields.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:unisinos_usp_app/widgets/clue_attachment_tile.dart';
 import 'package:unisinos_usp_app/screens/management/management_input.dart';
@@ -42,6 +44,12 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
   final TextEditingController _linkController = TextEditingController();
   final MFileController _fileController = MFileController();
   final Map<String, TextEditingController> _metadataControllers = {};
+  final Map<String, dynamic> _classificationEdits = {};
+  Map<String, dynamic> _metadataForSave() =>
+      mergeClueMetadata(_initialMetadata, {
+        for (final entry in _metadataControllers.entries)
+          entry.key: entry.value.text,
+      }, _classificationEdits);
   final List<FileModel> _attachments = [];
   bool _filled = false;
   String? _initialFormSnapshot;
@@ -101,10 +109,7 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
                 .toJson(),
             'category_id': _categoryId,
             'active': _isActive,
-            'metadata': {
-              for (final entry in _metadataControllers.entries)
-                entry.key: entry.value.text,
-            },
+            'metadata': _metadataForSave(),
           }
         : {},
     notes: [
@@ -322,20 +327,30 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
                   _categoryId == null ? 'Categoria obrigatória' : null,
             ),
             Insets.large.height,
+            InventiveClassificationFields(
+              enabledKeys: _metadataTags,
+              metadata: _metadataForSave(),
+              onChanged: (key, value) =>
+                  setState(() => _classificationEdits[key] = value),
+            ),
             LivingClueDescriptionEditor(controller: _descriptionController),
             Insets.large.height,
-            if (_metadataTags.isNotEmpty) ...[
+            if (_metadataTags.any(
+              (tag) => !InventiveCatalog.keys.contains(tag),
+            )) ...[
               const Text('Metadata (opcional)'),
               const SizedBox(height: 8),
-              ..._metadataTags.map(
-                (tag) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: ManagementInput(
-                    hintText: _formatTagLabel(tag),
-                    controller: _metadataControllers[tag]!,
+              ..._metadataTags
+                  .where((tag) => !InventiveCatalog.keys.contains(tag))
+                  .map(
+                    (tag) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: ManagementInput(
+                        hintText: _formatTagLabel(tag),
+                        controller: _metadataControllers[tag]!,
+                      ),
+                    ),
                   ),
-                ),
-              ),
             ],
           ],
         ),
@@ -567,7 +582,8 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
 
   bool get _hasUnsavedChanges =>
       _filled &&
-      (_formSnapshot() != _initialFormSnapshot ||
+      (_classificationEdits.isNotEmpty ||
+          _formSnapshot() != _initialFormSnapshot ||
           _metadataControllers.entries.any(
             (entry) =>
                 entry.value.text !=
@@ -602,7 +618,9 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
           .map((t) => t.trim())
           .where((t) => t.isNotEmpty)
           .toList();
-      for (final tag in _metadataTags) {
+      for (final tag in _metadataTags.where(
+        (tag) => !InventiveCatalog.keys.contains(tag),
+      )) {
         final initial = existingMetadata[tag]?.toString() ?? '';
         _metadataControllers.putIfAbsent(
           tag,
@@ -796,13 +814,7 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
       );
       return;
     }
-    final Map<String, dynamic> metadata = {};
-    for (final entry in _metadataControllers.entries) {
-      final value = entry.value.text.trim();
-      if (value.isNotEmpty) {
-        metadata[entry.key] = value;
-      }
-    }
+    final metadata = _metadataForSave();
 
     final model = LivingClueModel(
       id: _controller.livingClue.value?.id ?? _controller.livingClueId ?? 0,

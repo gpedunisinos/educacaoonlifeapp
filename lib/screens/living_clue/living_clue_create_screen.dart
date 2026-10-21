@@ -1,3 +1,5 @@
+import 'package:unisinos_usp_app/models/inventive/inventive_catalog.dart';
+import 'package:unisinos_usp_app/widgets/inventive_classification_fields.dart';
 import 'package:unisinos_usp_app/screens/management/management_input.dart';
 import 'package:unisinos_usp_app/screens/space/space_record_shell.dart';
 import 'package:unisinos_usp_app/widgets/living_clue_location_button.dart';
@@ -35,6 +37,11 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
   final TextEditingController _imageUrlController = TextEditingController();
   final TextEditingController _categoryController = TextEditingController();
   final Map<String, TextEditingController> _metadataControllers = {};
+  final Map<String, dynamic> _classificationEdits = {};
+  Map<String, dynamic> _metadataForSave() => mergeClueMetadata({}, {
+    for (final entry in _metadataControllers.entries)
+      entry.key: entry.value.text,
+  }, _classificationEdits);
   int? _categoryId;
   String _categoryName = '';
   String _categoryType = '';
@@ -87,7 +94,9 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
           .map((t) => t.trim())
           .where((t) => t.isNotEmpty)
           .toList();
-      for (final tag in _metadataTags) {
+      for (final tag in _metadataTags.where(
+        (tag) => !InventiveCatalog.keys.contains(tag),
+      )) {
         _metadataControllers[tag] = TextEditingController();
       }
     }
@@ -171,22 +180,39 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
                                     : null,
                               ),
                               Insets.large.height,
+                              InventiveClassificationFields(
+                                enabledKeys: _metadataTags,
+                                metadata: _metadataForSave(),
+                                onChanged: (key, value) => setState(
+                                  () => _classificationEdits[key] = value,
+                                ),
+                              ),
                               LivingClueDescriptionEditor(
                                 controller: _descriptionController,
                               ),
                               Insets.large.height,
-                              if (_metadataTags.isNotEmpty) ...[
+                              if (_metadataTags.any(
+                                (tag) => !InventiveCatalog.keys.contains(tag),
+                              )) ...[
                                 const Text('Metadata (opcional)'),
                                 const SizedBox(height: 8),
-                                ..._metadataTags.map(
-                                  (tag) => Padding(
-                                    padding: const EdgeInsets.only(bottom: 12),
-                                    child: ManagementInput(
-                                      hintText: _formatTagLabel(tag),
-                                      controller: _metadataControllers[tag]!,
+                                ..._metadataTags
+                                    .where(
+                                      (tag) =>
+                                          !InventiveCatalog.keys.contains(tag),
+                                    )
+                                    .map(
+                                      (tag) => Padding(
+                                        padding: const EdgeInsets.only(
+                                          bottom: 12,
+                                        ),
+                                        child: ManagementInput(
+                                          hintText: _formatTagLabel(tag),
+                                          controller:
+                                              _metadataControllers[tag]!,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                ),
                               ],
                             ],
                           ),
@@ -307,17 +333,16 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
         'description': QuillDocumentUtils.plainText(_descriptionController),
         'description_delta': _descriptionController.document.toDelta().toJson(),
         'category_id': _categoryId,
-        'metadata': {
-          for (final entry in _metadataControllers.entries)
-            entry.key: entry.value.text,
-        },
+        'metadata': _metadataForSave(),
       },
       visibleFields: <String>[
         'nome',
         'categoria',
         if (_categoryType.isNotEmpty) 'tipo da categoria',
         'descrição',
-        ..._metadataTags.map(_formatTagLabel),
+        ..._metadataTags
+            .where((tag) => !InventiveCatalog.keys.contains(tag))
+            .map(_formatTagLabel),
         'latitude',
         'longitude',
         'URL da imagem',
@@ -376,13 +401,7 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
       );
       return;
     }
-    final Map<String, dynamic> metadata = {};
-    for (final entry in _metadataControllers.entries) {
-      final value = entry.value.text.trim();
-      if (value.isNotEmpty) {
-        metadata[entry.key] = value;
-      }
-    }
+    final metadata = _metadataForSave();
 
     final model = LivingClueModel(
       id: 0,

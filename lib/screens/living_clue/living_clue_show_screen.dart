@@ -1,3 +1,5 @@
+import 'package:unisinos_usp_app/models/inventive/inventive_catalog.dart';
+import 'package:unisinos_usp_app/widgets/inventive_classification_fields.dart';
 import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
 import 'package:unisinos_usp_app/widgets/living_clue_layout.dart';
@@ -275,6 +277,9 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
                               ),
                             ],
                           ),
+                          InventiveClassificationFields(
+                            metadata: model.metadata ?? const {},
+                          ),
                           if ((model.description ?? '').isNotEmpty ||
                               (model.descriptionDelta ?? '').isNotEmpty) ...[
                             const SizedBox(height: 12),
@@ -423,7 +428,10 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
                       ),
                     ),
                   ],
-                  if (model.metadata != null && model.metadata!.isNotEmpty) ...[
+                  if (model.metadata != null &&
+                      model.metadata!.keys.any(
+                        (key) => !InventiveCatalog.keys.contains(key),
+                      )) ...[
                     const SizedBox(height: 12),
                     Card(
                       shape: RoundedRectangleBorder(
@@ -444,24 +452,31 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
                               style: TextStyle(fontWeight: FontWeight.w700),
                             ),
                             const SizedBox(height: 8),
-                            ...model.metadata!.entries.map(
-                              (entry) => Padding(
-                                padding: const EdgeInsets.only(bottom: 10),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      _formatTagLabel(entry.key),
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                            ...model.metadata!.entries
+                                .where(
+                                  (entry) => !InventiveCatalog.keys.contains(
+                                    entry.key,
+                                  ),
+                                )
+                                .map(
+                                  (entry) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 10),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          _formatTagLabel(entry.key),
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(entry.value?.toString() ?? ''),
+                                      ],
                                     ),
-                                    const SizedBox(height: 2),
-                                    Text(entry.value?.toString() ?? ''),
-                                  ],
+                                  ),
                                 ),
-                              ),
-                            ),
                           ],
                         ),
                       ),
