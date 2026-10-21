@@ -12,7 +12,9 @@ import 'package:unisinos_usp_app/models/node_link_model.dart';
 import 'package:unisinos_usp_app/models/node_model.dart';
 import 'package:unisinos_usp_app/models/node_type_model.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
-import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'dart:math' as math;
+import 'package:unisinos_usp_app/screens/space/research_room_painter.dart';
+import 'package:unisinos_usp_app/screens/space/space_record_shell.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class NodeGraphScreen extends StatefulWidget {
@@ -29,15 +31,18 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
   final TransformationController _transformationController =
       TransformationController();
   bool _didCenterGraph = false;
+  final _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    _searchController.text = _controller.searchQuery.value;
     _transformationController.value = Matrix4.identity();
   }
 
   @override
   void dispose() {
+    _searchController.dispose();
     _transformationController.dispose();
     super.dispose();
   }
@@ -48,173 +53,438 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
       Get.currentRoute,
       _buildAiContext,
     );
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
-        leading: const SafeBackButton(),
-        title: const Text('Grafo de problemáticas'),
-        actions: [
-          if (Get.find<UserController>().user.value?.canAuthor == true)
-            IconButton(
-              icon: const Icon(Icons.add_circle_outline),
-              onPressed: _openCreateNodeSheet,
-              tooltip: 'Nova problemática',
+    return Theme(
+      data: spaceRecordTheme(),
+      child: Scaffold(
+        backgroundColor: const Color(0xFF050C18),
+        body: Stack(
+          children: [
+            const Positioned.fill(
+              child: CustomPaint(painter: ResearchRoomPainter()),
             ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _controller.loadGraph,
-            tooltip: 'Recarregar',
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          Obx(() {
-            if (_controller.isLoading.value && _controller.graphNodes.isEmpty) {
-              return const Center(
-                child: CircularProgressIndicator(color: Colors.white),
-              );
-            }
-
-            final nodes = _controller.visibleNodes;
-            final links = _controller.visibleLinks;
-            final neighbors = _controller.neighborNodeIds;
-
-            return Column(
-              children: [
-                _GraphFilters(controller: _controller),
-                if (_controller.errorMessage.value != null)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                    child: Card(
-                      color: Colors.red.shade50,
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Text(
-                          _controller.errorMessage.value!,
-                          style: TextStyle(color: Colors.red.shade800),
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        OutlinedButton.icon(
+                          onPressed: _returnToCockpit,
+                          icon: const Icon(Icons.arrow_back, size: 18),
+                          label: const Text('Cockpit'),
                         ),
-                      ),
+                        const SizedBox(width: 14),
+                        const Expanded(
+                          child: Text(
+                            'SALA DE PROBLEMÁTICAS',
+                            style: TextStyle(
+                              color: Color(0xFF9CE7DF),
+                              letterSpacing: 1.6,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        if (Get.find<UserController>().user.value?.canAuthor ==
+                            true)
+                          IconButton(
+                            onPressed: _openCreateNodeSheet,
+                            icon: const Icon(Icons.add_circle_outline),
+                            tooltip: 'Nova problemática',
+                          ),
+                        IconButton(
+                          onPressed: _controller.loadGraph,
+                          icon: const Icon(Icons.refresh),
+                          tooltip: 'Recarregar',
+                        ),
+                      ],
                     ),
-                  ),
-                Expanded(
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      if (nodes.isNotEmpty) {
-                        _centerGraphIfNeeded(
-                          Size(constraints.maxWidth, constraints.maxHeight),
-                        );
-                      }
-
-                      return Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(18),
-                          child: Container(
-                            color: Colors.black.withValues(alpha: 0.45),
-                            child: nodes.isEmpty
-                                ? _GraphEmptyState(
-                                    hasLoadedNodes:
-                                        _controller.graphNodes.isNotEmpty,
-                                    hasActiveFilters:
-                                        _controller.minimumDegree.value > 0 ||
-                                        _controller.selectedTypeIds.length !=
-                                            _controller.nodeTypes.length,
-                                    onCreatePressed: _openCreateNodeSheet,
-                                  )
-                                : InteractiveViewer(
-                                    transformationController:
-                                        _transformationController,
-                                    constrained: false,
-                                    minScale: 0.2,
-                                    maxScale: 3.5,
-                                    boundaryMargin: const EdgeInsets.all(600),
-                                    child: SizedBox(
-                                      width: _graphCanvasSize.width,
-                                      height: _graphCanvasSize.height,
-                                      child: Stack(
+                    const SizedBox(height: 12),
+                    Expanded(
+                      child: Obx(() {
+                        final nodes = _controller.visibleNodes;
+                        final links = _controller.visibleLinks;
+                        final neighbors = _controller.neighborNodeIds;
+                        return LayoutBuilder(
+                          builder: (context, constraints) {
+                            final wide = constraints.maxWidth >= 1000;
+                            final panel = AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 250),
+                              child: _controller.selectedNodeId.value == null
+                                  ? const Padding(
+                                      key: ValueKey('idle'),
+                                      padding: EdgeInsets.all(24),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
-                                          Positioned.fill(
-                                            child: CustomPaint(
-                                              painter: _GraphLinkPainter(
-                                                nodes: nodes,
-                                                links: links,
-                                                selectedNodeId: _controller
-                                                    .selectedNodeId
-                                                    .value,
-                                                neighborNodeIds: neighbors,
-                                              ),
+                                          Icon(
+                                            Icons.hub_outlined,
+                                            color: Color(0xFF9CE7DF),
+                                            size: 38,
+                                          ),
+                                          SizedBox(height: 20),
+                                          Text(
+                                            'Analisar a rede',
+                                            style: TextStyle(fontSize: 22),
+                                          ),
+                                          SizedBox(height: 12),
+                                          Text(
+                                            'Selecione uma problemática para conhecer seu tipo, explorar conexões e acessar as ações disponíveis.',
+                                            style: TextStyle(
+                                              color: Color(0xFFB2CDD5),
+                                              height: 1.6,
                                             ),
                                           ),
-                                          for (final node in nodes)
-                                            Positioned(
-                                              left:
-                                                  node.position.dx +
-                                                  (_graphCanvasSize.width / 2) -
-                                                  node.radius,
-                                              top:
-                                                  node.position.dy +
-                                                  (_graphCanvasSize.height /
-                                                      2) -
-                                                  node.radius,
-                                              child: _GraphNodeWidget(
-                                                node: node,
-                                                isSelected:
-                                                    _controller
-                                                        .selectedNodeId
-                                                        .value ==
-                                                    node.node.id,
-                                                isNeighbor: neighbors.contains(
-                                                  node.node.id,
-                                                ),
-                                                onTap: () => _controller
-                                                    .selectNode(node.node.id),
-                                                onDragUpdate: (details) {
-                                                  final double scale =
-                                                      _transformationController
-                                                          .value
-                                                          .getMaxScaleOnAxis();
-                                                  _controller
-                                                      .updateNodePosition(
-                                                        node.node.id,
-                                                        node.position +
-                                                            details.delta /
-                                                                scale,
-                                                      );
-                                                },
-                                                onDragEnd: () => _controller
-                                                    .persistNodePosition(
-                                                      node.node.id,
-                                                    ),
-                                              ),
-                                            ),
                                         ],
+                                      ),
+                                    )
+                                  : _SelectedNodePanel(
+                                      key: ValueKey(
+                                        _controller.selectedNodeId.value,
+                                      ),
+                                      controller: _controller,
+                                      onCreateNear: _openCreateNodeSheet,
+                                      onConnect: _openConnectSelectedNodeSheet,
+                                      onConnections:
+                                          _openSelectedNodeConnectionsSheet,
+                                      onEdit: _openEditSelectedNodeSheet,
+                                      onDelete: _confirmDeleteSelectedNode,
+                                    ),
+                            );
+                            final graph = Column(
+                              children: [
+                                ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    maxHeight: constraints.maxHeight * .33,
+                                  ),
+                                  child: SingleChildScrollView(
+                                    child: _GraphFilters(
+                                      searchController: _searchController,
+                                      controller: _controller,
+                                    ),
+                                  ),
+                                ),
+                                if (_controller.errorMessage.value != null)
+                                  Padding(
+                                    padding: const EdgeInsets.all(8),
+                                    child: Text(
+                                      _controller.errorMessage.value!,
+                                      style: const TextStyle(
+                                        color: Color(0xFFFFB5B5),
                                       ),
                                     ),
                                   ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                                Expanded(
+                                  child: LayoutBuilder(
+                                    builder: (context, viewport) {
+                                      _viewport = Size(
+                                        viewport.maxWidth,
+                                        viewport.maxHeight,
+                                      );
+                                      if (nodes.isNotEmpty)
+                                        _centerGraphIfNeeded(_viewport);
+                                      return Container(
+                                        clipBehavior: Clip.antiAlias,
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xDD061421),
+                                          borderRadius: BorderRadius.circular(
+                                            18,
+                                          ),
+                                          border: Border.all(
+                                            color: const Color(0xFF315766),
+                                          ),
+                                        ),
+                                        child: Stack(
+                                          children: [
+                                            Positioned.fill(
+                                              child:
+                                                  _controller.isLoading.value &&
+                                                      nodes.isEmpty
+                                                  ? const Center(
+                                                      child:
+                                                          CircularProgressIndicator(),
+                                                    )
+                                                  : nodes.isEmpty
+                                                  ? _GraphEmptyState(
+                                                      hasLoadedNodes:
+                                                          _controller
+                                                              .graphNodes
+                                                              .isNotEmpty,
+                                                      hasActiveFilters:
+                                                          _controller
+                                                              .searchQuery
+                                                              .value
+                                                              .isNotEmpty ||
+                                                          _controller
+                                                                  .minimumDegree
+                                                                  .value >
+                                                              0 ||
+                                                          _controller
+                                                                  .selectedTypeIds
+                                                                  .length !=
+                                                              _controller
+                                                                  .nodeTypes
+                                                                  .length,
+                                                      onCreatePressed:
+                                                          _openCreateNodeSheet,
+                                                    )
+                                                  : InteractiveViewer(
+                                                      transformationController:
+                                                          _transformationController,
+                                                      constrained: false,
+                                                      minScale: 0.2,
+                                                      maxScale: 3.5,
+                                                      boundaryMargin:
+                                                          const EdgeInsets.all(
+                                                            600,
+                                                          ),
+                                                      child: SizedBox(
+                                                        width: _graphCanvasSize
+                                                            .width,
+                                                        height: _graphCanvasSize
+                                                            .height,
+                                                        child: Stack(
+                                                          children: [
+                                                            Positioned.fill(
+                                                              child: CustomPaint(
+                                                                painter: _GraphLinkPainter(
+                                                                  nodes: nodes,
+                                                                  links: links,
+                                                                  selectedNodeId:
+                                                                      _controller
+                                                                          .selectedNodeId
+                                                                          .value,
+                                                                  neighborNodeIds:
+                                                                      neighbors,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            for (final node
+                                                                in nodes)
+                                                              Positioned(
+                                                                left:
+                                                                    node
+                                                                        .position
+                                                                        .dx +
+                                                                    (_graphCanvasSize
+                                                                            .width /
+                                                                        2) -
+                                                                    node.radius,
+                                                                top:
+                                                                    node
+                                                                        .position
+                                                                        .dy +
+                                                                    (_graphCanvasSize
+                                                                            .height /
+                                                                        2) -
+                                                                    node.radius,
+                                                                child: _GraphNodeWidget(
+                                                                  node: node,
+                                                                  isSelected:
+                                                                      _controller
+                                                                          .selectedNodeId
+                                                                          .value ==
+                                                                      node
+                                                                          .node
+                                                                          .id,
+                                                                  isNeighbor:
+                                                                      _controller
+                                                                              .selectedNodeId
+                                                                              .value ==
+                                                                          null ||
+                                                                      neighbors.contains(
+                                                                        node
+                                                                            .node
+                                                                            .id,
+                                                                      ),
+                                                                  onTap: () => _controller
+                                                                      .selectNode(
+                                                                        node
+                                                                            .node
+                                                                            .id,
+                                                                      ),
+                                                                  onDragUpdate: (details) {
+                                                                    final double
+                                                                    scale = _transformationController
+                                                                        .value
+                                                                        .getMaxScaleOnAxis();
+                                                                    _controller.updateNodePosition(
+                                                                      node
+                                                                          .node
+                                                                          .id,
+                                                                      node.position +
+                                                                          details.delta /
+                                                                              scale,
+                                                                    );
+                                                                  },
+                                                                  onDragEnd: () =>
+                                                                      _controller.persistNodePosition(
+                                                                        node
+                                                                            .node
+                                                                            .id,
+                                                                      ),
+                                                                ),
+                                                              ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                            ),
+                                            Positioned(
+                                              top: 14,
+                                              left: 16,
+                                              child: IgnorePointer(
+                                                child: Text(
+                                                  '${nodes.length} NODOS  /  ${links.length} CONEXÕES',
+                                                  style: const TextStyle(
+                                                    fontSize: 10,
+                                                    letterSpacing: 1.5,
+                                                    color: Color(0xFF9CE7DF),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            Positioned(
+                                              bottom: 12,
+                                              right: 12,
+                                              child: Card(
+                                                child: Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    IconButton(
+                                                      onPressed: () =>
+                                                          _zoom(.8),
+                                                      icon: const Icon(
+                                                        Icons.remove,
+                                                      ),
+                                                      tooltip: 'Reduzir',
+                                                    ),
+                                                    IconButton(
+                                                      onPressed: () =>
+                                                          _zoom(1.25),
+                                                      icon: const Icon(
+                                                        Icons.add,
+                                                      ),
+                                                      tooltip: 'Ampliar',
+                                                    ),
+                                                    IconButton(
+                                                      onPressed: _fitGraph,
+                                                      icon: const Icon(
+                                                        Icons
+                                                            .center_focus_strong,
+                                                      ),
+                                                      tooltip:
+                                                          'Reenquadrar rede',
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            );
+                            if (wide)
+                              return Row(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Expanded(child: graph),
+                                  const SizedBox(width: 16),
+                                  SizedBox(
+                                    width: 320,
+                                    child: Card(
+                                      child: SingleChildScrollView(
+                                        child: panel,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            return Column(
+                              children: [
+                                Expanded(child: graph),
+                                if (_controller.selectedNodeId.value != null)
+                                  ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      maxHeight: constraints.maxHeight * .36,
+                                    ),
+                                    child: SingleChildScrollView(child: panel),
+                                  ),
+                              ],
+                            );
+                          },
+                        );
+                      }),
+                    ),
+                  ],
                 ),
-                if (_controller.selectedNodeId.value != null)
-                  _SelectedNodePanel(
-                    controller: _controller,
-                    onCreateNear: _openCreateNodeSheet,
-                    onConnect: _openConnectSelectedNodeSheet,
-                    onConnections: _openSelectedNodeConnectionsSheet,
-                    onEdit: _openEditSelectedNodeSheet,
-                    onDelete: _confirmDeleteSelectedNode,
-                  ),
-              ],
-            );
-          }),
-        ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  Size _viewport = Size.zero;
+
+  void _returnToCockpit() {
+    var found = false;
+    Get.until((route) {
+      found = route.settings.name == '/space';
+      return found || route.isFirst;
+    });
+    if (!found) Get.offNamed('/space');
+  }
+
+  void _zoom(double factor) {
+    final matrix = _transformationController.value;
+    final scale = matrix.getMaxScaleOnAxis();
+    final next = (scale * factor).clamp(.2, 3.5);
+    final ratio = next / scale;
+    _transformationController.value = Matrix4.identity()
+      ..setEntry(0, 0, next)
+      ..setEntry(1, 1, next)
+      ..setEntry(
+        0,
+        3,
+        _viewport.width / 2 +
+            (matrix.entry(0, 3) - _viewport.width / 2) * ratio,
+      )
+      ..setEntry(
+        1,
+        3,
+        _viewport.height / 2 +
+            (matrix.entry(1, 3) - _viewport.height / 2) * ratio,
+      );
+  }
+
+  void _fitGraph() {
+    final nodes = _controller.visibleNodes;
+    if (nodes.isEmpty || _viewport.isEmpty) return;
+    final left = nodes.map((n) => n.position.dx - n.radius).reduce(math.min);
+    final right = nodes.map((n) => n.position.dx + n.radius).reduce(math.max);
+    final top = nodes.map((n) => n.position.dy - n.radius).reduce(math.min);
+    final bottom = nodes.map((n) => n.position.dy + n.radius).reduce(math.max);
+    final scale = math
+        .min(
+          (_viewport.width - 90) / math.max(1, right - left),
+          (_viewport.height - 100) / math.max(1, bottom - top),
+        )
+        .clamp(.2, 1.3);
+    _transformationController.value = Matrix4.identity()
+      ..translate(
+        _viewport.width / 2 - (900 + (left + right) / 2) * scale,
+        _viewport.height / 2 - (700 + (top + bottom) / 2) * scale,
+      )
+      ..scale(scale);
   }
 
   void _centerGraphIfNeeded(Size viewportSize) {
@@ -224,17 +494,7 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
 
-      const double initialScale = 0.85;
-      final double dx =
-          (viewportSize.width / 2) -
-          (_graphCanvasSize.width * initialScale / 2);
-      final double dy =
-          (viewportSize.height / 2) -
-          (_graphCanvasSize.height * initialScale / 2);
-
-      _transformationController.value = Matrix4.identity()
-        ..translate(dx, dy)
-        ..scale(initialScale);
+      _fitGraph();
     });
   }
 
@@ -408,11 +668,11 @@ class _GraphEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String title = hasLoadedNodes
-        ? 'Nenhum no visivel'
-        : 'Nenhum no carregado';
+        ? 'Nenhuma problemática encontrada'
+        : 'A rede ainda está vazia';
     final String message = hasLoadedNodes
-        ? 'Os filtros atuais esconderam todos os nos do grafo.'
-        : 'A API nao retornou nos para o mapa. Verifique o payload de /nodes/map.';
+        ? 'Ajuste a busca ou os filtros para explorar outras problemáticas.'
+        : 'As problemáticas cadastradas aparecerão neste painel de análise.';
 
     return Center(
       child: ConstrainedBox(
@@ -456,7 +716,7 @@ class _GraphEmptyState extends StatelessWidget {
                 if (hasActiveFilters) ...[
                   const SizedBox(height: 12),
                   Text(
-                    'Tente limpar os filtros de tipo e grau minimo.',
+                    'Tente limpar a busca e os filtros de tipo e conexões.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.62),
@@ -474,6 +734,7 @@ class _GraphEmptyState extends StatelessWidget {
 
 class _SelectedNodePanel extends StatelessWidget {
   const _SelectedNodePanel({
+    super.key,
     required this.controller,
     required this.onCreateNear,
     required this.onConnect,
@@ -549,6 +810,7 @@ class _SelectedNodePanel extends StatelessWidget {
                       LockerButton(type: 'node', id: node.id),
                       IconButton(
                         onPressed: () => controller.selectNode(null),
+                        tooltip: 'Fechar análise',
                         icon: const Icon(Icons.close, color: Colors.white70),
                       ),
                     ],
@@ -1235,23 +1497,39 @@ class _NodeEditorSheetState extends State<_NodeEditorSheet> {
 }
 
 class _GraphFilters extends StatelessWidget {
-  const _GraphFilters({required this.controller});
+  const _GraphFilters({
+    required this.controller,
+    required this.searchController,
+  });
+
+  final TextEditingController searchController;
 
   final NodeGraphController controller;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.55),
+          color: const Color(0xE6091B2A),
           borderRadius: BorderRadius.circular(18),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            TextField(
+              controller: searchController,
+              onChanged: controller.updateSearch,
+              decoration: const InputDecoration(
+                isDense: true,
+                prefixIcon: Icon(Icons.search),
+                hintText: 'Buscar problemática pelo nome',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 10),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -1293,7 +1571,7 @@ class _GraphFilters extends StatelessWidget {
                 const Icon(Icons.tune, color: Colors.white70, size: 18),
                 const SizedBox(width: 8),
                 const Text(
-                  'Grau mínimo',
+                  'Conexões mín.',
                   style: TextStyle(color: Colors.white),
                 ),
                 Expanded(
@@ -1366,7 +1644,15 @@ class _GraphNodeWidget extends StatelessWidget {
         width: size,
         height: size,
         decoration: BoxDecoration(
-          color: color.withValues(alpha: faded ? 0.35 : 0.95),
+          gradient: RadialGradient(
+            colors: [
+              Color.alphaBlend(
+                color.withValues(alpha: faded ? .16 : .48),
+                const Color(0xFF091B2A),
+              ),
+              const Color(0xFF091B2A),
+            ],
+          ),
           shape: BoxShape.circle,
           border: Border.all(
             color: isSelected ? Colors.white : color.withValues(alpha: 0.7),
@@ -1386,15 +1672,17 @@ class _GraphNodeWidget extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  node.node.name,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: faded ? 0.7 : 1),
-                    fontWeight: FontWeight.w700,
-                    fontSize: size < 54 ? 10 : 12,
+                Flexible(
+                  child: Text(
+                    node.node.name,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: faded ? 0.7 : 1),
+                      fontWeight: FontWeight.w700,
+                      fontSize: size < 54 ? 10 : 12,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -1450,9 +1738,11 @@ class _GraphLinkPainter extends CustomPainter {
 
       final Paint paint = Paint()
         ..color = highlighted
-            ? Colors.white
-            : Colors.white.withValues(alpha: 0.25)
-        ..strokeWidth = highlighted ? 3.2 : 1.4
+            ? const Color(0xFF9CE7DF)
+            : const Color(
+                0xFF76B2C9,
+              ).withValues(alpha: selectedNodeId == null ? .30 : .10)
+        ..strokeWidth = highlighted ? 2 : 1
         ..style = PaintingStyle.stroke;
 
       canvas.drawLine(

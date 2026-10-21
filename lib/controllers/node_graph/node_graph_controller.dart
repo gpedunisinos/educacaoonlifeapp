@@ -23,6 +23,7 @@ class NodeGraphController extends GetxController {
   final RxList<NodeTypeModel> nodeTypes = <NodeTypeModel>[].obs;
   final RxSet<int> selectedTypeIds = RxSet<int>({});
   final Rxn<int> selectedNodeId = Rxn<int>();
+  final RxString searchQuery = ''.obs;
   final RxInt minimumDegree = 0.obs;
   final RxBool isLoading = false.obs;
   final RxBool isSavingNode = false.obs;
@@ -102,7 +103,8 @@ class NodeGraphController extends GetxController {
       .where(
         (node) =>
             selectedTypeIds.contains(node.node.nodeTypeId) &&
-            node.degree >= minimumDegree.value,
+            node.degree >= minimumDegree.value &&
+            node.node.name.toLowerCase().contains(searchQuery.value.trim().toLowerCase()),
       )
       .toList();
 
@@ -123,6 +125,11 @@ class NodeGraphController extends GetxController {
       if (link.targetNodeId == selected) ids.add(link.sourceNodeId);
     }
     return ids;
+  }
+
+  void updateSearch(String value) {
+    searchQuery.value = value;
+    _ensureSelectedNodeVisible();
   }
 
   void toggleType(int nodeTypeId, bool enabled) {

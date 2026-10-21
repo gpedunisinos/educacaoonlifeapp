@@ -352,3 +352,11 @@ Validação: onze testes aprovados (Central → lista → detalhe → lista com 
 A representação animada da Iareté acompanha cada explicação do guia, com escrita gradual e os sons já existentes. Durante o tutorial, novas falas do cockpit são suspensas e a digitação anterior é cancelada ao iniciar a etapa. Ao sair ou concluir, a fala volta ao console. O texto reserva sua altura para evitar saltos no cartão; leitores de tela recebem a explicação completa e o modo de movimento reduzido exibe o texto diretamente.
 
 Validação: quatro testes de posicionamento do guia, três testes Flutter de navegação, build web e análise Dart sem erros (avisos preexistentes).
+
+### Piloto da Sala de Problemáticas
+
+A rota `/nodes/graph` reutiliza o grafo e as ações existentes dentro do ambiente da nave. Busca local por nome se combina com tipo e conexões mínimas; os botões de zoom mantêm o centro e o reenquadramento considera os limites dos nodos visíveis. O desktop reserva uma coluna para análise, sem deslocar o grafo ao selecionar. Em telas menores os detalhes ficam abaixo com rolagem própria. As relações selecionadas ganham destaque ciano e os demais elementos perdem intensidade; as cores cadastradas são preservadas.
+
+O piloto mantém seleção, zoom, pan, persistência do arraste para Inventores, Locker, criação, edição e gestão das conexões. O botão Cockpit retorna à cena existente quando disponível. O modelo atual não fornece descrição; não foram inventados dados. Leitura completa, redesenho dos formulários e integração sonora são etapas posteriores.
+
+Validação: quatro testes cobrindo composição dos filtros, posições preservadas, seleção, zoom, permissões de Explorador e layouts 1440×900, 390×844 e 844×390. Prévia conferida com 22 nodos e 37 conexões reais do ambiente local. Captura local ignorada em `docs/evidencias/sala-problematicas-piloto.png`.
