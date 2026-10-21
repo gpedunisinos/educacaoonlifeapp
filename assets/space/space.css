@@ -1833,3 +1833,114 @@ dialog::backdrop {
   .iarete-flow { flex-basis: 88px; width: 88px; height: 66px; }
   .assistant { gap: 10px; }
 }
+
+/* Readable, larger lower flight deck across all flight states. */
+.console {
+  left: 6%;
+  right: 6%;
+  padding: 16px 26px 0;
+}
+.console-top {
+  font-size: 11px;
+  letter-spacing: 1.3px;
+  padding-bottom: 12px;
+  gap: 16px;
+}
+.console-content {
+  padding: 18px 0;
+  gap: 28px;
+  grid-template-columns: 1.15fr 1fr;
+}
+.assistant { gap: 20px; }
+.assistant-name { font-size: 14px; }
+.assistant-name span { font-size: 10px; letter-spacing: 1px; }
+.assistant p {
+  font-size: 15px;
+  line-height: 1.55;
+  min-height: 48px;
+  margin: 10px 0 4px;
+}
+.iarete-flow { flex-basis: 190px; width: 190px; height: 112px; }
+.console .text-button { font-size: 13px; padding: 8px 0; }
+.navigation { padding-left: 26px; }
+.navigation .eyebrow { font-size: 11px; }
+.destination-row h2 { font-size: 24px; margin: 8px 0 12px; }
+.destination-row > span { font-size: 12px; }
+.flight-progress { height: 3px; margin-bottom: 14px; }
+.actions button { font-size: 14px; padding: 13px 16px; min-height: 46px; }
+#destinations { gap: 10px; padding-bottom: 16px; }
+.destination { padding: 16px 14px; gap: 13px; min-height: 74px; }
+.destination .symbol { font-size: 29px; }
+.destination strong { font-size: 15px; }
+.destination small { font-size: 10px; letter-spacing: 0.6px; margin-top: 6px; }
+.console-footer { font-size: 11px; min-height: 42px; padding: 8px 0; }
+.keyboard-help { font-size: 10px; }
+
+@media (min-width: 761px) and (max-width: 1200px) {
+  .console { left: 4%; right: 4%; padding: 14px 20px 0; }
+  .console-content { gap: 20px; }
+  .iarete-flow { flex-basis: 145px; width: 145px; height: 98px; }
+  .assistant { gap: 14px; }
+  .assistant-name span { display: block; margin: 5px 0 0; }
+  .destination { padding: 14px 10px; gap: 9px; }
+  .destination strong { font-size: 14px; }
+  .destination small { font-size: 9px; }
+}
+@media (max-width: 760px) {
+  .console {
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    padding: 14px 14px 0;
+    max-height: 60vh;
+    max-height: 60dvh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #5a929d #07111d;
+  }
+  .console-content { grid-template-columns: 1fr; padding: 14px 0; gap: 14px; }
+  .console-top { font-size: 9px; gap: 12px; letter-spacing: 0.6px; }
+  .assistant { gap: 12px; }
+  .iarete-flow { flex-basis: 112px; width: 112px; height: 90px; }
+  .assistant-name { font-size: 13px; }
+  .assistant-name span { display: none; }
+  .assistant p { font-size: 14px; min-height: 44px; margin-top: 8px; }
+  .console .text-button { font-size: 12px; }
+  .navigation { padding: 14px 0 0; }
+  .destination-row h2 { font-size: 22px; margin: 0 0 10px; }
+  .actions button { font-size: 13px; padding: 12px 10px; }
+  #destinations { gap: 6px; padding-bottom: 12px; }
+  .destination { padding: 12px 3px; gap: 7px; min-height: 74px; }
+  .destination .symbol { font-size: 25px; }
+  .destination strong { font-size: 11px; letter-spacing: -0.25px; }
+  .destination small { display: none; }
+  .console-footer { font-size: 10px; min-height: 38px; }
+}
+@media (max-height: 560px) {
+  .console { max-height: 65vh; overflow-y: auto; }
+  .console-content { grid-template-columns: 1.15fr 1fr; gap: 18px; padding: 12px 0; }
+  .at-current-destination .console-content { grid-template-columns: 1fr; }
+  .iarete-flow { flex-basis: 105px; width: 105px; height: 76px; }
+  .assistant p { font-size: 13px; min-height: 38px; }
+  .destination { min-height: 58px; padding: 10px 7px; }
+  .destination strong { font-size: 12px; }
+  .destination .symbol { font-size: 23px; }
+}
+@media (min-width: 761px) and (min-height: 520px) {
+  .glass-instrument,
+  .glass-instrument.port-instrument,
+  .at-current-destination .glass-instrument.port-instrument {
+    bottom: calc(var(--console-height, 340px) + 30px);
+    max-height: calc(100dvh - var(--console-height, 340px) - 130px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #5a929d #07111d;
+  }
+}
+@media (max-width: 760px) and (min-height: 561px) {
+  .console { max-height: 70vh; max-height: 70dvh; }
+  .assistant { flex-direction: column; align-items: stretch; gap: 4px; }
+  .iarete-flow { align-self: center; flex-basis: 70px; width: 160px; height: 70px; }
+  .assistant p { min-height: 44px; }
+  .assistant-name { text-align: center; }
+}

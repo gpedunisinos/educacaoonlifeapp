@@ -184,3 +184,11 @@ Checkpoint anterior: `8a28f59` (Câmara de Inteligências, já publicado). O ant
 O Canvas 2D acompanha a animação da nave, limitado a 30 desenhos por segundo e resolução até 2×. Durante a digitação da Iareté, amplitude, brilho e velocidade dos pontos aumentam gradualmente; ao terminar, relaxam. Movimento reduzido fixa uma composição estática. A pausa da nave também pausa o fluxo. O botão mantém nome acessível, foco por teclado e abertura da conversa existente. A presença se adapta ao espaço do console em desktop e celular.
 
 Validação: bundle regenerado; análise Dart sem erros (127 avisos/informações preexistentes). Navegador: cruzeiro, salto e chegada à Terra, modo reduzido, abertura da conversa pelo novo fluxo, retorno com posição preservada e layout de 390 px. Nenhuma mensagem enviada. Evidência: `space-iarete-flow.jpg`.
+
+### Console inferior ampliado
+
+O painel inferior passa a ocupar 88% da largura no desktop, com mais altura e espaçamento. Texto da Iareté em 15 px (antes 10 px no estilo panorâmico), nomes dos destinos em 15 px (antes 9 px), botões em 14 px, legendas maiores e cards de pelo menos 74 px de altura. O fluxo da Iareté cresce de 142×82 para 190×112 px. Os instrumentos laterais acompanham a altura real do console via ResizeObserver para não ficarem encobertos; em telas baixas, seu conteúdo permite rolagem.
+
+No celular, a Iareté aparece acima do texto, com fluxo de 160×70 px e texto de 14 px. O console limita a altura a 70% da tela e permite rolagem quando necessário, mantendo os controles acessíveis sem reduzir novamente as letras. Há ajuste específico para paisagem de pouca altura.
+
+Validação: navegador em 1440×1000, 1366×768 e 390×844, incluindo cruzeiro e chegada à Terra. Bundle regenerado; análise Dart sem erros, com os 127 avisos/informações existentes. Evidência: `space-larger-console.jpg`.

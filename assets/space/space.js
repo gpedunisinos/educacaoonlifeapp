@@ -4,6 +4,15 @@ import { IareteFlow } from "./iarete-flow.js";
 const $ = (id) => document.getElementById(id);
 const audio = new SpaceAudio();
 const iareteFlow = new IareteFlow($("iarete-flow"));
+// Keep side instruments clear as the readable console changes height or state.
+const consolePanel = document.querySelector(".console");
+const consoleObserver = new ResizeObserver(() => {
+  document.body.style.setProperty(
+    "--console-height",
+    `${consolePanel.offsetHeight}px`,
+  );
+});
+consoleObserver.observe(consolePanel);
 const flightTiming = { charge: 3.6, jump: 2.4, settle: 1.2 };
 const destinations = [
   {
@@ -1424,6 +1433,7 @@ document.addEventListener("visibilitychange", () =>
 );
 window.addEventListener("pagehide", () => {
   setPaused(true);
+  consoleObserver.disconnect();
   audio.dispose();
   renderer?.dispose();
 });
