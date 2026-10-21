@@ -39,6 +39,15 @@ void main() {
           home: const SpaceScreen(),
           getPages: [
             GetPage(
+              name: '/space/agents',
+              page: () => Scaffold(
+                body: TextButton(
+                  onPressed: Get.back,
+                  child: const Text('Sair da câmara'),
+                ),
+              ),
+            ),
+            GetPage(
               name: '/space/connections',
               page: () => Scaffold(
                 body: TextButton(
@@ -94,7 +103,12 @@ void main() {
       await tester.tap(find.text('Sair da sala'));
       await tester.pumpAndSettle();
       expect(tester.widget<SpaceView>(find.byType(SpaceView)), same(view));
-
+      view.onMessage({'type': 'open', 'destination': 'agents'});
+      await tester.pumpAndSettle();
+      expect(Get.currentRoute, '/space/agents');
+      await tester.tap(find.text('Sair da câmara'));
+      await tester.pumpAndSettle();
+      expect(tester.widget<SpaceView>(find.byType(SpaceView)), same(view));
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
       debugDefaultTargetPlatformOverride = null;
@@ -135,5 +149,34 @@ void main() {
     }
     await tester.pumpWidget(const SizedBox.shrink());
     debugDefaultTargetPlatformOverride = null;
+  });
+  testWidgets('agent conversation keeps the global shortcut away from send', (
+    tester,
+  ) async {
+    Get.testMode = true;
+    addTearDown(Get.reset);
+    addTearDown(() => AiAssistantLauncher.activeRoute.value = '');
+    final user = Get.put<UserController>(SpaceTestUser());
+    user.user.value = const AuthUser(
+      id: 1,
+      name: 'Explorador',
+      email: 'test@example.com',
+      token: 'test',
+      profile: 40,
+      usageMode: 'explorer',
+    );
+    AiAssistantLauncher.activeRoute.value = '/space/agents/8';
+    await tester.pumpWidget(
+      GetMaterialApp(
+        home: AiAssistantLauncher(
+          child: const Scaffold(body: Text('Canal do agente')),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.byTooltip('Abrir Iareté e Locker'), findsNothing);
+    AiAssistantLauncher.activeRoute.value = '/space/agents';
+    await tester.pump();
+    expect(find.byTooltip('Abrir Iareté e Locker'), findsOneWidget);
   });
 }

@@ -178,49 +178,50 @@ class _AiAssistantLauncherState extends State<AiAssistantLauncher> {
                 ),
               ),
             ),
-            Positioned(
-              right: 16,
-              bottom:
-                  AiAssistantLauncher._bottomOffset.value +
-                  MediaQuery.viewInsetsOf(context).bottom +
-                  MediaQuery.paddingOf(context).bottom,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (expanded) ...[
-                    FloatingActionButton.extended(
-                      heroTag: 'locker-shortcut',
-                      onPressed: () => open(true),
-                      backgroundColor: const Color(0xFF153B45),
-                      foregroundColor: Colors.white,
-                      icon: const Icon(Icons.bookmarks_outlined),
-                      label: const Text('Locker'),
+            if (!route.startsWith('/space/agents/'))
+              Positioned(
+                right: 16,
+                bottom:
+                    AiAssistantLauncher._bottomOffset.value +
+                    MediaQuery.viewInsetsOf(context).bottom +
+                    MediaQuery.paddingOf(context).bottom,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (expanded) ...[
+                      FloatingActionButton.extended(
+                        heroTag: 'locker-shortcut',
+                        onPressed: () => open(true),
+                        backgroundColor: const Color(0xFF153B45),
+                        foregroundColor: Colors.white,
+                        icon: const Icon(Icons.bookmarks_outlined),
+                        label: const Text('Locker'),
+                      ),
+                      const SizedBox(height: 12),
+                      FloatingActionButton.extended(
+                        heroTag: 'ia-shortcut',
+                        onPressed: () => open(false),
+                        backgroundColor: const Color(0xFF282346),
+                        foregroundColor: Colors.white,
+                        icon: const Icon(Icons.auto_awesome),
+                        label: const Text('Iareté'),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                    FloatingActionButton(
+                      heroTag: 'global-shortcuts',
+                      tooltip: expanded
+                          ? 'Recolher atalhos'
+                          : 'Abrir Iareté e Locker',
+                      backgroundColor: const Color(0xFF111A32),
+                      foregroundColor: accent,
+                      onPressed: () => setState(() => expanded = !expanded),
+                      child: Icon(expanded ? Icons.close : Icons.apps_rounded),
                     ),
-                    const SizedBox(height: 12),
-                    FloatingActionButton.extended(
-                      heroTag: 'ia-shortcut',
-                      onPressed: () => open(false),
-                      backgroundColor: const Color(0xFF282346),
-                      foregroundColor: Colors.white,
-                      icon: const Icon(Icons.auto_awesome),
-                      label: const Text('Iareté'),
-                    ),
-                    const SizedBox(height: 12),
                   ],
-                  FloatingActionButton(
-                    heroTag: 'global-shortcuts',
-                    tooltip: expanded
-                        ? 'Recolher atalhos'
-                        : 'Abrir Iareté e Locker',
-                    backgroundColor: const Color(0xFF111A32),
-                    foregroundColor: accent,
-                    onPressed: () => setState(() => expanded = !expanded),
-                    child: Icon(expanded ? Icons.close : Icons.apps_rounded),
-                  ),
-                ],
+                ),
               ),
-            ),
           ],
         ],
       ),

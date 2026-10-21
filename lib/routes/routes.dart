@@ -1,3 +1,5 @@
+import 'package:unisinos_usp_app/screens/space/intelligence_chamber_screen.dart';
+import 'package:unisinos_usp_app/models/chat_template_model.dart';
 import 'package:unisinos_usp_app/screens/space/connections_room_screen.dart';
 import 'package:unisinos_usp_app/policies/policies.dart';
 import 'package:unisinos_usp_app/screens/space/space_screen.dart';
@@ -49,6 +51,29 @@ List<GetPage> appRoutes() =>
         transitionDuration: const Duration(milliseconds: 400),
         middlewares: [
           AppRouteGuard(canActivate: (u) => ClueConnectionPolicy(u).viewAny()),
+        ],
+      ),
+      GetPage(
+        name: '/space/agents',
+        page: () => const IntelligenceChamberScreen(),
+        transition: Transition.fadeIn,
+        transitionDuration: const Duration(milliseconds: 600),
+        middlewares: [
+          AppRouteGuard(canActivate: (u) => ChatTemplatePolicy(u).viewAny()),
+        ],
+      ),
+      GetPage(
+        name: '/space/agents/:id',
+        page: () => IntelligenceChamberScreen(
+          agentId: int.tryParse(Get.parameters['id'] ?? '') ?? -1,
+          initialAgent: Get.arguments is ChatTemplateModel
+              ? Get.arguments as ChatTemplateModel
+              : null,
+        ),
+        transition: Transition.fadeIn,
+        transitionDuration: const Duration(milliseconds: 450),
+        middlewares: [
+          AppRouteGuard(canActivate: (u) => ChatTemplatePolicy(u).viewAny()),
         ],
       ),
       ...categoryRoutes(),

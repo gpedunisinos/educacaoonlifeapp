@@ -41,7 +41,7 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
       if (NodePolicy(user).viewAny()) 'observatory': '/nodes/graph',
       if (ClueConnectionPolicy(user).viewAny())
         'connections': '/space/connections',
-      if (ChatTemplatePolicy(user).viewAny()) 'agents': '/chat_templates',
+      if (ChatTemplatePolicy(user).viewAny()) 'agents': '/space/agents',
     };
   }
 

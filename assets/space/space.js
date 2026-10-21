@@ -550,14 +550,18 @@ function openDestination(destination) {
       ? "Preparando a imersão territorial. O cockpit se recolhe para dar lugar ao mapa."
       : destination.id === "connections"
         ? "Preparando a sala de Conexões da nave. A tela de exploração está pronta para receber você."
-        : "Preparando acesso à estação. Transferindo os controles para o módulo.",
+        : destination.id === "agents"
+          ? "Preparando a Câmara de Inteligências. Escolha uma presença para iniciar sua conversa."
+          : "Preparando acesso à estação. Transferindo os controles para o módulo.",
   );
   $("transfer-label").textContent =
     destination.id === "earth"
       ? "Entrando no observatório territorial"
       : destination.id === "connections"
         ? "Entrando na sala de Conexões"
-        : "Acessando " + destination.module;
+        : destination.id === "agents"
+          ? "Entrando na Câmara de Inteligências"
+          : "Acessando " + destination.module;
   document.body.classList.add("disembarking");
   document
     .querySelectorAll("#flight-ui button")
