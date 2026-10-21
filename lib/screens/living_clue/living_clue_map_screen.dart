@@ -1,3 +1,5 @@
+import 'package:unisinos_usp_app/screens/space/space_map_shell.dart';
+import 'package:unisinos_usp_app/screens/space/space_record_shell.dart';
 import 'package:unisinos_usp_app/widgets/ai_assistant_launcher.dart';
 import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 import 'package:unisinos_usp_app/widgets/locker_panel.dart';
@@ -21,7 +23,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class LivingClueMapScreen extends StatefulWidget {
-  const LivingClueMapScreen({super.key});
+  const LivingClueMapScreen({super.key, this.tileProvider});
+  final TileProvider? tileProvider;
 
   @override
   State<LivingClueMapScreen> createState() => _LivingClueMapScreenState();
@@ -31,7 +34,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     with SingleTickerProviderStateMixin {
   static const String _screenName = 'Mapa de pistas';
   static const String _tutorialSeenKey = 'living_clue_map_tutorial_seen';
-  static const Color _sonarBlue = Color(0xFF0D47A1);
+  static const Color _sonarBlue = mapIce;
   static const double _minMapZoom = 3;
   static const double _maxMapZoom = 18;
   static const double _zoomStep = 1;
@@ -341,50 +344,52 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     });
 
     final bool? confirmed = await Get.bottomSheet<bool>(
-      Container(
-        padding: const EdgeInsets.all(16),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Reposicionar pista viva',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 12),
-            Text('Pista: ${_repositioningClue!.name}'),
-            const SizedBox(height: 8),
-            Text(
-              'Atual: ${_repositioningClue!.latitude!.toStringAsFixed(6)}, ${_repositioningClue!.longitude!.toStringAsFixed(6)}',
-            ),
-            Text(
-              'Nova: ${point.latitude.toStringAsFixed(6)}, ${point.longitude.toStringAsFixed(6)}',
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Get.back(result: false),
-                    child: const Text('Cancelar'),
+      _mapSheet(
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: const BoxDecoration(
+            color: mapPanel,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Reposicionar pista viva',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 12),
+              Text('Pista: ${_repositioningClue!.name}'),
+              const SizedBox(height: 8),
+              Text(
+                'Atual: ${_repositioningClue!.latitude!.toStringAsFixed(6)}, ${_repositioningClue!.longitude!.toStringAsFixed(6)}',
+              ),
+              Text(
+                'Nova: ${point.latitude.toStringAsFixed(6)}, ${point.longitude.toStringAsFixed(6)}',
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Get.back(result: false),
+                      child: const Text('Cancelar'),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => Get.back(result: true),
-                    child: const Text('Salvar posição'),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => Get.back(result: true),
+                      child: const Text('Salvar posição'),
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
       isScrollControlled: true,
@@ -404,91 +409,88 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => Theme(
+    data: spaceRecordTheme(),
+    child: Builder(builder: _buildMap),
+  );
+
+  Widget _buildMap(BuildContext context) {
     Get.find<AiAssistantContextService>().registerProvider(
       Get.currentRoute,
       _buildAiContext,
     );
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
-        leading: Get.arguments is Map && Get.arguments['fromSpace'] == true
-            ? IconButton(
-                tooltip: 'Voltar à nave',
-                onPressed: () => Get.back(),
-                icon: const Icon(Icons.rocket_launch_outlined),
-              )
-            : const SafeBackButton(),
-        title: const Text('Mapa de pistas'),
-        actions: [
-          IconButton(
-            tooltip: 'Lista de pistas',
-            icon: const Icon(Icons.view_list_outlined),
-            onPressed: () => Get.toNamed('/living_clues'),
-          ),
-          IconButton(
-            tooltip: 'Ajuda do mapa',
-            icon: const Icon(Icons.help_outline),
-            onPressed: () => _showMapTutorial(),
-          ),
-          if (_isRepositionMode)
-            IconButton(
-              key: _repositionKey,
-              tooltip: 'Cancelar reposicionamento',
-              icon: const Icon(Icons.close),
-              onPressed: _cancelRepositionMode,
+    return SpaceMapShell(
+      back: Get.arguments is Map && Get.arguments['fromSpace'] == true
+          ? IconButton(
+              tooltip: 'Voltar à nave',
+              onPressed: () => Get.back(),
+              icon: const Icon(Icons.rocket_launch_outlined),
             )
-          else
-            IconButton(
-              key: _repositionKey,
-              tooltip: 'Reposicionar pista no mapa',
-              icon: const Icon(Icons.open_with),
-              onPressed:
-                  Get.find<UserController>().user.value?.canAuthor == true
-                  ? _toggleRepositionMode
-                  : null,
-            ),
-          if (_isConnectingMode)
-            IconButton(
-              key: _connectionKey,
-              tooltip: 'Cancelar nova conexão',
-              icon: const Icon(Icons.close),
-              onPressed: _cancelConnectionMode,
-            )
-          else
-            IconButton(
-              key: _connectionKey,
-              tooltip: 'Criar conexão no mapa',
-              icon: const Icon(Icons.hub_outlined),
-              onPressed:
-                  Get.find<UserController>().user.value?.canAuthor == true
-                  ? _toggleConnectionMode
-                  : null,
-            ),
-          if (Get.find<UserController>().user.value?.canAuthor == true)
-            IconButton(
-              key: _createPointKey,
-              tooltip: 'Criar pista por ponto',
-              icon: const Icon(Icons.add_location_alt),
-              onPressed: () async {
-                final center = _mapController.camera.center;
-                final created = await Get.toNamed(
-                  '/living_clues/map/create',
-                  arguments: {
-                    'latitude': center.latitude,
-                    'longitude': center.longitude,
-                  },
-                );
-                if (_isCreatedResult(created)) {
-                  await _refreshAfterCreate(created);
-                }
-              },
-            ),
-        ],
-      ),
-      body: Stack(
+          : const SafeBackButton(),
+      actions: [
+        IconButton(
+          tooltip: 'Lista de pistas',
+          icon: const Icon(Icons.view_list_outlined),
+          onPressed: () => Get.toNamed('/space/research'),
+        ),
+        IconButton(
+          tooltip: 'Ajuda do mapa',
+          icon: const Icon(Icons.help_outline),
+          onPressed: () => _showMapTutorial(),
+        ),
+        if (_isRepositionMode)
+          IconButton(
+            key: _repositionKey,
+            tooltip: 'Cancelar reposicionamento',
+            icon: const Icon(Icons.close),
+            onPressed: _cancelRepositionMode,
+          )
+        else
+          IconButton(
+            key: _repositionKey,
+            tooltip: 'Reposicionar pista no mapa',
+            icon: const Icon(Icons.open_with),
+            onPressed: Get.find<UserController>().user.value?.canAuthor == true
+                ? _toggleRepositionMode
+                : null,
+          ),
+        if (_isConnectingMode)
+          IconButton(
+            key: _connectionKey,
+            tooltip: 'Cancelar nova conexão',
+            icon: const Icon(Icons.close),
+            onPressed: _cancelConnectionMode,
+          )
+        else
+          IconButton(
+            key: _connectionKey,
+            tooltip: 'Criar conexão no mapa',
+            icon: const Icon(Icons.hub_outlined),
+            onPressed: Get.find<UserController>().user.value?.canAuthor == true
+                ? _toggleConnectionMode
+                : null,
+          ),
+        if (Get.find<UserController>().user.value?.canAuthor == true)
+          IconButton(
+            key: _createPointKey,
+            tooltip: 'Criar pista por ponto',
+            icon: const Icon(Icons.add_location_alt),
+            onPressed: () async {
+              final center = _mapController.camera.center;
+              final created = await Get.toNamed(
+                '/living_clues/map/create',
+                arguments: {
+                  'latitude': center.latitude,
+                  'longitude': center.longitude,
+                },
+              );
+              if (_isCreatedResult(created)) {
+                await _refreshAfterCreate(created);
+              }
+            },
+          ),
+      ],
+      child: Stack(
         children: [
           Column(
             children: [
@@ -529,7 +531,8 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.55),
+                  color: const Color(0xFF102A39),
+                  border: Border.all(color: const Color(0xFF2F5661)),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
@@ -589,7 +592,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                               Expanded(
                                 child: Obx(() {
                                   return Slider(
-                                    activeColor: Colors.indigo,
+                                    activeColor: mapIce,
                                     value: _controller.sonarRadius.value,
                                     min: 1000,
                                     max: 1000000,
@@ -639,6 +642,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                           width: 52,
                           height: 52,
                           child: GestureDetector(
+                            key: ValueKey('map-clue-${item.id}'),
                             onTap: () => _handleMarkerTap(item),
                             child: Stack(
                               alignment: Alignment.center,
@@ -813,6 +817,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                                   .selectedExternalBaseMap ==
                               null)
                             TileLayer(
+                              tileProvider: widget.tileProvider,
                               urlTemplate:
                                   'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                               userAgentPackageName:
@@ -828,12 +833,14 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                                     _environmentalController
                                         .selectedExternalBaseMap!,
                                   ),
-                              tileProvider: NetworkTileProvider(
-                                headers: {
-                                  'Authorization':
-                                      'Bearer ${AuthProvider.instance.getToken()}',
-                                },
-                              ),
+                              tileProvider:
+                                  widget.tileProvider ??
+                                  NetworkTileProvider(
+                                    headers: {
+                                      'Authorization':
+                                          'Bearer ${AuthProvider.instance.getToken()}',
+                                    },
+                                  ),
                               minZoom: _environmentalController
                                   .selectedExternalBaseMap!
                                   .minZoom
@@ -855,12 +862,14 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                               child: TileLayer(
                                 urlTemplate: _environmentalController.webclient
                                     .absoluteTileUrl(layer),
-                                tileProvider: NetworkTileProvider(
-                                  headers: {
-                                    'Authorization':
-                                        'Bearer ${AuthProvider.instance.getToken()}',
-                                  },
-                                ),
+                                tileProvider:
+                                    widget.tileProvider ??
+                                    NetworkTileProvider(
+                                      headers: {
+                                        'Authorization':
+                                            'Bearer ${AuthProvider.instance.getToken()}',
+                                      },
+                                    ),
                                 minZoom: layer.minZoom.toDouble(),
                                 maxZoom: layer.maxZoom.toDouble(),
                                 userAgentPackageName:
@@ -899,7 +908,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                         top: 12,
                         right: 12,
                         child: Material(
-                          color: Colors.black.withValues(alpha: 0.42),
+                          color: mapPanel,
                           shape: const CircleBorder(),
                           child: IconButton(
                             constraints: const BoxConstraints.tightFor(
@@ -923,7 +932,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                         top: 136,
                         right: 12,
                         child: Material(
-                          color: Colors.black.withValues(alpha: 0.42),
+                          color: mapPanel,
                           shape: const CircleBorder(),
                           child: IconButton(
                             constraints: const BoxConstraints.tightFor(
@@ -992,12 +1001,14 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                                 width: 1.2,
                               ),
                             ),
-                            color: Colors.red.shade50,
+                            color: const Color(0xFF3B202B),
                             child: Padding(
                               padding: const EdgeInsets.all(8),
                               child: Text(
                                 _controller.errorMessage.value!,
-                                style: TextStyle(color: Colors.red.shade800),
+                                style: TextStyle(
+                                  color: const Color(0xFFFFB5BC),
+                                ),
                               ),
                             ),
                           ),
@@ -1025,7 +1036,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
 
   Widget _buildZoomControl() {
     return Material(
-      color: Colors.black.withValues(alpha: 0.42),
+      color: mapPanel,
       borderRadius: BorderRadius.circular(18),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -1056,129 +1067,139 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (context) => Obx(() {
-        final controller = _environmentalController;
-        return SafeArea(
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height * 0.72,
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 12, 8),
-                  child: Row(
-                    children: [
-                      const Expanded(
-                        child: Text(
-                          'Camadas do mapa',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: controller.activeLayers.isEmpty
-                            ? null
-                            : controller.disableAll,
-                        child: const Text('Desativar todas'),
-                      ),
-                    ],
-                  ),
-                ),
-                if (controller.isLoading.value)
-                  const Expanded(
-                    child: Center(child: CircularProgressIndicator()),
-                  )
-                else if (controller.errorMessage.value != null)
-                  Expanded(
-                    child: Center(
-                      child: TextButton.icon(
-                        onPressed: controller.load,
-                        icon: const Icon(Icons.refresh),
-                        label: Text(controller.errorMessage.value!),
-                      ),
-                    ),
-                  )
-                else
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: controller.overlayLayers.length + 2,
-                      itemBuilder: (context, index) {
-                        if (index == 0) {
-                          return _buildBaseMapSelector(controller);
-                        }
-                        if (index == 1) {
-                          return const Padding(
-                            padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
+      backgroundColor: mapPanel,
+      builder: (context) => Theme(
+        data: spaceRecordTheme(),
+        child: Obx(() {
+          final controller = _environmentalController;
+          return Material(
+            color: mapPanel,
+            child: SafeArea(
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height * 0.72,
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 12, 8),
+                      child: Row(
+                        children: [
+                          const Expanded(
                             child: Text(
-                              'Camadas ambientais',
+                              'Camadas do mapa',
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: 20,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                          );
-                        }
-                        final layer = controller.overlayLayers[index - 2];
-                        final enabled = controller.enabledIds.contains(
-                          layer.id,
-                        );
-                        return ExpansionTile(
-                          enabled: layer.available,
-                          leading: Switch(
-                            value: enabled,
-                            onChanged: layer.available
-                                ? (value) => controller.toggle(layer.id, value)
-                                : null,
                           ),
-                          title: Text(layer.name),
-                          subtitle: Text(
-                            layer.available
-                                ? layer.description
-                                : 'Camada temporariamente indisponível',
+                          TextButton(
+                            onPressed: controller.activeLayers.isEmpty
+                                ? null
+                                : controller.disableAll,
+                            child: const Text('Desativar todas'),
                           ),
-                          childrenPadding: const EdgeInsets.fromLTRB(
-                            24,
-                            0,
-                            24,
-                            16,
+                        ],
+                      ),
+                    ),
+                    if (controller.isLoading.value)
+                      const Expanded(
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    else if (controller.errorMessage.value != null)
+                      Expanded(
+                        child: Center(
+                          child: TextButton.icon(
+                            onPressed: controller.load,
+                            icon: const Icon(Icons.refresh),
+                            label: Text(controller.errorMessage.value!),
                           ),
-                          children: [
-                            Row(
+                        ),
+                      )
+                    else
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: controller.overlayLayers.length + 2,
+                          itemBuilder: (context, index) {
+                            if (index == 0) {
+                              return _buildBaseMapSelector(controller);
+                            }
+                            if (index == 1) {
+                              return const Padding(
+                                padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
+                                child: Text(
+                                  'Camadas ambientais',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              );
+                            }
+                            final layer = controller.overlayLayers[index - 2];
+                            final enabled = controller.enabledIds.contains(
+                              layer.id,
+                            );
+                            return ExpansionTile(
+                              enabled: layer.available,
+                              leading: Switch(
+                                value: enabled,
+                                onChanged: layer.available
+                                    ? (value) =>
+                                          controller.toggle(layer.id, value)
+                                    : null,
+                              ),
+                              title: Text(layer.name),
+                              subtitle: Text(
+                                layer.available
+                                    ? layer.description
+                                    : 'Camada temporariamente indisponível',
+                              ),
+                              childrenPadding: const EdgeInsets.fromLTRB(
+                                24,
+                                0,
+                                24,
+                                16,
+                              ),
                               children: [
-                                const Text('Opacidade'),
-                                Expanded(
-                                  child: Slider(
-                                    value:
-                                        controller.opacities[layer.id] ??
-                                        layer.defaultOpacity,
-                                    onChanged: enabled
-                                        ? (value) => controller.setOpacity(
-                                            layer.id,
-                                            value,
-                                          )
-                                        : null,
+                                Row(
+                                  children: [
+                                    const Text('Opacidade'),
+                                    Expanded(
+                                      child: Slider(
+                                        value:
+                                            controller.opacities[layer.id] ??
+                                            layer.defaultOpacity,
+                                        onChanged: enabled
+                                            ? (value) => controller.setOpacity(
+                                                layer.id,
+                                                value,
+                                              )
+                                            : null,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    'Fonte: ${layer.sourceName} — ${layer.sourceVersion}',
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodySmall,
                                   ),
                                 ),
                               ],
-                            ),
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                'Fonte: ${layer.sourceName} — ${layer.sourceVersion}',
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-              ],
+                            );
+                          },
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             ),
-          ),
-        );
-      }),
+          );
+        }),
+      ),
     );
   }
 
@@ -1226,7 +1247,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 245, maxHeight: 220),
       child: Card(
-        color: Colors.black.withValues(alpha: 0.76),
+        color: mapPanel,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(10),
           child: Column(
@@ -1647,7 +1668,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     final bool hasResults = clues.isNotEmpty || places.isNotEmpty;
 
     return Material(
-      color: Colors.black.withValues(alpha: 0.72),
+      color: mapPanel,
       borderRadius: BorderRadius.circular(14),
       clipBehavior: Clip.antiAlias,
       child: ConstrainedBox(
@@ -1756,82 +1777,111 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     return 'Local do mapa';
   }
 
+  Widget _mapSheet(Widget child) => Theme(
+    data: spaceRecordTheme(),
+    child: Material(
+      color: mapPanel,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      clipBehavior: Clip.antiAlias,
+      child: SafeArea(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(context).height * .82,
+          ),
+          child: SingleChildScrollView(child: child),
+        ),
+      ),
+    ),
+  );
+
   void _showClueSheet(LivingClueModel item) {
     Get.bottomSheet(
-      Container(
-        padding: const EdgeInsets.all(16),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              item.name,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 8),
-            Text(item.description ?? 'Sem descrição'),
-            const SizedBox(height: 10),
-            Text(
-              'Categoria: ${item.category?.name ?? item.categoryId}',
-              style: const TextStyle(color: Colors.black54),
-            ),
-            Text(
-              'Lat ${item.latitude?.toStringAsFixed(5) ?? '—'} • Lng ${item.longitude?.toStringAsFixed(5) ?? '—'}',
-              style: const TextStyle(color: Colors.black54),
-            ),
-            const SizedBox(height: 14),
-            LockerButton(type: 'living_clue', id: item.id),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    icon: const Icon(Icons.visibility_outlined),
-                    label: const Text('Ver pista'),
-                    onPressed: () {
-                      Get.back();
-                      Get.toNamed('/living_clues/show', arguments: item);
-                    },
-                  ),
+      _mapSheet(
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: const BoxDecoration(
+            color: mapPanel,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                item.name,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
                 ),
-                const SizedBox(width: 10),
-                if (Get.find<UserController>().user.value?.canAuthor == true)
+              ),
+              const SizedBox(height: 8),
+              Text(
+                item.description ?? 'Sem descrição',
+                maxLines: 5,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Categoria: ${item.category?.name ?? item.categoryId}',
+                style: const TextStyle(color: Color(0xFF9BB4C5)),
+              ),
+              Text(
+                'Lat ${item.latitude?.toStringAsFixed(5) ?? '—'} • Lng ${item.longitude?.toStringAsFixed(5) ?? '—'}',
+                style: const TextStyle(color: Color(0xFF9BB4C5)),
+              ),
+              const SizedBox(height: 14),
+              LockerButton(type: 'living_clue', id: item.id),
+              Row(
+                children: [
                   Expanded(
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Icons.edit_location_alt_outlined),
-                      label: const Text('Editar'),
-                      onPressed: () async {
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.visibility_outlined),
+                      label: const Text('Ver pista'),
+                      onPressed: () {
                         Get.back();
-                        final updated = await Get.toNamed(
-                          '/living_clues/update',
-                          parameters: {'id': item.id.toString()},
+                        Get.toNamed(
+                          '/space/research/${item.id}',
+                          arguments: item,
                         );
-                        if (updated == true) {
-                          _refreshActiveContext();
-                        }
                       },
                     ),
                   ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            if (Get.find<UserController>().user.value?.canAuthor == true &&
-                item.hasLocation)
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  icon: const Icon(Icons.open_with),
-                  label: const Text('Mover no mapa'),
-                  onPressed: () {
-                    Get.back();
-                    _toggleRepositionMode(item);
-                  },
-                ),
+                  const SizedBox(width: 10),
+                  if (Get.find<UserController>().user.value?.canAuthor == true)
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.edit_location_alt_outlined),
+                        label: const Text('Editar'),
+                        onPressed: () async {
+                          Get.back();
+                          final updated = await Get.toNamed(
+                            '/living_clues/update',
+                            parameters: {'id': item.id.toString()},
+                          );
+                          if (updated == true) {
+                            _refreshActiveContext();
+                          }
+                        },
+                      ),
+                    ),
+                ],
               ),
-          ],
+              const SizedBox(height: 10),
+              if (Get.find<UserController>().user.value?.canAuthor == true &&
+                  item.hasLocation)
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.open_with),
+                    label: const Text('Mover no mapa'),
+                    onPressed: () {
+                      Get.back();
+                      _toggleRepositionMode(item);
+                    },
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
       isScrollControlled: true,
@@ -1914,7 +1964,7 @@ class _TutorialCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF0B1220),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF0D47A1), width: 1.2),
+        border: Border.all(color: mapIce, width: 1.2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.35),
@@ -1952,13 +2002,14 @@ class _TutorialCard extends StatelessWidget {
               style: const TextStyle(color: Colors.white70, height: 1.35),
             ),
             const SizedBox(height: 16),
-            Row(
+            Wrap(
+              alignment: WrapAlignment.end,
+              spacing: 8,
+              runSpacing: 6,
               children: [
                 TextButton(onPressed: onSkip, child: const Text('Pular')),
-                const Spacer(),
                 if (canGoBack)
                   TextButton(onPressed: onBack, child: const Text('Voltar')),
-                const SizedBox(width: 8),
                 ElevatedButton(
                   onPressed: onNext,
                   child: Text(isLast ? 'Concluir' : 'Próximo'),

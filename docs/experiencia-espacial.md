@@ -281,3 +281,12 @@ Validação: onze testes aprovados (Central → lista → detalhe → lista com 
 - Mantidos atualização do contexto ambiental, tratamento de falhas e ações existentes. O carregamento inicial agora permite tentar novamente no próprio ambiente; o contexto da pista continua disponível para a Iareté.
 - Validação: oito testes aprovados, cobrindo seleção/retorno, abertura direta, link antigo, recuperação de falhas, busca/paginação, celular e navegação espacial; `dart analyze` sem erros (126 avisos/informações preexistentes); build web concluído. Prévia conferida com a pista AgroCity Living Lab, incluindo relações, localização, metadados, histórico e compartilhações, sem alterar registros.
 - Evidências: `clue-complete-record.jpg` e `clue-complete-participation.jpg`.
+
+### Mapa de pistas — mesa de exploração da Terra
+
+- O mapa agora usa o ambiente visual da nave: fundo estrutural da sala, cabeçalho Terra / Exploração, moldura de cartografia e painéis azul-escuro/ciano. A área cartográfica continua em tela ampla e as ferramentas se adaptam à largura disponível.
+- Atualizados os controles de busca/sonar, zoom, legendas, resultados, tutorial, painel de pista, confirmação de reposicionamento e seleção de camadas ambientais. O painel de pista é rolável para acomodar telas pequenas e apresenta um resumo da descrição com acesso ao registro completo.
+- Preservados FlutterMap, gestos, marcadores/categorias, linhas de conexão, carregamento por área, busca global por pistas e locais, sonar/raio, localização atual, mapas-base, camadas/opacidade, atribuições, permissões e os fluxos existentes de criar, conectar e reposicionar pistas. Os provedores de camadas continuam usando os mesmos cabeçalhos de autorização.
+- Os atalhos de lista e leitura agora abrem a sala de pesquisa e o registro completo no novo layout. O retorno à nave e os controles do tutorial mantêm os fluxos anteriores. Corrigido o espaço dos botões do tutorial em celular.
+- Validação: 13 testes de widgets aprovados (mapa em 390/1280 px, teclado, busca, zoom, sonar, seleção/movimentação/conexão em modo, ativação de camada, legenda, tutorial e permissões de Explorador, além de pesquisa/registro, seleção de localização e navegação espacial); análise Dart sem erros; build web local concluído. Conferência visual do mapa e painel de pista na prévia, sem salvar alterações em registros nem solicitar a localização do usuário.
+- Evidência: `space-map-console.jpg` nesta pasta.
