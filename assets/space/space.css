@@ -1070,12 +1070,12 @@ dialog::backdrop {
 }
 .port-instrument {
   left: 3%;
-  transform: perspective(650px) rotateY(20deg) rotateZ(-6deg);
+  transform: perspective(900px) rotateY(10deg) rotateZ(-2deg);
   transform-origin: left center;
 }
 .starboard-instrument {
   right: 3%;
-  transform: perspective(650px) rotateY(-20deg) rotateZ(6deg);
+  transform: perspective(900px) rotateY(-10deg) rotateZ(2deg);
   transform-origin: right center;
 }
 .instrument-heading {

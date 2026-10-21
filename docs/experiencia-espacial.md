@@ -307,3 +307,10 @@ Validação: onze testes aprovados (Central → lista → detalhe → lista com 
 - Mantidos os identificadores internos de comunicação e caminhos de assets para preservar compatibilidade; não são apresentados como nome da plataforma.
 - Validação: seis testes existentes aprovados (cabeçalho, layout da home e navegação espacial), análise Dart sem erros, build web concluído, conferência da marca e do título na prévia e validação estrutural dos metadados web/iOS/Android. Builds nativos não foram executados.
 - Evidência: `educacao-onlife-identidade.jpg`.
+
+### Perspectiva mais suave dos painéis laterais
+
+- Reduzida a rotação lateral dos dois painéis de 20° para 10°, com inclinação diagonal de 6° para 2° e perspectiva de 900 px. Os ângulos permanecem espelhados e os pontos de origem continuam presos às laterais do cockpit.
+- Mantida a profundidade visual em torno do para-brisa central, com menor distorção dos textos. As regras compactas existentes e todas as interações permanecem iguais.
+- Validação visual na prévia em enquadramentos de 1280/1440 px e conferência das transformações 3D efetivamente aplicadas aos dois painéis. Também conferida a chegada à Terra e o acesso ao mapa. Análise Dart sem erros; alteração restrita ao CSS, disponibilizada na prévia local sem modificar o código Flutter ou a lógica de navegação.
+- Evidência: `cockpit-lateral-perspective.jpg`.
