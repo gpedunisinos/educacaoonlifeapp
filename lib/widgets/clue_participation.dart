@@ -65,7 +65,7 @@ class _ClueParticipationState extends State<ClueParticipation> {
       });
     } catch (_) {
       if (mounted) {
-        setState(() => error = 'Não foi possível carregar as compartilhações.');
+        setState(() => error = 'Não foi possível carregar as COMpartilhAÇÕES.');
       }
     } finally {
       if (mounted) setState(() => loading = false);
@@ -176,7 +176,7 @@ class _ClueParticipationState extends State<ClueParticipation> {
               const SizedBox(width: 10),
               const Expanded(
                 child: Text(
-                  'Compartilhações',
+                  'COMpartilhAÇÕES',
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
                 ),
               ),
