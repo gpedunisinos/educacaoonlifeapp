@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/screens/space/space_record_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pvalidator/pvalidator.dart';
@@ -97,18 +98,26 @@ class _LivingCluePreCreateScreenState extends State<LivingCluePreCreateScreen> {
                             style: TextStyle(color: spaceChatMuted),
                           ),
                           Insets.large.height,
-                          InputSelectApi(
-                            label: 'Categoria',
-                            controller: _categorySelectController,
-                            validator: (value) => PValidator([
-                              PRuleRequired(value, message: 'Obrigatório'),
-                            ]).val(),
-                            onFind: (search, offset, params) =>
-                                CategorySelectWebclient().select(
-                                  search,
-                                  offset,
-                                  type: _selectedType,
-                                ),
+                          Theme(
+                            data: spaceRecordTheme().copyWith(
+                              bottomSheetTheme: const BottomSheetThemeData(
+                                backgroundColor: Color(0xFF0B1E2D),
+                                modalBackgroundColor: Color(0xFF0B1E2D),
+                              ),
+                            ),
+                            child: InputSelectApi(
+                              label: 'Categoria',
+                              controller: _categorySelectController,
+                              validator: (value) => PValidator([
+                                PRuleRequired(value, message: 'Obrigatório'),
+                              ]).val(),
+                              onFind: (search, offset, params) =>
+                                  CategorySelectWebclient().select(
+                                    search,
+                                    offset,
+                                    type: _selectedType,
+                                  ),
+                            ),
                           ),
                         ],
                       ),
