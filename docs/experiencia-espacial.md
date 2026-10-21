@@ -1,5 +1,7 @@
 # Experiência espacial Educação Onlife — UU-95
 
+> As imagens, vídeos e relatórios de evidência citados neste documento são artefatos locais de validação, ignorados pelo Git. Não são dependências do aplicativo. Novas capturas devem ficar em `docs/evidencias/`.
+
 Demonstração implementada na branch `UU-95-primeira-versao-plataforma-econectiva`.
 Entrada: nave (`/space`), após autenticação e escolha de modo.
 
@@ -336,3 +338,11 @@ Validação: onze testes aprovados (Central → lista → detalhe → lista com 
 - O retorno procura a rota `/space` já existente e preserva a cena; quando o mapa é aberto diretamente, abre a nave como destino de retorno.
 - Validação: cinco testes de mapa aprovados, incluindo preservação do cockpit existente, abertura direta, controles em desktop/celular e permissões; análise Dart sem erros e build web local.
 - Na prévia, conferido o botão e executado o retorno de um mapa aberto por link diretamente para `/space`. Evidência: `map-return-cockpit.jpg`.
+
+
+### Higiene do versionamento
+
+- Retirados do acompanhamento do Git 61 arquivos de evidência (capturas, vídeo e relatório de validação), 162 arquivos de cache de build iOS e duas configurações locais de máquina do Android. Todos permanecem no disco; commits anteriores continuam acessíveis, sem reescrever o histórico.
+- Acrescentadas regras de ignore para essas evidências e diretórios de cache/configuração. As referências históricas às capturas passam a ser explicitamente locais. Novas evidências devem ser salvas em `docs/evidencias/` e não adicionadas aos commits.
+- Mantidos código, testes, documentação técnica e assets utilizados pelo aplicativo, inclusive o bundle JavaScript carregado diretamente pela nave.
+- Validação: verificados hash e existência dos 225 arquivos locais, remoção exclusiva do índice e cobertura de todas as regras de ignore; análise Dart sem erros. Nenhuma alteração no comportamento do aplicativo.

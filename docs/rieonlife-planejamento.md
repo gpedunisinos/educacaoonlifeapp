@@ -1,5 +1,7 @@
 # Educação Onlife — experiência de exploração e autoria
 
+> As imagens, vídeos e relatórios de evidência citados neste documento são artefatos locais de validação, ignorados pelo Git. Não são dependências do aplicativo. Novas capturas devem ficar em `docs/evidencias/`.
+
 Implementação dos REQ-01 a REQ-06 do [planejamento consolidado](https://wiki.spotec.app/index.php/Plataforma_Rieonlife_-_Planejamento_de_altera%C3%A7%C3%B5es_e_requisitos), revisão 2589, com a reunião de 19/10/2026 como contexto. Base Flutter confirmada: `origin/main` em `6daf964`, neste repositório. Branch local: `UU-95-primeira-versao-plataforma-econectiva`.
 
 ## Percursos
