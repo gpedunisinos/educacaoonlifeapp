@@ -7,11 +7,31 @@ class MeetingRoom {
     'JITSI_PUBLIC_URL',
     defaultValue: 'https://meet.spotec.app',
   );
-  // Enable only after the public service and organizer policy are validated.
+  // Every authenticated platform account may organize a meeting.
   static const enabled = bool.fromEnvironment(
     'JITSI_ENABLED',
-    defaultValue: false,
+    defaultValue: true,
   );
+
+  /// Credentials stay in memory and are never included in the shareable invite.
+  Uri authorizedUri(Map<String, dynamic> data) {
+    final jwt = data['jwt'];
+    final expires = data['expires_at'];
+    if (data['room'] != uri.pathSegments.single ||
+        jwt is! String ||
+        jwt.isEmpty ||
+        !RegExp(
+          r'^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$',
+        ).hasMatch(jwt) ||
+        expires is! int ||
+        expires <= DateTime.now().millisecondsSinceEpoch ~/ 1000 + 15 ||
+        data['public_url'] != uri.toString()) {
+      throw const FormatException(
+        'A autorização do encontro não está disponível. Tente novamente.',
+      );
+    }
+    return uri.replace(queryParameters: {'jwt': jwt});
+  }
 
   static Uri _base(String value) {
     final uri = Uri.tryParse(value.trim());

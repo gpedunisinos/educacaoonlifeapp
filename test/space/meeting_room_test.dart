@@ -5,6 +5,13 @@ import 'package:unisinos_usp_app/models/meeting_room.dart';
 import 'package:unisinos_usp_app/screens/space/meeting_room_dialog.dart';
 import 'package:unisinos_usp_app/screens/space/space_record_shell.dart';
 
+Future<Uri> fakeAuthorization(MeetingRoom room) async => room.authorizedUri({
+  'room': room.uri.pathSegments.single,
+  'public_url': room.uri.toString(),
+  'jwt': 'test.payload.signature',
+  'expires_at': DateTime.now().millisecondsSinceEpoch ~/ 1000 + 600,
+});
+
 void main() {
   test(
     'meeting inputs normalize to a room on the configured HTTPS server only',
@@ -70,6 +77,7 @@ void main() {
                 onPressed: () => showDialog<void>(
                   context: context,
                   builder: (_) => MeetingRoomDialog(
+                    onAuthorize: fakeAuthorization,
                     onOpen: (uri) async {
                       opened.add(uri);
                       return true;
@@ -95,7 +103,10 @@ void main() {
       await tester.enterText(find.byType(TextField), 'Sala Aurora');
       await tester.tap(find.text('Entrar na sala'));
       await tester.pumpAndSettle();
-      expect(opened.single.toString(), 'https://meet.spotec.app/sala-aurora');
+      expect(
+        opened.single.toString(),
+        'https://meet.spotec.app/sala-aurora?jwt=test.payload.signature',
+      );
       expect(find.byType(MeetingRoomDialog), findsNothing);
       expect(find.text('Cockpit de teste'), findsOneWidget);
     },
@@ -115,6 +126,7 @@ void main() {
           theme: spaceRecordTheme(),
           home: Scaffold(
             body: MeetingRoomDialog(
+              onAuthorize: fakeAuthorization,
               onOpen: (_) {
                 calls++;
                 return gate.future;
@@ -142,6 +154,62 @@ void main() {
         'Sala pequena',
       );
       expect(tester.takeException(), isNull);
+    },
+  );
+  testWidgets(
+    'authorization failure preserves room and never opens invite as host',
+    (tester) async {
+      var opens = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MeetingRoomDialog(
+              onAuthorize: (_) async => throw Exception('unavailable'),
+              onOpen: (_) async {
+                opens++;
+                return true;
+              },
+            ),
+          ),
+        ),
+      );
+      await tester.enterText(find.byType(TextField), 'Sala preservada');
+      await tester.tap(find.text('Entrar na sala'));
+      await tester.pumpAndSettle();
+      expect(opens, 0);
+      expect(
+        find.text(
+          'Não foi possível autorizar ou abrir o encontro. Sua sala foi preservada; tente novamente.',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        'Sala preservada',
+      );
+    },
+  );
+
+  test(
+    'host grant is tied to room, origin and expiration; public invite remains clean',
+    () {
+      final room = MeetingRoom.parse('Sala');
+      Map<String, dynamic> grant() => {
+        'room': 'sala',
+        'public_url': room.uri.toString(),
+        'jwt': 'test.payload.signature',
+        'expires_at': DateTime.now().millisecondsSinceEpoch ~/ 1000 + 600,
+      };
+      expect(
+        room.authorizedUri(grant()).queryParameters['jwt'],
+        'test.payload.signature',
+      );
+      expect(room.uri.hasQuery, isFalse);
+      for (final field in ['room', 'public_url', 'jwt', 'expires_at']) {
+        final bad = grant();
+        bad[field] = field == 'expires_at' ? 0 : 'invalid';
+        expect(() => room.authorizedUri(bad), throwsFormatException);
+      }
     },
   );
 }

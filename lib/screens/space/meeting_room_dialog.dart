@@ -1,7 +1,8 @@
 import 'dart:math';
+import 'package:unisinos_usp_app/services/meeting_window.dart';
+import 'package:unisinos_usp_app/webclients/meeting_webclient.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:unisinos_usp_app/models/meeting_room.dart';
 import 'package:unisinos_usp_app/screens/space/space_record_shell.dart';
 
@@ -12,8 +13,9 @@ Future<void> showMeetingRoomDialog(BuildContext context) => showDialog<void>(
 );
 
 class MeetingRoomDialog extends StatefulWidget {
-  const MeetingRoomDialog({super.key, this.onOpen});
+  const MeetingRoomDialog({super.key, this.onOpen, this.onAuthorize});
   final Future<bool> Function(Uri)? onOpen;
+  final Future<Uri> Function(MeetingRoom)? onAuthorize;
   @override
   State<MeetingRoomDialog> createState() => _MeetingRoomDialogState();
 }
@@ -46,25 +48,45 @@ class _MeetingRoomDialogState extends State<MeetingRoomDialog> {
     final room = validate();
     if (room == null) return;
     setState(() => opening = true);
+    MeetingWindow? window;
     try {
-      // No network request before opening: this remains a direct user gesture.
-      final launched =
-          await (widget.onOpen?.call(room.uri) ??
-              launchUrl(room.uri, webOnlyWindowName: '_blank'));
+      // Tests inject a launcher. In web reserve before awaiting the API.
+      if (widget.onOpen == null) {
+        window = MeetingWindow.reserve();
+        if (window == null) {
+          setState(
+            () => error =
+                'O navegador não abriu a nova aba. Permita a abertura e tente novamente.',
+          );
+          return;
+        }
+      }
+      final uri =
+          await (widget.onAuthorize?.call(room) ??
+              MeetingWebclient().authorize(room));
+      if (!mounted) {
+        window?.close();
+        return;
+      }
+      final launched = widget.onOpen != null
+          ? await widget.onOpen!(uri)
+          : window!.navigate(uri);
       if (!mounted) return;
       if (launched) {
         Navigator.of(context).pop();
         return;
       }
+      window?.close();
       setState(
         () => error =
             'O navegador não abriu a nova aba. Permita a abertura ou copie o link da sala.',
       );
     } catch (_) {
+      window?.close();
       if (mounted)
         setState(
           () => error =
-              'Não foi possível abrir o encontro. Você pode copiar o link e tentar novamente.',
+              'Não foi possível autorizar ou abrir o encontro. Sua sala foi preservada; tente novamente.',
         );
     } finally {
       if (mounted) setState(() => opening = false);
@@ -126,7 +148,7 @@ class _MeetingRoomDialogState extends State<MeetingRoomDialog> {
           ),
           const SizedBox(height: 12),
           const Text(
-            'Quem organiza inicia a sala com sua conta do encontro. Convidados entram pelo convite após a chegada de quem organiza.',
+            'Sua conta da Educação OnLIFE autoriza o início do encontro, sem outro login. Compartilhe o convite para receber outras pessoas após sua entrada.',
             style: TextStyle(color: Color(0xFFB1C6D1), height: 1.5),
           ),
           const SizedBox(height: 8),
