@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/widgets/app_page_viewport.dart';
 import 'dart:async';
 import 'dart:ui';
 
@@ -13,7 +14,7 @@ import 'package:widgets_spo/screens/not_found_screen.dart';
 import 'package:widgets_spo/utils.dart';
 
 Future<void> main() async {
-  runZonedGuarded(
+  await runZonedGuarded<Future<void>>(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
 
@@ -22,7 +23,7 @@ Future<void> main() async {
       runApp(
         GetMaterialApp(
           debugShowCheckedModeBanner: false,
-          title: 'Plataforma eCOnectiva',
+          title: 'Educação Onlife',
           initialRoute: '/splash',
           unknownRoute: GetPage(
             name: '/not_found',
@@ -30,6 +31,7 @@ Future<void> main() async {
           ),
           navigatorObservers: [NavigationObserver.instance],
           getPages: appRoutes(),
+          routingCallback: AiAssistantLauncher.didNavigate,
           theme: AppTheme.theme,
           localizationsDelegates: const [
             FlutterQuillLocalizations.delegate,
@@ -37,13 +39,12 @@ Future<void> main() async {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          supportedLocales: const [
-            Locale('pt', 'BR'),
-            Locale('en', 'US'),
-          ],
+          supportedLocales: const [Locale('pt', 'BR'), Locale('en', 'US')],
           locale: const Locale('pt', 'BR'),
-          builder: (context, child) => AiAssistantLauncher(
-            child: child ?? const SizedBox.shrink(),
+          builder: (context, child) => Overlay.wrap(
+            child: AiAssistantLauncher(
+              child: AppPageViewport(child: child ?? const SizedBox.shrink()),
+            ),
           ),
         ),
       );
@@ -58,7 +59,7 @@ Future<void> main() async {
 class MyCustomScrollBehavior extends MaterialScrollBehavior {
   @override
   Set<PointerDeviceKind> get dragDevices => {
-        PointerDeviceKind.touch,
-        PointerDeviceKind.mouse,
-      };
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+  };
 }

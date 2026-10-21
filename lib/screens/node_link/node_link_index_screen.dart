@@ -1,10 +1,9 @@
+import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/node_link/node_link_index_controller.dart';
 import 'package:unisinos_usp_app/models/node_link_model.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 
 class NodeLinkIndexScreen extends StatefulWidget {
   NodeLinkIndexScreen({super.key});
@@ -14,7 +13,8 @@ class NodeLinkIndexScreen extends StatefulWidget {
 }
 
 class _NodeLinkIndexScreenState extends State<NodeLinkIndexScreen> {
-  final NodeLinkIndexController _controller = Get.find<NodeLinkIndexController>();
+  final NodeLinkIndexController _controller =
+      Get.find<NodeLinkIndexController>();
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
@@ -34,24 +34,24 @@ class _NodeLinkIndexScreenState extends State<NodeLinkIndexScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Ligações entre problemáticas'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: _goToCreate,
+            onPressed: Get.find<UserController>().user.value?.canAuthor == true
+                ? _goToCreate
+                : null,
             tooltip: 'Nova ligação',
           ),
         ],
       ),
       body: Stack(
         children: [
-          const Positioned.fill(child: StarfieldBackground()),
-          const Positioned.fill(child: CidigScenicBackground()),
           Column(
             children: [
               Padding(
@@ -65,7 +65,8 @@ class _NodeLinkIndexScreenState extends State<NodeLinkIndexScreen> {
                     prefixIcon: const Icon(Icons.search, color: Colors.white70),
                     suffixIcon: IconButton(
                       icon: const Icon(Icons.refresh, color: Colors.white70),
-                      onPressed: () => _controller.applySearch(_searchController.text),
+                      onPressed: () =>
+                          _controller.applySearch(_searchController.text),
                     ),
                     filled: true,
                     fillColor: Colors.white.withValues(alpha: 0.08),
@@ -80,18 +81,26 @@ class _NodeLinkIndexScreenState extends State<NodeLinkIndexScreen> {
               ),
               Expanded(
                 child: Obx(() {
-                  if (_controller.isLoading.value && _controller.nodeLinks.isEmpty) {
-                    return const Center(child: CircularProgressIndicator(color: Colors.white));
+                  if (_controller.isLoading.value &&
+                      _controller.nodeLinks.isEmpty) {
+                    return const Center(
+                      child: CircularProgressIndicator(color: Colors.white),
+                    );
                   }
                   if (_controller.nodeLinks.isEmpty) {
                     return const Center(
-                      child: Text('Nenhuma ligação encontrada.', style: TextStyle(color: Colors.white)),
+                      child: Text(
+                        'Nenhuma ligação encontrada.',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     );
                   }
                   return ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                    itemCount: _controller.nodeLinks.length + (_controller.isLoadingMore.value ? 1 : 0),
+                    itemCount:
+                        _controller.nodeLinks.length +
+                        (_controller.isLoadingMore.value ? 1 : 0),
                     itemBuilder: (_, index) {
                       if (index >= _controller.nodeLinks.length) {
                         return const Padding(
@@ -118,7 +127,8 @@ class _NodeLinkIndexScreenState extends State<NodeLinkIndexScreen> {
 
   void _onScroll() {
     if (!_scrollController.hasClients) return;
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       _controller.loadMore();
     }
   }
@@ -145,7 +155,10 @@ class _NodeLinkIndexScreenState extends State<NodeLinkIndexScreen> {
   }
 
   Future<void> _goToUpdate(NodeLinkModel model) async {
-    final updated = await Get.toNamed('/node_links/update', parameters: {'id': model.id.toString()});
+    final updated = await Get.toNamed(
+      '/node_links/update',
+      parameters: {'id': model.id.toString()},
+    );
     if (updated == true) {
       await _controller.loadInitial();
     }
@@ -183,9 +196,9 @@ class _NodeLinkCard extends StatelessWidget {
                     model.sourceNode?.name ??
                         'Problemática #${model.sourceNodeId}',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -196,11 +209,17 @@ class _NodeLinkCard extends StatelessWidget {
               ),
             ),
             IconButton(
-              onPressed: onEdit,
+              onPressed:
+                  Get.find<UserController>().user.value?.canAuthor == true
+                  ? onEdit
+                  : null,
               icon: const Icon(Icons.edit, color: Colors.white),
             ),
             IconButton(
-              onPressed: onDelete,
+              onPressed:
+                  Get.find<UserController>().user.value?.canAuthor == true
+                  ? onDelete
+                  : null,
               icon: const Icon(Icons.delete_outline, color: Colors.white),
             ),
           ],

@@ -1,11 +1,10 @@
+import 'package:unisinos_usp_app/widgets/app_page_viewport.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
 import 'package:unisinos_usp_app/policies/policies.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 
 class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
@@ -14,7 +13,7 @@ class HomeScreen extends StatelessWidget {
     'Mapa de Pistas',
     'Problemáticas',
     'Agentes',
-    'Conexões',
+    'Central de Gestão',
     'Pistas',
   };
 
@@ -28,8 +27,6 @@ class HomeScreen extends StatelessWidget {
     );
 
     final user = _controller.user.value;
-    final biomePolicy = BiomePolicy(user);
-    final territoryPolicy = TerritoryPolicy(user);
     final categoryPolicy = CategoryPolicy(user);
     final livingCluePolicy = LivingCluePolicy(user);
     final clueConnectionPolicy = ClueConnectionPolicy(user);
@@ -39,110 +36,94 @@ class HomeScreen extends StatelessWidget {
     final chatTemplatePolicy = ChatTemplatePolicy(user);
     final userPolicy = UserPolicy(user);
 
-    final menus = <_HomeMenu>[
-      _HomeMenu(
-        title: 'Biomas',
-        subtitle: 'Contextos ecológicos',
-        icon: Icons.public_outlined,
-        color: Colors.lightGreen.shade700,
-        onTap: () => Get.toNamed('/biomes'),
-        isVisible: biomePolicy.viewAny(),
-      ),
-      _HomeMenu(
-        title: 'Territórios',
-        subtitle: 'Recortes do bioma',
-        icon: Icons.terrain_outlined,
-        color: Colors.brown.shade400,
-        onTap: () => Get.toNamed('/territories'),
-        isVisible: territoryPolicy.viewAny(),
-      ),
-      _HomeMenu(
-        title: 'Categorias',
-        subtitle: 'Organize categorias e temas',
-        icon: Icons.category_rounded,
-        color: const Color(0xFF29B6F6),
-        onTap: () => Get.toNamed('/categories'),
-        isVisible: categoryPolicy.viewAny(),
-      ),
-      _HomeMenu(
-        title: 'Pistas',
-        subtitle: 'Lista e gestão de pistas',
-        icon: Icons.radar_rounded,
-        color: const Color(0xFF3CE4C8),
-        onTap: () => Get.toNamed('/living_clues'),
-        isVisible: livingCluePolicy.viewAny(),
-      ),
-      _HomeMenu(
-        title: 'Mapa de Pistas',
-        subtitle: 'Visualização territorial',
-        icon: Icons.map_rounded,
-        color: const Color(0xFFFFB74D),
-        onTap: () => Get.toNamed('/living_clues/map'),
-        isVisible: livingCluePolicy.viewAny(),
-      ),
-      _HomeMenu(
-        title: 'Conexões',
-        subtitle: 'Relacionar pistas e contexto',
-        icon: Icons.hub_rounded,
-        color: const Color(0xFFEF6EB0),
-        onTap: () => Get.toNamed('/clue_connections'),
-        isVisible: clueConnectionPolicy.viewAny(),
-      ),
-      _HomeMenu(
-        title: 'Tipos de conexão',
-        subtitle: 'Cadastre e edite tipos',
-        icon: Icons.link_rounded,
-        color: const Color(0xFF7D8BFF),
-        onTap: () => Get.toNamed('/connection_types'),
-        isVisible: connectionTypePolicy.viewAny(),
-      ),
-      _HomeMenu(
-        title: 'Problemáticas',
-        subtitle: 'Visualização estilo grafo',
-        icon: Icons.account_tree_rounded,
-        color: const Color(0xFFFF8A65),
-        onTap: () => Get.toNamed('/nodes/graph'),
-        isVisible: nodePolicy.viewAny(),
-      ),
-      _HomeMenu(
-        title: 'Tipos de problemática',
-        subtitle: 'Taxonomias de análise',
-        icon: Icons.label_rounded,
-        color: const Color(0xFFF3C45F),
-        onTap: () => Get.toNamed('/node_types'),
-        isVisible: nodeTypePolicy.viewAny(),
-      ),
-      _HomeMenu(
-        title: 'Agentes',
-        subtitle: 'Templates e chats de IA',
-        icon: Icons.psychology_alt_rounded,
-        color: const Color(0xFF56D5FF),
-        onTap: () => Get.toNamed('/chat_templates'),
-        isVisible: chatTemplatePolicy.viewAny(),
-      ),
-      _HomeMenu(
-        title: 'Usuários',
-        subtitle: 'Cadastro e gestão de acesso',
-        icon: Icons.groups_rounded,
-        color: const Color(0xFF78E08F),
-        onTap: () => Get.toNamed('/users'),
-        isVisible: userPolicy.viewAny(),
-      ),
-    ].where((menu) {
-      if (!menu.isVisible) return false;
-      if (user?.isAdmin ?? false) return true;
-      return _regularUserMenuTitles.contains(menu.title);
-    }).toList();
+    final menus =
+        <_HomeMenu>[
+          _HomeMenu(
+            title: 'Categorias',
+            subtitle: 'Organize categorias e temas',
+            icon: Icons.category_rounded,
+            color: const Color(0xFF29B6F6),
+            onTap: () => Get.toNamed('/categories'),
+            isVisible: categoryPolicy.viewAny(),
+          ),
+          _HomeMenu(
+            title: 'Pistas',
+            subtitle: 'Lista e gestão de pistas',
+            icon: Icons.radar_rounded,
+            color: const Color(0xFF3CE4C8),
+            onTap: () => Get.toNamed('/living_clues'),
+            isVisible: livingCluePolicy.viewAny(),
+          ),
+          _HomeMenu(
+            title: 'Mapa de Pistas',
+            subtitle: 'Visualização territorial',
+            icon: Icons.map_rounded,
+            color: const Color(0xFFFFB74D),
+            onTap: () => Get.toNamed('/living_clues/map'),
+            isVisible: livingCluePolicy.viewAny(),
+          ),
+          _HomeMenu(
+            title: 'Central de Gestão',
+            subtitle: 'Relações e parametrizações',
+            icon: Icons.hub_rounded,
+            color: const Color(0xFFEF6EB0),
+            onTap: () => Get.toNamed('/management'),
+            isVisible: clueConnectionPolicy.viewAny(),
+          ),
+          _HomeMenu(
+            title: 'Tipos de conexão',
+            subtitle: 'Cadastre e edite tipos',
+            icon: Icons.link_rounded,
+            color: const Color(0xFF7D8BFF),
+            onTap: () => Get.toNamed('/connection_types'),
+            isVisible: connectionTypePolicy.viewAny(),
+          ),
+          _HomeMenu(
+            title: 'Problemáticas',
+            subtitle: 'Visualização estilo grafo',
+            icon: Icons.account_tree_rounded,
+            color: const Color(0xFFFF8A65),
+            onTap: () => Get.toNamed('/nodes/graph'),
+            isVisible: nodePolicy.viewAny(),
+          ),
+          _HomeMenu(
+            title: 'Tipos de problemática',
+            subtitle: 'Taxonomias de análise',
+            icon: Icons.label_rounded,
+            color: const Color(0xFFF3C45F),
+            onTap: () => Get.toNamed('/node_types'),
+            isVisible: nodeTypePolicy.viewAny(),
+          ),
+          _HomeMenu(
+            title: 'Agentes',
+            subtitle: 'Templates e chats de IA',
+            icon: Icons.psychology_alt_rounded,
+            color: const Color(0xFF56D5FF),
+            onTap: () => Get.toNamed('/chat_templates'),
+            isVisible: chatTemplatePolicy.viewAny(),
+          ),
+          _HomeMenu(
+            title: 'Usuários',
+            subtitle: 'Cadastro e gestão de acesso',
+            icon: Icons.groups_rounded,
+            color: const Color(0xFF78E08F),
+            onTap: () => Get.toNamed('/users'),
+            isVisible: userPolicy.viewAny(),
+          ),
+        ].where((menu) {
+          if (!menu.isVisible) return false;
+          if (user?.isAdmin ?? false) return true;
+          return _regularUserMenuTitles.contains(menu.title);
+        }).toList();
 
     final userName = _controller.user.value?.name.trim();
-    final displayName =
-        (userName == null || userName.isEmpty) ? 'Usuário' : userName;
+    final displayName = (userName == null || userName.isEmpty)
+        ? 'Usuário'
+        : userName;
 
     return Scaffold(
       body: Stack(
         children: [
-          const Positioned.fill(child: StarfieldBackground()),
-          const Positioned.fill(child: CidigScenicBackground()),
           SafeArea(
             child: Column(
               children: [
@@ -156,11 +137,15 @@ class HomeScreen extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
                     child: Center(
                       child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 1180),
+                        constraints: const BoxConstraints(
+                          maxWidth: AppPageViewport.maxWidth,
+                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const SizedBox(height: 20),
+                            const _SpaceEntry(),
+                            const SizedBox(height: 24),
                             const _SectionTitle(
                               title: 'Módulos',
                               subtitle: 'Acessos da plataforma',
@@ -245,7 +230,7 @@ class _HomeTopBar extends StatelessWidget {
       builder: (context, constraints) {
         final compact = constraints.maxWidth < 760;
         final title = Text(
-          'Plataforma eCOnectiva',
+          'Educação Onlife',
           maxLines: compact ? 2 : 1,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
@@ -280,11 +265,7 @@ class _HomeTopBar extends StatelessWidget {
               ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(child: title),
-                      ],
-                    ),
+                    Row(children: [Expanded(child: title)]),
                     const SizedBox(height: 12),
                     SizedBox(
                       width: double.infinity,
@@ -319,8 +300,9 @@ class _ProfilePill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final initial =
-        userName.isEmpty ? '?' : userName.substring(0, 1).toUpperCase();
+    final initial = userName.isEmpty
+        ? '?'
+        : userName.substring(0, 1).toUpperCase();
 
     return Material(
       color: Colors.transparent,
@@ -386,14 +368,14 @@ class _SectionTitle extends StatelessWidget {
           title,
           style: const TextStyle(
             color: Color(0xFFE7F0FF),
-            fontSize: 19,
+            fontSize: 26,
             fontWeight: FontWeight.w700,
           ),
         ),
         const SizedBox(height: 2),
         Text(
           subtitle,
-          style: const TextStyle(color: Color(0xFF91AED7), fontSize: 13),
+          style: const TextStyle(color: Color(0xFF91AED7), fontSize: 16),
         ),
       ],
     );
@@ -430,16 +412,9 @@ class _ResponsiveMenuFlow extends StatelessWidget {
   }
 
   double _resolveCardWidth(double availableWidth, double spacing) {
-    if (availableWidth < 560) {
-      return availableWidth;
-    }
-    if (availableWidth < 860) {
-      return (availableWidth - spacing) / 2;
-    }
-    if (availableWidth < 1120) {
-      return (availableWidth - (spacing * 2)) / 3;
-    }
-    return (availableWidth - (spacing * 3)) / 4;
+    return availableWidth < 700
+        ? availableWidth
+        : (availableWidth - spacing) / 2;
   }
 }
 
@@ -471,20 +446,20 @@ class _ModuleCard extends StatelessWidget {
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(20),
           child: Row(
             children: [
               Container(
-                width: 40,
-                height: 40,
+                width: 60,
+                height: 60,
                 decoration: BoxDecoration(
                   color: menu.color.withValues(alpha: 0.16),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: menu.color.withValues(alpha: 0.45)),
                 ),
-                child: Icon(menu.icon, color: menu.color, size: 20),
+                child: Icon(menu.icon, color: menu.color, size: 30),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -492,11 +467,11 @@ class _ModuleCard extends StatelessWidget {
                   children: [
                     Text(
                       menu.title,
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 14,
+                        fontSize: 20,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -507,7 +482,7 @@ class _ModuleCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: Color(0xFFA4C0E6),
-                        fontSize: 11.5,
+                        fontSize: 15,
                         height: 1.2,
                       ),
                     ),
@@ -518,7 +493,7 @@ class _ModuleCard extends StatelessWidget {
               const Icon(
                 Icons.arrow_forward_rounded,
                 color: Color(0xFF66CFFF),
-                size: 18,
+                size: 24,
               ),
             ],
           ),
@@ -526,4 +501,72 @@ class _ModuleCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class _SpaceEntry extends StatelessWidget {
+  const _SpaceEntry();
+  @override
+  Widget build(BuildContext context) => Semantics(
+    label: 'Experiência espacial: entrar na nave Educação Onlife',
+    button: true,
+    child: Material(
+      color: const Color(0xFF0C2333),
+      borderRadius: BorderRadius.circular(24),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => Get.toNamed('/space'),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF123E49), Color(0xFF10192E)],
+            ),
+            border: Border.all(color: const Color(0xFF34636D)),
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.rocket_launch_outlined,
+                color: Color(0xFF8DF5DC),
+                size: 42,
+              ),
+              const SizedBox(width: 20),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'UMA NOVA PERSPECTIVA',
+                      style: TextStyle(
+                        fontSize: 10,
+                        letterSpacing: 2,
+                        color: Color(0xFF8DF5DC),
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Entre na nave Educação Onlife',
+                      style: TextStyle(
+                        fontSize: 23,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: 6),
+                    Text(
+                      'Explore a Terra e as estações com a Iareté. Uma experiência espacial com som e movimento.',
+                      style: TextStyle(color: Color(0xFFB8CDD6)),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Icon(Icons.arrow_forward_rounded, color: Color(0xFF8DF5DC)),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
 }

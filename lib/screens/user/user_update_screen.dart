@@ -3,9 +3,7 @@ import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/user/user_update_controller.dart';
 import 'package:unisinos_usp_app/models/user_model.dart';
 import 'package:unisinos_usp_app/screens/user/user_form.dart';
-import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
+import 'package:unisinos_usp_app/screens/management/management_record_scaffold.dart';
 
 class UserUpdateScreen extends StatelessWidget {
   const UserUpdateScreen({super.key});
@@ -13,34 +11,37 @@ class UserUpdateScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final UserUpdateController controller = Get.find<UserUpdateController>();
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        leading: const SafeBackButton(),
-        title: const Text('Editar usuário'),
-      ),
+    return ManagementRecordScaffold(
+      section: 'users',
+      title: 'Editar usuário',
+      subtitle: 'Gerencie pessoas e seus perfis de acesso à plataforma.',
+      form: true,
+
       body: Stack(
         children: [
-          const Positioned.fill(child: StarfieldBackground()),
-          const Positioned.fill(child: CidigScenicBackground()),
           Obx(() {
             if (controller.userId == null) {
               return const Center(
-                  child: Text('Usuário não informado.',
-                      style: TextStyle(color: Colors.white)));
+                child: Text(
+                  'Usuário não informado.',
+                  style: TextStyle(color: Colors.white),
+                ),
+              );
             }
 
             if (controller.isLoading.value && controller.user.value == null) {
               return const Center(
-                  child: CircularProgressIndicator(color: Colors.white));
+                child: CircularProgressIndicator(color: Colors.white),
+              );
             }
 
             if (controller.user.value == null) {
               return const Center(
-                  child: Text('Usuário não encontrado.',
-                      style: TextStyle(color: Colors.white)));
+                child: Text(
+                  'Usuário não encontrado.',
+                  style: TextStyle(color: Colors.white),
+                ),
+              );
             }
 
             return SingleChildScrollView(

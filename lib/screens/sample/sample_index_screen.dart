@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/sample/sample_index_controller.dart';
@@ -35,7 +36,9 @@ class SampleIndexScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: _goToCreate,
+            onPressed: Get.find<UserController>().user.value?.canAuthor == true
+                ? _goToCreate
+                : null,
             tooltip: 'Novo',
           ),
         ],
@@ -68,12 +71,28 @@ class SampleIndexScreen extends StatelessWidget {
                       children: [
                         IconButton(
                           icon: const Icon(Icons.edit),
-                          onPressed: _controller.isLoading.value ? null : () => _goToUpdate(sample),
+                          onPressed:
+                              Get.find<UserController>()
+                                          .user
+                                          .value
+                                          ?.canAuthor !=
+                                      true ||
+                                  _controller.isLoading.value
+                              ? null
+                              : () => _goToUpdate(sample),
                           tooltip: 'Editar',
                         ),
                         IconButton(
                           icon: const Icon(Icons.delete_outline),
-                          onPressed: _controller.isLoading.value ? null : () => _confirmDelete(sample),
+                          onPressed:
+                              Get.find<UserController>()
+                                          .user
+                                          .value
+                                          ?.canAuthor !=
+                                      true ||
+                                  _controller.isLoading.value
+                              ? null
+                              : () => _confirmDelete(sample),
                           tooltip: 'Excluir',
                         ),
                       ],

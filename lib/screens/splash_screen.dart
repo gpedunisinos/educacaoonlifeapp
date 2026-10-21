@@ -24,13 +24,8 @@ class _SplashScreenState extends State<SplashScreen> {
     return SafeArea(
       top: false,
       child: Scaffold(
-        backgroundColor: Colors.white,
-        body: Center(
-          child: Image.asset(
-            'assets/logo_usp.png',
-            width: 120,
-          ),
-        ),
+        backgroundColor: Colors.transparent,
+        body: Center(child: Image.asset('assets/logo_usp.png', width: 120)),
       ),
     );
   }

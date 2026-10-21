@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/screens/management/management_input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:get/get.dart';
@@ -6,9 +7,7 @@ import 'package:unisinos_usp_app/controllers/node_type/node_type_update_controll
 import 'package:unisinos_usp_app/models/node_type_model.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/widgets/color_preview_card.dart';
-import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
+import 'package:unisinos_usp_app/screens/management/management_record_scaffold.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class NodeTypeUpdateScreen extends StatefulWidget {
@@ -36,33 +35,36 @@ class _NodeTypeUpdateScreenState extends State<NodeTypeUpdateScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        leading: const SafeBackButton(),
-        title: const Text('Editar tipo de problemática'),
-      ),
+    return ManagementRecordScaffold(
+      section: 'node_types',
+      title: 'Editar tipo de problemática',
+      subtitle: 'Organize as problemáticas com identificadores e cores.',
+      form: true,
+
       body: Stack(
         children: [
-          const Positioned.fill(child: StarfieldBackground()),
-          const Positioned.fill(child: CidigScenicBackground()),
           Obx(() {
             if (_controller.nodeTypeId == null) {
               return const Center(
-                  child: Text('Tipo de problemática não informado.',
-                      style: TextStyle(color: Colors.white)));
+                child: Text(
+                  'Tipo de problemática não informado.',
+                  style: TextStyle(color: Colors.white),
+                ),
+              );
             }
             if (_controller.isLoading.value &&
                 _controller.nodeType.value == null) {
               return const Center(
-                  child: CircularProgressIndicator(color: Colors.white));
+                child: CircularProgressIndicator(color: Colors.white),
+              );
             }
             if (_controller.nodeType.value == null) {
               return const Center(
-                  child: Text('Tipo de problemática não encontrado.',
-                      style: TextStyle(color: Colors.white)));
+                child: Text(
+                  'Tipo de problemática não encontrado.',
+                  style: TextStyle(color: Colors.white),
+                ),
+              );
             }
 
             if (!_filled) {
@@ -79,17 +81,20 @@ class _NodeTypeUpdateScreenState extends State<NodeTypeUpdateScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    InputText(
+                    ManagementInput(
                       hintText: 'Nome',
                       controller: _nameController,
                       validator: (value) => PValidator([
                         PRuleRequired(value, message: 'Obrigatório'),
-                        PRuleMaxString(value, 100,
-                            message: 'Máximo de 100 caracteres'),
+                        PRuleMaxString(
+                          value,
+                          100,
+                          message: 'Máximo de 100 caracteres',
+                        ),
                       ]).val(),
                     ),
                     Insets.large.height,
-                    InputText(
+                    ManagementInput(
                       hintText: 'Cor hexadecimal',
                       controller: _colorController,
                       validator: (value) => _validateColor(value),

@@ -1,10 +1,10 @@
+import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
+import 'package:unisinos_usp_app/policies/user_policy.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/user/user_index_controller.dart';
 import 'package:unisinos_usp_app/models/user_model.dart';
-import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
+import 'package:unisinos_usp_app/screens/management/management_record_scaffold.dart';
 
 class UserIndexScreen extends StatefulWidget {
   const UserIndexScreen({super.key});
@@ -33,25 +33,23 @@ class _UserIndexScreenState extends State<UserIndexScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        leading: const SafeBackButton(),
-        title: const Text('Usuários'),
-        actions: [
+    final canManage = UserPolicy(
+      Get.find<UserController>().user.value,
+    ).create();
+    return ManagementRecordScaffold(
+      section: 'users',
+      title: 'Usuários',
+      subtitle: 'Gerencie pessoas e seus perfis de acesso à plataforma.',
+      actions: [
+        if (canManage)
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: _goToCreate,
             tooltip: 'Novo usuário',
           ),
-        ],
-      ),
+      ],
       body: Stack(
         children: [
-          const Positioned.fill(child: StarfieldBackground()),
-          const Positioned.fill(child: CidigScenicBackground()),
           Column(
             children: [
               Padding(
@@ -84,19 +82,23 @@ class _UserIndexScreenState extends State<UserIndexScreen> {
                   if (_controller.isLoading.value &&
                       _controller.users.isEmpty) {
                     return const Center(
-                        child: CircularProgressIndicator(color: Colors.white));
+                      child: CircularProgressIndicator(color: Colors.white),
+                    );
                   }
                   if (_controller.users.isEmpty) {
                     return const Center(
-                      child: Text('Nenhum usuário encontrado.',
-                          style: TextStyle(color: Colors.white)),
+                      child: Text(
+                        'Nenhum usuário encontrado.',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     );
                   }
 
                   return ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                    itemCount: _controller.users.length +
+                    itemCount:
+                        _controller.users.length +
                         (_controller.isLoadingMore.value ? 1 : 0),
                     itemBuilder: (_, index) {
                       if (index >= _controller.users.length) {
@@ -109,6 +111,7 @@ class _UserIndexScreenState extends State<UserIndexScreen> {
                       final model = _controller.users[index];
                       return _UserCard(
                         model: model,
+                        canManage: canManage,
                         onEdit: () => _goToUpdate(model),
                         onDelete: () => _confirmDelete(model),
                       );
@@ -153,8 +156,10 @@ class _UserIndexScreenState extends State<UserIndexScreen> {
   }
 
   Future<void> _goToUpdate(UserModel model) async {
-    final updated = await Get.toNamed('/users/update',
-        parameters: {'id': model.id.toString()});
+    final updated = await Get.toNamed(
+      '/users/update',
+      parameters: {'id': model.id.toString()},
+    );
     if (updated == true) {
       await _controller.loadInitial();
     }
@@ -164,11 +169,13 @@ class _UserIndexScreenState extends State<UserIndexScreen> {
 class _UserCard extends StatelessWidget {
   const _UserCard({
     required this.model,
+    required this.canManage,
     required this.onEdit,
     required this.onDelete,
   });
 
   final UserModel model;
+  final bool canManage;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -179,10 +186,7 @@ class _UserCard extends StatelessWidget {
       color: Colors.black.withValues(alpha: 0.58),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(
-          color: Color(0x8A46B6EC),
-          width: 1.2,
-        ),
+        side: const BorderSide(color: Color(0x8A46B6EC), width: 1.2),
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -190,9 +194,11 @@ class _UserCard extends StatelessWidget {
           children: [
             CircleAvatar(
               backgroundColor: Colors.blue.withValues(alpha: 0.2),
-              child: Text(model.name.isNotEmpty
-                  ? model.name.characters.first.toUpperCase()
-                  : '?'),
+              child: Text(
+                model.name.isNotEmpty
+                    ? model.name.characters.first.toUpperCase()
+                    : '?',
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -202,26 +208,36 @@ class _UserCard extends StatelessWidget {
                   Text(
                     model.name,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   const SizedBox(height: 4),
-                  Text(model.email,
-                      style: const TextStyle(color: Colors.white70)),
+                  Text(
+                    model.email,
+                    style: const TextStyle(color: Colors.white70),
+                  ),
                   if ((model.phone ?? '').isNotEmpty)
-                    Text(model.phone!,
-                        style: const TextStyle(
-                            color: Colors.white60, fontSize: 12)),
+                    Text(
+                      model.phone!,
+                      style: const TextStyle(
+                        color: Colors.white60,
+                        fontSize: 12,
+                      ),
+                    ),
                 ],
               ),
             ),
-            IconButton(
+            if (canManage)
+              IconButton(
                 onPressed: onEdit,
-                icon: const Icon(Icons.edit, color: Colors.white)),
-            IconButton(
+                icon: const Icon(Icons.edit, color: Colors.white),
+              ),
+            if (canManage)
+              IconButton(
                 onPressed: onDelete,
-                icon: const Icon(Icons.delete_outline, color: Colors.white)),
+                icon: const Icon(Icons.delete_outline, color: Colors.white),
+              ),
           ],
         ),
       ),

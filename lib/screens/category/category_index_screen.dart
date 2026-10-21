@@ -4,9 +4,7 @@ import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 import 'package:unisinos_usp_app/controllers/category/category_index_controller.dart';
 import 'package:unisinos_usp_app/models/category_model.dart';
 import 'package:unisinos_usp_app/policies/policies.dart';
-import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
+import 'package:unisinos_usp_app/screens/management/management_record_scaffold.dart';
 
 class CategoryIndexScreen extends StatelessWidget {
   CategoryIndexScreen({super.key});
@@ -16,37 +14,29 @@ class CategoryIndexScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final canManage =
-        CategoryPolicy(Get.find<UserController>().user.value).create();
+    final canManage = CategoryPolicy(
+      Get.find<UserController>().user.value,
+    ).create();
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        leading: const SafeBackButton(),
-        title: const Text('Categorias'),
-        actions: [
-          if (canManage)
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: _goToCreate,
-              tooltip: 'Nova categoria',
-            ),
-        ],
-      ),
+    return ManagementRecordScaffold(
+      section: 'categories',
+      title: 'Categorias',
+      subtitle: 'Classifique as pistas com cores, tipos e marcadores.',
+      actions: [
+        if (canManage)
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: _goToCreate,
+            tooltip: 'Nova categoria',
+          ),
+      ],
       body: Stack(
         children: [
-          const Positioned.fill(
-            child: StarfieldBackground(),
-          ),
-          const Positioned.fill(
-            child: CidigScenicBackground(),
-          ),
           Obx(() {
             if (_controller.isLoading.value && _controller.categories.isEmpty) {
               return const Center(
-                  child: CircularProgressIndicator(color: Colors.white));
+                child: CircularProgressIndicator(color: Colors.white),
+              );
             }
 
             if (_controller.categories.isEmpty) {
@@ -71,8 +61,10 @@ class CategoryIndexScreen extends StatelessWidget {
                           _controller.categories[index];
                       return ListTile(
                         leading: _ColorDot(colorHex: category.colorHex),
-                        title: Text(category.name,
-                            style: const TextStyle(color: Colors.white)),
+                        title: Text(
+                          category.name,
+                          style: const TextStyle(color: Colors.white),
+                        ),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
@@ -148,8 +140,10 @@ class CategoryIndexScreen extends StatelessWidget {
   }
 
   Future<void> _goToUpdate(CategoryModel category) async {
-    await Get.toNamed('/categories/update',
-        parameters: {'id': category.id.toString()});
+    await Get.toNamed(
+      '/categories/update',
+      parameters: {'id': category.id.toString()},
+    );
     await _controller.loadCategories();
   }
 }

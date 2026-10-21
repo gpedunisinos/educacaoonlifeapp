@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:unisinos_usp_app/widgets/clue_media.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 
 class LivingClueDescriptionEditor extends StatelessWidget {
-  const LivingClueDescriptionEditor({
-    required this.controller,
-    super.key,
-  });
+  const LivingClueDescriptionEditor({required this.controller, super.key});
 
   final QuillController controller;
 
@@ -49,6 +47,7 @@ class LivingClueDescriptionEditor extends StatelessWidget {
                 child: QuillEditor.basic(
                   controller: controller,
                   config: const QuillEditorConfig(
+                    embedBuilders: [ClueVideoBuilder()],
                     minHeight: 140,
                   ),
                 ),
@@ -56,6 +55,13 @@ class LivingClueDescriptionEditor extends StatelessWidget {
             ],
           ),
         ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          onPressed: () => insertYouTube(context, controller),
+          icon: const Icon(Icons.video_library_outlined),
+          label: const Text('Adicionar vídeo do YouTube'),
+        ),
+        ClueLinkPreviews(controller: controller),
       ],
     );
   }

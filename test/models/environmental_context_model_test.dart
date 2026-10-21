@@ -6,7 +6,6 @@ void main() {
     final model = LivingClueModel.fromJson({
       'id': 75,
       'name': 'Pista ambiental',
-      'biome_id': 1,
       'category_id': 2,
       'latitude': -29.9,
       'longitude': -51.1,

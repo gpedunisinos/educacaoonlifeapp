@@ -1,27 +1,31 @@
+import 'package:unisinos_usp_app/screens/management/management_input.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pvalidator/pvalidator.dart';
 import 'package:unisinos_usp_app/controllers/connection_type/connection_type_create_controller.dart';
 import 'package:unisinos_usp_app/models/connection_type_model.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
-import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
+import 'package:unisinos_usp_app/screens/management/management_record_scaffold.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class ConnectionTypeCreateScreen extends StatefulWidget {
   const ConnectionTypeCreateScreen({super.key});
 
   @override
-  State<ConnectionTypeCreateScreen> createState() => _ConnectionTypeCreateScreenState();
+  State<ConnectionTypeCreateScreen> createState() =>
+      _ConnectionTypeCreateScreenState();
 }
 
-class _ConnectionTypeCreateScreenState extends State<ConnectionTypeCreateScreen> {
-  final ConnectionTypeCreateController _controller = Get.find<ConnectionTypeCreateController>();
+class _ConnectionTypeCreateScreenState
+    extends State<ConnectionTypeCreateScreen> {
+  final ConnectionTypeCreateController _controller =
+      Get.find<ConnectionTypeCreateController>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _strokeStyleController = TextEditingController(text: 'solid');
+  final TextEditingController _strokeStyleController = TextEditingController(
+    text: 'solid',
+  );
   bool _isDirectional = true;
 
   @override
@@ -33,18 +37,14 @@ class _ConnectionTypeCreateScreenState extends State<ConnectionTypeCreateScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        leading: const SafeBackButton(),
-        title: const Text('Novo tipo de conexão'),
-      ),
+    return ManagementRecordScaffold(
+      section: 'connection_types',
+      title: 'Novo tipo de conexão',
+      subtitle: 'Defina os significados e a direção das relações entre pistas.',
+      form: true,
+
       body: Stack(
         children: [
-          const Positioned.fill(child: StarfieldBackground()),
-          const Positioned.fill(child: CidigScenicBackground()),
           SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Form(
@@ -52,39 +52,45 @@ class _ConnectionTypeCreateScreenState extends State<ConnectionTypeCreateScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-              InputText(
-                hintText: 'Nome',
-                controller: _nameController,
-                validator: (value) => PValidator([
-                  PRuleRequired(value, message: 'Obrigatório'),
-                  PRuleMaxString(value, 100, message: 'Máximo de 100 caracteres'),
-                ]).val(),
-              ),
-              Insets.large.height,
-              InputText(
-                hintText: 'Estilo de linha (solid/dashed/dotted)',
-                controller: _strokeStyleController,
-              ),
-              Insets.large.height,
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Direcional'),
-                value: _isDirectional,
-                onChanged: (val) => setState(() => _isDirectional = val),
-              ),
-              Insets.extraLarge.height,
-              SizedBox(
-                width: double.infinity,
-                child: Obx(() {
-                  final bool loading = _controller.isLoading.value;
-                  final String buttonTitle = loading ? 'Salvando...' : 'Salvar';
-                  return ActionButton(
-                    theme: ActionButtonTheme.blue,
-                    title: buttonTitle,
-                    onPressed: loading ? null : _save,
-                  );
-                }),
-              ),
+                  ManagementInput(
+                    hintText: 'Nome',
+                    controller: _nameController,
+                    validator: (value) => PValidator([
+                      PRuleRequired(value, message: 'Obrigatório'),
+                      PRuleMaxString(
+                        value,
+                        100,
+                        message: 'Máximo de 100 caracteres',
+                      ),
+                    ]).val(),
+                  ),
+                  Insets.large.height,
+                  ManagementInput(
+                    hintText: 'Estilo de linha (solid/dashed/dotted)',
+                    controller: _strokeStyleController,
+                  ),
+                  Insets.large.height,
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Direcional'),
+                    value: _isDirectional,
+                    onChanged: (val) => setState(() => _isDirectional = val),
+                  ),
+                  Insets.extraLarge.height,
+                  SizedBox(
+                    width: double.infinity,
+                    child: Obx(() {
+                      final bool loading = _controller.isLoading.value;
+                      final String buttonTitle = loading
+                          ? 'Salvando...'
+                          : 'Salvar';
+                      return ActionButton(
+                        theme: ActionButtonTheme.blue,
+                        title: buttonTitle,
+                        onPressed: loading ? null : _save,
+                      );
+                    }),
+                  ),
                 ],
               ),
             ),
@@ -100,7 +106,9 @@ class _ConnectionTypeCreateScreenState extends State<ConnectionTypeCreateScreen>
     final model = ConnectionTypeModel(
       id: 0,
       name: _nameController.text.trim(),
-      strokeStyle: _strokeStyleController.text.trim().isEmpty ? 'solid' : _strokeStyleController.text.trim(),
+      strokeStyle: _strokeStyleController.text.trim().isEmpty
+          ? 'solid'
+          : _strokeStyleController.text.trim(),
       isDirectional: _isDirectional,
     );
 

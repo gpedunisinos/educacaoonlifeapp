@@ -2,6 +2,8 @@ class AuthUser {
   static const int regularProfile = 10;
   static const int administratorProfile = 40;
 
+  final String? usageMode;
+  bool get canAuthor => usageMode == 'inventor';
   final int id;
   final String name;
   final String email;
@@ -11,6 +13,7 @@ class AuthUser {
 
   const AuthUser({
     required this.id,
+    this.usageMode,
     required this.name,
     required this.email,
     required this.token,
@@ -26,6 +29,9 @@ class AuthUser {
           ? json['id']
           : int.tryParse(json['id']?.toString() ?? '') ?? 0,
       name: json['name'] ?? '',
+      usageMode: ['explorer', 'inventor'].contains(json['usage_mode'])
+          ? json['usage_mode']
+          : null,
       email: json['email'] ?? '',
       token: json['token'] ?? json['plain_text_token'] ?? '',
       isGoogleAuth: json['is_google_auth'] == true,
@@ -38,6 +44,7 @@ class AuthUser {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'usage_mode': usageMode,
       'name': name,
       'email': email,
       'token': token,

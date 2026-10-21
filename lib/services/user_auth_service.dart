@@ -23,7 +23,7 @@ class UserAuthService implements AuthService {
     await Util.prefs.clear();
     _user = null;
 
-    if (Get.currentRoute != '/login') {
+    if (Get.key.currentState != null && Get.currentRoute != '/login') {
       await Get.offAllNamed('/login');
     }
   }

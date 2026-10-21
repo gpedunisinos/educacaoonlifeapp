@@ -22,11 +22,15 @@ class _SampleCreateScreenState extends State<SampleCreateScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _sampleStringController = TextEditingController();
   final TextEditingController _sampleUniqueController = TextEditingController();
-  final TextEditingController _nullableStringController = TextEditingController();
+  final TextEditingController _nullableStringController =
+      TextEditingController();
   final TextEditingController _sampleDoubleController = TextEditingController();
   final DateTimeController _sampleDateController = DateTimeController();
-  final TextEditingController _orderNumberController = TextEditingController(text: '0');
-  final ItemSelectController _sampleDetailSelectController = ItemSelectController();
+  final TextEditingController _orderNumberController = TextEditingController(
+    text: '0',
+  );
+  final ItemSelectController _sampleDetailSelectController =
+      ItemSelectController();
 
   @override
   void dispose() {
@@ -59,7 +63,11 @@ class _SampleCreateScreenState extends State<SampleCreateScreen> {
                 controller: _nameController,
                 validator: (value) => PValidator([
                   PRuleRequired(value, message: 'Obrigatório'),
-                  PRuleMaxString(value, 255, message: 'Máximo de 255 caracteres'),
+                  PRuleMaxString(
+                    value,
+                    255,
+                    message: 'Máximo de 255 caracteres',
+                  ),
                 ]).val(),
               ),
               Insets.large.height,
@@ -68,7 +76,11 @@ class _SampleCreateScreenState extends State<SampleCreateScreen> {
                 controller: _sampleStringController,
                 validator: (value) => PValidator([
                   PRuleRequired(value, message: 'Obrigatório'),
-                  PRuleMaxString(value, 255, message: 'Máximo de 255 caracteres'),
+                  PRuleMaxString(
+                    value,
+                    255,
+                    message: 'Máximo de 255 caracteres',
+                  ),
                 ]).val(),
               ),
               Insets.large.height,
@@ -77,7 +89,11 @@ class _SampleCreateScreenState extends State<SampleCreateScreen> {
                 controller: _sampleUniqueController,
                 validator: (value) => PValidator([
                   PRuleRequired(value, message: 'Obrigatório'),
-                  PRuleMaxString(value, 255, message: 'Máximo de 255 caracteres'),
+                  PRuleMaxString(
+                    value,
+                    255,
+                    message: 'Máximo de 255 caracteres',
+                  ),
                 ]).val(),
               ),
               Insets.large.height,
@@ -85,7 +101,11 @@ class _SampleCreateScreenState extends State<SampleCreateScreen> {
                 hintText: 'Nullable string (opcional)',
                 controller: _nullableStringController,
                 validator: (value) => PValidator([
-                  PRuleMaxString(value, 255, message: 'Máximo de 255 caracteres'),
+                  PRuleMaxString(
+                    value,
+                    255,
+                    message: 'Máximo de 255 caracteres',
+                  ),
                 ]).val(),
               ),
               Insets.large.height,
@@ -145,7 +165,9 @@ class _SampleCreateScreenState extends State<SampleCreateScreen> {
   Future<void> _save() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
-    final double parsedDouble = double.parse(_sampleDoubleController.text.trim());
+    final double parsedDouble = double.parse(
+      _sampleDoubleController.text.trim(),
+    );
     final int parsedOrder = int.parse(_orderNumberController.text.trim());
 
     final model = SampleModel(
@@ -153,7 +175,9 @@ class _SampleCreateScreenState extends State<SampleCreateScreen> {
       name: _nameController.text.trim(),
       sampleString: _sampleStringController.text.trim(),
       sampleUnique: _sampleUniqueController.text.trim(),
-      nullableString: _nullableStringController.text.trim().isEmpty ? null : _nullableStringController.text.trim(),
+      nullableString: _nullableStringController.text.trim().isEmpty
+          ? null
+          : _nullableStringController.text.trim(),
       sampleDetailId: _sampleDetailSelectController.selectedItem!.id,
       sampleDouble: parsedDouble,
       sampleDate: _sampleDateController.value!,

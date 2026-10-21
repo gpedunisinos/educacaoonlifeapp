@@ -8,7 +8,8 @@ class CreatePasswordScreen extends StatelessWidget {
   final UserController _controller = Get.find<UserController>();
 
   final TextEditingController _passwordTextController = TextEditingController();
-  final TextEditingController _confirmPasswordTextController = TextEditingController();
+  final TextEditingController _confirmPasswordTextController =
+      TextEditingController();
 
   final String token = Get.arguments;
   final _formKey = GlobalKey<FormState>();
@@ -31,7 +32,10 @@ class CreatePasswordScreen extends StatelessWidget {
                 children: [
                   Text('Crie uma nova senha', style: boldTextStyle(size: 22)),
                   Insets.small.height,
-                  Text('Acesse a plataforma', style: secondaryTextStyle(size: 14)),
+                  Text(
+                    'Acesse a plataforma',
+                    style: secondaryTextStyle(size: 14),
+                  ),
                   Insets.extraLarge.height,
                   InputText(
                     hintText: 'Crie uma nova senha',
@@ -77,10 +81,13 @@ class CreatePasswordScreen extends StatelessWidget {
 
   Future<void> _doChangePassword() async {
     if (_formKey.currentState!.validate()) {
-      final user = await _controller.recoverPassword(token, _passwordTextController.text);
+      final user = await _controller.recoverPassword(
+        token,
+        _passwordTextController.text,
+      );
 
       await _controller.savePrefs(user);
-      Get.offAllNamed('/home');
+      Get.offAllNamed(_controller.modeHome);
     }
   }
 }

@@ -6,8 +6,6 @@ import 'package:unisinos_usp_app/models/node_link_model.dart';
 import 'package:unisinos_usp_app/webclients/node_webclient.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class NodeLinkCreateScreen extends StatefulWidget {
@@ -18,26 +16,27 @@ class NodeLinkCreateScreen extends StatefulWidget {
 }
 
 class _NodeLinkCreateScreenState extends State<NodeLinkCreateScreen> {
-  final NodeLinkCreateController _controller = Get.find<NodeLinkCreateController>();
+  final NodeLinkCreateController _controller =
+      Get.find<NodeLinkCreateController>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  final ItemSelectController _sourceNodeSelectController = ItemSelectController();
-  final ItemSelectController _targetNodeSelectController = ItemSelectController();
+  final ItemSelectController _sourceNodeSelectController =
+      ItemSelectController();
+  final ItemSelectController _targetNodeSelectController =
+      ItemSelectController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Nova ligação'),
       ),
       body: Stack(
         children: [
-          const Positioned.fill(child: StarfieldBackground()),
-          const Positioned.fill(child: CidigScenicBackground()),
           SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Form(
@@ -51,7 +50,8 @@ class _NodeLinkCreateScreenState extends State<NodeLinkCreateScreen> {
                     validator: (value) => PValidator([
                       PRuleRequired(value, message: 'Obrigatório'),
                     ]).val(),
-                    onFind: (search, offset, params) => NodeWebclient().select(search, offset),
+                    onFind: (search, offset, params) =>
+                        NodeWebclient().select(search, offset),
                   ),
                   Insets.large.height,
                   InputSelectApi(
@@ -60,7 +60,8 @@ class _NodeLinkCreateScreenState extends State<NodeLinkCreateScreen> {
                     validator: (value) => PValidator([
                       PRuleRequired(value, message: 'Obrigatório'),
                     ]).val(),
-                    onFind: (search, offset, params) => NodeWebclient().select(search, offset),
+                    onFind: (search, offset, params) =>
+                        NodeWebclient().select(search, offset),
                   ),
                   Insets.extraLarge.height,
                   SizedBox(
@@ -90,12 +91,16 @@ class _NodeLinkCreateScreenState extends State<NodeLinkCreateScreen> {
 
     if (sourceNodeId == null || targetNodeId == null) {
       Get.customSnackbar(
-          'Erro', 'Selecione as duas problemáticas para criar a ligação.');
+        'Erro',
+        'Selecione as duas problemáticas para criar a ligação.',
+      );
       return;
     }
     if (sourceNodeId == targetNodeId) {
       Get.customSnackbar(
-          'Erro', 'Escolha problemáticas diferentes para criar a ligação.');
+        'Erro',
+        'Escolha problemáticas diferentes para criar a ligação.',
+      );
       return;
     }
 

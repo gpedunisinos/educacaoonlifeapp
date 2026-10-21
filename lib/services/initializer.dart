@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:unisinos_usp_app/services/locker_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:get/get.dart';
@@ -19,9 +20,17 @@ class Initializer {
 
     await Util.initPrefs();
     AuthProvider.register(UserAuthService());
-    Get.put<UserController>(UserController(), permanent: true);
-    Get.put<AiAssistantContextService>(AiAssistantContextService(),
-        permanent: true);
+    Get.put<LockerService>(LockerService(), permanent: true);
+    final userController = Get.put<UserController>(
+      UserController(),
+      permanent: true,
+    );
+    // Resolve the account preference before guards evaluate an initial deep link.
+    await userController.initialization;
+    Get.put<AiAssistantContextService>(
+      AiAssistantContextService(),
+      permanent: true,
+    );
     Get.put<AiAssistantController>(AiAssistantController(), permanent: true);
 
     if (_supportsFirebaseCore()) {
@@ -30,10 +39,12 @@ class Initializer {
       );
     }
 
-    NavigationObserver.initialize(homeResolver: () {
-      final controller = Get.find<UserController>();
-      return controller.isLoggedIn ? '/home' : '/login';
-    });
+    NavigationObserver.initialize(
+      homeResolver: () {
+        final controller = Get.find<UserController>();
+        return controller.isLoggedIn ? controller.modeHome : '/login';
+      },
+    );
   }
 }
 

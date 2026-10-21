@@ -14,6 +14,7 @@ class ChatTemplateWebclient {
   Future<List<ChatTemplateModel>> fetch({
     int limit = 20,
     int offset = 0,
+    String search = '',
   }) async {
     final Response response = await webClient.get(
       '/$endpoint',
@@ -25,6 +26,7 @@ class ChatTemplateWebclient {
       {
         'limit': limit.toString(),
         'offset': offset.toString(),
+        if (search.trim().isNotEmpty) 'search': search.trim(),
       },
     );
 

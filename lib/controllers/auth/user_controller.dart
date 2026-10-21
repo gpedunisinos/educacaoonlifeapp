@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:unisinos_usp_app/services/locker_service.dart';
+import 'package:unisinos_usp_app/webclients/econectiva_webclient.dart';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -13,11 +15,24 @@ import 'package:widgets_spo/utils.dart';
 class UserController extends GetxController {
   UserWebclient webclient = UserWebclient();
   Rxn<AuthUser> user = Rxn<AuthUser>();
+  late Future<void> initialization;
 
   @override
   void onInit() {
     super.onInit();
-    initializeUser();
+    initialization = initializeUser();
+  }
+
+  String get modeHome =>
+      user.value?.usageMode == null ? '/choose_mode' : '/space';
+  Future<void> chooseMode(String mode) async {
+    final current = user.value!;
+    await EconectivaApi().write('PUT', '/me/preferences', {'usage_mode': mode});
+    if (user.value?.id != current.id) return;
+    await savePrefs(
+      AuthUser.fromJson({...current.toJson(), 'usage_mode': mode}),
+    );
+    Get.offAllNamed(modeHome);
   }
 
   bool get isLoggedIn => user.value != null;
@@ -28,42 +43,40 @@ class UserController extends GetxController {
     if (userPref != null) {
       AuthUser localUser = AuthUser.fromJson(jsonDecode(userPref));
 
-      if (localUser.profile == 0) {
-        try {
-          final userModel = await webclient.fetchUserById(localUser.id);
-          localUser = AuthUser(
-            id: localUser.id,
-            name: localUser.name,
-            email: localUser.email,
-            token: localUser.token,
-            isGoogleAuth: localUser.isGoogleAuth,
-            profile: userModel.profile,
-          );
-          await Util.prefs.setString('user', jsonEncode(localUser.toJson()));
-        } catch (error, stackTrace) {
-          Util.debug(exception: error, stackTrace: stackTrace);
-        }
-      }
-
       user.value = localUser;
-      (AuthProvider.instance as UserAuthService).setUser(user.value!);
-    } else {
-      logout();
+      (AuthProvider.instance as UserAuthService).setUser(localUser);
+      try {
+        final prefs = await EconectivaApi().get('/me/preferences');
+        if (user.value?.id != localUser.id) return;
+
+        localUser = AuthUser.fromJson({
+          ...localUser.toJson(),
+          'usage_mode': prefs['usage_mode'],
+          'profile': prefs['profile'] ?? localUser.profile,
+        });
+        await savePrefs(localUser);
+      } catch (error, stackTrace) {
+        if (Util.prefs.getString('user') == null) user.value = null;
+        Util.debug(exception: error, stackTrace: stackTrace);
+      }
     }
   }
 
-  void redirectLoggedUser() {
+  void redirectLoggedUser() async {
+    await initialization;
     final bool loggedIn = user.value != null;
-    Get.offAllNamed(loggedIn ? '/home' : '/login');
+    Get.offAllNamed(loggedIn ? modeHome : '/login');
   }
 
   /// @method
   Future<void> login(String mail, String password) async {
     try {
-      AuthUser loggedUser =
-          await webclient.login(mail: mail, password: password);
+      AuthUser loggedUser = await webclient.login(
+        mail: mail,
+        password: password,
+      );
       await savePrefs(loggedUser);
-      Get.offAllNamed('/home');
+      Get.offAllNamed(modeHome);
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
       Get.customSnackbar('Erro', 'Falha ao realizar login. $error');
@@ -77,18 +90,20 @@ class UserController extends GetxController {
 
       await authService.signOut();
 
-      final GoogleSignInAccount? googleUser =
-          await authService.signInWithGoogle();
+      final GoogleSignInAccount? googleUser = await authService
+          .signInWithGoogle();
 
       if (googleUser != null) {
         final GoogleSignInAuthentication auth = await googleUser.authentication;
 
         AuthUser loggedUser = await webclient.loginGoogle(
-            auth.idToken ?? '', auth.accessToken ?? '');
+          auth.idToken ?? '',
+          auth.accessToken ?? '',
+        );
 
         await savePrefs(loggedUser);
 
-        Get.offAllNamed('/home');
+        Get.offAllNamed(modeHome);
       }
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
@@ -104,16 +119,21 @@ class UserController extends GetxController {
   }) async {
     try {
       AuthUser loggedUser = await webclient.register(
-          name: name, email: email, password: password);
+        name: name,
+        email: email,
+        password: password,
+      );
 
       await savePrefs(loggedUser);
       Get.successSnackbar('Usuário registrado com sucesso!'.tlt);
-      Get.offAllNamed('/home');
+      Get.offAllNamed(modeHome);
       return true;
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
       Get.customSnackbar(
-          'Erro', 'Falha ao criar usuário. ${_extractErrorMessage(error)}');
+        'Erro',
+        'Falha ao criar usuário. ${_extractErrorMessage(error)}',
+      );
       rethrow;
     }
   }
@@ -170,15 +190,19 @@ class UserController extends GetxController {
   }
 
   Future<void> logout() async {
+    Get.find<LockerService>().clear();
     user.value = null;
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) async => AuthProvider.instance.logout());
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) async => AuthProvider.instance.logout(),
+    );
   }
 
   Future<void> savePrefs(AuthUser loggedUser) async {
+    if (user.value?.id != loggedUser.id) Get.find<LockerService>().clear();
     await Util.prefs.setString('user', jsonEncode(loggedUser.toJson()));
     (AuthProvider.instance as UserAuthService).setUser(loggedUser);
 
     user.value = loggedUser;
+    await Get.find<LockerService>().load();
   }
 }

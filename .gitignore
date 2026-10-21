@@ -63,3 +63,19 @@ lib/.env
 .fvmrc
 chave_oauth.txt
 *.p8
+
+
+# Local validation captures and generated reports (keep technical Markdown).
+/docs/evidencias/
+/docs/*.jpg
+/docs/*.jpeg
+/docs/*.png
+/docs/*.webp
+/docs/*.gif
+/docs/*.mp4
+/docs/*.webm
+
+# Machine-specific build cache and SDK configuration.
+/ios/build/
+/android/app/.gradle/
+/android/app/local.properties

@@ -15,10 +15,12 @@ class LivingClueIndexController extends GetxController {
     loadLivingClues();
   }
 
-  Future<void> loadLivingClues() async {
+  Future<void> loadLivingClues([String search = '']) async {
     try {
       isLoading.value = true;
-      livingClues.assignAll(await _webclient.fetch());
+      livingClues.assignAll(search.trim().isEmpty
+          ? await _webclient.fetch()
+          : await _webclient.search(search: search.trim()));
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
       Get.customSnackbar('Erro', 'Falha ao buscar pistas. $error');

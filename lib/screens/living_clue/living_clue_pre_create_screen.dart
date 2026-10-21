@@ -8,8 +8,6 @@ import 'package:unisinos_usp_app/webclients/category_select_webclient.dart';
 import 'package:unisinos_usp_app/webclients/category_webclient.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class LivingCluePreCreateScreen extends StatefulWidget {
@@ -48,17 +46,15 @@ class _LivingCluePreCreateScreenState extends State<LivingCluePreCreateScreen> {
       _buildAiContext,
     );
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Escolha a categoria'),
       ),
       body: Stack(
         children: [
-          const Positioned.fill(child: StarfieldBackground()),
-          const Positioned.fill(child: CidigScenicBackground()),
           SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Form(
@@ -81,16 +77,16 @@ class _LivingCluePreCreateScreenState extends State<LivingCluePreCreateScreen> {
                         children: [
                           Row(
                             children: [
-                              const Icon(Icons.category_outlined,
-                                  color: Colors.indigo),
+                              const Icon(
+                                Icons.category_outlined,
+                                color: Colors.indigo,
+                              ),
                               const SizedBox(width: 8),
                               Text(
                                 _selectedType == null
                                     ? 'Selecione a categoria base'
                                     : 'Selecione a categoria base de $_selectedType',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
+                                style: Theme.of(context).textTheme.titleMedium
                                     ?.copyWith(fontWeight: FontWeight.w700),
                               ),
                             ],
@@ -110,8 +106,11 @@ class _LivingCluePreCreateScreenState extends State<LivingCluePreCreateScreen> {
                               PRuleRequired(value, message: 'Obrigatório'),
                             ]).val(),
                             onFind: (search, offset, params) =>
-                                CategorySelectWebclient().select(search, offset,
-                                    type: _selectedType),
+                                CategorySelectWebclient().select(
+                                  search,
+                                  offset,
+                                  type: _selectedType,
+                                ),
                           ),
                         ],
                       ),
@@ -141,11 +140,7 @@ class _LivingCluePreCreateScreenState extends State<LivingCluePreCreateScreen> {
       route: Get.currentRoute,
       stage: 'pré-cadastro da pista',
       goal: 'selecionar a categoria base para definir os campos do formulário',
-      visibleFields: const <String>[
-        'categoria',
-        'tipo',
-        'continuar',
-      ],
+      visibleFields: const <String>['categoria', 'tipo', 'continuar'],
       filledFields: <String, String>{
         'tipo selecionado': _selectedType ?? 'nenhum',
         'categoria selecionada':
@@ -165,8 +160,9 @@ class _LivingCluePreCreateScreenState extends State<LivingCluePreCreateScreen> {
 
     setState(() => _loading = true);
     try {
-      final CategoryModel category =
-          await CategoryWebclient().fetchById(categoryId);
+      final CategoryModel category = await CategoryWebclient().fetchById(
+        categoryId,
+      );
       final args = Get.arguments;
       final result = await Get.toNamed(
         '/living_clues/create',
@@ -186,7 +182,9 @@ class _LivingCluePreCreateScreenState extends State<LivingCluePreCreateScreen> {
       }
     } catch (_) {
       Get.snackbar(
-          'Categoria', 'Não foi possível carregar a categoria selecionada.');
+        'Categoria',
+        'Não foi possível carregar a categoria selecionada.',
+      );
     } finally {
       if (mounted) setState(() => _loading = false);
     }

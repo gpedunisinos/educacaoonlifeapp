@@ -13,7 +13,6 @@ void main() {
       'source_clue': {
         'id': 10,
         'name': 'Pista de origem',
-        'biome_id': 1,
         'category_id': 2,
         'latitude': -29.7,
         'longitude': -51.1,
@@ -21,7 +20,6 @@ void main() {
       'target_clue': {
         'id': 20,
         'name': 'Pista de destino',
-        'biome_id': 1,
         'category_id': 2,
         'latitude': -29.8,
         'longitude': -51.2,

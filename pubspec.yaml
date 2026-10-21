@@ -1,11 +1,12 @@
 name: unisinos_usp_app
-description: "Plataforma eCOnectiva"
+description: "Educação Onlife"
 publish_to: "none"
 
 version: 0.8.1+14
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
+  sdk: ">=3.10.0 <4.0.0"
+  flutter: ">=3.38.0"
 
 dependencies:
   flutter:
@@ -19,6 +20,7 @@ dependencies:
   http: any
   flutter_svg: ^1.1.6
   flutter_markdown: ^0.7.7+1
+  dart_quill_delta: ^10.8.3
   flutter_quill: ^11.5.0
   flutter_colorpicker: ^1.0.3
   http_interceptor: ^2.0.0
@@ -51,6 +53,9 @@ dependencies:
   flutter_map: ^7.0.2
   latlong2: ^0.9.1
   geolocator: ^13.0.2
+  youtube_player_iframe: ^6.0.2
+  webview_flutter: ^4.14.1
+  web: ^1.1.1
 
 dev_dependencies:
   flutter_test:
@@ -64,6 +69,8 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/space/
+    - assets/space/vendor/
     - assets/google_icon.svg
     - assets/logo.svg
     - assets/assessment.png
@@ -73,11 +80,11 @@ flutter:
     - assets/charts.png
     - assets/logo_usp.png
     - assets/yaraete sem fundo.png
-    - assets/rieonlife/hub_conectakat.jpeg
-    - assets/rieonlife/hub_controladora.png
-    - assets/rieonlife/hub_educacao_corporativa.png
-    - assets/rieonlife/hub_empreendedorismo.png
-    - assets/rieonlife/hero.jpg
+    - assets/econectiva/hub_conectakat.jpeg
+    - assets/econectiva/hub_controladora.png
+    - assets/econectiva/hub_educacao_corporativa.png
+    - assets/econectiva/hub_empreendedorismo.png
+    - assets/econectiva/hero.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

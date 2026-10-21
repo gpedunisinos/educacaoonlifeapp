@@ -6,8 +6,6 @@ import 'package:unisinos_usp_app/models/node_link_model.dart';
 import 'package:unisinos_usp_app/webclients/node_webclient.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:unisinos_usp_app/widgets/starfield_background.dart';
-import 'package:unisinos_usp_app/widgets/cidig_scenic_background.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class NodeLinkUpdateScreen extends StatefulWidget {
@@ -18,48 +16,64 @@ class NodeLinkUpdateScreen extends StatefulWidget {
 }
 
 class _NodeLinkUpdateScreenState extends State<NodeLinkUpdateScreen> {
-  final NodeLinkUpdateController _controller = Get.find<NodeLinkUpdateController>();
+  final NodeLinkUpdateController _controller =
+      Get.find<NodeLinkUpdateController>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  final ItemSelectController _sourceNodeSelectController = ItemSelectController();
-  final ItemSelectController _targetNodeSelectController = ItemSelectController();
+  final ItemSelectController _sourceNodeSelectController =
+      ItemSelectController();
+  final ItemSelectController _targetNodeSelectController =
+      ItemSelectController();
   bool _filled = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         leading: const SafeBackButton(),
         title: const Text('Editar ligação'),
       ),
       body: Stack(
         children: [
-          const Positioned.fill(child: StarfieldBackground()),
-          const Positioned.fill(child: CidigScenicBackground()),
           Obx(() {
             if (_controller.nodeLinkId == null) {
-              return const Center(child: Text('Ligação não informada.', style: TextStyle(color: Colors.white)));
+              return const Center(
+                child: Text(
+                  'Ligação não informada.',
+                  style: TextStyle(color: Colors.white),
+                ),
+              );
             }
-            if (_controller.isLoading.value && _controller.nodeLink.value == null) {
-              return const Center(child: CircularProgressIndicator(color: Colors.white));
+            if (_controller.isLoading.value &&
+                _controller.nodeLink.value == null) {
+              return const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              );
             }
             if (_controller.nodeLink.value == null) {
-              return const Center(child: Text('Ligação não encontrada.', style: TextStyle(color: Colors.white)));
+              return const Center(
+                child: Text(
+                  'Ligação não encontrada.',
+                  style: TextStyle(color: Colors.white),
+                ),
+              );
             }
 
             if (!_filled) {
               final NodeLinkModel model = _controller.nodeLink.value!;
               _sourceNodeSelectController.selectedItem = ItemSelect(
                 id: model.sourceNodeId,
-                name: model.sourceNode?.name ??
+                name:
+                    model.sourceNode?.name ??
                     'Problemática #${model.sourceNodeId}',
               );
               _targetNodeSelectController.selectedItem = ItemSelect(
                 id: model.targetNodeId,
-                name: model.targetNode?.name ??
+                name:
+                    model.targetNode?.name ??
                     'Problemática #${model.targetNodeId}',
               );
               _filled = true;
@@ -78,7 +92,8 @@ class _NodeLinkUpdateScreenState extends State<NodeLinkUpdateScreen> {
                       validator: (value) => PValidator([
                         PRuleRequired(value, message: 'Obrigatório'),
                       ]).val(),
-                      onFind: (search, offset, params) => NodeWebclient().select(search, offset),
+                      onFind: (search, offset, params) =>
+                          NodeWebclient().select(search, offset),
                     ),
                     Insets.large.height,
                     InputSelectApi(
@@ -87,7 +102,8 @@ class _NodeLinkUpdateScreenState extends State<NodeLinkUpdateScreen> {
                       validator: (value) => PValidator([
                         PRuleRequired(value, message: 'Obrigatório'),
                       ]).val(),
-                      onFind: (search, offset, params) => NodeWebclient().select(search, offset),
+                      onFind: (search, offset, params) =>
+                          NodeWebclient().select(search, offset),
                     ),
                     Insets.extraLarge.height,
                     SizedBox(
@@ -118,12 +134,16 @@ class _NodeLinkUpdateScreenState extends State<NodeLinkUpdateScreen> {
 
     if (sourceNodeId == null || targetNodeId == null) {
       Get.customSnackbar(
-          'Erro', 'Selecione as duas problemáticas para atualizar a ligação.');
+        'Erro',
+        'Selecione as duas problemáticas para atualizar a ligação.',
+      );
       return;
     }
     if (sourceNodeId == targetNodeId) {
       Get.customSnackbar(
-          'Erro', 'Escolha problemáticas diferentes para manter a ligação válida.');
+        'Erro',
+        'Escolha problemáticas diferentes para manter a ligação válida.',
+      );
       return;
     }
 

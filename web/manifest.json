@@ -1,11 +1,11 @@
 {
-  "name": "unisinos_usp_app",
-  "short_name": "unisinos_usp_app",
+  "name": "Educação Onlife",
+  "short_name": "Educação Onlife",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#0175C2",
   "theme_color": "#0175C2",
-  "description": "A new Flutter project.",
+  "description": "Educação Onlife",
   "orientation": "portrait-primary",
   "prefer_related_applications": false,
   "icons": [
