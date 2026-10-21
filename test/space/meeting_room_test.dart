@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:unisinos_usp_app/models/meeting_room.dart';
 import 'package:unisinos_usp_app/screens/space/meeting_room_dialog.dart';
@@ -212,4 +213,44 @@ void main() {
       }
     },
   );
+  testWidgets('copy invite never requests or copies host credentials', (
+    tester,
+  ) async {
+    String? copied;
+    var authorizations = 0;
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'Clipboard.setData')
+          copied = (call.arguments as Map)['text'] as String;
+        if (call.method == 'Clipboard.hasStrings') return {'value': false};
+        return null;
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: MeetingRoomDialog(
+            onAuthorize: (room) {
+              authorizations++;
+              return fakeAuthorization(room);
+            },
+            onOpen: (_) async => true,
+          ),
+        ),
+      ),
+    );
+    await tester.enterText(find.byType(TextField), 'Sala pública');
+    await tester.tap(find.text('Copiar link'));
+    await tester.pumpAndSettle();
+    expect(copied, MeetingRoom.parse('Sala pública').uri.toString());
+    expect(Uri.parse(copied!).hasQuery, isFalse);
+    expect(authorizations, 0);
+  });
 }
