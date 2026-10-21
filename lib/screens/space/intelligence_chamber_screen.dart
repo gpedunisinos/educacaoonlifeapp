@@ -77,9 +77,11 @@ class _IntelligenceChamberScreenState extends State<IntelligenceChamberScreen>
     route: route,
     stage: inConversation ? 'conversa com agente' : 'seleção de inteligência',
     goal: 'escolher uma inteligência e conversar com ela',
-    filledFields: {if (selected != null) 'agente': selected!.name},
+    references: {if (selected?.id != null) 'agent_id': selected!.id},
+    visibleRecords: agents.take(20).map((agent) => AiRecordReference(kind: 'agent', id: agent.id, name: agent.name)).toList(),
+    filledFields: {'busca': agentSearch.text, if (selected != null) 'agente': selected!.name},
     notes: const [
-      'Presenças holográficas representam agentes reais cadastrados. A Iareté é a anfitriã da nave.',
+      'Presenças holográficas representam agentes reais cadastrados. A Iareté é a anfitriã global; este agente tem conversa própria, distinta da Iareté e do chat da pista.',
     ],
   );
   @override

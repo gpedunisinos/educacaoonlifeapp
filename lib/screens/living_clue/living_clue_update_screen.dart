@@ -1,3 +1,5 @@
+import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
+import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
 import 'package:unisinos_usp_app/widgets/living_clue_location_button.dart';
 import 'package:unisinos_usp_app/widgets/living_clue_layout.dart';
 import 'package:flutter/material.dart';
@@ -46,13 +48,44 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
   List<String> _metadataTags = [];
   Map<String, dynamic> _initialMetadata = {};
 
+  late final String _contextRoute = Get.currentRoute;
+  late final AiAssistantContextProvider _contextProvider = () => AiAssistantScreenContext(
+    screenName: 'Edição de pista', route: _contextRoute,
+    stage: _filled ? 'edição de rascunho' : 'carregamento do registro',
+    goal: 'ajudar a revisar a pista sem confundir alterações locais com o registro salvo',
+    references: {
+      if (_controller.livingClueId != null) 'living_clue_id': _controller.livingClueId!,
+      if (_categoryId != null) 'category_id': _categoryId!,
+    },
+    visibleFields: const ['nome', 'categoria', 'descrição', 'metadados', 'anexos', 'latitude', 'longitude', 'ativo'],
+    filledFields: _filled ? {
+      'nome': _nameController.text, 'categoria': _categoryController.text,
+      'descrição': QuillDocumentUtils.plainText(_descriptionController),
+      'latitude': _latitudeController.text, 'longitude': _longitudeController.text,
+    } : {},
+    draft: _filled ? {
+      'unsaved': true, 'name': _nameController.text,
+      'description': QuillDocumentUtils.plainText(_descriptionController),
+        'description_delta': _descriptionController.document.toDelta().toJson(),
+      'category_id': _categoryId, 'active': _isActive,
+      'metadata': {for (final entry in _metadataControllers.entries) entry.key: entry.value.text},
+    } : {},
+    notes: const ['Os campos do formulário são um rascunho, ainda não confirmado no backend. A pista pode não possuir localização.'],
+  );
+
   @override
   void initState() {
     super.initState();
+    if (Get.isRegistered<AiAssistantContextService>()) {
+      Get.find<AiAssistantContextService>().registerProvider(_contextRoute, _contextProvider);
+    }
   }
 
   @override
   void dispose() {
+    if (Get.isRegistered<AiAssistantContextService>()) {
+      Get.find<AiAssistantContextService>().unregisterProvider(_contextRoute, _contextProvider);
+    }
     _nameController.dispose();
     _descriptionController.dispose();
     _latitudeController.dispose();

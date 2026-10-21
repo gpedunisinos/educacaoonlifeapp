@@ -1,3 +1,6 @@
+import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
+import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
+import 'package:unisinos_usp_app/utils/ai_reference.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:get/get.dart';
@@ -6,7 +9,6 @@ import 'package:unisinos_usp_app/controllers/living_clue/living_clue_chat_contro
 import 'package:unisinos_usp_app/models/living_clue_chat_message_model.dart';
 import 'package:unisinos_usp_app/widgets/ai_assistant_launcher.dart';
 import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 
 class LivingClueChatScreen extends StatefulWidget {
   const LivingClueChatScreen({super.key});
@@ -23,10 +25,34 @@ class _LivingClueChatScreenState extends State<LivingClueChatScreen> {
   late final Worker _messagesWorker;
   late final Worker _initialLoadWorker;
   bool _initialBottomDone = false;
+  late final String _contextRoute = Get.currentRoute;
+  late final AiAssistantContextProvider
+  _contextProvider = () => AiAssistantScreenContext(
+    screenName: 'Conversa com a própria pista',
+    route: _contextRoute,
+    stage: 'chat da pista',
+    goal: 'conversar com a pista e consultar seu contexto',
+    references: {
+      if (_controller.livingClueId != null)
+        'living_clue_id': _controller.livingClueId!,
+    },
+    filledFields: {
+      if (_controller.livingClue.value != null)
+        'pista': _controller.livingClue.value!.name,
+    },
+    notes: const [
+      'Este chat responde como a própria pista. A Iareté global é outra conversa. Não importar o histórico desta conversa nem Compartilhações para a Iareté por padrão.',
+    ],
+  );
 
   @override
   void initState() {
     super.initState();
+    if (Get.isRegistered<AiAssistantContextService>())
+      Get.find<AiAssistantContextService>().registerProvider(
+        _contextRoute,
+        _contextProvider,
+      );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) AiAssistantLauncher.useRaisedPosition();
     });
@@ -47,6 +73,11 @@ class _LivingClueChatScreenState extends State<LivingClueChatScreen> {
 
   @override
   void dispose() {
+    if (Get.isRegistered<AiAssistantContextService>())
+      Get.find<AiAssistantContextService>().unregisterProvider(
+        _contextRoute,
+        _contextProvider,
+      );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       AiAssistantLauncher.useDefaultPosition();
     });
@@ -280,8 +311,7 @@ class _LivingClueChatScreenState extends State<LivingClueChatScreen> {
         blockquote: baseStyle,
       ),
       onTapLink: (_, href, __) async {
-        if (href == null || href.isEmpty) return;
-        await launchUrlString(href);
+        await openAiReference(href);
       },
     );
   }

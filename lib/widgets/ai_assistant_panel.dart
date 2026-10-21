@@ -1,3 +1,5 @@
+import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:unisinos_usp_app/utils/ai_reference.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -152,8 +154,9 @@ class _AiAssistantPanelState extends State<AiAssistantPanel> {
                       const SizedBox(width: 12),
                       Obx(() {
                         return FilledButton(
-                          onPressed:
-                              _controller.isSending.value ? null : _submit,
+                          onPressed: _controller.isSending.value
+                              ? null
+                              : _submit,
                           child: Text(
                             _controller.isSending.value ? '...' : 'Enviar',
                           ),
@@ -206,14 +209,16 @@ class _MessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isUser = message.isUser;
-    final Color background =
-        isUser ? const Color(0xFF2563EB) : Colors.white.withValues(alpha: 0.1);
+    final Color background = isUser
+        ? const Color(0xFF2563EB)
+        : Colors.white.withValues(alpha: 0.1);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
-        mainAxisAlignment:
-            isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isUser
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         children: [
           Flexible(
             child: DecoratedBox(
@@ -222,15 +227,46 @@ class _MessageBubble extends StatelessWidget {
                 borderRadius: BorderRadius.circular(18),
               ),
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      message.content,
-                      style: const TextStyle(color: Colors.white, height: 1.35),
-                    ),
+                    if (isUser)
+                      Text(
+                        message.content,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          height: 1.35,
+                        ),
+                      )
+                    else
+                      MarkdownBody(
+                        data: message.content,
+                        selectable: true,
+                        styleSheet:
+                            MarkdownStyleSheet.fromTheme(
+                              Theme.of(context),
+                            ).copyWith(
+                              p: const TextStyle(
+                                color: Colors.white,
+                                height: 1.45,
+                              ),
+                              a: const TextStyle(
+                                color: Color(0xFF9CE7DF),
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                        imageBuilder: (_, _, _) => const Text(
+                          '[Imagem externa — abra a referência para visualizar]',
+                        ),
+                        onTapLink: (_, href, _) => openAiReference(
+                          href,
+                          beforeNavigate: () => Navigator.of(context).pop(),
+                        ),
+                      ),
                     const SizedBox(height: 6),
                     Text(
                       _formatTime(message.createdAt),

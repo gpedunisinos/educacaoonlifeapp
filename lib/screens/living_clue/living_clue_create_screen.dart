@@ -39,6 +39,9 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
   List<String> _metadataTags = [];
   bool _isActive = true;
 
+  late final String _contextRoute = Get.currentRoute;
+  late final AiAssistantContextProvider _contextProvider = _buildAiContext;
+
   @override
   void initState() {
     super.initState();
@@ -47,6 +50,9 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
 
   @override
   void dispose() {
+    if (Get.isRegistered<AiAssistantContextService>()) {
+      Get.find<AiAssistantContextService>().unregisterProvider(_contextRoute, _contextProvider);
+    }
     _nameController.dispose();
     _descriptionController.dispose();
     _latitudeController.dispose();
@@ -85,8 +91,8 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
   @override
   Widget build(BuildContext context) {
     Get.find<AiAssistantContextService>().registerProvider(
-      Get.currentRoute,
-      _buildAiContext,
+      _contextRoute,
+      _contextProvider,
     );
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -261,10 +267,19 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
   AiAssistantScreenContext _buildAiContext() {
     return AiAssistantScreenContext(
       screenName: _screenName,
-      route: Get.currentRoute,
+      route: _contextRoute,
       stage: 'preenchimento do formulário',
       goal:
           'registrar uma pista viva com localização, categoria e dados principais',
+      references: {if (_categoryId != null) 'category_id': _categoryId!},
+      draft: {
+        'unsaved': true,
+        'name': _nameController.text,
+        'description': QuillDocumentUtils.plainText(_descriptionController),
+        'description_delta': _descriptionController.document.toDelta().toJson(),
+        'category_id': _categoryId,
+        'metadata': {for (final entry in _metadataControllers.entries) entry.key: entry.value.text},
+      },
       visibleFields: <String>[
         'nome',
         'categoria',
@@ -297,7 +312,7 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
             _formatTagLabel(entry.key): entry.value.text.trim(),
       },
       notes: const <String>[
-        'Os dados desta tela são usados para criar o ponto definitivo no mapa.',
+        'Rascunho ainda não salvo. A pista pode existir sem localização; não invente coordenadas.',
       ],
     );
   }

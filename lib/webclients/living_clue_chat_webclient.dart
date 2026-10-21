@@ -15,11 +15,8 @@ class LivingClueChatWebclient {
   }) async {
     final Response response = await webClient.get(
       '/living_clues/$livingClueId/chat/messages',
-      [LoggingInterceptor(), ApiInterceptor(), TokenInterceptor()],
-      {
-        'limit': limit.toString(),
-        'offset': offset.toString(),
-      },
+      [ApiInterceptor(), TokenInterceptor()],
+      {'limit': limit.toString(), 'offset': offset.toString()},
     );
 
     final dynamic decoded = jsonDecode(response.body);
@@ -27,7 +24,8 @@ class LivingClueChatWebclient {
     if (decoded is List<dynamic>) {
       items = decoded;
     } else if (decoded is Map<String, dynamic>) {
-      items = decoded['messages'] as List<dynamic>? ??
+      items =
+          decoded['messages'] as List<dynamic>? ??
           decoded['data'] as List<dynamic>? ??
           const [];
     } else {
@@ -48,11 +46,14 @@ class LivingClueChatWebclient {
   }
 
   Future<List<LivingClueChatMessageModel>> sendMessage(
-      int livingClueId, String content) async {
+    int livingClueId,
+    String content,
+  ) async {
     final Response response = await webClient.post(
       '/living_clues/$livingClueId/chat/messages',
       jsonEncode({'message': content}),
-      [LoggingInterceptor(), ApiInterceptor(), TokenInterceptor()],
+      [ApiInterceptor(), TokenInterceptor()],
+      timeOut: 60,
     );
 
     final dynamic decoded = jsonDecode(response.body);
@@ -71,7 +72,7 @@ class LivingClueChatWebclient {
 
     if (decoded is Map<String, dynamic>) {
       return <LivingClueChatMessageModel>[
-        LivingClueChatMessageModel.fromJson(decoded)
+        LivingClueChatMessageModel.fromJson(decoded),
       ];
     }
 
@@ -79,9 +80,9 @@ class LivingClueChatWebclient {
   }
 
   Future<void> deleteAllMessages(int livingClueId) async {
-    await webClient.delete(
-      '/living_clues/$livingClueId/chat/messages',
-      [LoggingInterceptor(), ApiInterceptor(), TokenInterceptor()],
-    );
+    await webClient.delete('/living_clues/$livingClueId/chat/messages', [
+      ApiInterceptor(),
+      TokenInterceptor(),
+    ]);
   }
 }

@@ -35,8 +35,9 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
       'destino selecionado': destination,
       'modo': Get.find<UserController>().user.value?.usageMode ?? 'explorer',
     },
-    notes: const [
-      'A Terra abre o Mapa de Pistas em tela cheia. As estações abrem os módulos da plataforma.',
+    notes: [
+      'A Terra abre o Mapa de Pistas em tela cheia. A Lua permite pesquisar pistas, o Observatório explorar problemáticas e o Campo de Inteligências selecionar agentes.',
+      'Ações autorizadas nesta conta: ${destinations.keys.join(', ')}. O seletor Explorador/Inventor preserva a rota.',
     ],
   );
   Map<String, String> get destinations {

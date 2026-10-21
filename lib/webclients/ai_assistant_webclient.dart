@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
 
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:unisinos_usp_app/models/ai_assistant_message_model.dart';
@@ -15,10 +16,7 @@ class AiAssistantWebclient {
     final Response response = await _webClient.get(
       '/ai/messages',
       _interceptors,
-      {
-        'limit': limit.toString(),
-        'offset': offset.toString(),
-      },
+      {'limit': limit.toString(), 'offset': offset.toString()},
     );
 
     final dynamic decoded = jsonDecode(response.body);
@@ -32,14 +30,17 @@ class AiAssistantWebclient {
   Future<List<AiAssistantMessageModel>> sendMessage({
     required String message,
     required String context,
+    AiAssistantScreenContext? screenContext,
   }) async {
     final Response response = await _webClient.post(
       '/ai/messages',
       jsonEncode({
         'message': message,
         'context': context,
+        if (screenContext != null) 'screen_context': screenContext.toJson(),
       }),
       _interceptors,
+      timeOut: 60,
     );
 
     final dynamic decoded = jsonDecode(response.body);
@@ -54,8 +55,7 @@ class AiAssistantWebclient {
   }
 
   List<InterceptorContract> get _interceptors => [
-        LoggingInterceptor(),
-        ApiInterceptor(),
-        TokenInterceptor(),
-      ];
+    ApiInterceptor(),
+    TokenInterceptor(),
+  ];
 }

@@ -1,7 +1,6 @@
+import 'package:unisinos_usp_app/utils/ai_chat_error.dart';
 import 'package:get/get.dart';
-import 'package:flutter/foundation.dart';
 import 'package:unisinos_usp_app/models/ai_assistant_message_model.dart';
-import 'package:unisinos_usp_app/services/ai_assistant_context_builder.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
 import 'package:unisinos_usp_app/webclients/ai_assistant_webclient.dart';
 import 'package:widgets_spo/widgets_spo.dart';
@@ -18,11 +17,8 @@ class AiAssistantController extends GetxController {
   final RxBool hasLoadedHistory = false.obs;
   final RxnString errorMessage = RxnString();
 
-  void logCurrentContext() {
-    final contextData = _contextService.resolveCurrentContext();
-    final context = AiAssistantContextBuilder.build(contextData);
-    debugPrint('AI_ASSISTANT_CONTEXT_BEGIN\n$context\nAI_ASSISTANT_CONTEXT_END');
-  }
+  // Kept for callers opening the panel; form values must never be logged.
+  void logCurrentContext() {}
 
   Future<void> ensureHistoryLoaded() async {
     if (hasLoadedHistory.value || isLoadingHistory.value) return;
@@ -36,17 +32,16 @@ class AiAssistantController extends GetxController {
     try {
       isLoadingHistory.value = true;
       errorMessage.value = null;
-      final List<AiAssistantMessageModel> history =
-          await _webclient.fetchHistory(limit: 100, offset: 0);
+      final List<AiAssistantMessageModel> history = await _webclient
+          .fetchHistory(limit: 100, offset: 0);
       messages.assignAll(history);
       hasLoadedHistory.value = true;
-    } catch (error, stackTrace) {
-      Util.debug(exception: error, stackTrace: stackTrace);
+    } catch (_) {
       errorMessage.value =
           'Não foi possível carregar o histórico do assistente.';
       Get.customSnackbar(
         'Erro',
-        'Falha ao carregar histórico do assistente. $error',
+        'Não foi possível carregar o histórico do assistente.',
       );
     } finally {
       isLoadingHistory.value = false;
@@ -69,29 +64,26 @@ class AiAssistantController extends GetxController {
       isSending.value = true;
       errorMessage.value = null;
       final contextData = _contextService.resolveCurrentContext();
-      final context = AiAssistantContextBuilder.build(contextData);
-      final List<AiAssistantMessageModel> returnedMessages =
-          await _webclient.sendMessage(
-        message: message,
-        context: context,
-      );
+      final List<AiAssistantMessageModel> returnedMessages = await _webclient
+          .sendMessage(
+            message: message,
+            context: '',
+            screenContext: contextData,
+          );
 
       if (returnedMessages.isEmpty) return;
 
       for (final item in returnedMessages) {
-        final bool alreadyPresent = item.id != null && messages.any((msg) => msg.id == item.id);
+        final bool alreadyPresent =
+            item.id != null && messages.any((msg) => msg.id == item.id);
         if (!alreadyPresent && !item.isUser) {
           messages.add(item);
         }
       }
       hasLoadedHistory.value = true;
-    } catch (error, stackTrace) {
-      Util.debug(exception: error, stackTrace: stackTrace);
-      errorMessage.value = 'Não foi possível enviar a mensagem agora.';
-      Get.customSnackbar(
-        'Erro',
-        'Falha ao enviar mensagem para o assistente. $error',
-      );
+    } catch (error) {
+      errorMessage.value = aiChatError(error);
+      Get.customSnackbar('Erro', errorMessage.value!);
     } finally {
       isSending.value = false;
     }

@@ -67,6 +67,9 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
   VoidCallback? _dismissTutorial;
   late final AnimationController _sonarPulseController;
 
+  late final String _contextRoute = Get.currentRoute;
+  late final AiAssistantContextProvider _contextProvider = _buildAiContext;
+
   @override
   void initState() {
     super.initState();
@@ -91,6 +94,9 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
 
   @override
   void dispose() {
+    if (Get.isRegistered<AiAssistantContextService>()) {
+      Get.find<AiAssistantContextService>().unregisterProvider(_contextRoute, _contextProvider);
+    }
     _searchDebounce?.cancel();
     _routeWorker?.dispose();
     _dismissTutorial?.call();
@@ -424,8 +430,8 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
 
   Widget _buildMap(BuildContext context) {
     Get.find<AiAssistantContextService>().registerProvider(
-      Get.currentRoute,
-      _buildAiContext,
+      _contextRoute,
+      _contextProvider,
     );
     return SpaceMapShell(
       back: OutlinedButton.icon(
@@ -1356,7 +1362,9 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
   AiAssistantScreenContext _buildAiContext() {
     return AiAssistantScreenContext(
       screenName: _screenName,
-      route: Get.currentRoute,
+      route: _contextRoute,
+      references: {if (_contextClue != null) 'living_clue_id': _contextClue!.id},
+      visibleRecords: _controller.livingClues.take(20).map((clue) => AiRecordReference(kind: 'living_clue', id: clue.id, name: clue.name)).toList(),
       stage: 'exploração do mapa',
       goal: 'buscar pistas próximas e iniciar o cadastro de um novo ponto',
       visibleFields: const <String>[
@@ -1389,6 +1397,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
       notes: <String>[
         if (_controller.sonarCenter.value != null)
           'O usuário definiu um centro para busca por raio.',
+        'O centro do mapa é uma referência de busca, não a localização física da pessoa.',
         'Tap longo no mapa escolhe o ponto de referência do sonar.',
         if (_isConnectingMode)
           'O usuário está criando uma conexão diretamente no mapa.',
@@ -1800,7 +1809,10 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     ),
   );
 
+  LivingClueModel? _contextClue;
+
   void _showClueSheet(LivingClueModel item) {
+    _contextClue = item;
     Get.bottomSheet(
       _mapSheet(
         Container(
@@ -1891,7 +1903,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
         ),
       ),
       isScrollControlled: true,
-    );
+    ).whenComplete(() { if (identical(_contextClue, item)) _contextClue = null; });
   }
 }
 

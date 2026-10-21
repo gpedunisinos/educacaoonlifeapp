@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/utils/ai_chat_error.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/models/living_clue_chat_message_model.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
@@ -53,10 +54,8 @@ class LivingClueChatController extends GetxController {
       messages.assignAll(fetchedMessages);
       hasMore.value = fetchedMessages.length == pageSize;
       _notifyMutation('replace');
-    } catch (error, stackTrace) {
-      Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar(
-          'Erro', 'Falha ao carregar conversa da pista viva. $error');
+    } catch (error) {
+      Get.customSnackbar('Erro', 'Falha ao carregar conversa da pista viva.');
     } finally {
       isLoading.value = false;
       initialLoadFinished.value = true;
@@ -75,10 +74,7 @@ class LivingClueChatController extends GetxController {
     try {
       isLoadingMore.value = true;
       final List<LivingClueChatMessageModel> olderMessages =
-          await _chatWebclient.fetchMessages(
-        id,
-        offset: messages.length,
-      );
+          await _chatWebclient.fetchMessages(id, offset: messages.length);
 
       if (olderMessages.isEmpty) {
         hasMore.value = false;
@@ -89,9 +85,8 @@ class LivingClueChatController extends GetxController {
       hasMore.value = olderMessages.length == pageSize;
       _notifyMutation('prepend');
       return true;
-    } catch (error, stackTrace) {
-      Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Falha ao carregar mensagens antigas. $error');
+    } catch (error) {
+      Get.customSnackbar('Erro', 'Falha ao carregar mensagens antigas.');
       return false;
     } finally {
       isLoadingMore.value = false;
@@ -105,37 +100,37 @@ class LivingClueChatController extends GetxController {
 
     final LivingClueChatMessageModel optimisticUserMessage =
         LivingClueChatMessageModel(
-      text: sanitized,
-      isUser: true,
-      timestamp: DateTime.now(),
-      role: 'user',
-      livingClueId: id,
-    );
+          text: sanitized,
+          isUser: true,
+          timestamp: DateTime.now(),
+          role: 'user',
+          livingClueId: id,
+        );
 
     messages.add(optimisticUserMessage);
     _notifyMutation('append');
 
     try {
       isSending.value = true;
-      final List<LivingClueChatMessageModel> sentMessages =
-          await _chatWebclient.sendMessage(id, sanitized);
+      final List<LivingClueChatMessageModel> sentMessages = await _chatWebclient
+          .sendMessage(id, sanitized);
 
       messages.remove(optimisticUserMessage);
       if (sentMessages.isNotEmpty) {
         for (final LivingClueChatMessageModel msg in sentMessages) {
-          final bool alreadyExists =
-              messages.any((item) => item.id != null && item.id == msg.id);
+          final bool alreadyExists = messages.any(
+            (item) => item.id != null && item.id == msg.id,
+          );
           if (!alreadyExists) {
             messages.add(msg);
           }
         }
         _notifyMutation('append');
       }
-    } catch (error, stackTrace) {
+    } catch (error) {
       messages.remove(optimisticUserMessage);
-      Util.debug(exception: error, stackTrace: stackTrace);
       if (Get.overlayContext != null || Get.context != null) {
-        Get.customSnackbar('Erro', 'Falha ao enviar mensagem. $error');
+        Get.customSnackbar('Erro', aiChatError(error));
       }
     } finally {
       isSending.value = false;
@@ -152,9 +147,8 @@ class LivingClueChatController extends GetxController {
       hasMore.value = false;
       _notifyMutation('replace');
       Get.successSnackbar('Conversa apagada com sucesso.');
-    } catch (error, stackTrace) {
-      Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Falha ao limpar conversa. $error');
+    } catch (error) {
+      Get.customSnackbar('Erro', 'Falha ao limpar conversa.');
     } finally {
       isLoading.value = false;
     }

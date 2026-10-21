@@ -13,3 +13,12 @@ Referência: [plano aprovado na Wiki, revisão 2592](https://wiki.spotec.app/ind
 - Testes: 18 testes de integrações, conteúdo e documentos Quill aprovados; build web e análise sem erros. Na API, testes de serviço e ciclo HTTP de criação/leitura/edição/remoção foram executados em banco local novo e isolado.
 
 Este checkpoint não comprova acesso a conteúdos reais dos provedores. A validação no navegador e a homologação externa continuam pendentes, assim como Jitsi, MCP, contexto dinâmico, Gemini e benchmark completos. Evidências de validação ficam em `docs/evidencias/`, ignoradas pelo Git; credenciais permanecem somente no ambiente protegido do backend.
+
+
+### Checkpoint — contexto atual e referências da Iareté
+
+O envio usa `screen_context` versionado, com IDs, até 20 registros visíveis, campos atuais e rascunho não salvo. Há provedores para cockpit, mapa/seleção, Lua de Pistas, grafo/filtros/relações, visualização, criação, edição, agentes e conversa da própria pista. Rotas mantêm seus provedores enquanto montadas; voltar de painéis/telas restaura a origem e o formulário é lido novamente a cada pergunta. A seleção do mapa é descartada ao fechar seu painel. O backend continua sendo responsável por reautorizar IDs e carregar os registros persistidos.
+
+Os dois chats têm prazo de cliente de 60 segundos, superior ao limite de processamento do backend. Retirado o log de valores de contexto, grafo e corpos JSON dos interceptadores compartilhados; erros de transporte exibem apenas sua categoria no log, sem conteúdo. Mensagens conhecidas de quota/modelo/configuração/limite são apresentadas sem ecoar erros arbitrários. Respostas da Iareté usam Markdown e referências clicáveis para pistas e problemáticas; navegação interna fica restrita a telas de leitura. O chat da pista usa a mesma navegação segura, mantendo histórico próprio.
+
+Verificações: sete testes de contexto/transporte (retorno de rota, provedor sobreposto, rascunho/IDs no JSON real, limites, chaves sensíveis e erros), testes de navegação do cockpit e testes da pesquisa/integrações aprovados. `dart analyze` sem erros; build web isolado `build/integrations-validation` concluído. A validação visual e conversa Gemini autenticada no navegador ainda está pendente e será feita com conta/banco sintéticos, sem inserir mensagens em contas reais.

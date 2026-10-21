@@ -1,6 +1,5 @@
 import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 import 'package:unisinos_usp_app/widgets/locker_panel.dart';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
@@ -33,6 +32,9 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
   bool _didCenterGraph = false;
   final _searchController = TextEditingController();
 
+  late final String _contextRoute = Get.currentRoute;
+  late final AiAssistantContextProvider _contextProvider = _buildAiContext;
+
   @override
   void initState() {
     super.initState();
@@ -42,6 +44,9 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
 
   @override
   void dispose() {
+    if (Get.isRegistered<AiAssistantContextService>()) {
+      Get.find<AiAssistantContextService>().unregisterProvider(_contextRoute, _contextProvider);
+    }
     _searchController.dispose();
     _transformationController.dispose();
     super.dispose();
@@ -50,8 +55,8 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
   @override
   Widget build(BuildContext context) {
     Get.find<AiAssistantContextService>().registerProvider(
-      Get.currentRoute,
-      _buildAiContext,
+      _contextRoute,
+      _contextProvider,
     );
     return Theme(
       data: spaceRecordTheme(),
@@ -511,13 +516,14 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
   }
 
   AiAssistantScreenContext _buildAiContext() {
-    debugPrint(jsonEncode(_controller.graphLinks));
     final NodeModel? selectedNode = _selectedNode;
     return AiAssistantScreenContext(
       screenName: _screenName,
-      route: Get.currentRoute,
+      route: _contextRoute,
       stage: 'mapeamento e análise de problemáticas',
       goal: 'criar, conectar, editar e organizar entidades no grafo',
+      references: {if (selectedNode != null) 'node_id': selectedNode.id},
+      visibleRecords: _controller.visibleNodes.take(20).map((entry) => AiRecordReference(kind: 'node', id: entry.node.id, name: entry.node.name)).toList(),
       visibleFields: const <String>[
         'tipos de problemática',
         'grau mínimo',
@@ -529,6 +535,9 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
         'ligações carregadas': _controller.graphLinks.length.toString(),
         'tipos de problemática carregados': _controller.nodeTypes.length
             .toString(),
+        'busca': _controller.searchQuery.value,
+        'ids dos tipos ativos': _controller.selectedTypeIds.join(', '),
+        'relações da seleção': _controller.graphLinks.where((link) => link.sourceNodeId == selectedNode?.id || link.targetNodeId == selectedNode?.id).take(20).map((link) => '${link.sourceNodeId} → ${link.targetNodeId}').join('; '),
         'grau mínimo': _controller.minimumDegree.value.toString(),
         'tipos ativos': _controller.selectedTypeIds.length.toString(),
         if (selectedNode != null) 'problemática selecionada': selectedNode.name,

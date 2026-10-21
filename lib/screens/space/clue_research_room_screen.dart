@@ -48,6 +48,8 @@ class _ClueResearchRoomScreenState extends State<ClueResearchRoomScreen>
   AiAssistantScreenContext buildContext() => AiAssistantScreenContext(
     screenName: 'Sala da Lua de Pistas',
     route: route,
+    references: {if (selected != null) 'living_clue_id': selected!.id},
+    visibleRecords: clues.take(20).map((clue) => AiRecordReference(kind: 'living_clue', id: clue.id, name: clue.name)).toList(),
     stage: 'busca de pistas',
     goal: 'pesquisar pistas e localizar sua representação na lua holográfica',
     filledFields: {

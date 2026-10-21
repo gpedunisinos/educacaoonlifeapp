@@ -55,7 +55,9 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
         route: _route,
         stage: 'visualização completa de pista',
         goal: 'explorar a pista, suas relações, contexto e compartilhações',
+        references: {'living_clue_id': model.id},
         filledFields: {'pista': model.name, 'id': model.id.toString()},
+        notes: const ['O backend deve consultar a versão atual da pista, com suas relações e fontes. Não enviar conversas coletivas ou Locker por padrão.'],
       );
   List<ClueConnectionModel> _connections = <ClueConnectionModel>[];
   bool _isLoadingConnections = true;
