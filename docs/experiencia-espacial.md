@@ -314,3 +314,9 @@ Validação: onze testes aprovados (Central → lista → detalhe → lista com 
 - Mantida a profundidade visual em torno do para-brisa central, com menor distorção dos textos. As regras compactas existentes e todas as interações permanecem iguais.
 - Validação visual na prévia em enquadramentos de 1280/1440 px e conferência das transformações 3D efetivamente aplicadas aos dois painéis. Também conferida a chegada à Terra e o acesso ao mapa. Análise Dart sem erros; alteração restrita ao CSS, disponibilizada na prévia local sem modificar o código Flutter ou a lógica de navegação.
 - Evidência: `cockpit-lateral-perspective.jpg`.
+
+### Lua de Pistas — nome e descrição do destino
+
+- Substituído “Pesquisa” por “Lua de Pistas” no seletor de destinos e no mapa da expedição. A descrição e a identificação do módulo passam a ser “Pistas cadastradas”. Atualizados também o cabeçalho da sala e as mensagens de entrada para manter a mesma nomenclatura.
+- Bundle da cena regenerado e build web concluído. Conferidos na prévia o card, a seleção, o título e a descrição do destino, além do nome no mapa lateral. Análise Dart sem erros.
+- Evidência: `lua-de-pistas-identificacao.jpg`.

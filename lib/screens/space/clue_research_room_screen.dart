@@ -46,7 +46,7 @@ class _ClueResearchRoomScreenState extends State<ClueResearchRoomScreen>
   Timer? debounce;
   late final AiAssistantContextProvider provider = buildContext;
   AiAssistantScreenContext buildContext() => AiAssistantScreenContext(
-    screenName: 'Sala de Pesquisa da nave',
+    screenName: 'Sala da Lua de Pistas',
     route: route,
     stage: 'busca de pistas',
     goal: 'pesquisar pistas e localizar sua representação na lua holográfica',
@@ -211,7 +211,7 @@ class _ClueResearchRoomScreenState extends State<ClueResearchRoomScreen>
                           const SizedBox(width: 12),
                           const Expanded(
                             child: Text(
-                              'EC–01 / PESQUISA',
+                              'EC–01 / LUA DE PISTAS',
                               textAlign: TextAlign.right,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,

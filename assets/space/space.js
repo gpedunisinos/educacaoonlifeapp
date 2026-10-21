@@ -39,14 +39,14 @@ const destinations = [
   {
     id: "research",
     description:
-      "Reúna pistas, vivências e descobertas para conhecer melhor os territórios.",
+      "Pistas cadastradas",
     contents: ["Pistas", "Vivências e descobertas"],
     name: "Lua de Pistas",
-    module: "Pistas",
-    short: "Pesquisa",
+    module: "Pistas cadastradas",
+    short: "Lua de Pistas",
     symbol: "◇",
     sector: "SETOR · 07",
-    subtitle: "Cada pista abre uma nova possibilidade.",
+    subtitle: "Pistas cadastradas",
     position: [-24, 5, -24],
     radius: 3.3,
     focusOffset: [0, -1.75, 0],
@@ -557,7 +557,7 @@ function openDestination(destination) {
     destination.id === "earth"
       ? "Preparando a imersão territorial. O cockpit se recolhe para dar lugar ao mapa."
       : destination.id === "research"
-        ? "Preparando a sala de Pesquisa. A lua holográfica vai ajudar você a localizar cada pista."
+        ? "Preparando a sala da Lua de Pistas. A lua holográfica vai ajudar você a localizar cada pista."
         : destination.id === "connections"
           ? "Preparando a sala de Conexões da nave. A tela de exploração está pronta para receber você."
           : destination.id === "agents"
@@ -568,7 +568,7 @@ function openDestination(destination) {
     destination.id === "earth"
       ? "Entrando no observatório territorial"
       : destination.id === "research"
-        ? "Entrando na sala de Pesquisa"
+        ? "Entrando na sala da Lua de Pistas"
         : destination.id === "connections"
           ? "Entrando na sala de Conexões"
           : destination.id === "agents"
