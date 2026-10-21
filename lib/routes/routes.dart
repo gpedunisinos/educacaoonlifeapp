@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/screens/living_clue/living_clue_show_screen.dart';
 import 'package:unisinos_usp_app/screens/management/management_home_screen.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
 import 'package:unisinos_usp_app/screens/space/clue_research_room_screen.dart';
@@ -77,7 +78,7 @@ List<GetPage> appRoutes() =>
       ),
       GetPage(
         name: '/space/research/:id',
-        page: () => ClueResearchRoomScreen(
+        page: () => LivingClueShowScreen(
           clueId: int.tryParse(Get.parameters['id'] ?? '') ?? -1,
           initialClue: Get.arguments is LivingClueModel
               ? Get.arguments as LivingClueModel

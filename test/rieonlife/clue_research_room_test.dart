@@ -1,3 +1,8 @@
+import 'package:unisinos_usp_app/screens/living_clue/living_clue_show_screen.dart';
+import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
+import 'package:unisinos_usp_app/services/auth_user.dart';
+import 'package:unisinos_usp_app/services/locker_service.dart';
+import 'package:unisinos_usp_app/models/clue_connection_model.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -41,6 +46,21 @@ class CluesFake extends ClueResearchSource {
   }
 }
 
+class ResearchUser extends UserController {
+  @override
+  // ignore: must_call_super
+  void onInit() {}
+}
+
+class RecordFake extends LivingClueRecordSource {
+  RecordFake(this.source);
+  final CluesFake source;
+  @override
+  Future<LivingClueModel> clue(int id) => source.clue(id);
+  @override
+  Future<List<ClueConnectionModel>> connections(int id) async => [];
+}
+
 Widget app(CluesFake source) => GetMaterialApp(
   builder: (context, child) => MediaQuery(
     data: MediaQuery.of(context).copyWith(disableAnimations: true),
@@ -49,9 +69,13 @@ Widget app(CluesFake source) => GetMaterialApp(
   home: ClueResearchRoomScreen(source: source),
   getPages: [
     GetPage(
+      name: '/living_clues/:id',
+      page: () => LivingClueShowScreen(source: RecordFake(source)),
+    ),
+    GetPage(
       name: '/space/research/:id',
-      page: () => ClueResearchRoomScreen(
-        source: source,
+      page: () => LivingClueShowScreen(
+        source: RecordFake(source),
         clueId: int.parse(Get.parameters['id']!),
         initialClue: Get.arguments is LivingClueModel
             ? Get.arguments as LivingClueModel
@@ -61,7 +85,18 @@ Widget app(CluesFake source) => GetMaterialApp(
   ],
 );
 void main() {
-  setUp(() => Get.testMode = true);
+  setUp(() {
+    Get.testMode = true;
+    Get.put<UserController>(ResearchUser()).user.value = const AuthUser(
+      id: 1,
+      name: 'Teste',
+      email: 'test@example.com',
+      token: 'test',
+      profile: 10,
+      usageMode: 'inventor',
+    );
+    Get.put(LockerService());
+  });
   tearDown(Get.reset);
   testWidgets(
     'selection highlights its moon card and detail returns to same search and selection',
@@ -90,7 +125,13 @@ void main() {
       );
       await tester.tap(find.text('Abrir pista'));
       await tester.pumpAndSettle();
-      expect(find.text('Abrir registro completo'), findsOneWidget);
+      expect(find.text('Abrir registro completo'), findsNothing);
+      expect(find.byType(LivingClueShowScreen), findsOneWidget);
+      expect(find.text('Relações com outras pistas'), findsOneWidget);
+      expect(find.text('Localização'), findsOneWidget);
+      expect(find.text('Conversa com a pista viva'), findsOneWidget);
+      expect(find.byTooltip('Salvar no Locker'), findsOneWidget);
+      expect(find.byTooltip('Editar'), findsOneWidget);
       expect(Get.currentRoute, '/space/research/43');
       expect(find.byType(ClueMoonHologram), findsNothing);
       expect(find.text('Memória distante', findRichText: true), findsWidgets);
@@ -132,6 +173,21 @@ void main() {
       );
     },
   );
+  testWidgets('legacy clue links use the same complete ship record', (
+    tester,
+  ) async {
+    final source = CluesFake();
+    await tester.pumpWidget(app(source));
+    await tester.pumpAndSettle();
+    Get.toNamed('/living_clues/43');
+    await tester.pumpAndSettle();
+    expect(find.byType(LivingClueShowScreen), findsOneWidget);
+    expect(find.text('EC–01 / ARQUIVO DE PISTAS'), findsOneWidget);
+    expect(find.text('Relações com outras pistas'), findsOneWidget);
+    expect(find.text('Abrir registro completo'), findsNothing);
+    expect(find.byType(ClueMoonHologram), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
   testWidgets('pagination, empty search, clear and stale responses', (
     tester,
   ) async {

@@ -19,6 +19,8 @@ class AppPageViewport extends StatelessWidget {
         (route == '/space' || route.startsWith('/space/')) ||
         (route == '/management' || route.startsWith('/management/')) ||
         route == '/living_clues/map' ||
+        route == '/living_clues/show' ||
+        RegExp(r'^/living_clues/\d+$').hasMatch(route) ||
         isManagementRecordRoute(route);
     return Stack(
       fit: StackFit.expand,

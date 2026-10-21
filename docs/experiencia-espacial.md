@@ -272,3 +272,12 @@ Validação: onze testes aprovados (Central → lista → detalhe → lista com 
 - Corrigida a largura do seletor de tipo de categoria em celulares e removido o atalho redundante da Central nas próprias telas administrativas. Os campos antigos com texto preto fixo foram substituídos por campos que seguem o tema, garantindo contraste também na edição de registros.
 - Validação: 15 testes de widgets aprovados (cinco formulários a 390/1280 px, permissões de usuários, Central/conexões e navegação espacial); análise Dart sem erros; build web local. Conferência visual da visão geral, categorias/cadastro e agentes com dados da prévia, sem gravar ou excluir registros.
 - Evidências: `management-all-sections.jpg`, `management-categories.jpg`, `management-category-form.jpg` e `management-agents.jpg` nesta pasta.
+
+### Visualização única do registro completo de pista
+
+- A rota `/space/research/:id` agora abre diretamente `LivingClueShowScreen`, o registro completo, no ambiente visual da sala de pesquisa. Removida a visualização resumida intermediária e seu botão “Abrir registro completo”. A Lua de Pistas permanece apenas na busca.
+- O registro utiliza fundo estrutural da nave, tema escuro/ciano, cartões de leitura e cabeçalho com retorno, Locker e edição conforme as permissões existentes. Preservados descrição rica, contexto socioambiental, relações, localização, conversa contextual, imagem, metadados, anexos, histórico de edições e compartilhações.
+- Links anteriores `/living_clues/show` e `/living_clues/:id` continuam funcionando e exibem o mesmo registro atualizado. As relações entre pistas também levam à visualização completa. O retorno à pesquisa preserva busca, seleção e rolagem da lista.
+- Mantidos atualização do contexto ambiental, tratamento de falhas e ações existentes. O carregamento inicial agora permite tentar novamente no próprio ambiente; o contexto da pista continua disponível para a Iareté.
+- Validação: oito testes aprovados, cobrindo seleção/retorno, abertura direta, link antigo, recuperação de falhas, busca/paginação, celular e navegação espacial; `dart analyze` sem erros (126 avisos/informações preexistentes); build web concluído. Prévia conferida com a pista AgroCity Living Lab, incluindo relações, localização, metadados, histórico e compartilhações, sem alterar registros.
+- Evidências: `clue-complete-record.jpg` e `clue-complete-participation.jpg`.

@@ -1,3 +1,5 @@
+import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
+import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
 import 'package:unisinos_usp_app/widgets/living_clue_layout.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
@@ -14,12 +16,26 @@ import 'package:unisinos_usp_app/policies/clue_connection_policy.dart';
 import 'package:unisinos_usp_app/webclients/clue_connection_webclient.dart';
 import 'package:unisinos_usp_app/webclients/living_clue_webclient.dart';
 import 'package:unisinos_usp_app/widgets/living_clue_description_view.dart';
-import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'package:unisinos_usp_app/screens/space/space_record_shell.dart';
 import 'package:unisinos_usp_app/widgets/environmental_context_card.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
+class LivingClueRecordSource {
+  Future<LivingClueModel> clue(int id) => LivingClueWebclient().fetchById(id);
+  Future<List<ClueConnectionModel>> connections(int id) =>
+      ClueConnectionWebclient().fetchForLivingClue(id);
+}
+
 class LivingClueShowScreen extends StatefulWidget {
-  const LivingClueShowScreen({super.key});
+  const LivingClueShowScreen({
+    super.key,
+    this.clueId,
+    this.initialClue,
+    this.source,
+  });
+  final int? clueId;
+  final LivingClueModel? initialClue;
+  final LivingClueRecordSource? source;
 
   @override
   State<LivingClueShowScreen> createState() => _LivingClueShowScreenState();
@@ -27,10 +43,20 @@ class LivingClueShowScreen extends StatefulWidget {
 
 class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
   late LivingClueModel model;
+  late final source = widget.source ?? LivingClueRecordSource();
   bool _initialLoading = false;
   String? _initialError;
   Timer? _refreshTimer;
   int _refreshAttempts = 0;
+  late final String _route = Get.currentRoute;
+  late final AiAssistantContextProvider _provider = () =>
+      AiAssistantScreenContext(
+        screenName: 'Registro de pista na nave',
+        route: _route,
+        stage: 'visualização completa de pista',
+        goal: 'explorar a pista, suas relações, contexto e compartilhações',
+        filledFields: {'pista': model.name, 'id': model.id.toString()},
+      );
   List<ClueConnectionModel> _connections = <ClueConnectionModel>[];
   bool _isLoadingConnections = true;
   String? _connectionsError;
@@ -39,17 +65,22 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
   void initState() {
     super.initState();
     final args = Get.arguments;
-    if (args is LivingClueModel) {
+    if (widget.initialClue != null && widget.initialClue!.id == widget.clueId) {
+      model = widget.initialClue!;
+    } else if (args is LivingClueModel) {
       model = args;
     } else if (args is Map && args['model'] is LivingClueModel) {
       model = args['model'];
     } else {
       model = LivingClueModel(
-        id: int.tryParse(Get.parameters['id'] ?? '') ?? 0,
+        id: widget.clueId ?? int.tryParse(Get.parameters['id'] ?? '') ?? 0,
         name: '',
         categoryId: 0,
       );
       _initialLoading = true;
+    }
+    if (Get.isRegistered<AiAssistantContextService>()) {
+      Get.find<AiAssistantContextService>().registerProvider(_route, _provider);
     }
     _refreshContext();
     _loadConnections();
@@ -63,9 +94,7 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
       });
     }
     try {
-      final connections = await ClueConnectionWebclient().fetchForLivingClue(
-        model.id,
-      );
+      final connections = await source.connections(model.id);
       if (!mounted) return;
       setState(() => _connections = connections);
     } catch (_) {
@@ -80,7 +109,7 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
 
   Future<void> _refreshContext() async {
     try {
-      final refreshed = await LivingClueWebclient().fetchById(model.id);
+      final refreshed = await source.clue(model.id);
       if (!mounted) return;
       setState(() {
         model = refreshed;
@@ -111,48 +140,72 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
   @override
   void dispose() {
     _refreshTimer?.cancel();
+    if (Get.isRegistered<AiAssistantContextService>()) {
+      Get.find<AiAssistantContextService>().unregisterProvider(
+        _route,
+        _provider,
+      );
+    }
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    if (_initialLoading)
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    if (_initialError != null)
-      return Scaffold(
-        appBar: AppBar(leading: const SafeBackButton()),
-        body: Center(child: Text(_initialError!)),
+  void _leave() {
+    if (Navigator.of(context).canPop()) {
+      Get.back();
+    } else {
+      Get.offNamed('/space/research');
+    }
+  }
+
+  Widget _frame(Widget child, {List<Widget> actions = const []}) =>
+      SpaceRecordShell(
+        onBack: _leave,
+        backLabel: Get.currentRoute.startsWith('/space/research/')
+            ? 'Voltar à lista'
+            : 'Voltar',
+        actions: actions,
+        child: child,
       );
+
+  @override
+  Widget build(BuildContext context) => Theme(
+    data: spaceRecordTheme(),
+    child: Builder(builder: _buildRecord),
+  );
+
+  Widget _buildRecord(BuildContext context) {
+    if (_initialLoading) {
+      return _frame(const Center(child: CircularProgressIndicator()));
+    }
+    if (_initialError != null) {
+      return _frame(
+        Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(_initialError!),
+              const SizedBox(height: 16),
+              OutlinedButton(
+                onPressed: () {
+                  setState(() {
+                    _initialLoading = true;
+                    _initialError = null;
+                  });
+                  _refreshContext();
+                },
+                child: const Text('Tentar novamente'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
     final theme = Theme.of(context);
     final categoryName =
         model.category?.name ?? 'Categoria ${model.categoryId}';
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
-        leading: const SafeBackButton(),
-        title: const Text('Pista viva'),
-        actions: [
-          LockerButton(type: 'living_clue', id: model.id),
-          if (LivingCluePolicy(
-            Get.find<UserController>().user.value,
-          ).update(model))
-            IconButton(
-              tooltip: 'Editar',
-              icon: const Icon(Icons.edit),
-              onPressed: () async {
-                await Get.toNamed(
-                  '/living_clues/update',
-                  parameters: {'id': model.id.toString()},
-                );
-                if (mounted) await _refreshContext();
-              },
-            ),
-        ],
-      ),
-      body: Stack(
+    return _frame(
+      Stack(
         children: [
           SafeArea(
             child: SingleChildScrollView(
@@ -206,13 +259,15 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
                             children: [
                               Icon(
                                 Icons.category_outlined,
-                                color: Colors.blueGrey.shade600,
+                                color: const Color(0xFF9CE7DF),
                                 size: 18,
                               ),
                               const SizedBox(width: 6),
-                              Text(
-                                categoryName,
-                                style: theme.textTheme.bodyMedium,
+                              Expanded(
+                                child: Text(
+                                  categoryName,
+                                  style: theme.textTheme.bodyMedium,
+                                ),
                               ),
                             ],
                           ),
@@ -341,7 +396,7 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
                         children: [
                           Container(
                             width: double.infinity,
-                            color: Colors.grey.shade100,
+                            color: const Color(0xFF15333D),
                             padding: const EdgeInsets.all(12),
                             child: const Text('Imagem'),
                           ),
@@ -444,6 +499,23 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
           ),
         ],
       ),
+      actions: [
+        LockerButton(type: 'living_clue', id: model.id),
+        if (LivingCluePolicy(
+          Get.find<UserController>().user.value,
+        ).update(model))
+          IconButton(
+            tooltip: 'Editar',
+            icon: const Icon(Icons.edit),
+            onPressed: () async {
+              await Get.toNamed(
+                '/living_clues/update',
+                parameters: {'id': model.id.toString()},
+              );
+              if (mounted) await _refreshContext();
+            },
+          ),
+      ],
     );
   }
 
@@ -598,7 +670,7 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.fromLTRB(12, 6, 4, 6),
-        leading: Icon(directionIcon, color: Colors.blueGrey.shade700),
+        leading: Icon(directionIcon, color: const Color(0xFF9CE7DF)),
         title: Text(
           relatedClue?.name ??
               'Pista #${connection.isOutgoingFrom(model.id) ? connection.targetClueId : connection.sourceClueId}',
@@ -680,6 +752,6 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
   }
 
   void _openRelatedClue(LivingClueModel relatedClue) {
-    Get.toNamed('/living_clues/show', arguments: relatedClue);
+    Get.toNamed('/space/research/${relatedClue.id}', arguments: relatedClue);
   }
 }
