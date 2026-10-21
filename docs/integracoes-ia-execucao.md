@@ -49,3 +49,10 @@ Frontend de produção compilado com API HTTPS do servidor e Encontros desabilit
 Na prévia isolada, FrameVR foi aberto explicitamente e a cena carregou no iframe, mas a conexão falhou pelo limite WebRTC do navegador interno; o botão Voltar retornou à pista e removeu o iframe FrameVR da árvore de acessibilidade. A incorporação completa no Chrome segue pendente de continuidade do controle desse navegador.
 
 Chat próprio da pista validado pela interface, com chamada real Gemini: começou sem o histórico da Iareté global; apresentou-se como Jardim Aurora, informou as 18 árvores, ausência de coordenadas/leituras e declarou possuir somente o link FrameVR, sem ter explorado o mundo. Evidência ignorada `docs/evidencias/chat-pista-gemini-dados-limites.png`. Nenhum histórico real foi usado ou alterado.
+
+
+## Ajustes após a publicação
+
+Permissão de captura do ponteiro adicionada ao sandbox somente dos ambientes FrameVR abertos explicitamente, permitindo a navegação 3D que depende desse recurso; os conteúdos comuns continuam sem essa permissão. A rota de foco do grafo é capturada antes das requisições, para que uma mudança de rota durante o carregamento não troque o ID solicitado. Análise estática desses arquivos e sete testes da sala/grafo aprovados. Esses dois ajustes ainda precisam ser incluídos no próximo build publicado.
+
+Validação adicional do servidor: hashes dos arquivos públicos main.dart.js, space.bundle.js e space.css coincidem com a release; imagem da API não contém o arquivo de ambiente antes do mount em execução; tela de login abriu no navegador com identificação Educação Onlife. Os três arquivos de storage existentes, excluindo logs, mantêm seus hashes originais.

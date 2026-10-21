@@ -39,6 +39,9 @@ class NodeGraphController extends GetxController {
   }
 
   Future<void> loadGraph() async {
+    // Capture the originating route before network requests. Another route can
+    // become active while this graph is still loading in the navigator stack.
+    final focus = int.tryParse(Get.parameters['focus'] ?? '');
     try {
       isLoading.value = true;
       errorMessage.value = null;
@@ -51,7 +54,6 @@ class NodeGraphController extends GetxController {
 
       graphNodes.assignAll(_buildNodeStates(map.nodes, map.links));
       graphLinks.assignAll(map.links);
-      final focus = int.tryParse(Get.parameters['focus'] ?? '');
       if (focus != null && map.nodes.any((n) => n.node.id == focus))
         selectedNodeId.value = focus;
       nodeTypes.assignAll(types);

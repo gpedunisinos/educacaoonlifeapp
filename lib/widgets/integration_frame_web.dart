@@ -28,7 +28,8 @@ class _IntegrationFrameState extends State<IntegrationFrame> {
       ..title = widget.title
       ..setAttribute(
         'sandbox',
-        'allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads',
+        'allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads'
+        '${widget.media ? ' allow-pointer-lock' : ''}',
       )
       ..setAttribute('referrerpolicy', 'strict-origin-when-cross-origin')
       ..allow = widget.media
