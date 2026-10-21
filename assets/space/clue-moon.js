@@ -109,38 +109,36 @@ export function createClueMoon(destination) {
       }),
   );
   const geometry = new THREE.PlaneGeometry(0.57, 0.75);
-  const normal = new THREE.Vector3(0, 0, 1);
-  const count = 96;
-  const cards = Array.from({ length: count }, (_, i) => {
-    const y = 1 - (2 * (i + 0.5)) / count;
-    const angle = i * 2.399963229728653;
-    const spread = Math.sqrt(1 - y * y);
-    const direction = new THREE.Vector3(
-      Math.cos(angle) * spread,
-      y,
-      Math.sin(angle) * spread,
-    );
-    const card = new THREE.Mesh(geometry, materials[i % materials.length]);
-    const radius = 2.36 + Math.sin(i * 9.17) * 0.065;
-    card.position.copy(direction).multiplyScalar(radius);
-    card.quaternion.setFromUnitVectors(normal, direction);
-    card.rotateZ(Math.sin(i * 3.71) * 0.12);
-    shell.add(card);
-    return { card, direction, radius, phase: i * 1.618 };
+  const radius = 2.36;
+  // Regular latitude bands: identical radius, horizontal baselines and north up.
+  const bandCounts = [4, 12, 18, 22, 24, 22, 18, 12, 4];
+  const outward = new THREE.Vector3();
+  let index = 0;
+  bandCounts.forEach((count, band) => {
+    const latitude = THREE.MathUtils.degToRad(-80 + band * 20);
+    const spread = Math.cos(latitude);
+    for (let column = 0; column < count; column++) {
+      const longitude = (column * Math.PI * 2) / count;
+      const direction = new THREE.Vector3(
+        Math.sin(longitude) * spread,
+        Math.sin(latitude),
+        Math.cos(longitude) * spread,
+      );
+      const card = new THREE.Mesh(
+        geometry,
+        materials[index++ % materials.length],
+      );
+      card.position.copy(direction).multiplyScalar(radius);
+      // lookAt uses the shared vertical axis to avoid arbitrary roll near poles.
+      card.lookAt(outward.copy(card.position).add(direction));
+      shell.add(card);
+    }
   });
   let time = 0;
   function update(dt) {
     time += dt;
-    shell.rotation.set(
-      0.2 + Math.sin(time * 0.037) * 0.12,
-      time * 0.055,
-      -0.14 + Math.sin(time * 0.041) * 0.07,
-    );
-    for (const { card, direction, radius, phase } of cards) {
-      card.position
-        .copy(direction)
-        .multiplyScalar(radius + Math.sin(time * 0.33 + phase) * 0.035);
-    }
+    // The organized shell turns as one body; cards keep their band and posture.
+    shell.rotation.set(0, time * 0.055, 0);
   }
   update(0);
   return { group, update };

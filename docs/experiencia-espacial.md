@@ -228,3 +228,9 @@ Validação: bundle regenerado e atualizado na prévia local; análise Dart sem 
 A paleta dos nodos passa de quatro para oito cores, com intensidade um pouco maior: ciano, violeta, azul, jade, rosa suave, azul-pervinca, âmbar claro e menta. Os tons frios continuam predominantes; rosa e âmbar aparecem como acentos discretos. Núcleo e halo de cada nodo usam a mesma cor. Conexões, geometria, movimento e intensidade dos halos permanecem iguais.
 
 Validação: bundle regenerado, análise Dart sem erros (127 avisos/informações existentes), chegada ao Observatório conferida no navegador com movimento reduzido e suave. Evidência: `space-problematic-node-colors.jpg`.
+
+### Lua de Pistas com cards alinhados
+
+A distribuição em espiral e as inclinações individuais foram substituídas por nove faixas regulares de latitude, com 136 cards no mesmo raio. Todos mantêm o topo orientado para o norte da lua e a base horizontal em sua faixa; acompanham apenas a curvatura necessária para formar a esfera. A quantidade por faixa acompanha sua circunferência, formando uma casca mais uniforme. Não há inclinação aleatória, variação de raio, flutuação individual ou oscilação dos eixos. A lua inteira gira lentamente no eixo vertical.
+
+Validação: bundle regenerado, análise Dart sem erros (127 avisos/informações existentes). Verificação geométrica: nove faixas com 4/12/18/22/24/22/18/12/4 cards, raio idêntico, bases horizontais, topo voltado para cima e posições relativas preservadas após dez segundos. Navegador: chegada, alinhamento da esfera, movimento reduzido e rotação suave. Evidência: `space-clue-moon-organized.jpg`.
