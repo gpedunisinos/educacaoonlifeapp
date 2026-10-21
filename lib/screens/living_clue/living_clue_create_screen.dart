@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/screens/management/management_input.dart';
 import 'package:unisinos_usp_app/screens/space/space_record_shell.dart';
 import 'package:unisinos_usp_app/widgets/living_clue_location_button.dart';
 import 'package:unisinos_usp_app/widgets/living_clue_layout.dart';
@@ -148,7 +149,7 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
                                 ],
                               ),
                               Insets.large.height,
-                              InputText(
+                              ManagementInput(
                                 hintText: 'Nome',
                                 controller: _nameController,
                                 validator: (value) => PValidator([
@@ -161,7 +162,7 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
                                 ]).val(),
                               ),
                               Insets.large.height,
-                              InputText(
+                              ManagementInput(
                                 hintText: 'Categoria',
                                 readOnly: true,
                                 controller: _categoryController,
@@ -180,7 +181,7 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
                                 ..._metadataTags.map(
                                   (tag) => Padding(
                                     padding: const EdgeInsets.only(bottom: 12),
-                                    child: InputText(
+                                    child: ManagementInput(
                                       hintText: _formatTagLabel(tag),
                                       controller: _metadataControllers[tag]!,
                                     ),
@@ -236,7 +237,7 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
                                 controller: _longitudeController,
                               ),
                               Insets.large.height,
-                              InputText(
+                              ManagementInput(
                                 hintText: 'URL da imagem (opcional)',
                                 controller: _imageUrlController,
                               ),

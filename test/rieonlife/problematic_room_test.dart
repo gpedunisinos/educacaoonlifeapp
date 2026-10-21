@@ -38,7 +38,6 @@ void main() {
     Get.put(AiAssistantContextService());
     Get.put(LockerService());
     graph = RoomGraph();
-    Get.put<NodeGraphController>(graph);
     final type = NodeTypeModel(id: 1, name: 'Ambiental', color: '#8EDBCB');
     graph.nodeTypes.add(type);
     graph.selectedTypeIds.add(1);
@@ -79,6 +78,31 @@ void main() {
       expect(graph.visibleNodes, isEmpty);
     },
   );
+  testWidgets('opening another graph preserves the originating analysis on return', (tester) async {
+    await tester.pumpWidget(GetMaterialApp(home: NodeGraphScreen(controllerFactory: () => graph)));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'Água');
+    graph.selectedNodeId.value = 1;
+    await tester.pumpAndSettle();
+    final originalTransform = tester.widget<InteractiveViewer>(find.byType(InteractiveViewer)).transformationController!.value.clone();
+    final other = RoomGraph();
+    other.nodeTypes.assignAll(graph.nodeTypes);
+    other.selectedTypeIds.add(1);
+    other.graphNodes.assignAll(graph.graphNodes);
+    other.selectedNodeId.value = 2;
+    Get.to(() => NodeGraphScreen(controllerFactory: () => other));
+    await tester.pumpAndSettle();
+    expect(find.text('Floresta'), findsWidgets);
+    await tester.enterText(find.byType(TextField), 'Cidade');
+    Get.back();
+    await tester.pumpAndSettle();
+    expect(graph.searchQuery.value, 'Água');
+    expect(graph.selectedNodeId.value, 1);
+    expect(tester.widget<TextField>(find.byType(TextField)).controller!.text, 'Água');
+    expect(tester.widget<InteractiveViewer>(find.byType(InteractiveViewer)).transformationController!.value, originalTransform);
+    expect(tester.takeException(), isNull);
+  });
+
   for (final size in [
     const Size(1440, 900),
     const Size(390, 844),
@@ -91,7 +115,7 @@ void main() {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
-      await tester.pumpWidget(const GetMaterialApp(home: NodeGraphScreen()));
+      await tester.pumpWidget(GetMaterialApp(home: NodeGraphScreen(controllerFactory: () => graph)));
       await tester.pumpAndSettle();
       expect(find.text('SALA DE PROBLEMÁTICAS'), findsOneWidget);
       final matrix = tester
@@ -145,7 +169,7 @@ void main() {
           'Problemática com um título extenso',
         ).join(' ');
         graph.selectNode(1);
-        await tester.pumpWidget(const GetMaterialApp(home: NodeGraphScreen()));
+        await tester.pumpWidget(GetMaterialApp(home: NodeGraphScreen(controllerFactory: () => graph)));
         await tester.pumpAndSettle();
         expect(
           find.ancestor(

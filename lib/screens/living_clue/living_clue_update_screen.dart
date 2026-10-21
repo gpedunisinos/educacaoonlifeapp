@@ -1,3 +1,5 @@
+import 'package:unisinos_usp_app/screens/management/management_input.dart';
+import 'dart:convert';
 import 'package:unisinos_usp_app/screens/space/space_record_shell.dart';
 import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
@@ -39,6 +41,7 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
   final Map<String, TextEditingController> _metadataControllers = {};
   final List<FileModel> _attachments = [];
   bool _filled = false;
+  String? _initialFormSnapshot;
   bool _isActive = true;
   bool _loadingCategory = false;
   bool _loadingAttachments = false;
@@ -54,7 +57,9 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
   _contextProvider = () => AiAssistantScreenContext(
     screenName: 'Edição de pista',
     route: _contextRoute,
-    stage: _filled ? 'edição de rascunho' : 'carregamento do registro',
+    stage: !_filled
+        ? 'carregamento do registro'
+        : _hasUnsavedChanges ? 'edição de rascunho' : 'revisão do registro',
     goal:
         'ajudar a revisar a pista sem confundir alterações locais com o registro salvo',
     references: {
@@ -81,7 +86,7 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
             'longitude': _longitudeController.text,
           }
         : {},
-    draft: _filled
+    draft: _filled && _hasUnsavedChanges
         ? {
             'unsaved': true,
             'name': _nameController.text,
@@ -97,8 +102,11 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
             },
           }
         : {},
-    notes: const [
-      'Os campos do formulário são um rascunho, ainda não confirmado no backend. A pista pode não possuir localização.',
+    notes: [
+      _hasUnsavedChanges
+          ? 'Há alterações locais ainda não confirmadas no backend.'
+          : 'O formulário não tem alterações locais em relação ao registro carregado.',
+      'A pista pode não possuir localização.',
     ],
   );
 
@@ -292,7 +300,7 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
               ],
             ),
             Insets.large.height,
-            InputText(
+            ManagementInput(
               hintText: 'Nome',
               controller: _nameController,
               validator: (value) => PValidator([
@@ -301,7 +309,7 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
               ]).val(),
             ),
             Insets.large.height,
-            InputText(
+            ManagementInput(
               hintText: 'Categoria',
               readOnly: true,
               controller: _categoryController,
@@ -317,7 +325,7 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
               ..._metadataTags.map(
                 (tag) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
-                  child: InputText(
+                  child: ManagementInput(
                     hintText: _formatTagLabel(tag),
                     controller: _metadataControllers[tag]!,
                   ),
@@ -541,7 +549,7 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            InputText(
+            ManagementInput(
               hintText: 'Ou cole um link público',
               controller: _linkController,
             ),
@@ -560,6 +568,21 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
     );
   }
 
+  String _formSnapshot() => jsonEncode({
+    'name': _nameController.text,
+    'description': _descriptionController.document.toDelta().toJson(),
+    'latitude': _latitudeController.text,
+    'longitude': _longitudeController.text,
+    'active': _isActive,
+    'category_id': _categoryId,
+  });
+
+  bool get _hasUnsavedChanges => _filled && (
+    _formSnapshot() != _initialFormSnapshot ||
+    _metadataControllers.entries.any((entry) =>
+      entry.value.text != (_initialMetadata[entry.key]?.toString() ?? ''))
+  );
+
   void _fillFromModel(LivingClueModel model) {
     _nameController.text = model.name;
     _descriptionController.document = QuillDocumentUtils.fromStored(
@@ -571,6 +594,7 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
     _isActive = model.isActive;
     _categoryId = model.categoryId;
     _initialMetadata = model.metadata ?? {};
+    _initialFormSnapshot = _formSnapshot();
   }
 
   Future<void> _loadCategoryMetadata(

@@ -17,7 +17,8 @@ import 'package:unisinos_usp_app/screens/space/space_record_shell.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class NodeGraphScreen extends StatefulWidget {
-  const NodeGraphScreen({super.key});
+  const NodeGraphScreen({super.key, this.controllerFactory});
+  final NodeGraphController Function()? controllerFactory;
 
   @override
   State<NodeGraphScreen> createState() => _NodeGraphScreenState();
@@ -26,7 +27,10 @@ class NodeGraphScreen extends StatefulWidget {
 class _NodeGraphScreenState extends State<NodeGraphScreen> {
   static const String _screenName = 'Problemáticas';
   static const Size _graphCanvasSize = Size(1800, 1400);
-  final NodeGraphController _controller = Get.find<NodeGraphController>();
+  // Each route owns its analysis state. Opening an AI reference must not reuse
+  // another graph route's selection or overwrite its filters on return.
+  final String _controllerTag = UniqueKey().toString();
+  late final NodeGraphController _controller;
   final TransformationController _transformationController =
       TransformationController();
   bool _didCenterGraph = false;
@@ -38,6 +42,7 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
   @override
   void initState() {
     super.initState();
+    _controller = Get.put(widget.controllerFactory?.call() ?? NodeGraphController(), tag: _controllerTag);
     _searchController.text = _controller.searchQuery.value;
     _transformationController.value = Matrix4.identity();
   }
@@ -49,6 +54,7 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
     }
     _searchController.dispose();
     _transformationController.dispose();
+    Get.delete<NodeGraphController>(tag: _controllerTag);
     super.dispose();
   }
 
