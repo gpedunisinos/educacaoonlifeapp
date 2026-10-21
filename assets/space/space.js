@@ -1,3 +1,4 @@
+import { FlightModeSwitch } from "./flight-mode.js";
 import { ShipTutorial } from "./ship-tutorial.js";
 import * as THREE from "./vendor/three.module.js";
 import { SpaceAudio } from "./audio.js";
@@ -184,9 +185,14 @@ function tutorialSteps() {
       text: "O mapa lateral mostra os destinos e o ponto que representa a nave. Assim você acompanha nossa posição e a próxima rota. Em telas menores, os cards continuam sendo sua referência de navegação.",
     },
     {
+      targets: ["#flight-mode"],
+      title: "Escolha como explorar",
+      text: "Este seletor alterna os modos da expedição. Em Explorador, você conhece pistas e guarda referências. Em Inventor, pode criar e conectar descobertas. A iluminação do console acompanha a escolha, que fica salva na sua conta. Nossa rota continua no mesmo lugar.",
+    },
+    {
       targets: [".tools"],
       title: "Uma viagem do seu jeito",
-      text: "No alto da tela, ajuste o som e reduza o movimento quando quiser. Em Conta, você pode trocar entre Explorador e Inventor ou sair da sessão. Quando disponível, Gestão abre as parametrizações da plataforma.",
+      text: "No alto da tela, ajuste o som e reduza o movimento quando quiser. Em Conta, você pode sair da sessão. Quando disponível, Gestão abre as parametrizações da plataforma.",
     },
     {
       targets: ["#tour-replay"],
@@ -215,6 +221,22 @@ const tutorial = new ShipTutorial({
     say(
       "A nave está pronta. Escolha um destino para nossa próxima descoberta. Se precisar, o Guia da Iareté continua disponível no console.",
     );
+  },
+});
+const flightMode = new FlightModeSwitch($("flight-mode"), {
+  request: (mode) => {
+    audio.select();
+    emit("change-mode", {mode});
+  },
+  changed: (mode) => {
+    const name = mode === "inventor" ? "Inventor" : "Explorador";
+    record(`Modo ${name} ativado · rota preservada`);
+    if (!tutorial.active && !paused && !travelling) {
+      audio.select();
+      say(mode === "inventor"
+        ? "Modo Inventor ativado. Você pode criar pistas, conectar problemáticas e transformar suas descobertas. Nossa rota continua."
+        : "Modo Explorador ativado. Vamos conhecer pistas e conexões e guardar referências no Locker. Nossa rota continua.");
+    }
   },
 });
 function offerTutorial() {
@@ -723,6 +745,7 @@ function setPaused(value) {
 window.receiveSpaceCommand = (data) => {
   if (data?.channel !== "econectiva-space") return;
   if (data.type === "configure" && Array.isArray(data.destinations)) {
+    flightMode.update({mode: data.mode});
     tutorialConfigured = true;
     tutorialSeen = data.tutorialSeen === true;
     $("management").hidden = data.management !== true;
@@ -736,6 +759,8 @@ window.receiveSpaceCommand = (data) => {
     renderDestinations();
     offerTutorial();
   }
+  if (data.type === "mode-state") flightMode.update(data);
+  if (data.type === "focus-mode") flightMode.focus();
   if (data.type === "pause") {
     hostPaused = true;
     setPaused(true);
@@ -1551,6 +1576,7 @@ window.addEventListener("keydown", (event) => {
     event.metaKey
   )
     return;
+  if (event.target.closest?.("#flight-mode")) return;
   if (event.key >= "1" && event.key <= String(destinations.length)) {
     const d = destinations[Number(event.key) - 1];
     if (allowed.includes(d.id)) {

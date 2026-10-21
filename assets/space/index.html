@@ -80,7 +80,7 @@
     </header>
     <main id="flight-ui" hidden>
       <div class="canopy-strip" aria-hidden="true">
-        <span>EC–01 / EXPLORER</span><span>CONEXÃO ESTABELECIDA</span
+        <span id="ship-mode-tag">EC–01 / EXPLORADOR</span><span>CONEXÃO ESTABELECIDA</span
         ><span>IARETÉ · ONLINE</span>
       </div>
       <aside class="glass-instrument port-instrument" aria-label="Local atual">
@@ -216,6 +216,15 @@
           <span><i class="live-dot"></i> CONSOLE DE BORDO</span
           ><span id="flight-status" role="status">Aguardando destino</span>
         </div>
+        <section id="flight-mode" aria-label="Modo de navegação">
+          <div class="mode-caption"><span class="eyebrow">COMANDO DE EXPEDIÇÃO</span><strong id="mode-label">Explorador</strong></div>
+          <div class="mode-lever" role="group" aria-label="Selecionar modo">
+            <i class="mode-handle" aria-hidden="true"></i>
+            <button id="mode-explorer" type="button" aria-pressed="true" disabled><span aria-hidden="true">◈</span> Explorador</button>
+            <button id="mode-inventor" type="button" aria-pressed="false" disabled><span aria-hidden="true">⚒</span> Inventor</button>
+          </div>
+          <p id="mode-status" role="status" aria-live="polite">Sincronizando modo…</p>
+        </section>
         <div class="console-content">
           <section class="assistant">
             <button

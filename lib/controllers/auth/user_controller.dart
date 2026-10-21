@@ -25,14 +25,17 @@ class UserController extends GetxController {
 
   String get modeHome =>
       user.value?.usageMode == null ? '/choose_mode' : '/space';
-  Future<void> chooseMode(String mode) async {
+  Future<void> chooseMode(String mode, {bool navigate = true}) async {
+    if (!['explorer', 'inventor'].contains(mode)) {
+      throw ArgumentError.value(mode, 'mode');
+    }
     final current = user.value!;
     await EconectivaApi().write('PUT', '/me/preferences', {'usage_mode': mode});
     if (user.value?.id != current.id) return;
     await savePrefs(
       AuthUser.fromJson({...current.toJson(), 'usage_mode': mode}),
     );
-    Get.offAllNamed(modeHome);
+    if (navigate) Get.offAllNamed(modeHome);
   }
 
   bool get isLoggedIn => user.value != null;

@@ -22,6 +22,7 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
   final commands = StreamController<Map<String, dynamic>>.broadcast();
   final contextService = Get.find<AiAssistantContextService>();
   bool opening = false;
+  bool changingMode = false;
   String destination = 'Terra';
   // Keep the exact callback identity for unregisterProvider.
   late final AiAssistantContextProvider contextProvider = buildContext;
@@ -30,7 +31,10 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
     route: '/space',
     stage: 'exploração espacial',
     goal: 'navegar pelos territórios e módulos com a orientação da Iareté',
-    filledFields: {'destino selecionado': destination},
+    filledFields: {
+      'destino selecionado': destination,
+      'modo': Get.find<UserController>().user.value?.usageMode ?? 'explorer',
+    },
     notes: const [
       'A Terra abre o Mapa de Pistas em tela cheia. As estações abrem os módulos da plataforma.',
     ],
@@ -85,11 +89,39 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
       if (!mounted) return;
       send('configure', {
         'tutorialSeen': tutorialSeen,
+        'mode': Get.find<UserController>().user.value?.usageMode,
         'destinations': destinations.keys.toList(),
         'management': ClueConnectionPolicy(
           Get.find<UserController>().user.value,
         ).viewAny(),
       });
+      return;
+    }
+    if (data['type'] == 'change-mode') {
+      final mode = data['mode'];
+      if (changingMode || opening || !['explorer', 'inventor'].contains(mode))
+        return;
+      final users = Get.find<UserController>();
+      final userId = users.user.value?.id;
+      if (userId == null) return;
+      changingMode = true;
+      String? error;
+      try {
+        if (users.user.value?.usageMode != mode) {
+          await users.chooseMode(mode as String, navigate: false);
+        }
+      } catch (_) {
+        error = 'Não foi possível salvar o modo. Tente novamente.';
+      } finally {
+        changingMode = false;
+        if (mounted && users.user.value?.id == userId) {
+          send('mode-state', {
+            'mode': users.user.value?.usageMode,
+            'error': error,
+            'announce': error == null,
+          });
+        }
+      }
       return;
     }
     if (data['type'] == 'tutorial-complete' && data['version'] == 1) {
@@ -160,7 +192,7 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
       );
       if (!mounted) return;
       if (action == 'mode') {
-        await Get.toNamed('/choose_mode');
+        send('focus-mode');
       } else if (action == 'logout') {
         await Get.find<UserController>().logout();
       }

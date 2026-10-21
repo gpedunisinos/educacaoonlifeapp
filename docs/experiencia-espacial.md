@@ -364,3 +364,11 @@ Validação: quatro testes cobrindo composição dos filtros, posições preserv
 Ajuste do piloto: painel contextual movido para a direita dos filtros na faixa superior. Testes também conferem a largura do grafo e a posição dos dois painéis acima dele no desktop.
 
 Correção dos painéis superiores: filtros e detalhes agora fornecem somente conteúdo dentro de uma única moldura persistente por painel. A moldura não rola nem fica recortada junto com o conteúdo; barras de rolagem visíveis e interativas permitem alcançar títulos extensos e todas as ações. O nome do nodo usa a largura disponível abaixo dos controles utilitários. Ao selecionar outro nodo a rolagem dos detalhes volta ao início. Dois testes adicionais cobrem títulos extensos, moldura única e acesso às ações no desktop e no celular (seis testes no total).
+
+### Seletor de modo no cockpit
+
+O console contém um seletor de duas posições para Explorador e Inventor, com identificação textual, botões de toque e teclado e iluminação ciano/âmbar. A mudança usa a preferência real da conta (`PUT /me/preferences`) e atualiza o usuário autenticado sem substituir a rota `/space` nem recriar a cena. A escolha inicial continua usando a tela de seleção existente. Permissões administrativas permanecem independentes do modo de autoria.
+
+O seletor aguarda confirmação do salvamento, bloqueia envios duplicados e mantém o modo anterior em caso de erro, com mensagem e nova tentativa. A opção de modo em Conta retorna ao seletor do console. A Iareté confirma as trocas quando o cockpit está disponível; durante tutorial, pausa ou salto, o indicador confirma a escolha sem interromper a fala ou a chegada. O tutorial apresenta o novo comando. Som desligado e movimento reduzido são respeitados; cores dos destinos e identidade da Iareté permanecem preservadas.
+
+Validação: nove testes Flutter (navegação e inicialização) e seis testes JavaScript (seletor e posicionamento do guia), análise sem erros e build web. Conferido salvamento real para Explorador e retorno a Inventor durante viagem à Terra, com chegada preservada. Evidências locais em `docs/evidencias/`.

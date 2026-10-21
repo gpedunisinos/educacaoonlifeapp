@@ -46,7 +46,7 @@ class SpaceAccountPanel extends StatelessWidget {
                   title: Text(
                     'Modo ${user?.usageMode == 'inventor' ? 'Inventor' : 'Explorador'}',
                   ),
-                  subtitle: const Text('Trocar modo de navegação'),
+                  subtitle: const Text('Usar seletor no console de bordo'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => Navigator.pop(context, 'mode'),
                 ),
