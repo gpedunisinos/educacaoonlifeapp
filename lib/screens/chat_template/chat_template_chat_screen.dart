@@ -4,7 +4,9 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:unisinos_usp_app/controllers/chat_template/chat_template_chat_controller.dart';
 import 'package:unisinos_usp_app/models/chat_message_model.dart';
-import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'package:unisinos_usp_app/widgets/space_conversation.dart';
+import 'package:unisinos_usp_app/widgets/ai_assistant_launcher.dart';
+import 'package:unisinos_usp_app/screens/space/space_record_shell.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 class ChatTemplateChatScreen extends StatefulWidget {
@@ -26,6 +28,9 @@ class _ChatTemplateChatScreenState extends State<ChatTemplateChatScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) AiAssistantLauncher.useRaisedPosition();
+    });
     _scrollController.addListener(_onScroll);
     _messagesWorker = ever<int>(_controller.messagesVersion, (_) {
       if (!mounted) return;
@@ -43,6 +48,9 @@ class _ChatTemplateChatScreenState extends State<ChatTemplateChatScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AiAssistantLauncher.useDefaultPosition();
+    });
     _messagesWorker.dispose();
     _initialLoadWorker.dispose();
     _textController.dispose();
@@ -54,106 +62,79 @@ class _ChatTemplateChatScreenState extends State<ChatTemplateChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
-        leading: const SafeBackButton(),
-        title: Obx(() => Text(_controller.template.value?.name ?? 'Agentes')),
+    final inherited = Theme.of(context);
+    final theme = inherited.copyWith(
+      colorScheme: spaceRecordTheme().colorScheme,
+      textTheme: inherited.textTheme.apply(
+        bodyColor: spaceChatText,
+        displayColor: spaceChatText,
       ),
-      body: Stack(
+    );
+    return SpaceConversationRoom(
+      title: Obx(() => Text(_controller.template.value?.name ?? 'Agentes')),
+      eyebrow: 'EC–01 / CÂMARA DE INTELIGÊNCIAS',
+      subtitle: Obx(
+        () => Text(
+          _controller.template.value?.description ??
+              'Um espaço para conversar e explorar ideias.',
+        ),
+      ),
+      child: Column(
         children: [
-          Column(
-            children: [
-              Obx(() {
-                final template = _controller.template.value;
-                if (template == null) return const SizedBox.shrink();
-                return Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-                  color: Colors.black.withValues(alpha: 0.35),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        template.name,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      if (template.description?.isNotEmpty == true) ...[
-                        const SizedBox(height: 6),
-                        Text(
-                          template.description!,
-                          style: const TextStyle(color: Colors.white70),
-                        ),
-                      ],
-                    ],
+          Expanded(
+            child: Obx(() {
+              if (_controller.isLoading.value && _controller.messages.isEmpty) {
+                return const Center(
+                  child: CircularProgressIndicator(color: Colors.white),
+                );
+              }
+
+              if (_controller.template.value == null &&
+                  _controller.templateId == null) {
+                return const Center(
+                  child: Text(
+                    'Agente não informado.',
+                    style: TextStyle(color: Colors.white),
                   ),
                 );
-              }),
-              Expanded(
-                child: Obx(() {
-                  if (_controller.isLoading.value &&
-                      _controller.messages.isEmpty) {
-                    return const Center(
-                      child: CircularProgressIndicator(color: Colors.white),
-                    );
-                  }
+              }
 
-                  if (_controller.template.value == null &&
-                      _controller.templateId == null) {
-                    return const Center(
-                      child: Text(
-                        'Template não informado.',
-                        style: TextStyle(color: Colors.white),
+              if (_controller.messages.isEmpty) {
+                return const Center(
+                  child: Text(
+                    'Comece uma conversa com este agente.',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                );
+              }
+
+              return ListView.builder(
+                controller: _scrollController,
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                itemCount:
+                    _controller.messages.length +
+                    (_controller.isLoadingMore.value ? 1 : 0),
+                itemBuilder: (_, index) {
+                  if (_controller.isLoadingMore.value && index == 0) {
+                    return const Padding(
+                      padding: EdgeInsets.only(bottom: 12),
+                      child: Center(
+                        child: CircularProgressIndicator(color: Colors.white),
                       ),
                     );
                   }
 
-                  if (_controller.messages.isEmpty) {
-                    return const Center(
-                      child: Text(
-                        'Nenhuma mensagem neste template.',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    );
-                  }
-
-                  return ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-                    itemCount:
-                        _controller.messages.length +
-                        (_controller.isLoadingMore.value ? 1 : 0),
-                    itemBuilder: (_, index) {
-                      if (_controller.isLoadingMore.value && index == 0) {
-                        return const Padding(
-                          padding: EdgeInsets.only(bottom: 12),
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                            ),
-                          ),
-                        );
-                      }
-
-                      final int messageIndex = _controller.isLoadingMore.value
-                          ? index - 1
-                          : index;
-                      final ChatMessageModel message =
-                          _controller.messages[messageIndex];
-                      return _buildMessageBubble(message, theme);
-                    },
-                  );
-                }),
-              ),
-              _buildComposer(theme),
-            ],
+                  final int messageIndex = _controller.isLoadingMore.value
+                      ? index - 1
+                      : index;
+                  final ChatMessageModel message =
+                      _controller.messages[messageIndex];
+                  return _buildMessageBubble(message, theme);
+                },
+              );
+            }),
           ),
+          _buildComposer(theme),
         ],
       ),
     );
@@ -161,8 +142,8 @@ class _ChatTemplateChatScreenState extends State<ChatTemplateChatScreen> {
 
   Widget _buildMessageBubble(ChatMessageModel message, ThemeData theme) {
     final bool isUser = message.isUser;
-    final Color bubbleColor = isUser ? theme.colorScheme.primary : Colors.white;
-    final Color textColor = isUser ? Colors.white : Colors.grey.shade900;
+    final Color bubbleColor = isUser ? spaceChatUser : spaceChatReply;
+    const Color textColor = spaceChatText;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
@@ -175,10 +156,10 @@ class _ChatTemplateChatScreenState extends State<ChatTemplateChatScreen> {
           if (!isUser)
             CircleAvatar(
               radius: 16,
-              backgroundColor: Colors.blue.shade100,
+              backgroundColor: spaceChatUser,
               child: const Icon(
                 Icons.auto_awesome,
-                color: Colors.blueAccent,
+                color: spaceChatAccent,
                 size: 18,
               ),
             ),
@@ -187,6 +168,11 @@ class _ChatTemplateChatScreenState extends State<ChatTemplateChatScreen> {
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: bubbleColor,
+                border: Border.all(
+                  color: isUser
+                      ? const Color(0xFF438482)
+                      : const Color(0xFF294A5A),
+                ),
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(18),
                   topRight: const Radius.circular(18),
@@ -249,16 +235,16 @@ class _ChatTemplateChatScreenState extends State<ChatTemplateChatScreen> {
       styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
         p: baseStyle,
         a: baseStyle?.copyWith(
-          color: Colors.blue.shade700,
+          color: spaceChatAccent,
           decoration: TextDecoration.underline,
         ),
         code: TextStyle(
           color: textColor,
-          backgroundColor: Colors.black.withValues(alpha: 0.08),
+          backgroundColor: const Color(0xFF152E38),
           fontFamily: 'monospace',
         ),
         codeblockDecoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.08),
+          color: const Color(0xFF152E38),
           borderRadius: BorderRadius.circular(8),
         ),
         blockquote: baseStyle,
@@ -276,28 +262,21 @@ class _ChatTemplateChatScreenState extends State<ChatTemplateChatScreen> {
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
+          decoration: spaceChatComposer(),
           child: Row(
             children: [
               Expanded(
                 child: TextField(
                   controller: _textController,
                   minLines: 1,
-                  maxLines: 1,
+                  maxLines: 4,
+                  style: const TextStyle(color: spaceChatText),
+                  cursorColor: spaceChatAccent,
                   textInputAction: TextInputAction.send,
                   onSubmitted: (_) => _handleSend(),
                   decoration: const InputDecoration.collapsed(
-                    hintText: 'Digite a mensagem do template...',
+                    hintText: 'Escreva para este agente...',
+                    hintStyle: TextStyle(color: spaceChatMuted),
                   ),
                 ),
               ),
@@ -318,7 +297,10 @@ class _ChatTemplateChatScreenState extends State<ChatTemplateChatScreen> {
                             height: 18,
                             child: CircularProgressIndicator(strokeWidth: 2.2),
                           )
-                        : const Icon(Icons.send_rounded),
+                        : const Icon(
+                            Icons.send_rounded,
+                            semanticLabel: 'Enviar mensagem',
+                          ),
                   ),
                 );
               }),
@@ -331,7 +313,7 @@ class _ChatTemplateChatScreenState extends State<ChatTemplateChatScreen> {
 
   Future<void> _handleSend() async {
     final String text = _textController.text.trim();
-    if (text.isEmpty) return;
+    if (text.isEmpty || _controller.isSending.value) return;
     _textController.clear();
     await _controller.sendMessage(text);
   }

@@ -180,6 +180,7 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
         await showModalBottomSheet<void>(
           context: context,
           isScrollControlled: true,
+          constraints: const BoxConstraints(maxWidth: 1000),
           backgroundColor: Colors.transparent,
           builder: (_) => const AiAssistantPanel(),
         );

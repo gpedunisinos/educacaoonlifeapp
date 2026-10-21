@@ -94,14 +94,25 @@ class _AiAssistantLauncherState extends State<AiAssistantLauncher> {
       next = showModalBottomSheet<void>(
         context: ctx,
         isScrollControlled: true,
+        constraints: const BoxConstraints(maxWidth: 1000),
         backgroundColor: Colors.transparent,
         builder: (_) => const AiAssistantPanel(),
       );
       c.ensureHistoryLoaded();
     }
-    panelFuture = next;
+    setState(() {
+      panelFuture = next;
+    });
     await next;
-    if (identical(panelFuture, next)) panelFuture = null;
+    if (identical(panelFuture, next)) {
+      if (mounted) {
+        setState(() {
+          panelFuture = null;
+        });
+      } else {
+        panelFuture = null;
+      }
+    }
   }
 
   @override
@@ -197,7 +208,7 @@ class _AiAssistantLauncherState extends State<AiAssistantLauncher> {
                 ),
               ),
             ),
-            if (!route.startsWith('/space/agents/'))
+            if (panelFuture == null && !route.startsWith('/space/agents/'))
               Positioned(
                 right: 16,
                 bottom:

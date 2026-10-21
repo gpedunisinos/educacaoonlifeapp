@@ -1,3 +1,5 @@
+import 'package:unisinos_usp_app/widgets/space_conversation.dart';
+import 'package:unisinos_usp_app/screens/space/space_record_shell.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:unisinos_usp_app/utils/ai_reference.dart';
 import 'package:flutter/material.dart';
@@ -43,129 +45,160 @@ class _AiAssistantPanelState extends State<AiAssistantPanel> {
 
   @override
   Widget build(BuildContext context) {
-    final double bottomInset = MediaQuery.of(context).viewInsets.bottom;
-
-    return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(12, 12, 12, bottomInset + 12),
-        child: Material(
-          color: Colors.transparent,
-          child: Container(
-            constraints: const BoxConstraints(maxHeight: 680),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0F141B),
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(18, 16, 8, 12),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.auto_awesome, color: Colors.white),
-                      const SizedBox(width: 10),
-                      const Expanded(
-                        child: Text(
-                          'Iareté · Inteligência de bordo',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        icon: const Icon(Icons.close, color: Colors.white70),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Obx(() {
-                    if (_controller.isLoadingHistory.value &&
-                        _controller.messages.isEmpty) {
-                      return const Center(
-                        child: CircularProgressIndicator(color: Colors.white),
-                      );
-                    }
-
-                    if (_controller.messages.isEmpty) {
-                      return Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(24),
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+    return Theme(
+      data: spaceRecordTheme(),
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(12, 12, 12, bottomInset + 12),
+          child: Material(
+            color: Colors.transparent,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 760),
+              child: SpaceConversationSurface(
+                child: Column(
+                  children: [
+                    SpaceConversationHeader(
+                      title: const Text('Iareté'),
+                      eyebrow: 'EC–01 / INTELIGÊNCIA DE BORDO',
+                      iarete: true,
+                      subtitle: Obx(
+                        () => Semantics(
+                          liveRegion: true,
                           child: Text(
-                            _controller.errorMessage.value ??
-                                'Faça uma pergunta ao assistente contextual do app.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.76),
-                            ),
+                            _controller.isSending.value
+                                ? 'Elaborando uma resposta…'
+                                : 'Explore ideias a partir da tela em que você está.',
                           ),
                         ),
-                      );
-                    }
-
-                    return ListView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                      itemCount: _controller.messages.length,
-                      itemBuilder: (_, index) =>
-                          _MessageBubble(message: _controller.messages[index]),
-                    );
-                  }),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Focus(
-                          onKeyEvent: (node, event) {
-                            if (event is KeyDownEvent &&
-                                event.logicalKey == LogicalKeyboardKey.enter &&
-                                !HardwareKeyboard.instance.isShiftPressed) {
-                              _submit();
-                              return KeyEventResult.handled;
-                            }
-                            return KeyEventResult.ignored;
-                          },
-                          child: TextField(
-                            focusNode: _inputFocusNode,
-                            controller: _textController,
-                            minLines: 1,
-                            maxLines: 4,
-                            textInputAction: TextInputAction.send,
-                            style: const TextStyle(color: Colors.white),
-                            decoration: InputDecoration(
-                              hintText: 'Pergunte algo sobre a tela atual...',
-                              hintStyle: const TextStyle(color: Colors.white54),
-                              filled: true,
-                              fillColor: Colors.white.withValues(alpha: 0.08),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(18),
-                                borderSide: BorderSide.none,
+                      ),
+                      actions: [
+                        IconButton(
+                          tooltip: 'Fechar Iareté',
+                          onPressed: () => Navigator.of(context).pop(),
+                          icon: const Icon(Icons.close, color: spaceChatMuted),
+                        ),
+                      ],
+                    ),
+                    Expanded(
+                      child: Obx(() {
+                        if (_controller.isLoadingHistory.value &&
+                            _controller.messages.isEmpty) {
+                          return const Center(
+                            child: CircularProgressIndicator(
+                              color: spaceChatAccent,
+                            ),
+                          );
+                        }
+                        if (_controller.messages.isEmpty) {
+                          return Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(28),
+                              child: Text(
+                                _controller.errorMessage.value ??
+                                    'Olá, sou a Iareté. O que vamos explorar juntos?',
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: spaceChatMuted,
+                                  fontSize: 16,
+                                  height: 1.6,
+                                ),
                               ),
                             ),
-                            onSubmitted: (_) => _submit(),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Obx(() {
-                        return FilledButton(
-                          onPressed: _controller.isSending.value
-                              ? null
-                              : _submit,
-                          child: Text(
-                            _controller.isSending.value ? '...' : 'Enviar',
+                          );
+                        }
+                        return ListView.builder(
+                          controller: _scrollController,
+                          padding: const EdgeInsets.fromLTRB(18, 14, 18, 16),
+                          itemCount: _controller.messages.length,
+                          itemBuilder: (_, index) => _MessageBubble(
+                            message: _controller.messages[index],
                           ),
                         );
                       }),
-                    ],
-                  ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(14, 8, 14, 14),
+                      child: Container(
+                        padding: const EdgeInsets.fromLTRB(12, 6, 6, 6),
+                        decoration: spaceChatComposer(),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Focus(
+                                onKeyEvent: (node, event) {
+                                  if (event is KeyDownEvent &&
+                                      event.logicalKey ==
+                                          LogicalKeyboardKey.enter &&
+                                      !HardwareKeyboard
+                                          .instance
+                                          .isShiftPressed) {
+                                    _submit();
+                                    return KeyEventResult.handled;
+                                  }
+                                  return KeyEventResult.ignored;
+                                },
+                                child: TextField(
+                                  focusNode: _inputFocusNode,
+                                  controller: _textController,
+                                  minLines: 1,
+                                  maxLines: 4,
+                                  textInputAction: TextInputAction.send,
+                                  style: const TextStyle(
+                                    color: spaceChatText,
+                                    height: 1.45,
+                                  ),
+                                  cursorColor: spaceChatAccent,
+                                  decoration: const InputDecoration(
+                                    hintText:
+                                        'Pergunte algo sobre a tela atual...',
+                                    hintStyle: TextStyle(color: spaceChatMuted),
+                                    border: InputBorder.none,
+                                    enabledBorder: InputBorder.none,
+                                    focusedBorder: InputBorder.none,
+                                    filled: false,
+                                    contentPadding: EdgeInsets.symmetric(
+                                      vertical: 10,
+                                    ),
+                                  ),
+                                  onSubmitted: (_) => _submit(),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Obx(
+                              () => FilledButton(
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: spaceChatAccent,
+                                  foregroundColor: const Color(0xFF06202A),
+                                  minimumSize: const Size(64, 44),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                onPressed: _controller.isSending.value
+                                    ? null
+                                    : _submit,
+                                child: _controller.isSending.value
+                                    ? const SizedBox(
+                                        width: 18,
+                                        height: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: spaceChatAccent,
+                                          semanticsLabel: 'Enviando mensagem',
+                                        ),
+                                      )
+                                    : const Text('Enviar'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
@@ -174,7 +207,8 @@ class _AiAssistantPanelState extends State<AiAssistantPanel> {
   }
 
   void _submit() {
-    final String value = _textController.text;
+    final String value = _textController.text.trim();
+    if (value.isEmpty || _controller.isSending.value) return;
     _textController.clear();
     _controller.sendMessage(value);
   }
@@ -209,9 +243,6 @@ class _MessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isUser = message.isUser;
-    final Color background = isUser
-        ? const Color(0xFF2563EB)
-        : Colors.white.withValues(alpha: 0.1);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
@@ -222,10 +253,7 @@ class _MessageBubble extends StatelessWidget {
         children: [
           Flexible(
             child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: background,
-                borderRadius: BorderRadius.circular(18),
-              ),
+              decoration: spaceChatBubble(isUser),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 14,
@@ -234,6 +262,15 @@ class _MessageBubble extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Text(
+                      isUser ? 'VOCÊ' : 'IARETÉ',
+                      style: const TextStyle(
+                        color: spaceChatAccent,
+                        fontSize: 10,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     if (isUser)
                       Text(
                         message.content,
@@ -281,10 +318,7 @@ class _MessageBubble extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       _formatTime(message.createdAt),
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.62),
-                        fontSize: 11,
-                      ),
+                      style: TextStyle(color: spaceChatMuted, fontSize: 11),
                     ),
                   ],
                 ),

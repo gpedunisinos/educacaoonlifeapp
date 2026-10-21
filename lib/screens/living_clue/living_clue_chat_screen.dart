@@ -8,7 +8,8 @@ import 'package:intl/intl.dart';
 import 'package:unisinos_usp_app/controllers/living_clue/living_clue_chat_controller.dart';
 import 'package:unisinos_usp_app/models/living_clue_chat_message_model.dart';
 import 'package:unisinos_usp_app/widgets/ai_assistant_launcher.dart';
-import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
+import 'package:unisinos_usp_app/widgets/space_conversation.dart';
+import 'package:unisinos_usp_app/screens/space/space_record_shell.dart';
 
 class LivingClueChatScreen extends StatefulWidget {
   const LivingClueChatScreen({super.key});
@@ -92,117 +93,89 @@ class _LivingClueChatScreenState extends State<LivingClueChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
-        leading: const SafeBackButton(),
-        title: Obx(
-          () => Text(_controller.livingClue.value?.name ?? 'Pista viva'),
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Limpar conversa',
-            icon: const Icon(Icons.delete_outline),
-            onPressed: _confirmClearMessages,
-          ),
-        ],
+    final inherited = Theme.of(context);
+    final theme = inherited.copyWith(
+      colorScheme: spaceRecordTheme().colorScheme,
+      textTheme: inherited.textTheme.apply(
+        bodyColor: spaceChatText,
+        displayColor: spaceChatText,
       ),
-      body: Stack(
+    );
+    return SpaceConversationRoom(
+      title: Obx(
+        () => Text(_controller.livingClue.value?.name ?? 'Pista viva'),
+      ),
+      eyebrow: 'EC–01 / DIÁLOGO COM A PISTA',
+      subtitle: const Text(
+        'Converse a partir dos registros e leituras desta pista.',
+      ),
+      actions: [
+        IconButton(
+          tooltip: 'Limpar conversa',
+          icon: const Icon(Icons.delete_outline),
+          onPressed: _confirmClearMessages,
+        ),
+      ],
+      child: Column(
         children: [
-          Column(
-            children: [
-              Obx(() {
-                final model = _controller.livingClue.value;
-                if (model == null) return const SizedBox.shrink();
-                return Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-                  color: Colors.black.withValues(alpha: 0.35),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        model.name,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Converse com esta pista viva a partir das leituras mais recentes.',
-                        style: const TextStyle(color: Colors.white70),
-                      ),
-                    ],
+          Expanded(
+            child: Obx(() {
+              if (_controller.isLoading.value && _controller.messages.isEmpty) {
+                return const Center(
+                  child: CircularProgressIndicator(color: Colors.white),
+                );
+              }
+
+              if (_controller.livingClue.value == null &&
+                  _controller.livingClueId == null) {
+                return const Center(
+                  child: Text(
+                    'Pista viva não informada.',
+                    style: TextStyle(color: Colors.white),
                   ),
                 );
-              }),
-              Expanded(
-                child: Obx(() {
-                  if (_controller.isLoading.value &&
-                      _controller.messages.isEmpty) {
-                    return const Center(
-                      child: CircularProgressIndicator(color: Colors.white),
-                    );
-                  }
+              }
 
-                  if (_controller.livingClue.value == null &&
-                      _controller.livingClueId == null) {
-                    return const Center(
-                      child: Text(
-                        'Pista viva não informada.',
-                        style: TextStyle(color: Colors.white),
+              if (_controller.messages.isEmpty) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Text(
+                      'Faça uma pergunta para esta pista viva.',
+                      style: TextStyle(color: Colors.white),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                );
+              }
+
+              return ListView.builder(
+                controller: _scrollController,
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                itemCount:
+                    _controller.messages.length +
+                    (_controller.isLoadingMore.value ? 1 : 0),
+                itemBuilder: (_, index) {
+                  if (_controller.isLoadingMore.value && index == 0) {
+                    return const Padding(
+                      padding: EdgeInsets.only(bottom: 12),
+                      child: Center(
+                        child: CircularProgressIndicator(color: Colors.white),
                       ),
                     );
                   }
 
-                  if (_controller.messages.isEmpty) {
-                    return const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(24),
-                        child: Text(
-                          'Faça uma pergunta para esta pista viva.',
-                          style: TextStyle(color: Colors.white),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    );
-                  }
-
-                  return ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-                    itemCount:
-                        _controller.messages.length +
-                        (_controller.isLoadingMore.value ? 1 : 0),
-                    itemBuilder: (_, index) {
-                      if (_controller.isLoadingMore.value && index == 0) {
-                        return const Padding(
-                          padding: EdgeInsets.only(bottom: 12),
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                            ),
-                          ),
-                        );
-                      }
-
-                      final int messageIndex = _controller.isLoadingMore.value
-                          ? index - 1
-                          : index;
-                      final LivingClueChatMessageModel message =
-                          _controller.messages[messageIndex];
-                      return _buildMessageBubble(message, theme);
-                    },
-                  );
-                }),
-              ),
-              _buildComposer(theme),
-            ],
+                  final int messageIndex = _controller.isLoadingMore.value
+                      ? index - 1
+                      : index;
+                  final LivingClueChatMessageModel message =
+                      _controller.messages[messageIndex];
+                  return _buildMessageBubble(message, theme);
+                },
+              );
+            }),
           ),
+          _buildComposer(theme),
         ],
       ),
     );
@@ -213,8 +186,8 @@ class _LivingClueChatScreenState extends State<LivingClueChatScreen> {
     ThemeData theme,
   ) {
     final bool isUser = message.isUser;
-    final Color bubbleColor = isUser ? theme.colorScheme.primary : Colors.white;
-    final Color textColor = isUser ? Colors.white : Colors.grey.shade900;
+    final Color bubbleColor = isUser ? spaceChatUser : spaceChatReply;
+    const Color textColor = spaceChatText;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
@@ -227,14 +200,19 @@ class _LivingClueChatScreenState extends State<LivingClueChatScreen> {
           if (!isUser)
             CircleAvatar(
               radius: 16,
-              backgroundColor: Colors.green.shade100,
-              child: const Icon(Icons.forest, color: Colors.green, size: 18),
+              backgroundColor: spaceChatUser,
+              child: const Icon(Icons.forest, color: spaceChatAccent, size: 18),
             ),
           if (!isUser) const SizedBox(width: 8),
           Flexible(
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: bubbleColor,
+                border: Border.all(
+                  color: isUser
+                      ? const Color(0xFF438482)
+                      : const Color(0xFF294A5A),
+                ),
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(18),
                   topRight: const Radius.circular(18),
@@ -296,16 +274,16 @@ class _LivingClueChatScreenState extends State<LivingClueChatScreen> {
       styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
         p: baseStyle,
         a: baseStyle?.copyWith(
-          color: Colors.blue.shade700,
+          color: spaceChatAccent,
           decoration: TextDecoration.underline,
         ),
         code: TextStyle(
           color: textColor,
-          backgroundColor: Colors.black.withValues(alpha: 0.08),
+          backgroundColor: const Color(0xFF152E38),
           fontFamily: 'monospace',
         ),
         codeblockDecoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.08),
+          color: const Color(0xFF152E38),
           borderRadius: BorderRadius.circular(8),
         ),
         blockquote: baseStyle,
@@ -324,17 +302,7 @@ class _LivingClueChatScreenState extends State<LivingClueChatScreen> {
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
+          decoration: spaceChatComposer(),
           child: Row(
             children: [
               Expanded(
@@ -342,13 +310,13 @@ class _LivingClueChatScreenState extends State<LivingClueChatScreen> {
                   controller: _textController,
                   minLines: 1,
                   maxLines: 4,
-                  style: const TextStyle(color: Colors.black),
-                  cursorColor: Colors.black,
+                  style: const TextStyle(color: spaceChatText),
+                  cursorColor: spaceChatAccent,
                   textInputAction: TextInputAction.send,
                   onSubmitted: (_) => _handleSend(),
                   decoration: const InputDecoration.collapsed(
                     hintText: 'Pergunte algo...',
-                    hintStyle: TextStyle(color: Colors.grey),
+                    hintStyle: TextStyle(color: spaceChatMuted),
                   ),
                 ),
               ),
@@ -369,7 +337,10 @@ class _LivingClueChatScreenState extends State<LivingClueChatScreen> {
                             height: 18,
                             child: CircularProgressIndicator(strokeWidth: 2.2),
                           )
-                        : const Icon(Icons.send_rounded),
+                        : const Icon(
+                            Icons.send_rounded,
+                            semanticLabel: 'Enviar mensagem',
+                          ),
                   ),
                 );
               }),
@@ -382,28 +353,31 @@ class _LivingClueChatScreenState extends State<LivingClueChatScreen> {
 
   Future<void> _handleSend() async {
     final String text = _textController.text.trim();
-    if (text.isEmpty) return;
+    if (text.isEmpty || _controller.isSending.value) return;
     _textController.clear();
     await _controller.sendMessage(text);
   }
 
   Future<void> _confirmClearMessages() async {
     final bool? confirmed = await Get.dialog<bool>(
-      AlertDialog(
-        title: const Text('Limpar conversa'),
-        content: const Text(
-          'Deseja apagar o histórico desta conversa com a pista viva?',
+      Theme(
+        data: spaceRecordTheme(),
+        child: AlertDialog(
+          title: const Text('Limpar conversa'),
+          content: const Text(
+            'Deseja apagar o histórico desta conversa com a pista viva?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(result: false),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () => Get.back(result: true),
+              child: const Text('Apagar'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(result: false),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () => Get.back(result: true),
-            child: const Text('Apagar'),
-          ),
-        ],
       ),
     );
     if (confirmed ?? false) {

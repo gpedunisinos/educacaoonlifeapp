@@ -96,6 +96,17 @@ void main() {
       expect(find.text('Página de origem'), findsOneWidget);
       await tester.tap(find.byTooltip('Abrir Iareté e Locker'));
       await tester.pump();
+      await tester.tap(find.text('Iareté'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 350));
+      expect(find.byTooltip('Fechar Iareté'), findsOneWidget);
+      expect(find.byTooltip('Abrir Iareté e Locker'), findsNothing);
+      await tester.tap(find.byTooltip('Fechar Iareté'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 350));
+      expect(find.byTooltip('Abrir Iareté e Locker'), findsOneWidget);
+      await tester.tap(find.byTooltip('Abrir Iareté e Locker'));
+      await tester.pump();
       await tester.tap(find.text('Locker'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Explorador'));
