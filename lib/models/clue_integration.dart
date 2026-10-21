@@ -20,11 +20,13 @@ class ClueIntegration {
     'overte',
     'vircadia',
   ];
-  bool get supported => version == 1 && providers.contains(provider);
+  bool get supported =>
+      version == 1 && (provider == 'agent' || providers.contains(provider));
   bool get inline => provider == 'genially' || provider == 'padlet';
   bool get desktopClient => provider == 'overte' || provider == 'vircadia';
   String get name =>
       const {
+        'agent': 'Agente da plataforma',
         'genially': 'Genially',
         'padlet': 'Padlet',
         'framevr': 'FrameVR',
@@ -34,6 +36,8 @@ class ClueIntegration {
       'Integração';
   static String explanation(String provider) =>
       const {
+        'agent':
+            'Vincule um agente da plataforma para conversar a partir desta pista.',
         'genially': 'Inclua uma apresentação ou experiência interativa.',
         'padlet': 'Inclua um mural para compartilhar ideias e materiais.',
         'framevr': 'Conecte a pista a um ambiente virtual 3D.',
@@ -70,7 +74,17 @@ class ClueIntegration {
     }
   }
 
+  int? get agentId => provider == 'agent' && validateURL(provider, url) == null
+      ? int.tryParse(url.split('/').last)
+      : null;
+
   static String? validateURL(String provider, String raw) {
+    if (provider == 'agent') {
+      return raw == raw.trim() &&
+              RegExp(r'^/space/agents/[1-9][0-9]{0,14}$').hasMatch(raw)
+          ? null
+          : 'Selecione um agente válido da plataforma.';
+    }
     final u = Uri.tryParse(raw);
     if (u == null ||
         raw != raw.trim() ||
@@ -121,7 +135,10 @@ class ClueIntegration {
   }
 
   Uri? get embedURI {
-    if (!supported || validateURL(provider, url) != null || desktopClient)
+    if (!supported ||
+        provider == 'agent' ||
+        validateURL(provider, url) != null ||
+        desktopClient)
       return null;
     final u = Uri.parse(url);
     if (provider == 'padlet') {

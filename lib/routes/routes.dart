@@ -129,6 +129,7 @@ List<GetPage> appRoutes() =>
         name: '/space/agents/:id',
         page: () => IntelligenceChamberScreen(
           agentId: int.tryParse(Get.parameters['id'] ?? '') ?? -1,
+          fromClue: Get.arguments is Map && Get.arguments['from_clue'] == true,
           initialAgent: Get.arguments is ChatTemplateModel
               ? Get.arguments as ChatTemplateModel
               : null,

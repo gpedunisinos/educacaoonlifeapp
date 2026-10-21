@@ -95,6 +95,39 @@ void main() {
   setUp(() => Get.testMode = true);
   tearDown(Get.reset);
   testWidgets(
+    'conversation opened from a pista offers the correct return action',
+    (tester) async {
+      final source = ChamberFake();
+      await tester.pumpWidget(
+        GetMaterialApp(
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(disableAnimations: true),
+            child: child!,
+          ),
+          home: Scaffold(
+            body: TextButton(
+              onPressed: () => Get.to(
+                () => IntelligenceChamberScreen(
+                  agentId: 1,
+                  source: source,
+                  fromClue: true,
+                ),
+              ),
+              child: const Text('Pista de origem'),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Pista de origem'));
+      await tester.pumpAndSettle();
+      expect(find.text('Voltar à pista'), findsOneWidget);
+      await tester.tap(find.text('Voltar à pista'));
+      await tester.pumpAndSettle();
+      expect(find.text('Pista de origem'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+  testWidgets(
     'search reaches agents beyond the first page and paginates filtered results',
     (tester) async {
       tester.view.physicalSize = const Size(1280, 900);

@@ -18,11 +18,7 @@ class ChatTemplateWebclient {
   }) async {
     final Response response = await webClient.get(
       '/$endpoint',
-      [
-        LoggingInterceptor(),
-        ApiInterceptor(),
-        TokenInterceptor(),
-      ],
+      [LoggingInterceptor(), ApiInterceptor(), TokenInterceptor()],
       {
         'limit': limit.toString(),
         'offset': offset.toString(),
@@ -34,28 +30,28 @@ class ChatTemplateWebclient {
   }
 
   Future<ChatTemplateModel> fetchById(int id) async {
-    final List<ChatTemplateModel> templates =
-        await fetch(limit: 200, offset: 0);
-    try {
-      return templates.firstWhere((item) => item.id == id);
-    } catch (_) {
-      throw Exception('Template não encontrado.');
+    final response = await webClient.get('/$endpoint/$id', [
+      ApiInterceptor(),
+      TokenInterceptor(),
+    ], null);
+    if (response.statusCode != 200) {
+      throw Exception('Agente não encontrado ou indisponível.');
     }
+    return ChatTemplateModel.fromJson(
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
   }
 
   Future<ChatTemplateModel> create(ChatTemplateModel model) async {
     final Response response = await webClient.post(
       '/$endpoint',
       jsonEncode(model.toJson()),
-      [
-        LoggingInterceptor(),
-        ApiInterceptor(),
-        TokenInterceptor(),
-      ],
+      [LoggingInterceptor(), ApiInterceptor(), TokenInterceptor()],
     );
 
     final dynamic decoded = jsonDecode(response.body);
-    final Map<String, dynamic> payload = (decoded is Map<String, dynamic> &&
+    final Map<String, dynamic> payload =
+        (decoded is Map<String, dynamic> &&
             decoded['chat_template'] is Map<String, dynamic>)
         ? decoded['chat_template'] as Map<String, dynamic>
         : decoded as Map<String, dynamic>;
@@ -66,15 +62,12 @@ class ChatTemplateWebclient {
     final Response response = await webClient.put(
       '/$endpoint/${model.id}',
       jsonEncode(model.toJson()),
-      [
-        LoggingInterceptor(),
-        ApiInterceptor(),
-        TokenInterceptor(),
-      ],
+      [LoggingInterceptor(), ApiInterceptor(), TokenInterceptor()],
     );
 
     final dynamic decoded = jsonDecode(response.body);
-    final Map<String, dynamic> payload = (decoded is Map<String, dynamic> &&
+    final Map<String, dynamic> payload =
+        (decoded is Map<String, dynamic> &&
             decoded['chat_template'] is Map<String, dynamic>)
         ? decoded['chat_template'] as Map<String, dynamic>
         : decoded as Map<String, dynamic>;
@@ -82,14 +75,11 @@ class ChatTemplateWebclient {
   }
 
   Future<void> delete(int id) async {
-    await webClient.delete(
-      '/$endpoint/$id',
-      [
-        LoggingInterceptor(),
-        ApiInterceptor(),
-        TokenInterceptor(),
-      ],
-    );
+    await webClient.delete('/$endpoint/$id', [
+      LoggingInterceptor(),
+      ApiInterceptor(),
+      TokenInterceptor(),
+    ]);
   }
 
   Future<List<ChatMessageModel>> fetchMessages(
@@ -99,15 +89,8 @@ class ChatTemplateWebclient {
   }) async {
     final Response response = await webClient.get(
       '/$endpoint/$templateId/messages',
-      [
-        LoggingInterceptor(),
-        ApiInterceptor(),
-        TokenInterceptor(),
-      ],
-      {
-        'limit': limit.toString(),
-        'offset': offset.toString(),
-      },
+      [LoggingInterceptor(), ApiInterceptor(), TokenInterceptor()],
+      {'limit': limit.toString(), 'offset': offset.toString()},
     );
 
     final dynamic decoded = jsonDecode(response.body);
@@ -115,7 +98,8 @@ class ChatTemplateWebclient {
     if (decoded is List<dynamic>) {
       items = decoded;
     } else if (decoded is Map<String, dynamic>) {
-      items = decoded['messages'] as List<dynamic>? ??
+      items =
+          decoded['messages'] as List<dynamic>? ??
           decoded['data'] as List<dynamic>? ??
           const [];
     } else {
@@ -136,26 +120,21 @@ class ChatTemplateWebclient {
   }
 
   Future<void> deleteAllMessages(int templateId) async {
-    await webClient.delete(
-      '/$endpoint/$templateId/messages',
-      [
-        LoggingInterceptor(),
-        ApiInterceptor(),
-        TokenInterceptor(),
-      ],
-    );
+    await webClient.delete('/$endpoint/$templateId/messages', [
+      LoggingInterceptor(),
+      ApiInterceptor(),
+      TokenInterceptor(),
+    ]);
   }
 
   Future<List<ChatMessageModel>> sendMessage(
-      int templateId, String content) async {
+    int templateId,
+    String content,
+  ) async {
     final Response response = await webClient.post(
       '/$endpoint/$templateId/messages',
       jsonEncode({'message': content}),
-      [
-        LoggingInterceptor(),
-        ApiInterceptor(),
-        TokenInterceptor(),
-      ],
+      [LoggingInterceptor(), ApiInterceptor(), TokenInterceptor()],
     );
 
     final dynamic decoded = jsonDecode(response.body);
@@ -178,8 +157,8 @@ class ChatTemplateWebclient {
     if (decoded is Map<String, dynamic>) {
       final Map<String, dynamic> payload =
           (decoded['message'] is Map<String, dynamic>)
-              ? decoded['message'] as Map<String, dynamic>
-              : decoded;
+          ? decoded['message'] as Map<String, dynamic>
+          : decoded;
       return <ChatMessageModel>[ChatMessageModel.fromHistoryJson(payload)];
     }
 

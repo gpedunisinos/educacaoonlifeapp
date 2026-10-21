@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/widgets/clue_agent_integration.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
@@ -12,6 +13,7 @@ import 'package:unisinos_usp_app/widgets/clue_media.dart';
 import 'package:unisinos_usp_app/screens/space/space_record_shell.dart';
 
 IconData integrationIcon(String provider) => switch (provider) {
+  'agent' => Icons.psychology_outlined,
   'youtube' => Icons.smart_display_outlined,
   'genially' => Icons.auto_awesome_outlined,
   'padlet' => Icons.dashboard_outlined,
@@ -32,7 +34,11 @@ class ClueIntegrationCards extends StatelessWidget {
           ? 2
           : 1;
       final width = (constraints.maxWidth - (columns - 1) * 12) / columns;
-      final providers = ['youtube', if (kIsWeb) ...ClueIntegration.providers];
+      final providers = [
+        'youtube',
+        'agent',
+        if (kIsWeb) ...ClueIntegration.providers,
+      ];
       final margin =
           Theme.of(context).cardTheme.margin ?? const EdgeInsets.all(4);
       final textWidth = (width - margin.horizontal - 86).clamp(
@@ -145,6 +151,15 @@ Future<void> editClueIntegration(
   ClueIntegration? initial,
   int? offset,
 }) async {
+  if (provider == 'agent') {
+    await editClueAgentIntegration(
+      context,
+      controller,
+      initial: initial,
+      offset: offset,
+    );
+    return;
+  }
   final selection = controller.selection;
   final url = TextEditingController(text: initial?.url);
   final title = TextEditingController(text: initial?.title);
@@ -261,7 +276,8 @@ Future<void> editClueIntegration(
 }
 
 class ClueIntegrationBuilder extends EmbedBuilder {
-  const ClueIntegrationBuilder();
+  const ClueIntegrationBuilder({this.hideAgentsInEditor = false});
+  final bool hideAgentsInEditor;
   @override
   String get key => 'onlife';
   @override
@@ -272,6 +288,31 @@ class ClueIntegrationBuilder extends EmbedBuilder {
         ClueIntegration.validateURL(block.provider, block.url) != null)
       return const _UnavailableIntegration();
     final editing = !embedContext.readOnly;
+    if (block.provider == 'agent') {
+      if (editing && hideAgentsInEditor) return const SizedBox.shrink();
+      return ClueAgentIntegrationCard(
+        block: block,
+        editing: editing,
+        onEdit: editing
+            ? () => editClueAgentIntegration(
+                context,
+                embedContext.controller,
+                initial: block,
+                offset: embedContext.node.documentOffset,
+              )
+            : null,
+        onRemove: editing
+            ? () => embedContext.controller.replaceText(
+                embedContext.node.documentOffset,
+                1,
+                '',
+                TextSelection.collapsed(
+                  offset: embedContext.node.documentOffset,
+                ),
+              )
+            : null,
+      );
+    }
     return ClueIntegrationView(
       block: block,
       onEdit: editing && kIsWeb

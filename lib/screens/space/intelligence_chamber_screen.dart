@@ -33,10 +33,12 @@ class IntelligenceChamberScreen extends StatefulWidget {
     this.agentId,
     this.initialAgent,
     this.source,
+    this.fromClue = false,
   });
   final int? agentId;
   final ChatTemplateModel? initialAgent;
   final IntelligenceSource? source;
+  final bool fromClue;
   @override
   State<IntelligenceChamberScreen> createState() =>
       _IntelligenceChamberScreenState();
@@ -78,8 +80,17 @@ class _IntelligenceChamberScreenState extends State<IntelligenceChamberScreen>
     stage: inConversation ? 'conversa com agente' : 'seleção de inteligência',
     goal: 'escolher uma inteligência e conversar com ela',
     references: {if (selected?.id != null) 'agent_id': selected!.id},
-    visibleRecords: agents.take(20).map((agent) => AiRecordReference(kind: 'agent', id: agent.id, name: agent.name)).toList(),
-    filledFields: {'busca': agentSearch.text, if (selected != null) 'agente': selected!.name},
+    visibleRecords: agents
+        .take(20)
+        .map(
+          (agent) =>
+              AiRecordReference(kind: 'agent', id: agent.id, name: agent.name),
+        )
+        .toList(),
+    filledFields: {
+      'busca': agentSearch.text,
+      if (selected != null) 'agente': selected!.name,
+    },
     notes: const [
       'Presenças holográficas representam agentes reais cadastrados. A Iareté é a anfitriã global; este agente tem conversa própria, distinta da Iareté e do chat da pista.',
     ],
@@ -400,7 +411,9 @@ class _IntelligenceChamberScreenState extends State<IntelligenceChamberScreen>
                               onPressed: leave,
                               icon: const Icon(Icons.arrow_back, size: 17),
                               label: Text(
-                                inConversation
+                                inConversation && widget.fromClue
+                                    ? 'Voltar à pista'
+                                    : inConversation
                                     ? (compact
                                           ? 'Inteligências'
                                           : 'Escolher inteligência')
