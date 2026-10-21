@@ -329,3 +329,10 @@ Validação: onze testes aprovados (Central → lista → detalhe → lista com 
 - Progresso concluído/pulado armazenado localmente por usuário e versão no Flutter, por meio da ponte já existente, sem alteração de API. A apresentação não se repete automaticamente depois de concluída/pulada. “Guia da Iareté” no console permite rever; a cena independente usa armazenamento local próprio. Durante saltos, o botão de revisão fica indisponível.
 - Validação: nove testes Flutter aprovados, incluindo persistência e separação de usuários, entrada e navegação, e quatro testes de posicionamento em desktop/celular/paisagem. Build web e bundle regenerados, análise Dart sem erros. Conferidos na prévia o primeiro acesso, todas as etapas, avanço/retorno, conclusão, recarga sem repetição, revisão, saída e apresentação compacta. O guia está aberto para validação na prévia do app.
 - Evidências: `iarete-guide-welcome.jpg` e `iarete-guide-mobile.jpg`.
+
+### Retorno explícito do mapa ao cockpit
+
+- Substituído o retorno apenas por ícone por um botão visível “Voltar ao cockpit”, no topo do mapa, disponível independentemente de como a tela foi aberta.
+- O retorno procura a rota `/space` já existente e preserva a cena; quando o mapa é aberto diretamente, abre a nave como destino de retorno.
+- Validação: cinco testes de mapa aprovados, incluindo preservação do cockpit existente, abertura direta, controles em desktop/celular e permissões; análise Dart sem erros e build web local.
+- Na prévia, conferido o botão e executado o retorno de um mapa aberto por link diretamente para `/space`. Evidência: `map-return-cockpit.jpg`.

@@ -38,10 +38,10 @@ class SpaceMapShell extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Align(alignment: Alignment.centerLeft, child: back),
+                    const SizedBox(height: 10),
                     Row(
                       children: [
-                        back,
-                        const SizedBox(width: 8),
                         const Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,

@@ -116,6 +116,47 @@ void main() {
     expect(find.byTooltip('Usar minha localização'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+  for (final fromCockpit in [true, false]) {
+    testWidgets('map returns to cockpit with existing scene: $fromCockpit', (
+      tester,
+    ) async {
+      Get.put<LivingClueMapController>(MapData());
+      final cockpitKey = GlobalKey();
+      await tester.pumpWidget(
+        GetMaterialApp(
+          initialRoute: fromCockpit ? '/space' : '/living_clues/map',
+          getPages: [
+            GetPage(
+              name: '/space',
+              page: () => Scaffold(
+                key: cockpitKey,
+                body: TextButton(
+                  onPressed: () => Get.toNamed('/living_clues/map'),
+                  child: const Text('Abrir mapa'),
+                ),
+              ),
+            ),
+            GetPage(
+              name: '/living_clues/map',
+              page: () => LivingClueMapScreen(tileProvider: OfflineTiles()),
+            ),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+      final existing = cockpitKey.currentContext;
+      if (fromCockpit) {
+        await tester.tap(find.text('Abrir mapa'));
+        await tester.pumpAndSettle();
+      }
+      await tester.tap(find.text('Voltar ao cockpit'));
+      await tester.pumpAndSettle();
+      expect(Get.currentRoute, '/space');
+      if (fromCockpit) expect(cockpitKey.currentContext, same(existing));
+      expect(find.text('Abrir mapa'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
   for (final width in [390.0, 1280.0]) {
     testWidgets('map console preserves controls and marker actions at $width', (
       tester,

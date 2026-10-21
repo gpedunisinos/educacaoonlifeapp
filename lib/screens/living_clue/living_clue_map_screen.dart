@@ -18,7 +18,6 @@ import 'package:unisinos_usp_app/models/living_clue_model.dart';
 import 'package:unisinos_usp_app/models/nominatim_place_model.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
 import 'package:unisinos_usp_app/services/location_privacy_service.dart';
-import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
@@ -408,6 +407,15 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     Get.successSnackbar('Posição da pista atualizada com sucesso.');
   }
 
+  void _returnToCockpit() {
+    var found = false;
+    Get.until((route) {
+      found = route.settings.name == '/space';
+      return found || route.isFirst;
+    });
+    if (!found) Get.offNamed('/space');
+  }
+
   @override
   Widget build(BuildContext context) => Theme(
     data: spaceRecordTheme(),
@@ -420,13 +428,11 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
       _buildAiContext,
     );
     return SpaceMapShell(
-      back: Get.arguments is Map && Get.arguments['fromSpace'] == true
-          ? IconButton(
-              tooltip: 'Voltar à nave',
-              onPressed: () => Get.back(),
-              icon: const Icon(Icons.rocket_launch_outlined),
-            )
-          : const SafeBackButton(),
+      back: OutlinedButton.icon(
+        onPressed: _returnToCockpit,
+        icon: const Icon(Icons.arrow_back, size: 18),
+        label: const Text('Voltar ao cockpit'),
+      ),
       actions: [
         IconButton(
           tooltip: 'Lista de pistas',
