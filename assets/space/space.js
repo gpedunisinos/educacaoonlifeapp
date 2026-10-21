@@ -7,6 +7,7 @@ import { createClueMoon } from "./clue-moon.js";
 const $ = (id) => document.getElementById(id);
 const audio = new SpaceAudio();
 const iareteFlow = new IareteFlow($("iarete-flow"));
+const tutorialFlow = new IareteFlow($("tour-iarete-flow"));
 // Keep side instruments clear as the readable console changes height or state.
 const consolePanel = document.querySelector(".console");
 const consoleObserver = new ResizeObserver(() => {
@@ -197,7 +198,7 @@ function tutorialSteps() {
 }
 const tutorial = new ShipTutorial({
   steps: tutorialSteps,
-  say,
+  say: (text) => say(text, true),
   sound: () => audio.select(),
   complete: (skipped) => {
     tutorialSeen = true;
@@ -258,17 +259,19 @@ function record(text) {
   $("events").prepend(li);
   if ($("events").children.length > 30) $("events").lastChild.remove();
 }
-function say(text) {
+function say(text, inTutorial = false) {
+  if (tutorial.active && !inTutorial) return;
   clearTimeout(typeTimer);
   typedText = text;
-  $("message-accessible").textContent = text;
-  $("message").textContent = "";
+  const output = $(inTutorial ? "tour-typed" : "message");
+  if (!inTutorial) $("message-accessible").textContent = text;
+  output.textContent = "";
   document.body.classList.add("speaking");
   let index = 0;
   const step = () => {
     if (paused) return;
     index = reduced ? text.length : Math.min(text.length, index + 1);
-    $("message").textContent = text.slice(0, index);
+    output.textContent = text.slice(0, index);
     if (!reduced && index % 3 === 0 && /\S/.test(text[index - 1])) audio.type();
     if (index < text.length)
       typeTimer = setTimeout(step, /[.,?!]/.test(text[index - 1]) ? 140 : 23);
@@ -711,7 +714,7 @@ function setPaused(value) {
   clearTimeout(typeTimer);
   document.body.classList.remove("speaking");
   if (value) {
-    $("message").textContent = typedText;
+    $(tutorial.active ? "tour-typed" : "message").textContent = typedText;
   } else {
     last = performance.now();
     frame = requestAnimationFrame(tick);
@@ -1352,7 +1355,8 @@ function tick(now) {
     dt = Math.min(raw || 0.016, 0.05);
   last = now;
   elapsed += dt;
-  iareteFlow.draw(dt, reduced, document.body.classList.contains("speaking"));
+  iareteFlow.draw(dt, reduced, !tutorial.active && document.body.classList.contains("speaking"));
+  if (tutorial.active) tutorialFlow.draw(dt, reduced, document.body.classList.contains("speaking"));
   if (!qualityReduced && renderer && raw > 0.035) {
     if (++slowFrames > 150) {
       renderer.setPixelRatio(1);

@@ -346,3 +346,9 @@ Validação: onze testes aprovados (Central → lista → detalhe → lista com 
 - Acrescentadas regras de ignore para essas evidências e diretórios de cache/configuração. As referências históricas às capturas passam a ser explicitamente locais. Novas evidências devem ser salvas em `docs/evidencias/` e não adicionadas aos commits.
 - Mantidos código, testes, documentação técnica e assets utilizados pelo aplicativo, inclusive o bundle JavaScript carregado diretamente pela nave.
 - Validação: verificados hash e existência dos 225 arquivos locais, remoção exclusiva do índice e cobertura de todas as regras de ignore; análise Dart sem erros. Nenhuma alteração no comportamento do aplicativo.
+
+### Iareté nos cartões do tutorial
+
+A representação animada da Iareté acompanha cada explicação do guia, com escrita gradual e os sons já existentes. Durante o tutorial, novas falas do cockpit são suspensas e a digitação anterior é cancelada ao iniciar a etapa. Ao sair ou concluir, a fala volta ao console. O texto reserva sua altura para evitar saltos no cartão; leitores de tela recebem a explicação completa e o modo de movimento reduzido exibe o texto diretamente.
+
+Validação: quatro testes de posicionamento do guia, três testes Flutter de navegação, build web e análise Dart sem erros (avisos preexistentes).

@@ -297,7 +297,7 @@
       role="dialog"
       aria-modal="true"
       aria-labelledby="tour-title"
-      aria-describedby="tour-text"
+      aria-describedby="tour-accessible"
     >
       <svg class="tour-shade" aria-hidden="true">
         <path id="tour-mask" fill-rule="evenodd" />
@@ -307,8 +307,10 @@
         <div class="tour-heading">
           <span>✧ IARETÉ / GUIA DE BORDO</span><span id="tour-count"></span>
         </div>
+        <canvas id="tour-iarete-flow" aria-hidden="true"></canvas>
         <h2 id="tour-title"></h2>
-        <p id="tour-text" aria-live="polite" aria-atomic="true"></p>
+        <p id="tour-text"><span id="tour-typed" aria-hidden="true"></span></p>
+        <span id="tour-accessible" class="sr-only" aria-live="polite" aria-atomic="true"></span>
         <div class="tour-actions">
           <button id="tour-skip" class="text-button">Pular tutorial</button>
           <button id="tour-back">Voltar</button>

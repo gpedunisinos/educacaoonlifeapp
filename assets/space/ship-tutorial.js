@@ -113,7 +113,8 @@ export class ShipTutorial {
     this.index = index;
     const step = this.items[index];
     document.getElementById("tour-title").textContent = step.title;
-    document.getElementById("tour-text").textContent = step.text;
+    document.getElementById("tour-accessible").textContent = step.text;
+    document.getElementById("tour-text").dataset.text = step.text;
     document.getElementById("tour-count").textContent =
       `${index + 1} / ${this.items.length}`;
     this.back.disabled = index === 0;
