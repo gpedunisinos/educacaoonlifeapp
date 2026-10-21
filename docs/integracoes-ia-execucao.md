@@ -67,3 +67,8 @@ Seis testes novos verificam navegação/remoção real do widget (inclusive fora
 Padlet oficial lido e ampliado: `https://padlet.com/gallerytemplates/social-media-research-notes-u527etuc56i78kiv`. Não houve postagem nem mudança de permissões no mural. Genially real editado; um segundo bloco inexistente mostrou 404 isolado, foi removido pela interface e a remoção persistiu. GET autenticado da massa local confirmou Padlet/FrameVR/Genially na ordem esperada, título editado e texto autoral intactos. APK debug arm64 compilou sem instalação em dispositivo; iOS não compilado neste host Linux.
 
 A release publicada foi atualizada para `5d08f8a`, diretório `/var/www/onlife-releases/integrations-20261021T072136Z-5d08f8a`, arquivo SHA-256 `ef4f3360b98fc6bc3bdb1baae176bec068aab0db432047de7477a4d29d615ee7`. Mantida a release anterior. A prévia principal `127.0.0.1:8772` foi recompilada para a API local `8080`, com serviço separado que usa somente a cópia local do banco e não inicia jobs; a prévia sintética permanece em `8773/8082`. Encontros segue habilitado só na prévia sintética para validação, sem ativação geral antes do aceite.
+
+
+## Revalidação de 21/10/2026
+
+Resultado atual e limites de homologação consolidados em [Validação das integrações](validacao-integracoes-2026-10-21.md): Flutter 94/94, testes Go em banco novo, benchmark determinístico 57/57 e nova rodada Gemini real 57/57. Inclui reedição/persistência, uso dos provedores na interface e pendências externas explicitadas.
