@@ -767,6 +767,7 @@ window.receiveSpaceCommand = (data) => {
     renderDestinations();
     offerTutorial();
   }
+  if(data.type==='chat-state') {const count=Number.isInteger(data.unread)?Math.max(0,data.unread):0;const button=$('conversations-open');button.textContent=count?`Conversas · ${count}`:'Conversas';button.setAttribute('aria-label',count?`Conversas: ${count} mensagens não lidas`:'Conversas entre participantes');}
   if (data.type === "presence") remoteFleet.update(data);
   if (data.type === "mode-state") flightMode.update(data);
   if (data.type === "focus-mode") flightMode.focus();
@@ -795,6 +796,9 @@ window.addEventListener("message", (event) => {
 });
 const remoteFleet = new RemoteFleet(destinations, emit);
 let lastPresenceInteraction = 0;
+let fleetPointerStart=null;
+document.addEventListener('pointerdown',event=>{fleetPointerStart={x:event.clientX,y:event.clientY};});
+document.addEventListener('pointerup',event=>{if(!camera||!started||paused||travelling||tutorial.active||!fleetPointerStart)return;if(Math.hypot(event.clientX-fleetPointerStart.x,event.clientY-fleetPointerStart.y)<8)remoteFleet.pick(event,camera);fleetPointerStart=null;});
 for (const event of ["pointerdown", "keydown"]) document.addEventListener(event, () => {
   if (performance.now() - lastPresenceInteraction > 2000) { lastPresenceInteraction = performance.now(); emit("presence-interaction"); }
 });

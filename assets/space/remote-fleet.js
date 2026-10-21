@@ -16,6 +16,16 @@ export class RemoteFleet {
     this.button = document.getElementById('presence-open');
     this.dialog = document.getElementById('presence-dialog');
     this.list = document.getElementById('presence-list');
+    this.profile = document.getElementById('participant-dialog');
+    this.selectedPerson = null;
+    this.raycaster = new THREE.Raycaster();
+    this.pointer = new THREE.Vector2();
+    document.getElementById('participant-close').onclick = () => this.profile.close();
+    document.getElementById('participant-list').onclick = () => { this.profile.close();this.showList(this.selectedPerson?.id); };
+    document.getElementById('participant-converse').onclick = () => { const id=this.selectedPerson?.id;if(!id)return;this.profile.close();this.emit('participant-chat',{participant:id}); };
+    this.profile.addEventListener('click',e=>{if(e.target===this.profile)this.profile.close();});
+    this.profile.addEventListener('close',()=>this.button.focus());
+    document.getElementById('conversations-open').onclick=()=>this.emit('conversations');
     this.bodyGeometry = new THREE.ConeGeometry(.24, .95, 4);
     this.wingGeometry = new THREE.BoxGeometry(1.15, .045, .37);
     this.engineGeometry = new THREE.SphereGeometry(.095, 8, 6);
@@ -49,13 +59,15 @@ export class RemoteFleet {
         const trail=new THREE.Mesh(this.trailGeometry,this.trailMaterial);trail.rotation.x=Math.PI/2;trail.position.z=.93;object.add(trail);
         const engine=new THREE.Mesh(this.engineGeometry,this.light);engine.position.z=.48;object.add(engine);
         const label=document.createElement('button');label.className='presence-name';label.type='button';label.hidden=true;
-        label.onclick=()=>this.showList(id);this.layer.append(label);
+        object.userData.participant=id;
+        label.onclick=()=>this.showParticipant(id);this.layer.append(label);
         ship={object,label,seed:this.hash(id),initialized:false,person:p,engine};this.ships.set(id,ship);this.group.add(object);
       }
       ship.person=p;ship.label.textContent=p.name;ship.label.title=`${p.name} — ${p.activity}`;
       ship.label.setAttribute('aria-label',`${p.name} — ${p.activity}. Ver identificação`);
     }
     if(this.dialog.open) this.renderList();
+    if(this.profile.open) this.renderParticipant();
   }
   renderList(selected) {
     this.list.replaceChildren();
@@ -64,10 +76,35 @@ export class RemoteFleet {
       const row=document.createElement('li');if(p.id===selected)row.className='presence-selected';
       const name=document.createElement('strong');name.textContent=p.id===this.self?`${p.name} · Você`:p.name;
       const activity=document.createElement('span');activity.textContent=p.activity;
-      row.append(name,activity);this.list.append(row);
+      row.append(name,activity);
+      if(p.id!==this.self) {const action=document.createElement('button');action.className='participant-identify';action.type='button';action.textContent='Ver identificação';action.setAttribute('aria-label',`Ver identificação de ${p.name}`);action.onclick=()=>{this.dialog.close();this.showParticipant(p.id);};row.append(action);}
+      this.list.append(row);
     }
   }
   showList(id) { this.renderList(id);if(!this.dialog.open)this.dialog.showModal();const selected=this.list.querySelector('.presence-selected');selected?.scrollIntoView({block:'nearest'}); }
+  showParticipant(id) {
+    const p=this.people.find(p=>p.id===id&&p.id!==this.self);if(!p)return;
+    this.selectedPerson=p;this.renderParticipant();if(!this.profile.open)this.profile.showModal();
+  }
+  renderParticipant() {
+    const current=this.people.find(p=>p.id===this.selectedPerson?.id);
+    const p=current||this.selectedPerson;if(!p)return;
+    if(current)this.selectedPerson=current;
+    document.getElementById('participant-name').textContent=p.name;
+    document.getElementById('participant-activity').textContent=current&&this.available?p.activity:'Participante desconectado';
+    const destination=this.destinations.find(d=>d.id===p.destination);
+    document.getElementById('participant-destination').textContent=`Região: ${destination?.name||'Espaço aberto · cockpit'}`;
+    document.getElementById('participant-converse').disabled=!current||!this.available;
+  }
+  pick(event,camera) {
+    if(!this.available||this.dialog.open||this.profile.open||event.target.closest('button,a,input,textarea,dialog,header,.console,.glass-instrument,#ship-tutorial'))return;
+    const x=event.clientX/innerWidth,y=event.clientY/innerHeight;
+    if(x<.2||x>.8||y<.18||y>.58)return;
+    this.pointer.set(x*2-1,-y*2+1);this.raycaster.setFromCamera(this.pointer,camera);
+    const hit=this.raycaster.intersectObjects([...this.ships.values()].map(s=>s.object),true)[0];
+    if(!hit)return;let object=hit.object;while(object&&!object.userData.participant)object=object.parent;
+    if(object?.userData.participant)this.showParticipant(object.userData.participant);
+  }
   dispose() {
     for(const ship of this.ships.values()) { this.group.remove(ship.object);ship.label.remove(); }
     this.ships.clear();
@@ -78,6 +115,7 @@ export class RemoteFleet {
     const occupied=[];
     const forward=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
     const right=new THREE.Vector3(1,0,0).applyQuaternion(camera.quaternion);
+    const up=new THREE.Vector3(0,1,0).applyQuaternion(camera.quaternion);
     for(const ship of this.ships.values()) {
       const p=ship.person;
       if(!this.slots.has(p.destination)) this.slots.set(p.destination,new Map());
@@ -93,7 +131,7 @@ export class RemoteFleet {
         target=new THREE.Vector3(...destination.position).add(new THREE.Vector3(Math.sin(angle)*radius*(.85+ring*.17),radius*.05+Math.cos(angle)*radius*.12, radius*(1.15+ring*.2)));
       } else {
         target=camera.position.clone().addScaledVector(forward,19+ring*3).addScaledVector(right,Math.cos(angle)*7);
-        target.y+=Math.sin(angle)*2.3;
+        target.addScaledVector(up,1.4+Math.sin(angle)*1.2);
         if(area && ship.cruiseTarget) target.copy(ship.cruiseTarget);
         else if(!area) ship.cruiseTarget=target.clone();
       }

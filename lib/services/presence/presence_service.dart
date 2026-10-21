@@ -66,6 +66,7 @@ class PresenceService extends GetxService {
   final PresenceConnection Function(Uri) connect;
   final Uri? endpoint;
   final bool supported;
+  final privateEvents = StreamController<Map<String, dynamic>>.broadcast();
   final participants = <PresencePerson>[].obs;
   final available = false.obs;
   String self = '';
@@ -133,6 +134,7 @@ class PresenceService extends GetxService {
       );
       visibility = socket.visibility.listen((visible) {
         sendState(interacted: visible);
+        if (visible) privateEvents.add({"type": "resume"});
       });
       interactions = socket.interactions.listen((_) {
         if (socket.visible) sendState(interacted: true);
@@ -154,6 +156,13 @@ class PresenceService extends GetxService {
       if (data is! Map) return;
       lastMessage = DateTime.now();
       if (data['type'] == 'alive') return;
+      if (data['type'] == 'chat' && data['conversation_id'] is String) {
+        privateEvents.add({
+          'type': 'chat',
+          'conversation_id': data['conversation_id'],
+        });
+        return;
+      }
       final nextVersion = data['version'];
       if (nextVersion is! int || nextVersion < version) return;
       if (data['type'] == 'snapshot') {
@@ -170,6 +179,7 @@ class PresenceService extends GetxService {
         attempt = 0;
         authTimeout?.cancel();
         if (first) {
+          privateEvents.add({'type': 'reconnected'});
           sendState(interacted: true);
           heartbeat?.cancel();
           heartbeat = Timer.periodic(const Duration(seconds: 20), (_) {
@@ -258,6 +268,7 @@ class PresenceService extends GetxService {
     disposed = true;
     userWatch?.dispose();
     disconnect(bye: true);
+    privateEvents.close();
     super.onClose();
   }
 }

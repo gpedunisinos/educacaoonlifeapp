@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/widgets/participant_chat_panel.dart';
 import 'package:unisinos_usp_app/themes/app_theme.dart';
 import 'package:unisinos_usp_app/services/mode_switch_routes.dart';
 import 'package:unisinos_usp_app/screens/management/management_shell.dart';
@@ -176,6 +177,12 @@ class _AiAssistantLauncherState extends State<AiAssistantLauncher> {
                   fontWeight: FontWeight.w700,
                 ),
               ),
+            ),
+          if (show)
+            Positioned(
+              right: 194,
+              top: MediaQuery.paddingOf(context).top + 4,
+              child: const ParticipantChatButton(),
             ),
           if (show &&
               !route.startsWith('/management') &&

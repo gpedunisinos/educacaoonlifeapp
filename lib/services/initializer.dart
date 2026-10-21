@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/services/participant_chat/participant_chat_service.dart';
 import 'package:unisinos_usp_app/services/presence/presence_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:unisinos_usp_app/services/locker_service.dart';
@@ -30,6 +31,10 @@ class Initializer {
       PresenceService(),
       permanent: true,
     ).attach(userController);
+    Get.put<ParticipantChatService>(
+      ParticipantChatService(),
+      permanent: true,
+    ).attach(userController, Get.find<PresenceService>());
     // Resolve the account preference before guards evaluate an initial deep link.
     await userController.initialization;
     Get.put<AiAssistantContextService>(

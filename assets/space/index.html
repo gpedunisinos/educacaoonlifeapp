@@ -71,6 +71,7 @@
         <div>Educação OnLIFE<small>EXPLORAÇÃO • CONEXÃO • VIDA</small></div>
       </div>
       <div class="tools">
+        <button id="conversations-open">Conversas</button>
         <button id="presence-open" aria-label="Presença temporariamente indisponível. Ver estado">◈ Presença indisponível</button>
         <button id="sound" aria-pressed="false" title="Ativar ou desativar som">
           Som desligado</button
@@ -326,6 +327,12 @@
       </section>
     </div>
     <div id="presence-labels" aria-label="Naves próximas"></div>
+    <dialog id="participant-dialog" aria-labelledby="participant-name">
+      <div class="dialog-heading"><div><div class="eyebrow">NAVE DA EXPEDIÇÃO</div><h2 id="participant-name"></h2></div><button id="participant-close" aria-label="Fechar identificação">×</button></div>
+      <p id="participant-activity" class="presence-note"></p>
+      <p id="participant-destination" class="presence-note"></p>
+      <div class="participant-actions"><button id="participant-converse" class="primary">Abrir chat</button><button id="participant-list">Pessoas online</button></div>
+    </dialog>
     <dialog id="presence-dialog" aria-labelledby="presence-title">
       <div class="dialog-heading"><div><div class="eyebrow">EXPEDIÇÃO COMPARTILHADA</div><h2 id="presence-title">Pessoas online</h2></div><button id="presence-close" aria-label="Fechar participantes">×</button></div>
       <p class="presence-note">As naves representam a seção utilizada na plataforma.</p>

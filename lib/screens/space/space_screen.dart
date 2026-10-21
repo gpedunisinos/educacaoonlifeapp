@@ -1,3 +1,5 @@
+import 'package:unisinos_usp_app/widgets/participant_chat_panel.dart';
+import 'package:unisinos_usp_app/services/participant_chat/participant_chat_service.dart';
 import 'package:unisinos_usp_app/services/presence/presence_service.dart';
 import 'package:unisinos_usp_app/services/ship_audio_preferences.dart';
 import 'package:unisinos_usp_app/models/meeting_room.dart';
@@ -26,6 +28,7 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
   final commands = StreamController<Map<String, dynamic>>.broadcast();
   final contextService = Get.find<AiAssistantContextService>();
   Worker? presenceWatch;
+  Worker? chatWatch;
   bool opening = false;
   bool changingMode = false;
   String destination = 'Terra';
@@ -65,7 +68,17 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     if (Get.isRegistered<PresenceService>()) {
       final presence = Get.find<PresenceService>();
-      presenceWatch = everAll([presence.available, presence.participants], (_) => send('presence', presence.sceneState));
+      presenceWatch = everAll([
+        presence.available,
+        presence.participants,
+      ], (_) => send('presence', presence.sceneState));
+    }
+    if (Get.isRegistered<ParticipantChatService>()) {
+      final chats = Get.find<ParticipantChatService>();
+      chatWatch = ever(
+        chats.unread,
+        (_) => send('chat-state', {'unread': chats.unread.value}),
+      );
     }
     contextService.registerProvider('/space', contextProvider);
   }
@@ -92,7 +105,32 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
   Future<void> onMessage(Map<String, dynamic> data) async {
     if (!mounted) return;
     if (data['type'] == 'presence-interaction') {
-      if (Get.isRegistered<PresenceService>()) Get.find<PresenceService>().interact();
+      if (Get.isRegistered<PresenceService>())
+        Get.find<PresenceService>().interact();
+      return;
+    }
+    if (data['type'] == 'participant-chat' || data['type'] == 'conversations') {
+      if (opening) return;
+      final participant = data['type'] == 'participant-chat'
+          ? data['participant']
+          : null;
+      if (participant != null &&
+          (participant is! String ||
+              !Get.find<PresenceService>().participants.any(
+                (p) =>
+                    p.id == participant &&
+                    p.id != Get.find<PresenceService>().self,
+              )))
+        return;
+      opening = true;
+      send('pause', {'cover': true});
+      try {
+        await showParticipantChat(context, participant: participant as String?);
+      } finally {
+        opening = false;
+        if (mounted)
+          send('resume', {'audioEnabled': ShipAudioPreferences.enabled.value});
+      }
       return;
     }
     if (data['type'] == 'audio-state' && data['enabled'] is bool) {
@@ -110,7 +148,12 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
         /* First-flight guidance remains available without storage. */
       }
       if (!mounted) return;
-      if (Get.isRegistered<PresenceService>()) send('presence', Get.find<PresenceService>().sceneState);
+      if (Get.isRegistered<PresenceService>())
+        send('presence', Get.find<PresenceService>().sceneState);
+      if (Get.isRegistered<ParticipantChatService>())
+        send('chat-state', {
+          'unread': Get.find<ParticipantChatService>().unread.value,
+        });
       send('configure', {
         'tutorialSeen': tutorialSeen,
         'audioEnabled': ShipAudioPreferences.enabled.value,
@@ -249,6 +292,7 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     contextService.unregisterProvider('/space', contextProvider);
     presenceWatch?.dispose();
+    chatWatch?.dispose();
     commands.close();
     super.dispose();
   }

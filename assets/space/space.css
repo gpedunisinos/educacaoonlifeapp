@@ -2086,3 +2086,7 @@ body.reduced .mode-handle, body.reduced .console, body.reduced .console-top, bod
 #presence-list li span { color: #a5c7d3; font-size: 13px; }
 #presence-list .presence-selected { background: #80ecdc16; border-radius: 12px; outline: 1px solid #80ecdc80; outline-offset: -1px; }
 body:has(#welcome:not([hidden])) #presence-labels, body:has(#ship-tutorial:not([hidden])) #presence-labels { visibility: hidden; }
+
+#participant-dialog { width: min(460px, calc(100vw - 32px)); }
+.participant-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
+.participant-identify { align-self: flex-start; margin-top: 6px; padding: 6px 10px; font-size: 12px; }
