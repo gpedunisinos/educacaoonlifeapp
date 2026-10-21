@@ -402,22 +402,23 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
                                           children: [
                                             Expanded(
                                               flex: 3,
-                                              child: SingleChildScrollView(
-                                                child: filters,
-                                              ),
+                                              child: _RoomPanel(child: filters),
                                             ),
                                             const SizedBox(width: 16),
                                             Expanded(
                                               flex: 2,
-                                              child: Card(
-                                                child: SingleChildScrollView(
-                                                  child: panel,
-                                                ),
+                                              child: _RoomPanel(
+                                                resetKey: _controller
+                                                    .selectedNodeId
+                                                    .value,
+                                                child: panel,
                                               ),
                                             ),
                                           ],
                                         )
-                                      : SingleChildScrollView(
+                                      : _RoomPanel(
+                                          resetKey:
+                                              _controller.selectedNodeId.value,
                                           child: Column(
                                             children: [
                                               if (hasSelection) panel,
@@ -743,6 +744,45 @@ class _GraphEmptyState extends StatelessWidget {
   }
 }
 
+class _RoomPanel extends StatefulWidget {
+  const _RoomPanel({required this.child, this.resetKey});
+  final Widget child;
+  final Object? resetKey;
+  @override
+  State<_RoomPanel> createState() => _RoomPanelState();
+}
+
+class _RoomPanelState extends State<_RoomPanel> {
+  final _scroll = ScrollController();
+  @override
+  void didUpdateWidget(covariant _RoomPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.resetKey != widget.resetKey) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _scroll.hasClients) _scroll.jumpTo(0);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Card(
+    clipBehavior: Clip.antiAlias,
+    child: Scrollbar(
+      controller: _scroll,
+      thumbVisibility: true,
+      trackVisibility: true,
+      interactive: true,
+      child: SingleChildScrollView(controller: _scroll, child: widget.child),
+    ),
+  );
+}
+
 class _SelectedNodePanel extends StatelessWidget {
   const _SelectedNodePanel({
     super.key,
@@ -783,123 +823,110 @@ class _SelectedNodePanel extends StatelessWidget {
         )
         .length;
 
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
-          child: Card(
-            color: Colors.black.withValues(alpha: 0.74),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 14,
-                        height: 14,
-                        decoration: BoxDecoration(
-                          color: _parseHexColor(node.color),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          node.name,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                      LockerButton(type: 'node', id: node.id),
-                      IconButton(
-                        onPressed: () => controller.selectNode(null),
-                        tooltip: 'Fechar análise',
-                        icon: const Icon(Icons.close, color: Colors.white70),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      _MetaChip(
-                        label:
-                            node.nodeType?.name ?? 'Tipo #${node.nodeTypeId}',
-                      ),
-                      _MetaChip(label: '$connections conexões'),
-                      _MetaChip(label: 'Grau ${state.degree}'),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: [
-                      OutlinedButton.icon(
-                        onPressed:
-                            Get.find<UserController>().user.value?.canAuthor ==
-                                true
-                            ? onCreateNear
-                            : null,
-                        icon: const Icon(Icons.add_link),
-                        label: const Text('Nova problemática próxima'),
-                      ),
-                      OutlinedButton.icon(
-                        onPressed:
-                            Get.find<UserController>().user.value?.canAuthor ==
-                                true
-                            ? onConnect
-                            : null,
-                        icon: const Icon(Icons.hub_outlined),
-                        label: const Text('Conectar'),
-                      ),
-                      OutlinedButton.icon(
-                        onPressed: onConnections,
-                        icon: const Icon(Icons.link_off_outlined),
-                        label: const Text('Conexões'),
-                      ),
-                      FilledButton.icon(
-                        onPressed:
-                            Get.find<UserController>().user.value?.canAuthor ==
-                                true
-                            ? onEdit
-                            : null,
-                        icon: const Icon(Icons.edit_outlined),
-                        label: const Text('Editar'),
-                      ),
-                      TextButton.icon(
-                        onPressed:
-                            controller.isDeletingNode.value ||
-                                Get.find<UserController>()
-                                        .user
-                                        .value
-                                        ?.canAuthor !=
-                                    true
-                            ? null
-                            : onDelete,
-                        icon: const Icon(Icons.delete_outline),
-                        label: Text(
-                          controller.isDeletingNode.value
-                              ? 'Excluindo...'
-                              : 'Excluir',
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 14,
+                height: 14,
+                decoration: BoxDecoration(
+                  color: _parseHexColor(node.color),
+                  shape: BoxShape.circle,
+                ),
               ),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Text(
+                  'NODO SELECIONADO',
+                  style: TextStyle(
+                    color: Color(0xFF9CE7DF),
+                    fontSize: 10,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ),
+              LockerButton(type: 'node', id: node.id),
+              IconButton(
+                onPressed: () => controller.selectNode(null),
+                tooltip: 'Fechar análise',
+                icon: const Icon(Icons.close, color: Colors.white70),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            node.name,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
             ),
           ),
-        ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _MetaChip(
+                label: node.nodeType?.name ?? 'Tipo #${node.nodeTypeId}',
+              ),
+              _MetaChip(label: '$connections conexões'),
+              _MetaChip(label: 'Grau ${state.degree}'),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              OutlinedButton.icon(
+                onPressed:
+                    Get.find<UserController>().user.value?.canAuthor == true
+                    ? onCreateNear
+                    : null,
+                icon: const Icon(Icons.add_link),
+                label: const Text('Nova problemática próxima'),
+              ),
+              OutlinedButton.icon(
+                onPressed:
+                    Get.find<UserController>().user.value?.canAuthor == true
+                    ? onConnect
+                    : null,
+                icon: const Icon(Icons.hub_outlined),
+                label: const Text('Conectar'),
+              ),
+              OutlinedButton.icon(
+                onPressed: onConnections,
+                icon: const Icon(Icons.link_off_outlined),
+                label: const Text('Conexões'),
+              ),
+              FilledButton.icon(
+                onPressed:
+                    Get.find<UserController>().user.value?.canAuthor == true
+                    ? onEdit
+                    : null,
+                icon: const Icon(Icons.edit_outlined),
+                label: const Text('Editar'),
+              ),
+              TextButton.icon(
+                onPressed:
+                    controller.isDeletingNode.value ||
+                        Get.find<UserController>().user.value?.canAuthor != true
+                    ? null
+                    : onDelete,
+                icon: const Icon(Icons.delete_outline),
+                label: Text(
+                  controller.isDeletingNode.value ? 'Excluindo...' : 'Excluir',
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -1520,95 +1547,88 @@ class _GraphFilters extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: const Color(0xE6091B2A),
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextField(
-              controller: searchController,
-              onChanged: controller.updateSearch,
-              decoration: const InputDecoration(
-                isDense: true,
-                prefixIcon: Icon(Icons.search),
-                hintText: 'Buscar problemática pelo nome',
-                border: OutlineInputBorder(),
-              ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextField(
+            controller: searchController,
+            onChanged: controller.updateSearch,
+            decoration: const InputDecoration(
+              isDense: true,
+              prefixIcon: Icon(Icons.search),
+              hintText: 'Buscar problemática pelo nome',
+              border: OutlineInputBorder(),
             ),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: controller.nodeTypes.map((type) {
-                final Color accentColor = _parseHexColor(type.color);
-                final bool isSelected = controller.selectedTypeIds.contains(
-                  type.id,
-                );
-                final Color selectedBackground = Color.alphaBlend(
-                  accentColor.withValues(alpha: 0.28),
-                  const Color(0xFF10151D),
-                );
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: controller.nodeTypes.map((type) {
+              final Color accentColor = _parseHexColor(type.color);
+              final bool isSelected = controller.selectedTypeIds.contains(
+                type.id,
+              );
+              final Color selectedBackground = Color.alphaBlend(
+                accentColor.withValues(alpha: 0.28),
+                const Color(0xFF10151D),
+              );
 
-                return FilterChip(
-                  label: Text(type.name),
-                  selected: isSelected,
-                  selectedColor: selectedBackground,
-                  backgroundColor: const Color(0xFF161C24),
-                  labelStyle: TextStyle(
-                    color: isSelected
-                        ? _contrastingTextColor(selectedBackground)
-                        : Colors.white.withValues(alpha: 0.92),
-                    fontWeight: FontWeight.w600,
-                  ),
-                  side: BorderSide(
-                    color: isSelected
-                        ? accentColor.withValues(alpha: 0.95)
-                        : accentColor.withValues(alpha: 0.55),
-                  ),
-                  checkmarkColor: _contrastingTextColor(selectedBackground),
-                  onSelected: (selected) =>
-                      controller.toggleType(type.id, selected),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                const Icon(Icons.tune, color: Colors.white70, size: 18),
-                const SizedBox(width: 8),
-                const Text(
-                  'Conexões mín.',
-                  style: TextStyle(color: Colors.white),
+              return FilterChip(
+                label: Text(type.name),
+                selected: isSelected,
+                selectedColor: selectedBackground,
+                backgroundColor: const Color(0xFF161C24),
+                labelStyle: TextStyle(
+                  color: isSelected
+                      ? _contrastingTextColor(selectedBackground)
+                      : Colors.white.withValues(alpha: 0.92),
+                  fontWeight: FontWeight.w600,
                 ),
-                Expanded(
-                  child: Slider(
-                    value: controller.minimumDegree.value.toDouble(),
-                    min: 0,
-                    max: 10,
-                    divisions: 10,
-                    label: controller.minimumDegree.value.toString(),
-                    onChanged: controller.updateMinimumDegree,
-                  ),
+                side: BorderSide(
+                  color: isSelected
+                      ? accentColor.withValues(alpha: 0.95)
+                      : accentColor.withValues(alpha: 0.55),
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  controller.minimumDegree.value.toString(),
-                  style: const TextStyle(color: Colors.white70),
+                checkmarkColor: _contrastingTextColor(selectedBackground),
+                onSelected: (selected) =>
+                    controller.toggleType(type.id, selected),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              const Icon(Icons.tune, color: Colors.white70, size: 18),
+              const SizedBox(width: 8),
+              const Text(
+                'Conexões mín.',
+                style: TextStyle(color: Colors.white),
+              ),
+              Expanded(
+                child: Slider(
+                  value: controller.minimumDegree.value.toDouble(),
+                  min: 0,
+                  max: 10,
+                  divisions: 10,
+                  label: controller.minimumDegree.value.toString(),
+                  onChanged: controller.updateMinimumDegree,
                 ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Toque para selecionar. Arraste uma problemática para reposicionar. Pinça ou scroll para zoom.',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.72)),
-            ),
-          ],
-        ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                controller.minimumDegree.value.toString(),
+                style: const TextStyle(color: Colors.white70),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Toque para selecionar. Arraste uma problemática para reposicionar. Pinça ou scroll para zoom.',
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.72)),
+          ),
+        ],
       ),
     );
   }

@@ -132,4 +132,36 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+  for (final size in [const Size(1440, 900), const Size(390, 844)]) {
+    testWidgets(
+      'long details use one surface and all actions can be reached at $size',
+      (tester) async {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        graph.graphNodes.first.node.name = List.filled(
+          9,
+          'Problemática com um título extenso',
+        ).join(' ');
+        graph.selectNode(1);
+        await tester.pumpWidget(const GetMaterialApp(home: NodeGraphScreen()));
+        await tester.pumpAndSettle();
+        expect(
+          find.ancestor(
+            of: find.text('NODO SELECIONADO'),
+            matching: find.byType(Card),
+          ),
+          findsOneWidget,
+        );
+        await tester.ensureVisible(find.text('Excluir'));
+        await tester.pumpAndSettle();
+        expect(find.text('Excluir').hitTestable(), findsOneWidget);
+        graph.selectNode(2);
+        await tester.pumpAndSettle();
+        expect(find.text('NODO SELECIONADO').hitTestable(), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
 }

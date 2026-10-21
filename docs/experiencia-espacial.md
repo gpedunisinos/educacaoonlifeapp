@@ -362,3 +362,5 @@ O piloto mantém seleção, zoom, pan, persistência do arraste para Inventores,
 Validação: quatro testes cobrindo composição dos filtros, posições preservadas, seleção, zoom, permissões de Explorador e layouts 1440×900, 390×844 e 844×390. Prévia conferida com 22 nodos e 37 conexões reais do ambiente local. Captura local ignorada em `docs/evidencias/sala-problematicas-piloto.png`.
 
 Ajuste do piloto: painel contextual movido para a direita dos filtros na faixa superior. Testes também conferem a largura do grafo e a posição dos dois painéis acima dele no desktop.
+
+Correção dos painéis superiores: filtros e detalhes agora fornecem somente conteúdo dentro de uma única moldura persistente por painel. A moldura não rola nem fica recortada junto com o conteúdo; barras de rolagem visíveis e interativas permitem alcançar títulos extensos e todas as ações. O nome do nodo usa a largura disponível abaixo dos controles utilitários. Ao selecionar outro nodo a rolagem dos detalhes volta ao início. Dois testes adicionais cobrem títulos extensos, moldura única e acesso às ações no desktop e no celular (seis testes no total).
