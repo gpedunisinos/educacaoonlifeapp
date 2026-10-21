@@ -241,9 +241,11 @@
               </button>
             </div>
           </section>
+          <nav id="destinations" aria-label="Destinos da expedição"></nav>
+        </div>
+        <div class="console-footer">
           <section class="navigation">
-            <div class="eyebrow">DESTINO SELECIONADO</div>
-            <div class="destination-row">
+            <div class="destination-row sr-only">
               <h2 id="module-title">Mapa de Pistas</h2>
               <span id="distance">01 / 04</span>
             </div>
@@ -255,16 +257,13 @@
               ><button id="skip" hidden>Pular viagem →</button>
             </div>
           </section>
-        </div>
-        <nav id="destinations" aria-label="Destinos da expedição"></nav>
-        <div class="console-footer">
         <section id="flight-mode" aria-label="Modo de navegação">
           <div class="mode-lever" role="group" aria-label="Selecionar modo">
             <i class="mode-handle" aria-hidden="true"></i>
             <button id="mode-explorer" type="button" aria-pressed="true" disabled><span aria-hidden="true">◈</span> Explorador</button>
             <button id="mode-inventor" type="button" aria-pressed="false" disabled><span aria-hidden="true">⚒</span> Inventor</button>
           </div>
-          <p id="mode-status" role="status" aria-live="polite"></p>
+          <p id="mode-status" class="sr-only" role="status" aria-live="polite"></p>
         </section>
           <div class="console-links">
             <button id="tour-replay" class="text-button">Guia da Iareté</button>

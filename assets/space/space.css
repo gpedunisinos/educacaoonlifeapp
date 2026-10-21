@@ -2015,3 +2015,43 @@ body.reduced .mode-handle, body.reduced .console, body.reduced .console-top, bod
 
 .canopy-strip #ship-mode-tag { color: var(--flight-accent); transition: color .7s; }
 .reduced .canopy-strip #ship-mode-tag { transition: none; }
+
+
+/* Compact flight deck: one content row and one bottom control strip. */
+.console-content { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); align-items: center; padding: 12px 0; gap: 22px; }
+.at-current-destination .console-content { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); }
+.console-content > *, #destinations > * { min-width: 0; }
+#destinations { padding-bottom: 0; gap: 7px; }
+.destination { padding: 12px 8px; gap: 8px; }
+.destination .symbol { font-size: 25px; }
+.destination strong { font-size: 14px; }
+.destination small { font-size: 9px; letter-spacing: .3px; }
+.console-footer { gap: 10px; padding: 6px 0; min-height: 38px; }
+.console-footer .navigation { border: 0; padding: 0; margin-right: auto; }
+.console-footer .flight-progress { display: none; }
+.console-footer .actions { gap: 6px; }
+.console-footer .actions button { min-height: 36px; padding: 7px 10px; font-size: 12px; }
+#flight-mode { flex: 0 0 auto; gap: 0; position: relative; }
+.mode-lever { min-width: 220px; padding: 3px; border-radius: 9px; }
+.mode-handle { top: 3px; bottom: 3px; left: 3px; width: calc(50% - 3px); border-radius: 6px; }
+.mode-lever button { min-height: 32px; padding: 6px 10px; }
+.console-links { gap: 10px; margin-left: 0; }
+.console-links .text-button { padding: 6px 0; font-size: 12px; }
+.mode-error #mode-status { position: static; width: auto; height: auto; clip: auto; clip-path: none; overflow: visible; white-space: normal; flex-basis: 100%; max-width: 260px; }
+@media (max-width: 1100px) {
+  .console-content, .at-current-destination .console-content { grid-template-columns: 1fr; gap: 10px; }
+  .console-footer { justify-content: space-between; }
+  .console-footer .navigation { flex: 1 1 auto; }
+  .console-footer .actions .secondary { display: none; }
+}
+@media (max-width: 760px) {
+  .console-footer { gap: 6px 10px; }
+  .console-footer .navigation { order: -1; flex-basis: 100%; margin: 0; }
+  .console-footer .actions button { min-height: 40px; }
+  .mode-lever { min-width: 205px; }
+  .mode-lever button { min-height: 38px; padding: 6px 8px; }
+  .console-links { flex-wrap: wrap; gap: 2px 8px; }
+  .console-links .text-button { min-height: 36px; }
+  .console-footer .actions .secondary { display: initial; }
+  .destination strong { font-size: 11px; }
+}
