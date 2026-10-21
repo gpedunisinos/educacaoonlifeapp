@@ -56,6 +56,13 @@ class _ClueAttachmentTileState extends State<ClueAttachmentTile> {
   Widget build(BuildContext context) {
     final file = widget.file;
     final size = file.size;
+    final sizeLabel = size == null || size <= 0
+        ? null
+        : size < 1024
+        ? '$size bytes'
+        : size < 1024 * 1024
+        ? '${(size / 1024).toStringAsFixed(1)} KB'
+        : '${(size / (1024 * 1024)).toStringAsFixed(2)} MB';
     return ListTile(
       leading: Icon(
         file.extension == 'link'
@@ -69,8 +76,8 @@ class _ClueAttachmentTileState extends State<ClueAttachmentTile> {
         overflow: TextOverflow.ellipsis,
       ),
       subtitle: Text(
-        size != null && size > 0
-            ? '${file.extension.toUpperCase()} · ${(size / (1024 * 1024)).toStringAsFixed(2)} MB'
+        sizeLabel != null
+            ? '${file.extension.toUpperCase()} · $sizeLabel'
             : file.extension.toUpperCase(),
       ),
       onTap: opening ? null : open,

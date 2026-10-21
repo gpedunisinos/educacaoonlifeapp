@@ -504,7 +504,7 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
             Text(
               'Adicionar arquivo (até 25 MB)',
               style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface,
+                color: const Color(0xFFE0F5FA),
                 fontWeight: FontWeight.w600,
               ),
             ),
