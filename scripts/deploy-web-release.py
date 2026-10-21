@@ -26,6 +26,15 @@ root = args.build.resolve()
 for name in ['index.html', 'main.dart.js', 'assets/assets/space/space.bundle.js']:
     if not (root / name).is_file():
         parser.error('Missing compiled asset: ' + name)
+# Preserve the complete icon fonts already repaired in production. Dynamic icon
+# selections in the shared widgets package are not all visible to tree shaking.
+for relative, minimum in {
+    'assets/fonts/MaterialIcons-Regular.otf': 1_000_000,
+    'assets/packages/cupertino_icons/assets/CupertinoIcons.ttf': 200_000,
+}.items():
+    font = root / relative
+    if not font.is_file() or font.stat().st_size < minimum:
+        parser.error('Build with --no-tree-shake-icons to preserve the complete icon fonts: ' + relative)
 for path in root.rglob('*'):
     if path.is_symlink() or path.name == '.env' or 'service_account' in path.name:
         parser.error('Refusing symlink or protected configuration in the build.')
