@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/services/mode_switch_routes.dart';
 import 'package:unisinos_usp_app/screens/management/management_shell.dart';
 import 'package:unisinos_usp_app/policies/clue_connection_policy.dart';
 import 'dart:math' as math;
@@ -13,10 +14,13 @@ class AiAssistantLauncher extends StatefulWidget {
   const AiAssistantLauncher({super.key, required this.child});
   final Widget child;
   static final RxString activeRoute = ''.obs;
+  static final modeOverlayBlocked = false.obs;
   static void didNavigate(Routing? routing) {
     final route = routing?.current ?? '';
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      activeRoute.value = route;
+      if (route.isNotEmpty) activeRoute.value = route;
+      modeOverlayBlocked.value =
+          routing?.isDialog == true || routing?.isBottomSheet == true;
       if (Get.isRegistered<AiAssistantContextService>())
         Get.find<AiAssistantContextService>().setCurrentRoute(route);
     });
@@ -40,6 +44,7 @@ class _AiAssistantLauncherState extends State<AiAssistantLauncher> {
   }
 
   Future<void>? panelFuture;
+  bool changingMode = false;
   Future<void> chooseMode() async {
     modeFocus.unfocus();
     Tooltip.dismissAllToolTips();
@@ -51,7 +56,29 @@ class _AiAssistantLauncherState extends State<AiAssistantLauncher> {
         await previous;
       }
     }
-    if (mounted) Get.toNamed('/choose_mode');
+    if (!mounted ||
+        changingMode ||
+        !canSwitchModeOnRoute(AiAssistantLauncher.activeRoute.value))
+      return;
+    final users = Get.find<UserController>();
+    if (users.user.value?.usageMode == null) {
+      Get.toNamed('/choose_mode');
+      return;
+    }
+    setState(() => changingMode = true);
+    try {
+      await users.chooseMode(
+        users.user.value!.usageMode == 'explorer' ? 'inventor' : 'explorer',
+        navigate: false,
+      );
+    } catch (_) {
+      Get.snackbar(
+        'Modo de exploração',
+        'Não foi possível trocar o modo. Tente novamente.',
+      );
+    } finally {
+      if (mounted) setState(() => changingMode = false);
+    }
   }
 
   Future<void> open(bool locker) async {
@@ -121,6 +148,10 @@ class _AiAssistantLauncherState extends State<AiAssistantLauncher> {
     final route = AiAssistantLauncher.activeRoute.value;
 
     final show = u != null && route != '/splash' && route != '/space';
+    final showMode =
+        show &&
+        canSwitchModeOnRoute(route) &&
+        !AiAssistantLauncher.modeOverlayBlocked.value;
     final explorer = u?.usageMode == 'explorer';
     final accent = explorer ? const Color(0xFF65DFD2) : const Color(0xFFB5A0FF);
     return Material(
@@ -163,51 +194,54 @@ class _AiAssistantLauncherState extends State<AiAssistantLauncher> {
               ),
             ),
           if (show) ...[
-            Positioned(
-              right: 12,
-              top: MediaQuery.paddingOf(context).top + 4,
-              child: Material(
-                color: const Color(0xFF111A32),
-                borderRadius: BorderRadius.circular(24),
-                elevation: 4,
-                child: Tooltip(
-                  key: modeTooltip,
-                  message: u.usageMode == null
-                      ? 'Escolha como utilizar a plataforma.'
-                      : '${explorer ? 'Explorador: explore pistas e referências' : 'Inventor: crie e organize vivências'}. Toque para trocar de modo.',
-                  triggerMode: TooltipTriggerMode.longPress,
-                  child: TextButton.icon(
-                    focusNode: modeFocus,
-                    onFocusChange: (focused) {
-                      if (!focused) {
-                        Tooltip.dismissAllToolTips();
-                        return;
-                      }
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (mounted && modeFocus.hasFocus)
-                          modeTooltip.currentState?.ensureTooltipVisible();
-                      });
-                    },
-                    onPressed: chooseMode,
-                    icon: Icon(
-                      explorer
-                          ? Icons.rocket_launch_outlined
-                          : Icons.handyman_outlined,
-                      color: accent,
-                      size: 18,
-                    ),
-                    label: Text(
-                      u.usageMode == null
-                          ? 'Escolher modo'
-                          : explorer
-                          ? 'Explorador'
-                          : 'Inventor',
-                      style: TextStyle(color: accent),
+            if (showMode)
+              Positioned(
+                right: 12,
+                top: MediaQuery.paddingOf(context).top + 4,
+                child: Material(
+                  color: const Color(0xFF111A32),
+                  borderRadius: BorderRadius.circular(24),
+                  elevation: 4,
+                  child: Tooltip(
+                    key: modeTooltip,
+                    message: u.usageMode == null
+                        ? 'Escolha como utilizar a plataforma.'
+                        : '${explorer ? 'Explorador: explore pistas e referências' : 'Inventor: crie e organize vivências'}. Toque para trocar de modo.',
+                    triggerMode: TooltipTriggerMode.longPress,
+                    child: TextButton.icon(
+                      focusNode: modeFocus,
+                      onFocusChange: (focused) {
+                        if (!focused) {
+                          Tooltip.dismissAllToolTips();
+                          return;
+                        }
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (mounted && modeFocus.hasFocus)
+                            modeTooltip.currentState?.ensureTooltipVisible();
+                        });
+                      },
+                      onPressed: changingMode ? null : chooseMode,
+                      icon: Icon(
+                        explorer
+                            ? Icons.rocket_launch_outlined
+                            : Icons.handyman_outlined,
+                        color: accent,
+                        size: 18,
+                      ),
+                      label: Text(
+                        changingMode
+                            ? 'Alterando…'
+                            : u.usageMode == null
+                            ? 'Escolher modo'
+                            : explorer
+                            ? 'Explorador'
+                            : 'Inventor',
+                        style: TextStyle(color: accent),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
             if (panelFuture == null && !route.startsWith('/space/agents/'))
               Positioned(
                 right: 16,

@@ -1,3 +1,7 @@
+import 'package:unisinos_usp_app/widgets/iarete_reply.dart';
+import 'package:unisinos_usp_app/widgets/space_conversation.dart';
+import 'package:unisinos_usp_app/services/ship_audio_preferences.dart';
+import 'package:unisinos_usp_app/services/iarete_audio/typing_audio.dart';
 import 'package:unisinos_usp_app/screens/space/space_map_shell.dart';
 import 'package:unisinos_usp_app/screens/space/space_record_shell.dart';
 import 'package:unisinos_usp_app/widgets/ai_assistant_launcher.dart';
@@ -1426,22 +1430,29 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     final steps = _tutorialSteps();
     if (steps.isEmpty) return;
 
+    final tutorialAudio = TypingAudio();
+    bool closed = false;
+    ShipAudioPreferences.restore().then((_) {
+      if (!closed && ShipAudioPreferences.enabled.value)
+        tutorialAudio.prepare();
+    });
     int currentIndex = 0;
     int animationDirection = 1;
     late OverlayEntry entry;
 
-    bool closed = false;
     void close() {
       if (closed) return;
       closed = true;
       _dismissTutorial = null;
       entry.remove();
+      tutorialAudio.dispose();
       if (markAsSeen) {
         _markTutorialAsSeen();
       }
     }
 
     void next() {
+      if (ShipAudioPreferences.enabled.value) tutorialAudio.prepare();
       if (currentIndex >= steps.length - 1) {
         close();
         return;
@@ -1452,6 +1463,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     }
 
     void previous() {
+      if (ShipAudioPreferences.enabled.value) tutorialAudio.prepare();
       if (currentIndex == 0) return;
       animationDirection = -1;
       currentIndex--;
@@ -1464,9 +1476,18 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
         final targetRect = _targetRect(step.targetKey);
         final screenSize = MediaQuery.of(context).size;
         final calloutAbove = targetRect.center.dy > screenSize.height / 2;
-        final calloutTop = calloutAbove
-            ? (targetRect.top - 174).clamp(16.0, screenSize.height - 190)
-            : (targetRect.bottom + 16).clamp(16.0, screenSize.height - 190);
+        final cardHeight = (screenSize.height - 32).clamp(120.0, 350.0);
+        final calloutTop =
+            (calloutAbove
+                    ? targetRect.top - cardHeight - 12
+                    : targetRect.bottom + 12)
+                .clamp(
+                  16.0,
+                  (screenSize.height - cardHeight - 16).clamp(
+                    16.0,
+                    double.infinity,
+                  ),
+                );
 
         return Material(
           color: Colors.transparent,
@@ -1509,16 +1530,25 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                       ),
                     );
                   },
-                  child: _TutorialCard(
-                    current: currentIndex + 1,
-                    total: steps.length,
-                    title: step.title,
-                    description: step.description,
-                    canGoBack: currentIndex > 0,
-                    isLast: currentIndex == steps.length - 1,
-                    onBack: previous,
-                    onNext: next,
-                    onSkip: close,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxHeight: cardHeight),
+                    child: SingleChildScrollView(
+                      child: _TutorialCard(
+                        onType: () {
+                          if (ShipAudioPreferences.enabled.value)
+                            tutorialAudio.tick();
+                        },
+                        current: currentIndex + 1,
+                        total: steps.length,
+                        title: step.title,
+                        description: step.description,
+                        canGoBack: currentIndex > 0,
+                        isLast: currentIndex == steps.length - 1,
+                        onBack: previous,
+                        onNext: next,
+                        onSkip: close,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -1535,55 +1565,65 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
 
   List<_MapTutorialStep> _tutorialSteps() {
     return [
-      _MapTutorialStep(
-        targetKey: _mapKey,
-        title: 'Mapa',
-        description:
-            'Movimente o mapa e use os botões de zoom para navegar sem mouse. As pistas carregadas aparecem como marcadores coloridos.',
-      ),
-      _MapTutorialStep(
-        targetKey: _sonarControlsKey,
-        title: 'Raio do sonar',
-        description:
-            'Ajuste o alcance da busca. O valor vai de 1 km a 1000 km e o círculo usa a escala real do mapa.',
-      ),
-      _MapTutorialStep(
-        targetKey: _searchRadiusKey,
-        title: 'Buscar por raio',
-        description:
-            'Executa a varredura a partir do centro selecionado e mostra o raio pesquisado no mapa.',
-      ),
-      _MapTutorialStep(
-        targetKey: _useLocationKey,
-        title: 'Minha localização',
-        description:
-            'Centraliza o mapa na sua localização atual e usa esse ponto como referência para o sonar.',
-      ),
-      _MapTutorialStep(
-        targetKey: _refreshKey,
-        title: 'Atualizar área',
-        description:
-            'Recarrega as pistas da área visível quando você muda o enquadramento do mapa.',
-      ),
-      _MapTutorialStep(
-        targetKey: _createPointKey,
-        title: 'Criar pista',
-        description:
-            'Abre o cadastro de uma nova pista usando o centro atual do mapa como posição inicial.',
-      ),
-      _MapTutorialStep(
-        targetKey: _connectionKey,
-        title: 'Criar conexão',
-        description:
-            'Ativa o modo de conexão. Toque em uma pista de origem e depois em uma pista de destino.',
-      ),
-      _MapTutorialStep(
-        targetKey: _repositionKey,
-        title: 'Reposicionar pista',
-        description:
-            'Ativa o modo de reposicionamento para mover uma pista existente para outro ponto do mapa.',
-      ),
-    ];
+          _MapTutorialStep(
+            targetKey: _mapKey,
+            title: 'Mapa',
+            description:
+                'Vou acompanhar sua exploração da Terra. Mova o mapa ou use os botões de zoom. Os marcadores coloridos mostram as pistas encontradas.',
+          ),
+          _MapTutorialStep(
+            targetKey: _sonarControlsKey,
+            title: 'Raio do sonar',
+            description:
+                'Ajuste o alcance da busca. O valor vai de 1 km a 1000 km e o círculo usa a escala real do mapa.',
+          ),
+          _MapTutorialStep(
+            targetKey: _searchRadiusKey,
+            title: 'Buscar por raio',
+            description:
+                'Use este botão para procurar pistas ao redor do ponto escolhido. O círculo mostra a área que estamos explorando.',
+          ),
+          _MapTutorialStep(
+            targetKey: _useLocationKey,
+            title: 'Minha localização',
+            description:
+                'Centraliza o mapa na sua localização atual e usa esse ponto como referência para o sonar.',
+          ),
+          _MapTutorialStep(
+            targetKey: _refreshKey,
+            title: 'Atualizar área',
+            description:
+                'Recarrega as pistas da área visível quando você muda o enquadramento do mapa.',
+          ),
+          _MapTutorialStep(
+            targetKey: _createPointKey,
+            title: 'Criar pista',
+            description:
+                'Abre o cadastro de uma nova pista usando o centro atual do mapa como posição inicial.',
+          ),
+          _MapTutorialStep(
+            targetKey: _connectionKey,
+            title: 'Criar conexão',
+            description:
+                'Ativa o modo de conexão. Toque em uma pista de origem e depois em uma pista de destino.',
+          ),
+          _MapTutorialStep(
+            targetKey: _repositionKey,
+            title: 'Reposicionar pista',
+            description:
+                'Ativa o modo de reposicionamento para mover uma pista existente para outro ponto do mapa.',
+          ),
+        ]
+        .where(
+          (step) =>
+              Get.find<UserController>().user.value?.canAuthor == true ||
+              ![
+                _createPointKey,
+                _connectionKey,
+                _repositionKey,
+              ].contains(step.targetKey),
+        )
+        .toList();
   }
 
   Rect _targetRect(GlobalKey key) {
@@ -1980,6 +2020,7 @@ class _TutorialCard extends StatelessWidget {
     required this.onBack,
     required this.onNext,
     required this.onSkip,
+    required this.onType,
   });
 
   final int current;
@@ -1991,6 +2032,7 @@ class _TutorialCard extends StatelessWidget {
   final VoidCallback onBack;
   final VoidCallback onNext;
   final VoidCallback onSkip;
+  final VoidCallback onType;
 
   @override
   Widget build(BuildContext context) {
@@ -2013,6 +2055,23 @@ class _TutorialCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const Row(
+              children: [
+                SizedBox(
+                  width: 84,
+                  height: 36,
+                  child: IareteConversationSignal(),
+                ),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'IARETÉ / GUIA DO MAPA',
+                    style: TextStyle(color: mapIce, fontSize: 11),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
@@ -2031,9 +2090,15 @@ class _TutorialCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            Text(
-              description,
-              style: const TextStyle(color: Colors.white70, height: 1.35),
+            IareteReply(
+              key: ValueKey(current),
+              text: description,
+              animate: true,
+              onType: onType,
+              builder: (visible) => Text(
+                visible,
+                style: const TextStyle(color: Colors.white70, height: 1.35),
+              ),
             ),
             const SizedBox(height: 16),
             Wrap(

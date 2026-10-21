@@ -1,12 +1,10 @@
+import 'package:unisinos_usp_app/screens/living_clue/living_clue_location_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
 import 'package:unisinos_usp_app/services/location_privacy_service.dart';
-import 'package:unisinos_usp_app/widgets/safe_back_button.dart';
 
 class LivingClueMapCreateScreen extends StatefulWidget {
   const LivingClueMapCreateScreen({super.key});
@@ -18,10 +16,8 @@ class LivingClueMapCreateScreen extends StatefulWidget {
 
 class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
   static const String _screenName = 'Escolha do local da pista';
-  final MapController _mapController = MapController();
   LatLng _center = const LatLng(-29.718, -51.143);
   LatLng? _selected;
-  bool _loadingLocation = false;
 
   @override
   void initState() {
@@ -41,56 +37,11 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
     }
   }
 
-  Future<void> _useCurrentLocation() async {
-    if (!await LocationPrivacyService.ensureAcknowledged(context)) return;
-    if (!mounted) return;
-
-    try {
-      setState(() => _loadingLocation = true);
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
-      if (permission == LocationPermission.deniedForever ||
-          permission == LocationPermission.denied) {
-        Get.snackbar(
-          'Permissão necessária',
-          'Habilite a localização para usar sua posição atual.',
-        );
-        return;
-      }
-      final Position position = await Geolocator.getCurrentPosition();
-      final LatLng point = LatLng(position.latitude, position.longitude);
-      setState(() {
-        _center = point;
-        _selected = point;
-      });
-      _mapController.move(point, 15);
-    } catch (_) {
-      Get.snackbar('Localização', 'Não foi possível obter sua localização.');
-    } finally {
-      setState(() => _loadingLocation = false);
-    }
-  }
-
-  Future<void> _onLongPress(TapPosition tapPosition, LatLng latLng) async {
-    if (!await LocationPrivacyService.ensureAcknowledged(context)) return;
-    if (!mounted) return;
-
-    setState(() {
-      _selected = latLng;
-    });
-  }
-
-  void _clearSelection() {
-    setState(() => _selected = null);
-  }
-
   Future<void> _goToCreate() async {
     if (_selected == null) {
       Get.snackbar(
         'Selecione um ponto',
-        'Pressione e segure no mapa para marcar a localização.',
+        'Toque no mapa ou pesquise um local para marcar a localização.',
       );
       return;
     }
@@ -115,127 +66,13 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
       Get.currentRoute,
       _buildAiContext,
     );
-    final selectedText = _selected == null
-        ? 'Nenhum ponto selecionado'
-        : 'Ponto selecionado: ${_selected!.latitude.toStringAsFixed(6)}, ${_selected!.longitude.toStringAsFixed(6)}';
-
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
-        leading: const SafeBackButton(),
-        title: const Text('Escolher local da pista'),
-        actions: [
-          IconButton(
-            tooltip: 'Usar minha localização',
-            icon: _loadingLocation
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.my_location),
-            onPressed: _loadingLocation ? null : _useCurrentLocation,
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          FlutterMap(
-            mapController: _mapController,
-            options: MapOptions(
-              initialCenter: _center,
-              initialZoom: 13,
-              onLongPress: _onLongPress,
-            ),
-            children: [
-              TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.br.spotecnologia.uniuspapp',
-              ),
-              if (_selected != null)
-                CircleLayer(
-                  circles: [
-                    CircleMarker(
-                      point: _selected!,
-                      color: Colors.blue.withOpacity(0.25),
-                      borderColor: Colors.blue,
-                      borderStrokeWidth: 2,
-                      radius: 18,
-                    ),
-                  ],
-                ),
-              if (_selected != null)
-                MarkerLayer(
-                  markers: [
-                    Marker(
-                      point: _selected!,
-                      width: 40,
-                      height: 40,
-                      child: const Icon(
-                        Icons.location_on,
-                        color: Colors.blue,
-                        size: 36,
-                      ),
-                    ),
-                  ],
-                ),
-            ],
-          ),
-          Positioned(
-            top: 12,
-            left: 12,
-            right: 12,
-            child: Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                side: const BorderSide(color: Color(0x8A46B6EC), width: 1.2),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Segure no mapa e escolha um ponto público ou '
-                      'aproximado. Evite marcar sua casa ou localização exata.',
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      selectedText,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.blueGrey,
-                      ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton.icon(
-                          onPressed: _selected == null ? null : _clearSelection,
-                          icon: const Icon(Icons.clear),
-                          label: const Text('Remover ponto'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 16,
-            left: 16,
-            right: 16,
-            child: ElevatedButton.icon(
-              icon: const Icon(Icons.add_location_alt),
-              label: const Text('Continuar com este ponto'),
-              onPressed: _selected == null ? null : _goToCreate,
-            ),
-          ),
-        ],
-      ),
+    return LivingClueLocationScreen(
+      initialPoint: _selected,
+      onPointChanged: (point) => _selected = point,
+      onConfirm: (point) async {
+        _selected = point;
+        await _goToCreate();
+      },
     );
   }
 
@@ -248,12 +85,12 @@ class _LivingClueMapCreateScreenState extends State<LivingClueMapCreateScreen> {
       visibleFields: const <String>[
         'mapa',
         'usar minha localização',
+        'pesquisar local',
+        'satélite ou mapa',
         'remover ponto',
-        'continuar com este ponto',
+        'usar esta localização',
       ],
       filledFields: <String, String>{
-        'centro do mapa':
-            '${_center.latitude.toStringAsFixed(5)}, ${_center.longitude.toStringAsFixed(5)}',
         'ponto selecionado': _selected == null
             ? 'nenhum'
             : '${_selected!.latitude.toStringAsFixed(5)}, ${_selected!.longitude.toStringAsFixed(5)}',

@@ -114,6 +114,12 @@ void main() {
       isNull,
     );
     expect(find.byTooltip('Usar minha localização'), findsOneWidget);
+    await tester.tap(find.byTooltip('Ajuda do mapa'));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('IARETÉ / GUIA DO MAPA'), findsOneWidget);
+    expect(find.text('1/5'), findsOneWidget);
+    await tester.tap(find.text('Pular'));
+    await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
   for (final fromCockpit in [true, false]) {
@@ -237,10 +243,11 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Cobertura vegetal'), findsOneWidget);
       await tester.tap(find.byTooltip('Ajuda do mapa'));
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('IARETÉ / GUIA DO MAPA'), findsOneWidget);
       expect(find.text('Raio do sonar'), findsNothing);
       await tester.tap(find.text('Próximo'));
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 300));
       expect(find.text('Raio do sonar'), findsOneWidget);
       await tester.tap(find.text('Pular'));
       await tester.pumpAndSettle();

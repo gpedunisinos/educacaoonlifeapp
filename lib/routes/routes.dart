@@ -1,3 +1,5 @@
+import 'package:unisinos_usp_app/services/mode_switch_routes.dart';
+import 'package:unisinos_usp_app/widgets/mode_aware_page.dart';
 import 'package:unisinos_usp_app/screens/living_clue/living_clue_show_screen.dart';
 import 'package:unisinos_usp_app/screens/management/management_home_screen.dart';
 import 'package:unisinos_usp_app/models/living_clue_model.dart';
@@ -25,9 +27,9 @@ import 'package:unisinos_usp_app/screens/screens.dart';
 
 List<GetPage> appRoutes() =>
     [
-      GetPage(name: '/splash', page: () => const SplashScreen()),
+      GetPage(name: '/splash', page: () => SplashScreen()),
       ...authRoutes(),
-      GetPage(name: '/choose_mode', page: () => const ModeSelectionScreen()),
+      GetPage(name: '/choose_mode', page: () => ModeSelectionScreen()),
       GetPage(
         name: '/home',
         page: () => HomeScreen(),
@@ -35,7 +37,7 @@ List<GetPage> appRoutes() =>
       ),
       GetPage(
         name: '/management',
-        page: () => const ManagementHomeScreen(),
+        page: () => ManagementHomeScreen(),
         transition: Transition.fadeIn,
         middlewares: [
           AppRouteGuard(
@@ -46,7 +48,7 @@ List<GetPage> appRoutes() =>
       ),
       GetPage(
         name: '/management/connections',
-        page: () => const ConnectionsRoomScreen(management: true),
+        page: () => ConnectionsRoomScreen(management: true),
         transition: Transition.fadeIn,
         middlewares: [
           AppRouteGuard(canActivate: (u) => ClueConnectionPolicy(u).viewAny()),
@@ -66,10 +68,10 @@ List<GetPage> appRoutes() =>
           AppRouteGuard(canActivate: (u) => ClueConnectionPolicy(u).viewAny()),
         ],
       ),
-      GetPage(name: '/space', page: () => const SpaceScreen()),
+      GetPage(name: '/space', page: () => SpaceScreen()),
       GetPage(
         name: '/space/research',
-        page: () => const ClueResearchRoomScreen(),
+        page: () => ClueResearchRoomScreen(),
         transition: Transition.fadeIn,
         transitionDuration: const Duration(milliseconds: 600),
         middlewares: [
@@ -92,7 +94,7 @@ List<GetPage> appRoutes() =>
       ),
       GetPage(
         name: '/space/connections',
-        page: () => const ConnectionsRoomScreen(management: true),
+        page: () => ConnectionsRoomScreen(management: true),
         transition: Transition.fadeIn,
         transitionDuration: const Duration(milliseconds: 700),
         middlewares: [
@@ -116,7 +118,7 @@ List<GetPage> appRoutes() =>
       ),
       GetPage(
         name: '/space/agents',
-        page: () => const IntelligenceChamberScreen(),
+        page: () => IntelligenceChamberScreen(),
         transition: Transition.fadeIn,
         transitionDuration: const Duration(milliseconds: 600),
         middlewares: [
@@ -159,6 +161,9 @@ List<GetPage> appRoutes() =>
       };
       if (public.contains(page.name)) return page;
       return page.copy(
+        page: canSwitchModeOnRoute(page.name.replaceAll(':id', '1'))
+            ? () => ModeAwarePage(builder: page.page)
+            : page.page,
         middlewares: [
           AppRouteGuard(canActivate: (u) => u != null),
           ...?page.middlewares,

@@ -18,7 +18,7 @@ List<GetPage> nodeRoutes() => [
       ),
       GetPage(
         name: '/nodes/create',
-        page: () => const NodeCreateScreen(),
+        page: () => NodeCreateScreen(),
         binding: NodeCreateBinding(),
         middlewares: [
           AppRouteGuard(canActivate: (user) => NodePolicy(user).create()),
@@ -26,7 +26,7 @@ List<GetPage> nodeRoutes() => [
       ),
       GetPage(
         name: '/nodes/update',
-        page: () => const NodeUpdateScreen(),
+        page: () => NodeUpdateScreen(),
         binding: NodeUpdateBinding(),
         middlewares: [
           AppRouteGuard(canActivate: (user) => NodePolicy(user).create()),
@@ -34,7 +34,7 @@ List<GetPage> nodeRoutes() => [
       ),
       GetPage(
         name: '/nodes/graph',
-        page: () => const NodeGraphScreen(),
+        page: () => NodeGraphScreen(),
         middlewares: [
           AppRouteGuard(canActivate: (user) => NodePolicy(user).viewAny()),
         ],

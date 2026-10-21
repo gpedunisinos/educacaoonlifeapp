@@ -10,6 +10,14 @@ import 'package:unisinos_usp_app/widgets/ai_assistant_launcher.dart';
 
 class LocalUser extends UserController {
   @override
+  @override
+  Future<void> chooseMode(String mode, {bool navigate = true}) async {
+    user.value = AuthUser.fromJson({
+      ...user.value!.toJson(),
+      'usage_mode': mode,
+    });
+  }
+
   // This fake intentionally avoids preferences and network initialization.
   // ignore: must_call_super
   void onInit() {}
@@ -39,16 +47,21 @@ void main() {
         usageMode: 'explorer',
       );
       AiAssistantLauncher.activeRoute.value = '/home';
+      AiAssistantLauncher.modeOverlayBlocked.value = false;
       await tester.pumpWidget(
         GetMaterialApp(
           routingCallback: AiAssistantLauncher.didNavigate,
           getPages: [
             GetPage(
+              name: '/home',
+              page: () => const Scaffold(body: Text('Página de origem')),
+            ),
+            GetPage(
               name: '/choose_mode',
               page: () => const Scaffold(body: Text('Escolha de modo')),
             ),
           ],
-          home: const Scaffold(body: Text('Página de origem')),
+          initialRoute: '/home',
           builder: (context, child) =>
               Overlay.wrap(child: AiAssistantLauncher(child: child!)),
         ),
@@ -105,14 +118,21 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 350));
       expect(find.byTooltip('Abrir Iareté e Locker'), findsOneWidget);
-      await tester.tap(find.byTooltip('Abrir Iareté e Locker'));
-      await tester.pump();
-      await tester.tap(find.text('Locker'));
-      await tester.pumpAndSettle();
       await tester.tap(find.text('Explorador'));
       await tester.pumpAndSettle();
-      expect(find.text('Seu Locker'), findsNothing);
-      expect(find.text('Escolha de modo'), findsOneWidget);
+      expect(find.text('Escolha de modo'), findsNothing);
+      expect(find.text('Página de origem'), findsOneWidget);
+      expect(find.text('Inventor'), findsOneWidget);
+      expect(Get.currentRoute, '/home');
+      AiAssistantLauncher.modeOverlayBlocked.value = true;
+      await tester.pump();
+      expect(find.text('Inventor'), findsNothing);
+      AiAssistantLauncher.modeOverlayBlocked.value = false;
+      await tester.pump();
+      expect(find.text('Inventor'), findsOneWidget);
+      AiAssistantLauncher.activeRoute.value = '/living_clues/update';
+      await tester.pump();
+      expect(find.text('Inventor'), findsNothing);
 
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());

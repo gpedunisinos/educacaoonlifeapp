@@ -28,7 +28,7 @@ List<GetPage> livingClueRoutes() => [
       ),
       GetPage(
         name: '/living_clues/map',
-        page: () => const LivingClueMapScreen(),
+        page: () => LivingClueMapScreen(),
         transition: Transition.fadeIn,
         transitionDuration: const Duration(milliseconds: 900),
         binding: LivingClueMapBinding(),
@@ -39,28 +39,28 @@ List<GetPage> livingClueRoutes() => [
       ),
       GetPage(
         name: '/living_clues/type_select',
-        page: () => const LivingClueTypeSelectScreen(),
+        page: () => LivingClueTypeSelectScreen(),
         middlewares: [
           AppRouteGuard(canActivate: (user) => LivingCluePolicy(user).create()),
         ],
       ),
       GetPage(
         name: '/living_clues/pre_create',
-        page: () => const LivingCluePreCreateScreen(),
+        page: () => LivingCluePreCreateScreen(),
         middlewares: [
           AppRouteGuard(canActivate: (user) => LivingCluePolicy(user).create()),
         ],
       ),
       GetPage(
         name: '/living_clues/map/create',
-        page: () => const LivingClueMapCreateScreen(),
+        page: () => LivingClueMapCreateScreen(),
         middlewares: [
           AppRouteGuard(canActivate: (user) => LivingCluePolicy(user).create()),
         ],
       ),
       GetPage(
         name: '/living_clues/create',
-        page: () => const LivingClueCreateScreen(),
+        page: () => LivingClueCreateScreen(),
         binding: LivingClueCreateBinding(),
         middlewares: [
           AppRouteGuard(canActivate: (user) => LivingCluePolicy(user).create()),
@@ -68,7 +68,7 @@ List<GetPage> livingClueRoutes() => [
       ),
       GetPage(
         name: '/living_clues/show',
-        page: () => const LivingClueShowScreen(),
+        page: () => LivingClueShowScreen(),
         middlewares: [
           AppRouteGuard(
               canActivate: (user) => LivingCluePolicy(user).viewAny()),
@@ -76,12 +76,12 @@ List<GetPage> livingClueRoutes() => [
       ),
       GetPage(
         name: '/living_clues/:id/chat',
-        page: () => const LivingClueChatScreen(),
+        page: () => LivingClueChatScreen(),
         binding: LivingClueChatBinding(),
       ),
       GetPage(
         name: '/living_clues/update',
-        page: () => const LivingClueUpdateScreen(),
+        page: () => LivingClueUpdateScreen(),
         binding: LivingClueUpdateBinding(),
         middlewares: [
           AppRouteGuard(canActivate: (user) => LivingCluePolicy(user).create()),
@@ -89,7 +89,7 @@ List<GetPage> livingClueRoutes() => [
       ),
       GetPage(
         name: '/living_clues/connect',
-        page: () => const LivingClueConnectScreen(),
+        page: () => LivingClueConnectScreen(),
         binding: ClueConnectionCreateBinding(),
         middlewares: [
           AppRouteGuard(canActivate: (user) => LivingCluePolicy(user).create()),
@@ -97,7 +97,7 @@ List<GetPage> livingClueRoutes() => [
       ),
       GetPage(
           name: '/living_clues/:id',
-          page: () => const LivingClueShowScreen(),
+          page: () => LivingClueShowScreen(),
           middlewares: [
             AppRouteGuard(canActivate: (u) => LivingCluePolicy(u).viewAny())
           ]),

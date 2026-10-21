@@ -19,7 +19,7 @@ List<GetPage> chatTemplateRoutes() => [
       ),
       GetPage(
         name: '/chat_templates/chat',
-        page: () => const ChatTemplateChatScreen(),
+        page: () => ChatTemplateChatScreen(),
         binding: ChatTemplateChatBinding(),
         middlewares: [
           AppRouteGuard(
@@ -28,7 +28,7 @@ List<GetPage> chatTemplateRoutes() => [
       ),
       GetPage(
         name: '/chat_templates/create',
-        page: () => const ChatTemplateCreateScreen(),
+        page: () => ChatTemplateCreateScreen(),
         binding: ChatTemplateCreateBinding(),
         middlewares: [
           AppRouteGuard(
@@ -37,7 +37,7 @@ List<GetPage> chatTemplateRoutes() => [
       ),
       GetPage(
         name: '/chat_templates/update',
-        page: () => const ChatTemplateUpdateScreen(),
+        page: () => ChatTemplateUpdateScreen(),
         binding: ChatTemplateUpdateBinding(),
         middlewares: [
           AppRouteGuard(

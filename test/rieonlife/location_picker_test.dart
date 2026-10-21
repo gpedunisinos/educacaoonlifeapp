@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/models/environmental_layer_model.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -19,6 +20,45 @@ class OfflineTiles extends TileProvider {
 }
 
 void main() {
+  testWidgets(
+    'satellite opens by default and switching keeps the selected point',
+    (tester) async {
+      final satellite = EnvironmentalLayerModel.fromJson({
+        'id': 'satellite',
+        'available': true,
+        'map_role': 'basemap',
+        'tile_url': '/tiles/satellite/{z}/{x}/{y}.jpg',
+      });
+      await tester.pumpWidget(
+        MaterialApp(
+          home: LivingClueLocationScreen(
+            initialPoint: const LatLng(1, 2),
+            tileProvider: OfflineTiles(),
+            loadLayers: () async => [satellite],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<TileLayer>(find.byType(TileLayer)).urlTemplate,
+        contains('/tiles/satellite/'),
+      );
+      await tester.tap(find.text('Mapa'));
+      await tester.pump();
+      expect(
+        tester.widget<TileLayer>(find.byType(TileLayer)).urlTemplate,
+        contains('openstreetmap'),
+      );
+      expect(find.text('1.000000, 2.000000'), findsOneWidget);
+      await tester.tap(find.text('Satélite'));
+      await tester.pump();
+      expect(
+        tester.widget<TileLayer>(find.byType(TileLayer)).urlTemplate,
+        contains('/tiles/satellite/'),
+      );
+      expect(find.text('1.000000, 2.000000'), findsOneWidget);
+    },
+  );
   testWidgets('search selects a point, confirmation returns it to the form', (
     tester,
   ) async {
