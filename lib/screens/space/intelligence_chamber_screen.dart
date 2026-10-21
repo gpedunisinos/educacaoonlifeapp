@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -302,12 +303,17 @@ class _IntelligenceChamberScreenState extends State<IntelligenceChamberScreen>
               motion.value * math.pi * 2,
               colorFor(agent),
               sending,
+              agent?.id,
+              {
+                for (final item in agents) item.id,
+                if (agent != null) agent.id,
+              }.toList(),
             ),
             child: SizedBox.expand(
               child: Align(
                 alignment: const Alignment(0, .85),
                 child: Text(
-                  small ? '' : 'PRESENÇA HOLOGRÁFICA',
+                  small ? '' : 'PONTO EM DESTAQUE · ${agent?.name ?? ''}',
                   style: TextStyle(
                     color: colorFor(agent),
                     letterSpacing: 2,
@@ -1012,10 +1018,19 @@ class _ChamberPainter extends CustomPainter {
 }
 
 class _PresencePainter extends CustomPainter {
-  const _PresencePainter(this.phase, this.tint, this.responding);
+  const _PresencePainter(
+    this.phase,
+    this.accent,
+    this.responding,
+    this.selectedId,
+    this.agentIds,
+  );
   final double phase;
-  final Color tint;
+  final Color accent;
   final bool responding;
+  final int? selectedId;
+  final List<int> agentIds;
+  static const tint = Color(0xFF7EDCEB);
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width * .5, size.height * .43);
@@ -1023,7 +1038,7 @@ class _PresencePainter extends CustomPainter {
     final glow = Paint()
       ..shader = RadialGradient(
         colors: [
-          tint.withValues(alpha: responding ? .22 : .12),
+          tint.withValues(alpha: .12),
           tint.withValues(alpha: .035),
           Colors.transparent,
         ],
@@ -1074,17 +1089,47 @@ class _PresencePainter extends CustomPainter {
         Rect.fromCenter(center: Offset.zero, width: r * 2.7, height: r * .65),
         pen..color = tint.withValues(alpha: .38),
       );
-      for (var i = 0; i < 3; i++) {
-        final a = phase * (orbit.isEven ? 1 : -1) + i * 2.1;
+      // Real agent IDs keep their own orbit/position across selection and paging.
+      // Dim anonymous points complete the field when only a few agents exist.
+      final nodes = [...agentIds];
+      for (var i = 0; nodes.length < 9; i++) {
+        nodes.add(-i - 1);
+      }
+      for (final id in nodes.where((id) => id.abs() % 3 == orbit)) {
+        final a = phase * (orbit.isEven ? 1 : -1) + id * 2.399963229728653;
         final p = Offset(math.cos(a) * r * 1.35, math.sin(a) * r * .325);
+        final active = id == selectedId;
+        final pulse = .5 + .5 * math.sin(phase * 16);
+        final nodeColor = active ? accent : tint;
+        if (active) {
+          canvas.drawCircle(
+            p,
+            15 + pulse * 5 + (responding ? 3 : 0),
+            Paint()
+              ..color = nodeColor.withValues(alpha: .22 + pulse * .12)
+              ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 9),
+          );
+          canvas.drawCircle(
+            p,
+            8 + pulse * 3,
+            Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 1.1
+              ..color = nodeColor.withValues(alpha: .55 + pulse * .3),
+          );
+        }
         canvas.drawCircle(
           p,
-          3.3,
+          active ? 5 : 3.3,
           Paint()
-            ..color = tint
+            ..color = nodeColor.withValues(alpha: active ? 1 : .65)
             ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
         );
-        canvas.drawCircle(p, 1.5, Paint()..color = Colors.white);
+        canvas.drawCircle(
+          p,
+          active ? 3.2 : 1.5,
+          Paint()..color = active ? Colors.white : tint.withValues(alpha: .8),
+        );
       }
       canvas.restore();
     }
@@ -1121,5 +1166,9 @@ class _PresencePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_PresencePainter old) =>
-      phase != old.phase || tint != old.tint || responding != old.responding;
+      phase != old.phase ||
+      accent != old.accent ||
+      responding != old.responding ||
+      selectedId != old.selectedId ||
+      !listEquals(agentIds, old.agentIds);
 }

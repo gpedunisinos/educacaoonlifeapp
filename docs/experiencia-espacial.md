@@ -192,3 +192,9 @@ O painel inferior passa a ocupar 88% da largura no desktop, com mais altura e es
 No celular, a Iareté aparece acima do texto, com fluxo de 160×70 px e texto de 14 px. O console limita a altura a 70% da tela e permite rolagem quando necessário, mantendo os controles acessíveis sem reduzir novamente as letras. Há ajuste específico para paisagem de pouca altura.
 
 Validação: navegador em 1440×1000, 1366×768 e 390×844, incluindo cruzeiro e chegada à Terra. Bundle regenerado; análise Dart sem erros, com os 127 avisos/informações existentes. Evidência: `space-larger-console.jpg`.
+
+### Agente selecionado como um ponto da constelação
+
+A animação da Câmara de Inteligências mantém a malha, órbitas, projeção e pontos comuns em ciano estável. Cada agente disponível recebe um ponto com órbita e fase derivadas de seu ID, preservadas ao trocar a seleção ou carregar mais agentes. Apenas o ponto selecionado ganha núcleo maior, halo pulsante e a cor do agente. O nome em destaque aparece abaixo da animação. No modo de movimento reduzido, o ponto continua destacado sem pulsar. Durante uma resposta, o reforço de brilho permanece restrito ao ponto ativo.
+
+Validação: quatro testes da câmara aprovados; análise Dart sem erros, com os 127 avisos/informações existentes; build web concluído. No navegador, troca de IAraeté 6 para IAraeté - Semana 5 confirmou a permanência da cor da constelação e a mudança do ponto em destaque. Evidência: `space-agent-selected-point.jpg`.
