@@ -79,6 +79,8 @@ class PresenceService extends GetxService {
   Timer? heartbeat, retry, authTimeout;
   int generation = 0, version = -1, attempt = 0;
   String section = 'platform';
+  String cockpitSection = 'cockpit';
+  bool cockpitActive = false;
   DateTime lastMessage = DateTime.now();
   bool disposed = false;
   void attach(UserController users) {
@@ -89,7 +91,12 @@ class PresenceService extends GetxService {
   void setAccount(AuthUser? next) {
     if (next?.id == account?.id && next?.token == account?.token) return;
     disconnect(bye: true);
+    final identityChanged = next?.id != account?.id;
     account = next;
+    if (identityChanged) {
+      cockpitSection = 'cockpit';
+      if (cockpitActive) section = 'cockpit';
+    }
     participants.clear();
     self = '';
     attempt = 0;
@@ -98,9 +105,29 @@ class PresenceService extends GetxService {
 
   void route(String route) {
     if (route.isEmpty) return;
-    final next = presenceSection(route);
+    final mapped = presenceSection(route);
+    cockpitActive = mapped == 'cockpit';
+    final next = cockpitActive ? cockpitSection : mapped;
     if (next == section) return;
     section = next;
+    sendState(interacted: true);
+  }
+
+  /// The scene reports only a completed arrival or departure, never a selected
+  /// destination. Ignore stale/covered frames while another module is open.
+  void cockpitLocation(String destination) {
+    if (!cockpitActive ||
+        ![
+          'cockpit',
+          'earth',
+          'research',
+          'observatory',
+          'agents',
+        ].contains(destination))
+      return;
+    cockpitSection = destination;
+    if (section == destination) return;
+    section = destination;
     sendState(interacted: true);
   }
 

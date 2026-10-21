@@ -104,6 +104,13 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
 
   Future<void> onMessage(Map<String, dynamic> data) async {
     if (!mounted) return;
+    if (data['type'] == 'presence-location') {
+      final region = data['destination'];
+      if (region is String && Get.isRegistered<PresenceService>()) {
+        Get.find<PresenceService>().cockpitLocation(region);
+      }
+      return;
+    }
     if (data['type'] == 'presence-interaction') {
       if (Get.isRegistered<PresenceService>())
         Get.find<PresenceService>().interact();

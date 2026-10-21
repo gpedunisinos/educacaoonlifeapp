@@ -538,6 +538,7 @@ function navigate() {
   }
   mapDeparture = { ...mapShipPoint };
   travelling = true;
+  emit("presence-location", { destination: "cockpit" });
   renderLocalPanel();
   if (destinationWorld) destinationWorld.visible = true;
   travelTime = 0;
@@ -582,6 +583,7 @@ function finishTravel() {
   travelling = false;
   arrived = true;
   current = selected.id;
+  emit("presence-location", { destination: current });
   renderLocalPanel();
   audio.throttle(0.12);
   audio.arrival();
@@ -766,6 +768,7 @@ window.receiveSpaceCommand = (data) => {
     $("direct").disabled = !allowed.length;
     renderDestinations();
     offerTutorial();
+    emit("presence-location", { destination: arrived && !travelling ? current : "cockpit" });
   }
   if(data.type==='chat-state') {const count=Number.isInteger(data.unread)?Math.max(0,data.unread):0;const button=$('conversations-open');button.textContent=count?`Conversas · ${count}`:'Conversas';button.setAttribute('aria-label',count?`Conversas: ${count} mensagens não lidas`:'Conversas entre participantes');}
   if (data.type === "presence") remoteFleet.update(data);
@@ -779,6 +782,7 @@ window.receiveSpaceCommand = (data) => {
     if (typeof data.audioEnabled === "boolean" && audio.enabled !== data.audioEnabled) audio.enable(data.audioEnabled).then(updateSound);
     hostPaused = false;
     restoreCockpit();
+    emit("presence-location", { destination: arrived && !travelling ? current : "cockpit" });
     setPaused(document.hidden);
     if (data.returned) {
       record("Retorno ao cockpit · posição preservada");
@@ -1527,7 +1531,7 @@ function tick(now) {
         easedAlignment,
       );
     }
-    remoteFleet.draw(dt, camera, reduced, started && !tutorial.active && !travelling, arrived ? current : travelling ? "jump" : "");
+    remoteFleet.draw(dt, camera, reduced, started && !tutorial.active && !travelling, travelling ? "jump" : arrived ? current : "cockpit");
     renderer.render(scene, camera);
   }
   updateMapShip();

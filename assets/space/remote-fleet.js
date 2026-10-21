@@ -52,7 +52,7 @@ export class RemoteFleet {
       if(!this.available) break;
       let ship=this.ships.get(id);
       if(!ship) {
-        const object=new THREE.Group();object.scale.setScalar(.7);
+        const object=new THREE.Group();object.visible=false;object.scale.setScalar(.7);
         const hull=new THREE.Mesh(this.bodyGeometry,this.material);hull.rotation.x=-Math.PI/2;object.add(hull);
         const wings=new THREE.Mesh(this.wingGeometry,this.material);wings.position.z=.14;wings.rotation.z=.09;object.add(wings);
         const trim=new THREE.Mesh(this.trimGeometry,this.light);trim.position.set(0,.04,.14);object.add(trim);
@@ -62,6 +62,10 @@ export class RemoteFleet {
         object.userData.participant=id;
         label.onclick=()=>this.showParticipant(id);this.layer.append(label);
         ship={object,label,seed:this.hash(id),initialized:false,person:p,engine};this.ships.set(id,ship);this.group.add(object);
+      }
+      if(ship.person.destination!==p.destination) {
+        for(const slots of this.slots.values())slots.delete(id);
+        ship.initialized=false;ship.cruiseTarget=null;
       }
       ship.person=p;ship.label.textContent=p.name;ship.label.title=`${p.name} — ${p.activity}`;
       ship.label.setAttribute('aria-label',`${p.name} — ${p.activity}. Ver identificação`);
@@ -101,11 +105,12 @@ export class RemoteFleet {
     const x=event.clientX/innerWidth,y=event.clientY/innerHeight;
     if(x<.2||x>.8||y<.18||y>.58)return;
     this.pointer.set(x*2-1,-y*2+1);this.raycaster.setFromCamera(this.pointer,camera);
-    const hit=this.raycaster.intersectObjects([...this.ships.values()].map(s=>s.object),true)[0];
+    const hit=this.raycaster.intersectObjects([...this.ships.values()].filter(s=>s.object.visible).map(s=>s.object),true)[0];
     if(!hit) {
       // Keep small ships usable by touch; the name and list remain keyboard alternatives.
       let nearest=null,distance=24;
       for(const ship of this.ships.values()) {
+        if(!ship.object.visible)continue;
         const p=ship.object.position.clone().project(camera);if(p.z<=-1||p.z>=1)continue;
         const pixels=Math.hypot((p.x*.5+.5)*innerWidth-event.clientX,(-p.y*.5+.5)*innerHeight-event.clientY);
         if(pixels<distance){distance=pixels;nearest=ship.person.id;}
@@ -120,7 +125,7 @@ export class RemoteFleet {
     this.ships.clear();
     this.bodyGeometry.dispose();this.wingGeometry.dispose();this.engineGeometry.dispose();this.trimGeometry.dispose();this.trailGeometry.dispose();this.trailMaterial.dispose();this.material.dispose();this.light.dispose();
   }
-  draw(dt,camera,reduced,showLabels=true,area="") {
+  draw(dt,camera,reduced,showLabels=true,area="cockpit") {
     this.time+=dt;
     const occupied=[];
     const forward=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
@@ -128,6 +133,10 @@ export class RemoteFleet {
     const up=new THREE.Vector3(0,1,0).applyQuaternion(camera.quaternion);
     for(const ship of this.ships.values()) {
       const p=ship.person;
+      // The online list is global; the windshield shows this region only.
+      // Never render distant/hidden participants as ships during a local jump.
+      ship.object.visible=this.available && p.destination===area;
+      if(!ship.object.visible) {ship.label.hidden=true;continue;}
       if(!this.slots.has(p.destination)) this.slots.set(p.destination,new Map());
       const slots=this.slots.get(p.destination);
       if(!slots.has(p.id)) {let slot=ship.seed%36;const taken=new Set(slots.values());while(taken.has(slot))slot++;slots.set(p.id,slot);}
@@ -142,8 +151,10 @@ export class RemoteFleet {
       } else {
         target=camera.position.clone().addScaledVector(forward,19+ring*3).addScaledVector(right,Math.cos(angle)*4.5);
         target.addScaledVector(up,1.4+Math.sin(angle)*1.2);
-        if(area && ship.cruiseTarget) target.copy(ship.cruiseTarget);
-        else if(!area) ship.cruiseTarget=target.clone();
+        // Anchor the cruise ship once in world space. It must not be attached
+        // to the observer's camera or follow their continuous route.
+        if(!ship.cruiseTarget) ship.cruiseTarget=target.clone();
+        target.copy(ship.cruiseTarget);
       }
       if(!reduced)target.y+=Math.sin(this.time*.5+angle)*.13;
       if(!ship.initialized || reduced) {ship.object.position.copy(target);ship.initialized=true;} else ship.object.position.lerp(target,1-Math.exp(-dt*1.4));
