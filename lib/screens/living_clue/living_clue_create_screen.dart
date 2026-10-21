@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/screens/space/space_record_shell.dart';
 import 'package:unisinos_usp_app/widgets/living_clue_location_button.dart';
 import 'package:unisinos_usp_app/widgets/living_clue_layout.dart';
 import 'package:flutter/material.dart';
@@ -51,7 +52,10 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
   @override
   void dispose() {
     if (Get.isRegistered<AiAssistantContextService>()) {
-      Get.find<AiAssistantContextService>().unregisterProvider(_contextRoute, _contextProvider);
+      Get.find<AiAssistantContextService>().unregisterProvider(
+        _contextRoute,
+        _contextProvider,
+      );
     }
     _nameController.dispose();
     _descriptionController.dispose();
@@ -94,172 +98,182 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
       _contextRoute,
       _contextProvider,
     );
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
-        leading: const SafeBackButton(),
-        title: const Text('Nova pista viva'),
-      ),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            padding: LivingClueLayout.pagePadding(context),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: const BorderSide(
-                        color: Color(0x8A46B6EC),
-                        width: 1.2,
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.bolt_outlined,
-                                color: Colors.indigo,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Dados principais',
-                                style: Theme.of(context).textTheme.titleMedium
-                                    ?.copyWith(fontWeight: FontWeight.w700),
-                              ),
-                            ],
-                          ),
-                          Insets.large.height,
-                          InputText(
-                            hintText: 'Nome',
-                            controller: _nameController,
-                            validator: (value) => PValidator([
-                              PRuleRequired(value, message: 'Obrigatório'),
-                              PRuleMaxString(
-                                value,
-                                255,
-                                message: 'Máximo de 255 caracteres',
-                              ),
-                            ]).val(),
-                          ),
-                          Insets.large.height,
-                          InputText(
-                            hintText: 'Categoria',
-                            readOnly: true,
-                            controller: _categoryController,
-                            validator: (_) => _categoryId == null
-                                ? 'Selecione uma categoria antes'
-                                : null,
-                          ),
-                          Insets.large.height,
-                          LivingClueDescriptionEditor(
-                            controller: _descriptionController,
-                          ),
-                          Insets.large.height,
-                          if (_metadataTags.isNotEmpty) ...[
-                            const Text('Metadata (opcional)'),
-                            const SizedBox(height: 8),
-                            ..._metadataTags.map(
-                              (tag) => Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
-                                child: InputText(
-                                  hintText: _formatTagLabel(tag),
-                                  controller: _metadataControllers[tag]!,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: const BorderSide(
-                        color: Color(0x8A46B6EC),
-                        width: 1.2,
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.place_outlined,
-                                color: Colors.teal,
-                              ),
-                              const SizedBox(width: 8),
-                              const Text(
-                                'Localização',
-                                style: TextStyle(fontWeight: FontWeight.w700),
-                              ),
-                            ],
-                          ),
-                          Insets.large.height,
-                          LivingClueLocationButton(
-                            latitude: _latitudeController,
-                            longitude: _longitudeController,
-                          ),
-                          const SizedBox(height: 12),
-                          InputNumber(
-                            label: 'Latitude (opcional)',
-                            controller: _latitudeController,
-                          ),
-                          Insets.large.height,
-                          InputNumber(
-                            label: 'Longitude (opcional)',
-                            controller: _longitudeController,
-                          ),
-                          Insets.large.height,
-                          InputText(
-                            hintText: 'URL da imagem (opcional)',
-                            controller: _imageUrlController,
-                          ),
-                          Insets.medium.height,
-                          SwitchListTile(
-                            contentPadding: EdgeInsets.zero,
-                            title: const Text('Ativo'),
-                            value: _isActive,
-                            onChanged: (val) => setState(() => _isActive = val),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Insets.extraLarge.height,
-                  SizedBox(
-                    width: double.infinity,
-                    child: Obx(() {
-                      final bool loading = _controller.isLoading.value;
-                      final String buttonTitle = loading
-                          ? 'Salvando...'
-                          : 'Salvar';
-                      return ActionButton(
-                        theme: ActionButtonTheme.blue,
-                        title: buttonTitle,
-                        onPressed: loading ? null : _save,
-                      );
-                    }),
-                  ),
-                ],
-              ),
-            ),
+    return Theme(
+      data: spaceRecordTheme(),
+      child: Builder(
+        builder: (context) => Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            foregroundColor: Colors.white,
+            leading: const SafeBackButton(),
+            title: const Text('Nova pista viva'),
           ),
-        ],
+          body: Stack(
+            children: [
+              SingleChildScrollView(
+                padding: LivingClueLayout.pagePadding(context),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          side: const BorderSide(
+                            color: Color(0x8A46B6EC),
+                            width: 1.2,
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.bolt_outlined,
+                                    color: Colors.indigo,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Dados principais',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(fontWeight: FontWeight.w700),
+                                  ),
+                                ],
+                              ),
+                              Insets.large.height,
+                              InputText(
+                                hintText: 'Nome',
+                                controller: _nameController,
+                                validator: (value) => PValidator([
+                                  PRuleRequired(value, message: 'Obrigatório'),
+                                  PRuleMaxString(
+                                    value,
+                                    255,
+                                    message: 'Máximo de 255 caracteres',
+                                  ),
+                                ]).val(),
+                              ),
+                              Insets.large.height,
+                              InputText(
+                                hintText: 'Categoria',
+                                readOnly: true,
+                                controller: _categoryController,
+                                validator: (_) => _categoryId == null
+                                    ? 'Selecione uma categoria antes'
+                                    : null,
+                              ),
+                              Insets.large.height,
+                              LivingClueDescriptionEditor(
+                                controller: _descriptionController,
+                              ),
+                              Insets.large.height,
+                              if (_metadataTags.isNotEmpty) ...[
+                                const Text('Metadata (opcional)'),
+                                const SizedBox(height: 8),
+                                ..._metadataTags.map(
+                                  (tag) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 12),
+                                    child: InputText(
+                                      hintText: _formatTagLabel(tag),
+                                      controller: _metadataControllers[tag]!,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          side: const BorderSide(
+                            color: Color(0x8A46B6EC),
+                            width: 1.2,
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.place_outlined,
+                                    color: Colors.teal,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Text(
+                                    'Localização',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Insets.large.height,
+                              LivingClueLocationButton(
+                                latitude: _latitudeController,
+                                longitude: _longitudeController,
+                              ),
+                              const SizedBox(height: 12),
+                              InputNumber(
+                                label: 'Latitude (opcional)',
+                                controller: _latitudeController,
+                              ),
+                              Insets.large.height,
+                              InputNumber(
+                                label: 'Longitude (opcional)',
+                                controller: _longitudeController,
+                              ),
+                              Insets.large.height,
+                              InputText(
+                                hintText: 'URL da imagem (opcional)',
+                                controller: _imageUrlController,
+                              ),
+                              Insets.medium.height,
+                              SwitchListTile(
+                                contentPadding: EdgeInsets.zero,
+                                title: const Text('Ativo'),
+                                value: _isActive,
+                                onChanged: (val) =>
+                                    setState(() => _isActive = val),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Insets.extraLarge.height,
+                      SizedBox(
+                        width: double.infinity,
+                        child: Obx(() {
+                          final bool loading = _controller.isLoading.value;
+                          final String buttonTitle = loading
+                              ? 'Salvando...'
+                              : 'Salvar';
+                          return ActionButton(
+                            theme: ActionButtonTheme.blue,
+                            title: buttonTitle,
+                            onPressed: loading ? null : _save,
+                          );
+                        }),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -278,7 +292,10 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
         'description': QuillDocumentUtils.plainText(_descriptionController),
         'description_delta': _descriptionController.document.toDelta().toJson(),
         'category_id': _categoryId,
-        'metadata': {for (final entry in _metadataControllers.entries) entry.key: entry.value.text},
+        'metadata': {
+          for (final entry in _metadataControllers.entries)
+            entry.key: entry.value.text,
+        },
       },
       visibleFields: <String>[
         'nome',

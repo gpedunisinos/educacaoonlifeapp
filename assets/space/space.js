@@ -749,6 +749,7 @@ window.receiveSpaceCommand = (data) => {
     tutorialConfigured = true;
     tutorialSeen = data.tutorialSeen === true;
     $("management").hidden = data.management !== true;
+    $("meetings").hidden = data.meetings !== true;
     allowed = data.destinations.filter((id) =>
       destinations.some((d) => d.id === id),
     );
@@ -1543,6 +1544,7 @@ $("navigate").onclick = navigate;
 $("skip").onclick = finishTravel;
 $("direct").onclick = openModule;
 $("exit").onclick = () => emit("exit");
+$("meetings").onclick = () => { audio.select(); emit("meetings"); };
 $("management").onclick = () => {
   audio.select();
   emit("management");

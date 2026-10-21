@@ -1,3 +1,5 @@
+import 'package:unisinos_usp_app/models/meeting_room.dart';
+import 'package:unisinos_usp_app/screens/space/meeting_room_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:unisinos_usp_app/screens/space/space_account_panel.dart';
 import 'package:flutter/foundation.dart';
@@ -33,11 +35,15 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
     goal: 'navegar pelos territórios e módulos com a orientação da Iareté',
     filledFields: {
       'destino selecionado': destination,
-      'modo': Get.find<UserController>().user.value?.usageMode ?? 'explorer',
+      'modo': Get.find<UserController>().user.value?.usageMode == 'inventor'
+          ? 'Inventor'
+          : 'Explorador',
     },
     notes: [
       'A Terra abre o Mapa de Pistas em tela cheia. A Lua permite pesquisar pistas, o Observatório explorar problemáticas e o Campo de Inteligências selecionar agentes.',
       'Ações autorizadas nesta conta: ${destinations.keys.join(', ')}. O seletor Explorador/Inventor preserva a rota.',
+      if (kIsWeb && MeetingRoom.enabled)
+        'Encontros abre uma sala em outra aba; a Iareté não acompanha seu conteúdo nem a presença.',
     ],
   );
   Map<String, String> get destinations {
@@ -90,6 +96,7 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
       if (!mounted) return;
       send('configure', {
         'tutorialSeen': tutorialSeen,
+        'meetings': kIsWeb && MeetingRoom.enabled && MeetingRoom.configured,
         'mode': Get.find<UserController>().user.value?.usageMode,
         'destinations': destinations.keys.toList(),
         'management': ClueConnectionPolicy(
@@ -145,6 +152,11 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
       await openAccount();
       return;
     }
+    final meetings =
+        data['type'] == 'meetings' &&
+        kIsWeb &&
+        MeetingRoom.enabled &&
+        MeetingRoom.configured;
     final management =
         data['type'] == 'management' &&
         ClueConnectionPolicy(Get.find<UserController>().user.value).viewAny();
@@ -152,6 +164,7 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
         ? '/management'
         : destinations[data['destination']];
     if (!management &&
+        !meetings &&
         data['type'] != 'assistant' &&
         (data['type'] != 'open' || route == null)) {
       return;
@@ -159,7 +172,9 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
     opening = true;
     send('pause', {'cover': true});
     try {
-      if (data['type'] == 'assistant') {
+      if (meetings) {
+        await showMeetingRoomDialog(context);
+      } else if (data['type'] == 'assistant') {
         final controller = Get.find<AiAssistantController>();
         controller.ensureHistoryLoaded();
         await showModalBottomSheet<void>(

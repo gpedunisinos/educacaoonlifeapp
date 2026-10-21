@@ -310,6 +310,8 @@ class _LivingClueChatScreenState extends State<LivingClueChatScreen> {
         ),
         blockquote: baseStyle,
       ),
+      sizedImageBuilder: (_) =>
+          const Text('[Imagem externa — abra a referência para visualizar]'),
       onTapLink: (_, href, __) async {
         await openAiReference(href);
       },

@@ -54,6 +54,23 @@ void main() {
     },
   );
 
+  test('query-owned drafts cannot replace another record after a rebuild', () {
+    final service = AiAssistantContextService();
+    final first = () => screen('rascunho 1', '/living_clues/update?id=1');
+    final second = () => screen('rascunho 2', '/living_clues/update?id=2');
+    service.registerProvider('/living_clues/update?id=1', first);
+    service.registerProvider('/living_clues/update?id=2', second);
+    service.registerProvider('/living_clues/update?id=1', first);
+    service.setCurrentRoute('/living_clues/update?id=2');
+    expect(service.resolveCurrentContext().screenName, 'rascunho 2');
+    service.unregisterProvider('/living_clues/update?id=2', second);
+    expect(service.resolveCurrentContext().screenName, 'Tela desconhecida');
+    service.setCurrentRoute('/living_clues/update?id=1');
+    expect(service.resolveCurrentContext().screenName, 'rascunho 1');
+    service.setCurrentRoute('/living_clues/update?id=3');
+    expect(service.resolveCurrentContext().screenName, 'Tela desconhecida');
+  });
+
   test(
     'structured IDs, bounded visible records and unsaved draft reach the API contract',
     () {

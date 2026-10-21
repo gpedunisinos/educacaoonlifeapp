@@ -20,7 +20,7 @@ class LivingClueDescriptionEditor extends StatelessWidget {
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey.shade400),
+            border: Border.all(color: Theme.of(context).dividerColor),
             borderRadius: BorderRadius.circular(8),
           ),
           clipBehavior: Clip.antiAlias,
@@ -42,7 +42,7 @@ class LivingClueDescriptionEditor extends StatelessWidget {
                   showIndent: false,
                 ),
               ),
-              Divider(height: 1, color: Colors.grey.shade300),
+              Divider(height: 1, color: Theme.of(context).dividerColor),
               Padding(
                 padding: const EdgeInsets.all(12),
                 child: QuillEditor.basic(

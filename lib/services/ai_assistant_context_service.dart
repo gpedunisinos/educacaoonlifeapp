@@ -7,7 +7,17 @@ class AiAssistantContextService extends GetxService {
   final Map<String, List<AiAssistantContextProvider>> _providers = {};
   final RxString currentRoute = ''.obs;
 
-  String _routeKey(String route) => Uri.tryParse(route)?.path ?? route;
+  String _routeKey(String route) {
+    final uri = Uri.tryParse(route);
+    if (uri == null) return route;
+    final keys = uri.queryParametersAll.keys.toList()..sort();
+    return Uri(
+      path: uri.path,
+      queryParameters: keys.isEmpty
+          ? null
+          : {for (final key in keys) key: uri.queryParametersAll[key]!},
+    ).toString();
+  }
 
   void registerProvider(String route, AiAssistantContextProvider provider) {
     final providers = _providers.putIfAbsent(_routeKey(route), () => []);
@@ -31,7 +41,10 @@ class AiAssistantContextService extends GetxService {
     final route = currentRoute.value.isEmpty
         ? Get.currentRoute
         : currentRoute.value;
-    final providers = _providers[_routeKey(route)];
+    final exact = _providers[_routeKey(route)];
+    // Generic screen providers may serve query variants, but a provider owned
+    // by another record's query must never supply its draft or references.
+    final providers = exact ?? _providers[Uri.tryParse(route)?.path ?? route];
     if (providers != null && providers.isNotEmpty) return providers.last();
 
     return AiAssistantScreenContext(

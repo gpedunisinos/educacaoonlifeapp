@@ -160,6 +160,10 @@ void main() {
             'future-provider': {'v': 2, 'reference': 'opaque'},
           },
         },
+        {
+          'insert': {'image': 'https://example.com/image.png'},
+        },
+        {'insert': '\n'},
         {'insert': '\nFinal da pista\n'},
       ]);
       await tester.pumpWidget(
@@ -182,8 +186,9 @@ void main() {
       expect(find.textContaining('Integração preservada.'), findsOneWidget);
       expect(
         find.textContaining('Conteúdo de outra versão preservado'),
-        findsOneWidget,
+        findsNWidgets(2),
       );
+      expect(find.byType(Image), findsNothing);
       expect(find.text('Abrir na origem'), findsNothing);
       expect(
         find.textContaining('Final da pista', findRichText: true),

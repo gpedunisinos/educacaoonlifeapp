@@ -269,7 +269,7 @@ class _MessageBubble extends StatelessWidget {
                                   decoration: TextDecoration.underline,
                                 ),
                               ),
-                          imageBuilder: (_, _, _) => const Text(
+                          sizedImageBuilder: (_) => const Text(
                             '[Imagem externa — abra a referência para visualizar]',
                           ),
                           onTapLink: (_, href, _) => openAiReference(

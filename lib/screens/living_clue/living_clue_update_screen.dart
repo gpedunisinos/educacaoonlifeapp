@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/screens/space/space_record_shell.dart';
 import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
 import 'package:unisinos_usp_app/widgets/living_clue_location_button.dart';
@@ -49,42 +50,76 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
   Map<String, dynamic> _initialMetadata = {};
 
   late final String _contextRoute = Get.currentRoute;
-  late final AiAssistantContextProvider _contextProvider = () => AiAssistantScreenContext(
-    screenName: 'Edição de pista', route: _contextRoute,
+  late final AiAssistantContextProvider
+  _contextProvider = () => AiAssistantScreenContext(
+    screenName: 'Edição de pista',
+    route: _contextRoute,
     stage: _filled ? 'edição de rascunho' : 'carregamento do registro',
-    goal: 'ajudar a revisar a pista sem confundir alterações locais com o registro salvo',
+    goal:
+        'ajudar a revisar a pista sem confundir alterações locais com o registro salvo',
     references: {
-      if (_controller.livingClueId != null) 'living_clue_id': _controller.livingClueId!,
+      if (_controller.livingClueId != null)
+        'living_clue_id': _controller.livingClueId!,
       if (_categoryId != null) 'category_id': _categoryId!,
     },
-    visibleFields: const ['nome', 'categoria', 'descrição', 'metadados', 'anexos', 'latitude', 'longitude', 'ativo'],
-    filledFields: _filled ? {
-      'nome': _nameController.text, 'categoria': _categoryController.text,
-      'descrição': QuillDocumentUtils.plainText(_descriptionController),
-      'latitude': _latitudeController.text, 'longitude': _longitudeController.text,
-    } : {},
-    draft: _filled ? {
-      'unsaved': true, 'name': _nameController.text,
-      'description': QuillDocumentUtils.plainText(_descriptionController),
-        'description_delta': _descriptionController.document.toDelta().toJson(),
-      'category_id': _categoryId, 'active': _isActive,
-      'metadata': {for (final entry in _metadataControllers.entries) entry.key: entry.value.text},
-    } : {},
-    notes: const ['Os campos do formulário são um rascunho, ainda não confirmado no backend. A pista pode não possuir localização.'],
+    visibleFields: const [
+      'nome',
+      'categoria',
+      'descrição',
+      'metadados',
+      'anexos',
+      'latitude',
+      'longitude',
+      'ativo',
+    ],
+    filledFields: _filled
+        ? {
+            'nome': _nameController.text,
+            'categoria': _categoryController.text,
+            'descrição': QuillDocumentUtils.plainText(_descriptionController),
+            'latitude': _latitudeController.text,
+            'longitude': _longitudeController.text,
+          }
+        : {},
+    draft: _filled
+        ? {
+            'unsaved': true,
+            'name': _nameController.text,
+            'description': QuillDocumentUtils.plainText(_descriptionController),
+            'description_delta': _descriptionController.document
+                .toDelta()
+                .toJson(),
+            'category_id': _categoryId,
+            'active': _isActive,
+            'metadata': {
+              for (final entry in _metadataControllers.entries)
+                entry.key: entry.value.text,
+            },
+          }
+        : {},
+    notes: const [
+      'Os campos do formulário são um rascunho, ainda não confirmado no backend. A pista pode não possuir localização.',
+    ],
   );
 
   @override
   void initState() {
     super.initState();
     if (Get.isRegistered<AiAssistantContextService>()) {
-      Get.find<AiAssistantContextService>().registerProvider(_contextRoute, _contextProvider);
+      Get.find<AiAssistantContextService>().registerProvider(
+        _contextRoute,
+        _contextProvider,
+      );
     }
   }
 
   @override
   void dispose() {
     if (Get.isRegistered<AiAssistantContextService>()) {
-      Get.find<AiAssistantContextService>().unregisterProvider(_contextRoute, _contextProvider);
+      Get.find<AiAssistantContextService>().unregisterProvider(
+        _contextRoute,
+        _contextProvider,
+      );
     }
     _nameController.dispose();
     _descriptionController.dispose();
@@ -99,127 +134,136 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
-        leading: const SafeBackButton(),
-        title: const Text('Editar pista viva'),
-        actions: [
-          Obx(() {
-            return IconButton(
-              tooltip: 'Abrir painel de conexão',
-              onPressed: _controller.livingClue.value == null
-                  ? null
-                  : _openConnectionPanel,
-              icon: const Icon(Icons.share_outlined),
-            );
-          }),
-        ],
-      ),
-      body: Stack(
-        children: [
-          Obx(() {
-            if (_controller.livingClueId == null) {
-              return const Center(
-                child: Text(
-                  'Pista não informada.',
-                  style: TextStyle(color: Colors.white),
-                ),
-              );
-            }
-            if (_controller.isLoading.value &&
-                _controller.livingClue.value == null) {
-              return const Center(
-                child: CircularProgressIndicator(color: Colors.white),
-              );
-            }
-            if (_controller.livingClue.value == null) {
-              return const Center(
-                child: Text(
-                  'Pista não encontrada.',
-                  style: TextStyle(color: Colors.white),
-                ),
-              );
-            }
+    return Theme(
+      data: spaceRecordTheme(),
+      child: Builder(
+        builder: (context) => Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            foregroundColor: Colors.white,
+            leading: const SafeBackButton(),
+            title: const Text('Editar pista viva'),
+            actions: [
+              Obx(() {
+                return IconButton(
+                  tooltip: 'Abrir painel de conexão',
+                  onPressed: _controller.livingClue.value == null
+                      ? null
+                      : _openConnectionPanel,
+                  icon: const Icon(Icons.share_outlined),
+                );
+              }),
+            ],
+          ),
+          body: Stack(
+            children: [
+              Obx(() {
+                if (_controller.livingClueId == null) {
+                  return const Center(
+                    child: Text(
+                      'Pista não informada.',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  );
+                }
+                if (_controller.isLoading.value &&
+                    _controller.livingClue.value == null) {
+                  return const Center(
+                    child: CircularProgressIndicator(color: Colors.white),
+                  );
+                }
+                if (_controller.livingClue.value == null) {
+                  return const Center(
+                    child: Text(
+                      'Pista não encontrada.',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  );
+                }
 
-            if (!_filled && _controller.livingClue.value != null) {
-              _fillFromModel(_controller.livingClue.value!);
-              _filled = true;
-            }
+                if (!_filled && _controller.livingClue.value != null) {
+                  _fillFromModel(_controller.livingClue.value!);
+                  _filled = true;
+                }
 
-            if (!_metadataLoaded && !_loadingCategory && _categoryId != null) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                _loadCategoryMetadata(_categoryId!, _initialMetadata);
-              });
-            }
+                if (!_metadataLoaded &&
+                    !_loadingCategory &&
+                    _categoryId != null) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _loadCategoryMetadata(_categoryId!, _initialMetadata);
+                  });
+                }
 
-            if (!_attachmentsLoaded && _controller.livingClue.value != null) {
-              _attachmentsLoaded = true;
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                _loadAttachments(_controller.livingClue.value!.id);
-              });
-            }
+                if (!_attachmentsLoaded &&
+                    _controller.livingClue.value != null) {
+                  _attachmentsLoaded = true;
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _loadAttachments(_controller.livingClue.value!.id);
+                  });
+                }
 
-            return Stack(
-              children: [
-                SingleChildScrollView(
-                  padding: LivingClueLayout.pagePadding(context),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildInfoCard(context),
-                        const SizedBox(height: 12),
-                        _buildConnectionCard(),
-                        const SizedBox(height: 12),
-                        _buildLocationCard(),
-                        const SizedBox(height: 12),
-                        _buildAttachmentsCard(),
-                        const SizedBox(height: 16),
-                        Row(
+                return Stack(
+                  children: [
+                    SingleChildScrollView(
+                      padding: LivingClueLayout.pagePadding(context),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
-                              child: Obx(() {
-                                final bool loading =
-                                    _controller.isLoading.value;
-                                final String buttonTitle = loading
-                                    ? 'Atualizando...'
-                                    : 'Atualizar';
-                                return ActionButton(
-                                  theme: ActionButtonTheme.blue,
-                                  title: buttonTitle,
-                                  onPressed: loading ? null : _save,
-                                );
-                              }),
-                            ),
-                            const SizedBox(width: 12),
-                            OutlinedButton.icon(
-                              onPressed: _controller.livingClue.value == null
-                                  ? null
-                                  : _openConnectionPanel,
-                              icon: const Icon(Icons.share),
-                              label: const Text('Conectar'),
+                            _buildInfoCard(context),
+                            const SizedBox(height: 12),
+                            _buildConnectionCard(),
+                            const SizedBox(height: 12),
+                            _buildLocationCard(),
+                            const SizedBox(height: 12),
+                            _buildAttachmentsCard(),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Obx(() {
+                                    final bool loading =
+                                        _controller.isLoading.value;
+                                    final String buttonTitle = loading
+                                        ? 'Atualizando...'
+                                        : 'Atualizar';
+                                    return ActionButton(
+                                      theme: ActionButtonTheme.blue,
+                                      title: buttonTitle,
+                                      onPressed: loading ? null : _save,
+                                    );
+                                  }),
+                                ),
+                                const SizedBox(width: 12),
+                                OutlinedButton.icon(
+                                  onPressed:
+                                      _controller.livingClue.value == null
+                                      ? null
+                                      : _openConnectionPanel,
+                                  icon: const Icon(Icons.share),
+                                  label: const Text('Conectar'),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-                if (_controller.isLoading.value || _loadingCategory)
-                  const Positioned(
-                    left: 0,
-                    right: 0,
-                    top: 0,
-                    child: LinearProgressIndicator(),
-                  ),
-              ],
-            );
-          }),
-        ],
+                    if (_controller.isLoading.value || _loadingCategory)
+                      const Positioned(
+                        left: 0,
+                        right: 0,
+                        top: 0,
+                        child: LinearProgressIndicator(),
+                      ),
+                  ],
+                );
+              }),
+            ],
+          ),
+        ),
       ),
     );
   }
