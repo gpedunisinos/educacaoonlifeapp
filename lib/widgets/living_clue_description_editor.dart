@@ -49,7 +49,7 @@ class LivingClueDescriptionEditor extends StatelessWidget {
                   controller: controller,
                   config: const QuillEditorConfig(
                     embedBuilders: [
-                      ClueVideoBuilder(),
+                      ClueVideoBuilder(hideInEditor: true),
                       ClueIntegrationBuilder(),
                     ],
                     unknownEmbedBuilder: UnknownClueEmbedBuilder(),
@@ -62,6 +62,7 @@ class LivingClueDescriptionEditor extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         ClueIntegrationCards(controller: controller),
+        ClueVideoCards(controller: controller),
         ClueLinkPreviews(controller: controller),
       ],
     );

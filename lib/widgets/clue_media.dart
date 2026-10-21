@@ -72,12 +72,106 @@ Set<String> documentLinks(QuillController controller) {
 }
 
 class ClueVideoBuilder extends EmbedBuilder {
-  const ClueVideoBuilder();
+  const ClueVideoBuilder({this.hideInEditor = false});
+  final bool hideInEditor;
   @override
   String get key => 'video';
   @override
   Widget build(BuildContext context, EmbedContext embedContext) =>
-      ClueVideo(url: embedContext.node.value.data.toString());
+      hideInEditor && !embedContext.readOnly
+      ? const SizedBox.shrink()
+      : ClueVideo(url: embedContext.node.value.data.toString());
+}
+
+/// Videos retain their original Delta anchors for compatibility with saved pistas.
+/// Editing uses lightweight cards outside the prose rather than live players.
+class ClueVideoCards extends StatelessWidget {
+  const ClueVideoCards({super.key, required this.controller});
+  final QuillController controller;
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: controller,
+    builder: (context, _) {
+      var offset = 0;
+      final cards = <Widget>[];
+      for (final op in controller.document.toDelta().toJson()) {
+        final insert = op['insert'];
+        final at = offset;
+        offset += insert is String ? insert.length : 1;
+        if (insert is! Map || insert['video'] is! String) continue;
+        final url = insert['video'] as String;
+        cards.add(
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(
+                          Icons.smart_display_outlined,
+                          color: Color(0xFF9CE7DF),
+                        ),
+                        SizedBox(width: 10),
+                        Text(
+                          'Vídeo do YouTube',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'O vídeo será exibido na visualização da pista.',
+                    ),
+                    const SizedBox(height: 8),
+                    Text(url),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 8,
+                      children: [
+                        OutlinedButton.icon(
+                          onPressed: () => insertYouTube(
+                            context,
+                            controller,
+                            initialUrl: url,
+                            offset: at,
+                          ),
+                          icon: const Icon(Icons.edit_outlined),
+                          label: const Text('Editar vídeo'),
+                        ),
+                        TextButton.icon(
+                          onPressed: () => controller.replaceText(
+                            at,
+                            1,
+                            '',
+                            TextSelection.collapsed(offset: at),
+                          ),
+                          icon: const Icon(Icons.delete_outline),
+                          label: const Text('Remover vídeo'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: cards,
+      );
+    },
+  );
 }
 
 class ClueVideo extends StatefulWidget {
@@ -310,58 +404,87 @@ class _ClueLinkPreviewsState extends State<ClueLinkPreviews> {
 
 Future<void> insertYouTube(
   BuildContext context,
-  QuillController controller,
-) async {
-  final selection = controller.selection;
-  final text = TextEditingController();
-  String? error;
+  QuillController controller, {
+  String? initialUrl,
+  int? offset,
+}) async {
   final url = await showDialog<String>(
     context: context,
-    builder: (context) => StatefulBuilder(
-      builder: (context, setState) => AlertDialog(
-        title: const Text('Adicionar vídeo do YouTube'),
-        content: SizedBox(
-          width: 460,
-          child: TextField(
-            controller: text,
-            autofocus: true,
-            decoration: InputDecoration(
-              labelText: 'Endereço do vídeo',
-              hintText: 'https://www.youtube.com/watch?v=…',
-              errorText: error,
-            ),
-          ),
+    builder: (_) => _YouTubeDialog(initialUrl: initialUrl),
+  );
+  if (url == null) return;
+  // Attach new videos at the end without replacing selected description text.
+  final at = (offset ?? controller.document.length - 1).clamp(
+    0,
+    controller.document.length - 1,
+  );
+  controller.replaceText(
+    at,
+    offset == null ? 0 : 1,
+    BlockEmbed.video(url),
+    TextSelection.collapsed(offset: at + 1),
+  );
+}
+
+class _YouTubeDialog extends StatefulWidget {
+  const _YouTubeDialog({this.initialUrl});
+  final String? initialUrl;
+
+  @override
+  State<_YouTubeDialog> createState() => _YouTubeDialogState();
+}
+
+class _YouTubeDialogState extends State<_YouTubeDialog> {
+  late final TextEditingController text = TextEditingController(
+    text: widget.initialUrl,
+  );
+  String? error;
+
+  @override
+  void dispose() {
+    text.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+    title: Text(
+      widget.initialUrl == null
+          ? 'Adicionar vídeo do YouTube'
+          : 'Editar vídeo do YouTube',
+    ),
+    content: SizedBox(
+      width: 460,
+      child: TextField(
+        controller: text,
+        autofocus: true,
+        decoration: InputDecoration(
+          labelText: 'Endereço do vídeo',
+          hintText: 'https://www.youtube.com/watch?v=…',
+          errorText: error,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () {
-              final id = youtubeId(text.text.trim());
-              if (id == null) {
-                setState(
-                  () =>
-                      error = 'Informe um endereço válido de vídeo do YouTube.',
-                );
-                return;
-              }
-              Navigator.pop(context, 'https://www.youtube.com/watch?v=$id');
-            },
-            child: const Text('Inserir vídeo'),
-          ),
-        ],
       ),
     ),
-  );
-  text.dispose();
-  if (url == null) return;
-  final offset = selection.start.clamp(0, controller.document.length - 1);
-  controller.replaceText(
-    offset,
-    selection.isValid ? selection.end - selection.start : 0,
-    BlockEmbed.video(url),
-    TextSelection.collapsed(offset: offset + 1),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: const Text('Cancelar'),
+      ),
+      FilledButton(
+        onPressed: () {
+          final id = youtubeId(text.text.trim());
+          if (id == null) {
+            setState(
+              () => error = 'Informe um endereço válido de vídeo do YouTube.',
+            );
+            return;
+          }
+          Navigator.pop(context, 'https://www.youtube.com/watch?v=$id');
+        },
+        child: Text(
+          widget.initialUrl == null ? 'Adicionar vídeo' : 'Salvar vídeo',
+        ),
+      ),
+    ],
   );
 }
