@@ -235,7 +235,7 @@ void main() {
     expect(find.text('Modo Explorador'), findsOneWidget);
     expect(find.text('Sair da conta'), findsOneWidget);
     expect(commands.last['type'], 'pause');
-    await tester.tap(find.byTooltip('Voltar à nave'));
+    await tester.tap(find.byTooltip('Fechar conta'));
     await tester.pumpAndSettle();
     expect(tester.widget<SpaceView>(find.byType(SpaceView)), same(view));
     expect(commands.last, {

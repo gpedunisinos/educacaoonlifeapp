@@ -96,7 +96,7 @@ class HomeScreen extends StatelessWidget {
           ),
           _HomeMenu(
             title: 'Agentes',
-            subtitle: 'Templates e chats de IA',
+            subtitle: 'Agentes de IA e suas conversas',
             icon: Icons.psychology_alt_rounded,
             color: const Color(0xFF56D5FF),
             onTap: () => Get.toNamed('/chat_templates'),
@@ -230,7 +230,7 @@ class _HomeTopBar extends StatelessWidget {
       builder: (context, constraints) {
         final compact = constraints.maxWidth < 760;
         final title = Text(
-          'Educação Onlife',
+          'Educação OnLIFE',
           maxLines: compact ? 2 : 1,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
@@ -507,7 +507,7 @@ class _SpaceEntry extends StatelessWidget {
   const _SpaceEntry();
   @override
   Widget build(BuildContext context) => Semantics(
-    label: 'Experiência espacial: entrar na nave Educação Onlife',
+    label: 'Experiência espacial: entrar na nave Educação OnLIFE',
     button: true,
     child: Material(
       color: const Color(0xFF0C2333),
@@ -546,7 +546,7 @@ class _SpaceEntry extends StatelessWidget {
                     ),
                     SizedBox(height: 8),
                     Text(
-                      'Entre na nave Educação Onlife',
+                      'Entre na nave Educação OnLIFE',
                       style: TextStyle(
                         fontSize: 23,
                         fontWeight: FontWeight.w600,
@@ -555,7 +555,7 @@ class _SpaceEntry extends StatelessWidget {
                     ),
                     SizedBox(height: 6),
                     Text(
-                      'Explore a Terra e as estações com a Iareté. Uma experiência espacial com som e movimento.',
+                      'Explore os destinos da Educação OnLIFE com a Iareté, sua inteligência de bordo.',
                       style: TextStyle(color: Color(0xFFB8CDD6)),
                     ),
                   ],

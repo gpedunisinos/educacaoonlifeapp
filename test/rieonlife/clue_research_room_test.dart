@@ -237,6 +237,8 @@ void main() {
         matching: find.byType(Scrollable),
       ),
     );
+    await tester.ensureVisible(find.text('Mais pistas'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Mais pistas'));
     await tester.pumpAndSettle();
     expect(find.textContaining('40 pistas carregadas'), findsOneWidget);

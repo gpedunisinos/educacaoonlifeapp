@@ -115,7 +115,7 @@ class _CodeConfirmationScreenState extends State<CodeConfirmationScreen> {
                     width: double.infinity,
                     child: ActionButton(
                       theme: ActionButtonTheme.blue,
-                      title: 'Continue',
+                      title: 'Continuar',
                       onPressed: _doConfirmCode,
                     ),
                   ),

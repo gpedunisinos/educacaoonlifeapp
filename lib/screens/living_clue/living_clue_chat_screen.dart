@@ -107,7 +107,7 @@ class _LivingClueChatScreenState extends State<LivingClueChatScreen> {
       ),
       eyebrow: 'EC–01 / DIÁLOGO COM A PISTA',
       subtitle: const Text(
-        'Converse a partir dos registros e leituras desta pista.',
+        'Esta conversa responde como a própria pista, com base em seus registros e leituras. É separada da Iareté.',
       ),
       actions: [
         IconButton(

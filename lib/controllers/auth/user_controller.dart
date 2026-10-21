@@ -82,7 +82,7 @@ class UserController extends GetxController {
       Get.offAllNamed(modeHome);
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Falha ao realizar login. $error');
+      Get.customSnackbar('Erro', 'Falha ao realizar login.');
       rethrow;
     }
   }
@@ -110,7 +110,7 @@ class UserController extends GetxController {
       }
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Erro ao logar com Google. $error');
+      Get.customSnackbar('Erro', 'Não foi possível entrar com o Google.');
       rethrow;
     }
   }
@@ -159,7 +159,7 @@ class UserController extends GetxController {
       return await webclient.validateRecoverToken(token);
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Erro ao validar Token. $error');
+      Get.customSnackbar('Erro', 'Não foi possível validar o código.');
       rethrow;
     }
   }
@@ -175,7 +175,7 @@ class UserController extends GetxController {
       return true;
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Erro ao enviar email. $error');
+      Get.customSnackbar('Erro', 'Não foi possível enviar o e-mail.');
       rethrow;
     }
   }
@@ -187,7 +187,7 @@ class UserController extends GetxController {
       return user.value!;
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Erro ao alterar a senha. $error');
+      Get.customSnackbar('Erro', 'Erro ao alterar a senha.');
       rethrow;
     }
   }

@@ -61,7 +61,7 @@ class _LockerPanelState extends State<LockerPanel> {
                           onPressed: () => Navigator.pop(context),
                           icon: const Icon(Icons.close, color: Colors.white))
                     ]),
-                    const Text('Referências que inspiram novos caminhos.',
+                    const Text('Guarde aqui as pistas e problemáticas que inspiram sua expedição.',
                         style: TextStyle(color: Colors.white70)),
                     const SizedBox(height: 20),
                     TextField(

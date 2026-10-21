@@ -136,7 +136,7 @@ class _AiAssistantLauncherState extends State<AiAssistantLauncher> {
               left: 16,
               top: 14,
               child: Text(
-                'Educação Onlife',
+                'Educação OnLIFE',
                 style: TextStyle(
                   color: Color(0xFF9DC6D8),
                   letterSpacing: 0.2,

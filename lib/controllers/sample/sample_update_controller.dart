@@ -26,7 +26,7 @@ class SampleUpdateController extends GetxController {
       sample.value = await _webclient.fetchById(id);
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Falha ao carregar sample. $error');
+      Get.customSnackbar('Erro', 'Falha ao carregar sample.');
     } finally {
       isLoading.value = false;
     }
@@ -44,7 +44,7 @@ class SampleUpdateController extends GetxController {
       return true;
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Não foi possível salvar o sample. $error');
+      Get.customSnackbar('Erro', 'Não foi possível salvar o sample.');
       return false;
     } finally {
       isLoading.value = false;

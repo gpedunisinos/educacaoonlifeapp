@@ -68,7 +68,7 @@ class _ChatTemplateIndexScreenState extends State<ChatTemplateIndexScreen> {
                     SizedBox(height: 220),
                     Center(
                       child: Text(
-                        'Nenhum template cadastrado.',
+                        'Nenhum agente cadastrado.',
                         style: TextStyle(color: Colors.white),
                       ),
                     ),
@@ -134,13 +134,13 @@ class _ChatTemplateIndexScreenState extends State<ChatTemplateIndexScreen> {
                                   color: Colors.white,
                                   icon: const Icon(Icons.edit),
                                   onPressed: () => _goToUpdate(template),
-                                  tooltip: 'Editar template',
+                                  tooltip: 'Editar agente',
                                 ),
                                 IconButton(
                                   color: Colors.red.shade300,
                                   icon: const Icon(Icons.delete_outline),
                                   onPressed: () => _confirmDelete(template),
-                                  tooltip: 'Excluir template',
+                                  tooltip: 'Excluir agente',
                                 ),
                               ],
                             )
@@ -185,8 +185,8 @@ class _ChatTemplateIndexScreenState extends State<ChatTemplateIndexScreen> {
   Future<void> _confirmDelete(ChatTemplateModel template) async {
     final bool? confirmed = await Get.dialog<bool>(
       AlertDialog(
-        title: const Text('Excluir template'),
-        content: Text('Deseja excluir o template "${template.name}"?'),
+        title: const Text('Excluir agente'),
+        content: Text('Deseja excluir o agente "${template.name}"?'),
         actions: [
           TextButton(
             onPressed: () => Get.back(result: false),

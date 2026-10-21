@@ -92,7 +92,7 @@ class _LivingCluePreCreateScreenState extends State<LivingCluePreCreateScreen> {
                           const SizedBox(height: 12),
                           Text(
                             _selectedType == null
-                                ? 'Os campos dinâmicos e o visual da pista seguirão a categoria escolhida.'
+                                ? 'A categoria define as informações que você poderá registrar nesta pista.'
                                 : 'Serão exibidas apenas categorias do tipo $_selectedType.',
                             style: TextStyle(color: spaceChatMuted),
                           ),

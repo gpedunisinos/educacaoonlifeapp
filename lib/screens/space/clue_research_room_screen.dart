@@ -313,7 +313,7 @@ class _ClueResearchRoomScreenState extends State<ClueResearchRoomScreen>
                             ),
                             const SizedBox(height: 7),
                             Text(
-                              'Explore o arquivo e encontre seu lugar na Lua de Pistas.',
+                              'O acervo da Terra, inclusive pistas sem localização.',
                               textAlign: TextAlign.center,
                               style: const TextStyle(
                                 color: _muted,
@@ -423,7 +423,7 @@ class _ClueResearchRoomScreenState extends State<ClueResearchRoomScreen>
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        '${clues.length} pistas carregadas${more ? ' · há mais resultados' : ''}',
+                        '${clues.length} ${clues.length == 1 ? 'pista carregada' : 'pistas carregadas'}${more ? ' · há mais resultados' : ''}',
                         style: const TextStyle(color: _muted, fontSize: 12),
                       ),
                     ),

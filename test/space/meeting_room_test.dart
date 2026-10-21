@@ -10,7 +10,7 @@ void main() {
     'meeting inputs normalize to a room on the configured HTTPS server only',
     () {
       expect(
-        MeetingRoom.parse(' Encontro da Educação Onlife ').uri.toString(),
+        MeetingRoom.parse(' Encontro da Educação OnLIFE ').uri.toString(),
         'https://meet.spotec.app/encontro-da-educa%C3%A7%C3%A3o-onlife',
       );
       expect(

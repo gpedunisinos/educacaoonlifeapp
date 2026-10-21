@@ -67,7 +67,7 @@ class _LivingClueTypeSelectScreenState
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'A proxima etapa exibira apenas categorias compativeis com o tipo selecionado.',
+                        'Na próxima etapa, escolha uma categoria compatível com o tipo da pista.',
                         style: TextStyle(color: spaceChatMuted),
                       ),
                       Insets.large.height,
@@ -89,7 +89,7 @@ class _LivingClueTypeSelectScreenState
                           setState(() => _selectedType = value);
                         },
                         validator: (value) => PValidator([
-                          PRuleRequired(value, message: 'Obrigatorio'),
+                          PRuleRequired(value, message: 'Obrigatório'),
                         ]).val(),
                       ),
                       Insets.extraLarge.height,
@@ -116,14 +116,14 @@ class _LivingClueTypeSelectScreenState
     return AiAssistantScreenContext(
       screenName: _screenName,
       route: Get.currentRoute,
-      stage: 'pre-cadastro da pista',
+      stage: 'pré-cadastro da pista',
       goal: 'selecionar o tipo da pista antes da categoria',
       visibleFields: const <String>['tipo', 'continuar'],
       filledFields: <String, String>{
         'tipo selecionado': _selectedType ?? 'nenhum',
       },
       notes: const <String>[
-        'O tipo define quais categorias serao exibidas na proxima tela.',
+        'O tipo define quais categorias serão exibidas na próxima tela.',
       ],
     );
   }

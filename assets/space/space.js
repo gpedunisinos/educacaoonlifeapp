@@ -23,7 +23,7 @@ const destinations = [
   {
     id: "earth",
     description:
-      "Explore as pistas dos territórios em um mapa georreferenciado.",
+      "Explore as pistas pela localização nos territórios.",
     contents: ["Pistas no mapa", "Territórios e localizações"],
     name: "Terra",
     module: "Mapa de Pistas",
@@ -37,7 +37,7 @@ const destinations = [
     message:
       "A Terra guarda as pistas dos nossos territórios. Vamos nos aproximar e explorar essas conexões?",
     arrival:
-      "Chegamos à Terra. O observatório territorial está pronto. Conecte-se ao Mapa de Pistas para explorar em tela cheia.",
+      "Chegamos à Terra. Conecte-se ao Mapa de Pistas para explorar os territórios em tela cheia.",
   },
   {
     id: "research",
@@ -54,7 +54,7 @@ const destinations = [
     focusOffset: [0, -1.75, 0],
     color: 0x85f5d3,
     message:
-      "Rota para a Lua de Pistas. Cada fragmento dessa pequena lua é um card: vivências e descobertas que se aproximam e formam novas paisagens.",
+      "Rota para a Lua de Pistas. Cada card representa uma pista do nosso acervo. Aqui também encontramos as que ainda não têm localização no mapa.",
     arrival:
       "Chegamos à Lua de Pistas. Os cards flutuam ao nosso redor. Conecte-se à Lua de Pistas para explorar as vivências e descobertas dos territórios.",
   },
@@ -138,7 +138,7 @@ function tutorialSteps() {
     {
       targets: ["#assistant-orb"],
       title: "Bem-vindo a bordo!",
-      text: "Olá, sou a Iareté, sua inteligência de bordo. Vou mostrar como explorar a Educação Onlife. A nave já segue pelo espaço: você escolhe o próximo destino, no seu ritmo.",
+      text: "Olá, sou a Iareté, sua inteligência de bordo. Vou mostrar como explorar a Educação OnLIFE. A nave já segue pelo espaço: você escolhe o próximo destino, no seu ritmo.",
     },
     {
       targets: ["#destinations"],
@@ -149,19 +149,19 @@ function tutorialSteps() {
   const descriptions = {
     earth: [
       "Terra: os territórios",
-      "Na Terra, abrimos o Mapa de Pistas. Explore os territórios, encontre pistas georreferenciadas e suas conexões. O mapa se abre em tela cheia; ao voltar, estarei esperando aqui na nave.",
+      "Na Terra, você explora as pistas pela localização nos territórios. É o mesmo acervo da Lua de Pistas, apresentado no mapa. Ele se abre em tela cheia; ao voltar, estarei aqui no cockpit.",
     ],
     research: [
       "Lua de Pistas",
-      "Esta lua é formada pelos cards das pistas cadastradas. Sua sala permite buscar e selecionar uma pista, localizar seu card na lua holográfica e abrir o registro completo.",
+      "Na Lua de Pistas, você busca as mesmas pistas por nome ou descrição, inclusive as que ainda não têm localização. Na sala da nave, um card da lua holográfica destaca a pista selecionada. Selecione uma pista para conhecer seus detalhes.",
     ],
     observatory: [
       "Observatório: as problemáticas",
-      "No Observatório, os nodos representam problemáticas e as linhas mostram suas conexões. Entre para explorar o grafo e investigar as relações entre os desafios dos territórios.",
+      "No Observatório, os nodos representam problemáticas e as linhas mostram suas conexões. Conecte-se para explorar a rede e investigar as relações entre os desafios dos territórios.",
     ],
     agents: [
       "Campo de Inteligências",
-      "Aqui vivem os agentes de inteligência artificial. Escolha uma inteligência, conheça sua proposta e abra uma conversa. Uma luz da constelação indica o agente selecionado.",
+      "O Campo de Inteligências reúne os agentes de IA. Na Câmara de Inteligências, escolha um agente, conheça sua proposta e inicie uma conversa. Uma luz da constelação indica sua seleção. Cada agente tem uma conversa própria, separada da minha.",
     ],
   };
   for (const id of allowed) {
@@ -172,7 +172,7 @@ function tutorialSteps() {
     {
       targets: [".navigation"],
       title: "Prepare o salto",
-      text: "Depois de escolher um destino, use Navegar para iniciar o salto. Ao chegar, o painel do local oferece o acesso ao módulo. Se preferir entrar sem a viagem, use Acesso direto.",
+      text: "Depois de escolher um destino, use Navegar para iniciar o salto. Ao chegar, o painel do local oferece o botão Conecte-se para continuar a exploração. Se preferir entrar sem a viagem, use Acesso direto.",
     },
     {
       targets: [".port-instrument", "#destinations"],
@@ -192,7 +192,7 @@ function tutorialSteps() {
     {
       targets: [".tools"],
       title: "Uma viagem do seu jeito",
-      text: "No alto da tela, ajuste o som e reduza o movimento quando quiser. Em Conta, você pode sair da sessão. Quando disponível, Gestão abre as parametrizações da plataforma.",
+      text: "No alto da tela, ajuste o som e reduza o movimento quando quiser. Em Conta, você consulta seu modo ou sai da sessão. Quando disponível, Gestão reúne os registros e as configurações da plataforma.",
     },
     {
       targets: ["#tour-replay"],
@@ -264,7 +264,7 @@ function emit(type, extra = {}) {
     say(
       type === "assistant"
         ? "Na plataforma, este console abre nossa conversa. Estou aqui para acompanhar sua exploração."
-        : "Destino pronto. Dentro da plataforma, este acesso abre o módulo real em tela cheia.",
+        : "O destino está pronto. Conecte-se para continuar a exploração.",
     );
     record(
       "Prévia · acesso a " +
@@ -487,7 +487,7 @@ function select(d) {
             ? "Navegar até o Observatório →"
             : d.id === "research"
               ? "Navegar até a Lua de Pistas →"
-              : "Navegar até a estação →";
+              : "Navegar até o destino →";
   $("reticle-label").textContent =
     current === d.id
       ? `${d.short.toUpperCase()} / SINAL ESTÁVEL`
@@ -700,12 +700,12 @@ function openDestination(destination) {
         : destination.id === "connections"
           ? "Preparando a sala de Conexões da nave. A tela de exploração está pronta para receber você."
           : destination.id === "agents"
-            ? "Preparando a Câmara de Inteligências. Escolha uma presença para iniciar sua conversa."
-            : "Preparando acesso à estação. Transferindo os controles para o módulo.",
+            ? "Preparando a Câmara de Inteligências. Escolha um agente para iniciar sua conversa."
+            : "Preparando a Sala de Problemáticas. Vamos explorar a rede e suas relações.",
   );
   $("transfer-label").textContent =
     destination.id === "earth"
-      ? "Entrando no observatório territorial"
+      ? "Conectando ao Mapa de Pistas"
       : destination.id === "research"
         ? "Entrando na sala da Lua de Pistas"
         : destination.id === "connections"
@@ -1531,7 +1531,7 @@ $("start").onclick = async () => {
   audio.arrival();
   record("Expedição iniciada · Iareté online");
   say(
-    "Olá, sou a Iareté, sua inteligência de bordo. Já estamos em uma rota contínua de exploração. Escolha a Terra ou uma estação e eu preparo nosso salto.",
+    "Olá, sou a Iareté, sua inteligência de bordo. Já estamos em uma rota contínua de exploração. Escolha nosso próximo destino e eu preparo o salto.",
   );
   $("navigate").focus({ preventScroll: true });
   offerTutorial();

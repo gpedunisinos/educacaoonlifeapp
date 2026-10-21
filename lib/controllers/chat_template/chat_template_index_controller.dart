@@ -28,7 +28,7 @@ class ChatTemplateIndexController extends GetxController {
       hasMore.value = items.length == pageSize;
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      SafeGetSnackbar.error('Erro', 'Falha ao buscar templates. $error');
+      SafeGetSnackbar.error('Erro', 'Falha ao buscar agentes.');
     } finally {
       isLoading.value = false;
     }
@@ -47,7 +47,7 @@ class ChatTemplateIndexController extends GetxController {
       hasMore.value = items.length == pageSize;
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      SafeGetSnackbar.error('Erro', 'Falha ao carregar mais templates. $error');
+      SafeGetSnackbar.error('Erro', 'Falha ao carregar mais agentes.');
     } finally {
       isLoadingMore.value = false;
     }
@@ -58,7 +58,7 @@ class ChatTemplateIndexController extends GetxController {
       isLoading.value = true;
       await _webclient.delete(model.id);
       templates.removeWhere((item) => item.id == model.id);
-      SafeGetSnackbar.success('Template excluído com sucesso.');
+      SafeGetSnackbar.success('Agente excluído com sucesso.');
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
       final message = error.toString().toLowerCase();
@@ -68,7 +68,7 @@ class ChatTemplateIndexController extends GetxController {
           'A API atual não possui endpoint para excluir agentes.',
         );
       } else {
-        SafeGetSnackbar.error('Erro', 'Não foi possível excluir o template.');
+        SafeGetSnackbar.error('Erro', 'Não foi possível excluir o agente.');
       }
     } finally {
       isLoading.value = false;

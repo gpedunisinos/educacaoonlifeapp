@@ -144,7 +144,7 @@ class CreateAccountScreen extends StatelessWidget {
                           width: 20,
                           height: 20,
                         ),
-                        title: 'Continue com Google',
+                        title: 'Continuar com Google',
                         onPressed: _doGoogleLogin,
                       ),
                     ),

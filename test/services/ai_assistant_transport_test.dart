@@ -65,7 +65,10 @@ void main() {
     () {
       const quota =
           'A inteligência artificial está temporariamente sem quota. Tente novamente mais tarde.';
-      expect(aiChatError(quota), quota);
+      expect(
+        aiChatError(quota),
+        'O serviço de IA atingiu seu limite temporário de uso. Tente novamente mais tarde.',
+      );
       expect(
         aiChatError('https://example.test?key=private'),
         isNot(contains('private')),

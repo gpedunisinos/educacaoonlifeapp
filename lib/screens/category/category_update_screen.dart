@@ -185,7 +185,7 @@ class _CategoryUpdateScreenState extends State<CategoryUpdateScreen> {
                         ),
                         Insets.large.height,
                         ManagementInput(
-                          hintText: 'Metadata tags (ex: tag_teste,tag_other)',
+                          hintText: 'Campos adicionais (ex.: tag_teste,tag_other)',
                           controller: _metadataTagsController,
                           validator: (value) => PValidator([
                             PRuleRequired(value, message: 'Obrigatório'),

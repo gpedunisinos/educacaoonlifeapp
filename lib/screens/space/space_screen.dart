@@ -30,7 +30,7 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
   // Keep the exact callback identity for unregisterProvider.
   late final AiAssistantContextProvider contextProvider = buildContext;
   AiAssistantScreenContext buildContext() => AiAssistantScreenContext(
-    screenName: 'Cockpit Educação Onlife',
+    screenName: 'Cockpit Educação OnLIFE',
     route: '/space',
     stage: 'exploração espacial',
     goal: 'navegar pelos territórios e módulos com a orientação da Iareté',

@@ -26,7 +26,7 @@ class ClueConnectionUpdateController extends GetxController {
       connection.value = await _webclient.fetchById(id);
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Falha ao carregar conexão. $error');
+      Get.customSnackbar('Erro', 'Falha ao carregar conexão.');
     } finally {
       isLoading.value = false;
     }
@@ -44,7 +44,7 @@ class ClueConnectionUpdateController extends GetxController {
       return true;
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Não foi possível salvar a conexão. $error');
+      Get.customSnackbar('Erro', 'Não foi possível salvar a conexão.');
       return false;
     } finally {
       isLoading.value = false;

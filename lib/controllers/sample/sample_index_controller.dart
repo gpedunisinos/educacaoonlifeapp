@@ -21,7 +21,7 @@ class SampleIndexController extends GetxController {
       samples.assignAll(await _webclient.fetch());
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Falha ao buscar samples. $error');
+      Get.customSnackbar('Erro', 'Falha ao buscar samples.');
     } finally {
       isLoading.value = false;
     }
@@ -35,7 +35,7 @@ class SampleIndexController extends GetxController {
       Get.successSnackbar('Sample removido com sucesso.');
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Falha ao remover sample. $error');
+      Get.customSnackbar('Erro', 'Falha ao remover sample.');
     } finally {
       isLoading.value = false;
     }

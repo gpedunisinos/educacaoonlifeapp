@@ -16,7 +16,7 @@ class ConnectionTypeCreateController extends GetxController {
       return true;
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Não foi possível salvar o tipo de conexão. $error');
+      Get.customSnackbar('Erro', 'Não foi possível salvar o tipo de conexão.');
       return false;
     } finally {
       isLoading.value = false;

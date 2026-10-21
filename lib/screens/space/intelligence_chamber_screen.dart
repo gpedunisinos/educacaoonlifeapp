@@ -711,7 +711,7 @@ class _IntelligenceChamberScreenState extends State<IntelligenceChamberScreen>
             ),
             const SizedBox(height: 12),
             const Text(
-              'Sua conversa com este agente será retomada aqui.',
+              'Esta conversa é própria deste agente, separada da Iareté. Seu histórico pode ser retomado aqui.',
               style: TextStyle(color: _soft, fontSize: 11, height: 1.4),
             ),
           ],

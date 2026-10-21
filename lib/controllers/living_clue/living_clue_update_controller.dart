@@ -26,7 +26,7 @@ class LivingClueUpdateController extends GetxController {
       livingClue.value = await _webclient.fetchById(id);
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Falha ao carregar pista. $error');
+      Get.customSnackbar('Erro', 'Falha ao carregar pista.');
     } finally {
       isLoading.value = false;
     }
@@ -44,7 +44,7 @@ class LivingClueUpdateController extends GetxController {
       return true;
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Não foi possível salvar a pista. $error');
+      Get.customSnackbar('Erro', 'Não foi possível salvar a pista.');
       return false;
     } finally {
       isLoading.value = false;

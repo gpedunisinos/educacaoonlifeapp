@@ -55,7 +55,7 @@ class _ModeSelectionScreenState extends State<ModeSelectionScreen> {
                       ),
                       const SizedBox(height: 18),
                       const Text(
-                        'Educação Onlife',
+                        'Educação OnLIFE',
                         style: TextStyle(
                           color: Color(0xFF80DFEE),
                           letterSpacing: 0.2,

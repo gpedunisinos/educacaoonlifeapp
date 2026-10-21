@@ -1,11 +1,11 @@
 {
-  "name": "Educação Onlife",
-  "short_name": "Educação Onlife",
+  "name": "Educação OnLIFE",
+  "short_name": "Educação OnLIFE",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#0175C2",
   "theme_color": "#0175C2",
-  "description": "Educação Onlife",
+  "description": "Educação OnLIFE",
   "orientation": "portrait-primary",
   "prefer_related_applications": false,
   "icons": [

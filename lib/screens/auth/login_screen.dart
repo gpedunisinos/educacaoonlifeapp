@@ -47,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Seja bem-vindo à plataforma Educação Onlife',
+                          'Seja bem-vindo à plataforma Educação OnLIFE',
                           style: boldTextStyle(size: 22, color: Colors.white),
                         ),
                         Insets.small.height,
@@ -112,7 +112,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               width: 20,
                               height: 20,
                             ),
-                            title: 'Continue com Google',
+                            title: 'Continuar com Google',
                             onPressed: _doGoogleLogin,
                           ),
                         ),

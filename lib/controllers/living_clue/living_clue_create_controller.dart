@@ -16,7 +16,7 @@ class LivingClueCreateController extends GetxController {
       return saved;
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Não foi possível salvar a pista. $error');
+      Get.customSnackbar('Erro', 'Não foi possível salvar a pista.');
       return null;
     } finally {
       isLoading.value = false;

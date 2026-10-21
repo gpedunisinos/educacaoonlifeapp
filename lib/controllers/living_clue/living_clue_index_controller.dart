@@ -23,7 +23,7 @@ class LivingClueIndexController extends GetxController {
           : await _webclient.search(search: search.trim()));
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Falha ao buscar pistas. $error');
+      Get.customSnackbar('Erro', 'Falha ao buscar pistas.');
     } finally {
       isLoading.value = false;
     }
@@ -37,7 +37,7 @@ class LivingClueIndexController extends GetxController {
       Get.successSnackbar('Pista removida com sucesso.');
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Falha ao remover pista. $error');
+      Get.customSnackbar('Erro', 'Falha ao remover pista.');
     } finally {
       isLoading.value = false;
     }

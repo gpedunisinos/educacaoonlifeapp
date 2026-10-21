@@ -17,5 +17,15 @@ String aiChatError(
     'A consulta da inteligência artificial excedeu o tempo disponível. Tente novamente.',
     'A inteligência artificial retornou uma resposta inválida.',
   ];
-  return error is String && allowed.contains(error) ? error : fallback;
+  if (error is! String || !allowed.contains(error)) return fallback;
+  return switch (error) {
+    'A inteligência artificial está temporariamente sem quota. Tente novamente mais tarde.' =>
+      'O serviço de IA atingiu seu limite temporário de uso. Tente novamente mais tarde.',
+    'O modelo Gemini configurado não está disponível. Nenhum modelo alternativo foi utilizado.' =>
+      'O serviço de IA configurado está indisponível. Tente novamente mais tarde.',
+    'A inteligência artificial ainda não foi configurada no servidor.' ||
+    'As consultas da inteligência artificial não estão disponíveis no servidor.' =>
+      'O serviço de IA ainda não está disponível nesta plataforma.',
+    _ => error,
+  };
 }

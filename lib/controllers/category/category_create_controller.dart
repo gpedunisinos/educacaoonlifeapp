@@ -33,7 +33,7 @@ class CategoryCreateController extends GetxController {
       return true;
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Não foi possível salvar a categoria. $error');
+      Get.customSnackbar('Erro', 'Não foi possível salvar a categoria.');
       return false;
     } finally {
       isLoading.value = false;

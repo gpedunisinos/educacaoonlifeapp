@@ -182,7 +182,7 @@ class ManagementShell extends StatelessWidget {
             TextButton.icon(
               onPressed: returnToCockpit,
               icon: const Icon(Icons.rocket_launch_outlined, size: 17),
-              label: const Text('Ir ao cockpit'),
+              label: const Text('Voltar ao cockpit'),
             ),
           ],
         ),

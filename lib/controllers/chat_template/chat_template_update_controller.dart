@@ -31,7 +31,7 @@ class ChatTemplateUpdateController extends GetxController {
       template.value = await _webclient.fetchById(id);
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Falha ao carregar template. $error');
+      Get.customSnackbar('Erro', 'Falha ao carregar agente.');
     } finally {
       isLoading.value = false;
     }
@@ -49,7 +49,7 @@ class ChatTemplateUpdateController extends GetxController {
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
       Get.customSnackbar(
-          'Erro', 'Não foi possível excluir as mensagens. $error');
+          'Erro', 'Não foi possível excluir as mensagens.');
       return false;
     } finally {
       isLoading.value = false;
@@ -64,11 +64,11 @@ class ChatTemplateUpdateController extends GetxController {
     try {
       isLoading.value = true;
       await _webclient.update(model);
-      Get.successSnackbar('Template salvo com sucesso.');
+      Get.successSnackbar('Agente salvo com sucesso.');
       return true;
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Não foi possível salvar o template. $error');
+      Get.customSnackbar('Erro', 'Não foi possível salvar o agente.');
       return false;
     } finally {
       isLoading.value = false;

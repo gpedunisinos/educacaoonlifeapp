@@ -48,7 +48,7 @@ class ChatTemplateChatController extends GetxController {
       _notifyMutation('replace');
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Falha ao carregar conversa do template. $error');
+      Get.customSnackbar('Erro', 'Falha ao carregar conversa com o agente.');
     } finally {
       isLoading.value = false;
       initialLoadFinished.value = true;
@@ -78,7 +78,7 @@ class ChatTemplateChatController extends GetxController {
       return true;
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Falha ao carregar mensagens antigas. $error');
+      Get.customSnackbar('Erro', 'Falha ao carregar mensagens antigas.');
       return false;
     } finally {
       isLoadingMore.value = false;
@@ -119,7 +119,7 @@ class ChatTemplateChatController extends GetxController {
       messages.remove(optimisticUserMessage);
       Util.debug(exception: error, stackTrace: stackTrace);
       if (Get.overlayContext != null || Get.context != null) {
-        Get.customSnackbar('Erro', 'Falha ao enviar mensagem. $error');
+        Get.customSnackbar('Erro', 'Falha ao enviar mensagem.');
       }
     } finally {
       isSending.value = false;

@@ -28,7 +28,7 @@ class SpaceAccountPanel extends StatelessWidget {
                       child: Text('Conta', style: TextStyle(fontSize: 26)),
                     ),
                     IconButton(
-                      tooltip: 'Voltar à nave',
+                      tooltip: 'Fechar conta',
                       onPressed: () => Navigator.pop(context),
                       icon: const Icon(Icons.close),
                     ),

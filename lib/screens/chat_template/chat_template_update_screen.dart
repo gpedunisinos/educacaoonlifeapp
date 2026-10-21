@@ -40,7 +40,7 @@ class ChatTemplateUpdateScreen extends StatelessWidget {
             if (controller.template.value == null) {
               return const Center(
                 child: Text(
-                  'Template não encontrado.',
+                  'Agente não encontrado.',
                   style: TextStyle(color: Colors.white),
                 ),
               );
@@ -88,7 +88,7 @@ class ChatTemplateUpdateScreen extends StatelessWidget {
                           ),
                           icon: const Icon(Icons.delete_sweep_outlined),
                           label: const Text(
-                            'Excluir todas as mensagens do template',
+                            'Excluir todas as mensagens do agente',
                           ),
                         ),
                       ),
@@ -119,7 +119,7 @@ class ChatTemplateUpdateScreen extends StatelessWidget {
       builder: (_) => AlertDialog(
         title: const Text('Confirmar exclusão'),
         content: const Text(
-          'Tem certeza que deseja excluir todas as mensagens deste template? Esta ação não pode ser desfeita.',
+          'Tem certeza que deseja excluir todas as mensagens deste agente? Esta ação não pode ser desfeita.',
         ),
         actions: [
           TextButton(

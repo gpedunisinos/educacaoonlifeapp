@@ -12,11 +12,11 @@ class ChatTemplateCreateController extends GetxController {
     try {
       isLoading.value = true;
       await _webclient.create(model);
-      Get.successSnackbar('Template salvo com sucesso.');
+      Get.successSnackbar('Agente salvo com sucesso.');
       return true;
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Não foi possível salvar o template. $error');
+      Get.customSnackbar('Erro', 'Não foi possível salvar o agente.');
       return false;
     } finally {
       isLoading.value = false;

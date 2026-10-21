@@ -143,7 +143,7 @@ class _ChatTemplateFormState extends State<ChatTemplateForm> {
             children: [
               Expanded(
                 child: Text(
-                  'Arquivos do template',
+                  'Arquivos de referência do agente',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),

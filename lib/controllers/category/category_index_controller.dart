@@ -21,7 +21,7 @@ class CategoryIndexController extends GetxController {
       categories.assignAll(await _webclient.fetch());
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Falha ao buscar categorias. $error');
+      Get.customSnackbar('Erro', 'Falha ao buscar categorias.');
     } finally {
       isLoading.value = false;
     }
@@ -35,7 +35,7 @@ class CategoryIndexController extends GetxController {
       Get.successSnackbar('Categoria removida com sucesso.');
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Falha ao remover categoria. $error');
+      Get.customSnackbar('Erro', 'Falha ao remover categoria.');
     } finally {
       isLoading.value = false;
     }

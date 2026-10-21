@@ -41,7 +41,7 @@ class ClueConnectionIndexController extends GetxController {
       });
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Falha ao buscar conexões. $error');
+      Get.customSnackbar('Erro', 'Falha ao buscar conexões.');
     } finally {
       isLoading.value = false;
     }
@@ -55,7 +55,7 @@ class ClueConnectionIndexController extends GetxController {
       Get.successSnackbar('Conexão removida com sucesso.');
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Falha ao remover conexão. $error');
+      Get.customSnackbar('Erro', 'Falha ao remover conexão.');
     } finally {
       isLoading.value = false;
     }

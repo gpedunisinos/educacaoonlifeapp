@@ -341,7 +341,7 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
                                               left: 16,
                                               child: IgnorePointer(
                                                 child: Text(
-                                                  '${nodes.length} NODOS  /  ${links.length} CONEXÕES',
+                                                  '${nodes.length} PROBLEMÁTICAS  /  ${links.length} CONEXÕES',
                                                   style: const TextStyle(
                                                     fontSize: 10,
                                                     letterSpacing: 1.5,
@@ -891,7 +891,7 @@ class _SelectedNodePanel extends StatelessWidget {
                 label: node.nodeType?.name ?? 'Tipo #${node.nodeTypeId}',
               ),
               _MetaChip(label: '$connections conexões'),
-              _MetaChip(label: 'Grau ${state.degree}'),
+              _MetaChip(label: 'Grau de conexão ${state.degree}'),
             ],
           ),
           const SizedBox(height: 14),
@@ -1640,7 +1640,7 @@ class _GraphFilters extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Toque para selecionar. Arraste uma problemática para reposicionar. Pinça ou scroll para zoom.',
+            'Toque para selecionar. Arraste uma problemática para reposicionar. Use o gesto de pinça ou a rolagem para ampliar.',
             style: TextStyle(color: Colors.white.withValues(alpha: 0.72)),
           ),
         ],

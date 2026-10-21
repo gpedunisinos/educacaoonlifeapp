@@ -21,7 +21,7 @@ class ConnectionTypeIndexController extends GetxController {
       connectionTypes.assignAll(await _webclient.fetch());
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Falha ao buscar tipos de conexão. $error');
+      Get.customSnackbar('Erro', 'Falha ao buscar tipos de conexão.');
     } finally {
       isLoading.value = false;
     }
@@ -35,7 +35,7 @@ class ConnectionTypeIndexController extends GetxController {
       Get.successSnackbar('Tipo de conexão removido com sucesso.');
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
-      Get.customSnackbar('Erro', 'Falha ao remover tipo de conexão. $error');
+      Get.customSnackbar('Erro', 'Falha ao remover tipo de conexão.');
     } finally {
       isLoading.value = false;
     }

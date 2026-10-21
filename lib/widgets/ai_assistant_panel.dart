@@ -85,7 +85,7 @@ class _AiAssistantPanelState extends State<AiAssistantPanel> {
                           child: Text(
                             _controller.isSending.value
                                 ? 'Elaborando uma resposta…'
-                                : 'Explore ideias a partir da tela em que você está.',
+                                : 'Sua inteligência de bordo para explorar a Educação OnLIFE.',
                           ),
                         ),
                       ),
@@ -130,7 +130,7 @@ class _AiAssistantPanelState extends State<AiAssistantPanel> {
                               padding: const EdgeInsets.all(28),
                               child: Text(
                                 _controller.errorMessage.value ??
-                                    'Olá, sou a Iareté. O que vamos explorar juntos?',
+                                    'Olá, sou a Iareté, sua inteligência de bordo. O que vamos explorar juntos?',
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(
                                   color: spaceChatMuted,
