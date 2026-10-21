@@ -2,6 +2,7 @@ import * as THREE from "./vendor/three.module.js";
 import { SpaceAudio } from "./audio.js";
 import { IareteFlow } from "./iarete-flow.js";
 import { createProblematicNetwork } from "./problematic-network.js";
+import { createClueMoon } from "./clue-moon.js";
 const $ = (id) => document.getElementById(id);
 const audio = new SpaceAudio();
 const iareteFlow = new IareteFlow($("iarete-flow"));
@@ -40,19 +41,20 @@ const destinations = [
     description:
       "Reúna pistas, vivências e descobertas para conhecer melhor os territórios.",
     contents: ["Pistas", "Vivências e descobertas"],
-    name: "Estação de Pesquisa",
+    name: "Lua de Pistas",
     module: "Pistas",
     short: "Pesquisa",
     symbol: "◇",
     sector: "SETOR · 07",
     subtitle: "Cada pista abre uma nova possibilidade.",
     position: [-24, 5, -24],
-    radius: 2.7,
+    radius: 3.3,
+    focusOffset: [0, -1.75, 0],
     color: 0x85f5d3,
     message:
-      "Rota para a Estação de Pesquisa. Aqui reunimos pistas, vivências e descobertas dos territórios.",
+      "Rota para a Lua de Pistas. Cada fragmento dessa pequena lua é um card: vivências e descobertas que se aproximam e formam novas paisagens.",
     arrival:
-      "Acoplamento concluído. A Estação de Pesquisa está pronta para receber suas descobertas.",
+      "Chegamos à Lua de Pistas. Os cards flutuam ao nosso redor. Abra as Pistas para explorar as vivências e descobertas dos territórios.",
   },
   {
     id: "observatory",
@@ -363,7 +365,9 @@ function select(d) {
           ? "Navegar até Inteligências →"
           : d.id === "observatory"
             ? "Navegar até o Observatório →"
-            : "Navegar até a estação →";
+            : d.id === "research"
+              ? "Navegar até a Lua de Pistas →"
+              : "Navegar até a estação →";
   $("reticle-label").textContent =
     current === d.id
       ? `${d.short.toUpperCase()} / SINAL ESTÁVEL`
@@ -444,7 +448,11 @@ function navigate() {
       );
     lookTo = target
       .clone()
-      .add(new THREE.Vector3(-selected.radius * 0.65, 0, 0));
+      .add(
+        new THREE.Vector3(
+          ...(selected.focusOffset ?? [-selected.radius * 0.65, 0, 0]),
+        ),
+      );
   }
   if (reduced) finishTravel();
 }
@@ -476,7 +484,9 @@ function finishTravel() {
         ? "Campo de Inteligências alcançado"
         : selected.id === "observatory"
           ? "Rede de Problemáticas alcançada"
-          : "Acoplamento concluído";
+          : selected.id === "research"
+            ? "Órbita da Lua de Pistas estabelecida"
+            : "Acoplamento concluído";
   $("speed").textContent = "ÓRBITA";
   $("progress").style.width = "100%";
   $("reticle-label").textContent =
@@ -646,7 +656,7 @@ window.addEventListener("message", (event) => {
     window.receiveSpaceCommand(JSON.parse(event.data));
   } catch (_) {}
 });
-let problematicNetwork;
+let problematicNetwork, clueMoon;
 let intelligenceClock = 0;
 const intelligenceOrbits = [];
 function intelligenceField(destination) {
@@ -1213,6 +1223,9 @@ function initScene() {
       else if (d.id === "observatory") {
         problematicNetwork = createProblematicNetwork(d);
         destinationWorld.add(problematicNetwork.group);
+      } else if (d.id === "research") {
+        clueMoon = createClueMoon(d);
+        destinationWorld.add(clueMoon.group);
       } else station(d, i);
     });
     researchThread();
@@ -1295,7 +1308,13 @@ function tick(now) {
             Math.cos(orbitPhase) * body.radius * 3.2,
           ),
         );
-      look.copy(target).add(new THREE.Vector3(-body.radius * 0.65, 0, 0));
+      look
+        .copy(target)
+        .add(
+          new THREE.Vector3(
+            ...(body.focusOffset ?? [-body.radius * 0.65, 0, 0]),
+          ),
+        );
     } else {
       cruisePhase += dt * 0.025;
       camera.position.lerp(cruisePoint(cruisePhase), 1 - Math.exp(-dt * 0.4));
@@ -1338,6 +1357,7 @@ function tick(now) {
     if (!reduced) {
       updateIntelligenceField(dt);
       problematicNetwork?.update(dt);
+      clueMoon?.update(dt);
       earth.rotation.y += dt * 0.012;
       stations.forEach((s, i) => {
         s.rotation.y += dt * (0.025 + i * 0.005);
