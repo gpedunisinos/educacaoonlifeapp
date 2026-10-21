@@ -742,6 +742,34 @@ function updateIntelligenceField(dt) {
     orbit.geometry.attributes.position.needsUpdate = true;
   }
 }
+function researchThread() {
+  // A continuous research thread, independent from the ship's flight path.
+  const curve = new THREE.CatmullRomCurve3(
+    destinations.map((d) => new THREE.Vector3(...d.position)),
+    true,
+    "centripetal",
+  );
+  const thread = new THREE.Group();
+  thread.name = "research-red-thread";
+  for (const [radius, opacity, color] of [
+    [0.022, 0.95, 0xff2845],
+    [0.065, 0.14, 0xff1233],
+    [0.14, 0.035, 0xff1640],
+  ]) {
+    const mesh = new THREE.Mesh(
+      new THREE.TubeGeometry(curve, 640, radius, 8, true),
+      new THREE.MeshBasicMaterial({
+        color,
+        transparent: true,
+        opacity,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      }),
+    );
+    thread.add(mesh);
+  }
+  destinationWorld.add(thread);
+}
 function station(d, index) {
   const group = new THREE.Group();
   group.position.set(...d.position);
@@ -1164,6 +1192,7 @@ function initScene() {
       .forEach((d, i) =>
         d.id === "agents" ? intelligenceField(d) : station(d, i),
       );
+    researchThread();
     renderer.domElement.addEventListener("webglcontextlost", (event) => {
       event.preventDefault();
       rendered = false;

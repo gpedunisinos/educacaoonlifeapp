@@ -160,3 +160,9 @@ A antiga estação de Agentes foi substituída pelo Campo de Inteligências: 18 
 O identificador `agents`, posição no mapa, permissões e acesso a `/chat_templates` continuam integrados. Nome e mensagens de navegação agora descrevem o campo luminoso. Nenhuma outra estação teve sua geometria substituída nesta etapa.
 
 Validação no navegador: seleção, salto e chegada ao campo; apresentação das luzes e rastros pelo para-brisa; modo reduzido; abertura da lista real de agentes e retorno à nave. Bundle regenerado; análise Dart sem erros, com avisos legados. Evidência: `space-intelligence-field.jpg`.
+
+### Fio vermelho da pesquisa no espaço
+
+Uma curva fechada Catmull–Rom centrípeta passa pelas posições dos cinco destinos. O fio tem núcleo vermelho fino e duas camadas de halo de baixa opacidade, formando brilho suave em geometria 3D. Respeita profundidade: corpos sólidos e montantes do cockpit ocultam os trechos que passam atrás. É parte do mundo de destinos, visível a partir do primeiro salto, preservando a abertura em espaço vazio. Não altera mapa lateral, trajetória, câmera ou lógica do salto.
+
+Validado no navegador no Campo de Inteligências e na Terra, incluindo salto entre ambos. Bundle regenerado e análise Dart sem erros, com avisos legados. Evidências: `space-red-thread-intelligences.jpg` e `space-red-thread-earth.jpg`.
