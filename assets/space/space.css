@@ -346,41 +346,6 @@ header {
   gap: 20px;
   align-items: center;
 }
-.orb {
-  flex-shrink: 0;
-  border-radius: 50%;
-  width: 76px;
-  height: 76px;
-  border: 1px solid #91efce70;
-  background: radial-gradient(circle, #b7ffe92a, #4dd5b019 45%, #0b292d 65%);
-  box-shadow:
-    0 0 30px #6dffcb13,
-    inset 0 0 24px #67fbd71a;
-  position: relative;
-}
-.orb:before,
-.orb:after {
-  content: "";
-  position: absolute;
-  inset: 6px;
-  border: 1px dashed #a0f6df66;
-  border-radius: 50%;
-  animation: orbit 22s linear infinite;
-}
-.orb:after {
-  inset: -5px;
-  border-style: solid;
-  border-color: transparent #9ff7db44;
-  animation-direction: reverse;
-}
-.orb span {
-  font-size: 35px;
-  color: #a3ffe0;
-  text-shadow: 0 0 20px #70ffcc;
-}
-.speaking .orb {
-  box-shadow: 0 0 40px #6dffcb40;
-}
 .assistant-name {
   font-size: 10px;
   letter-spacing: 2px;
@@ -761,13 +726,6 @@ dialog::backdrop {
   .assistant {
     gap: 12px;
   }
-  .orb {
-    width: 48px;
-    height: 48px;
-  }
-  .orb span {
-    font-size: 25px;
-  }
   .assistant-name {
     font-size: 9px;
   }
@@ -873,10 +831,6 @@ dialog::backdrop {
   .assistant p {
     font-size: 10px;
     min-height: 30px;
-  }
-  .orb {
-    width: 40px;
-    height: 40px;
   }
   .destination {
     padding: 7px;
@@ -1310,13 +1264,6 @@ dialog::backdrop {
     min-height: 36px;
     margin: 7px 0 0;
   }
-  .orb {
-    width: 57px;
-    height: 57px;
-  }
-  .orb span {
-    font-size: 26px;
-  }
   .destination-row h2 {
     font-size: 18px;
     margin: 5px 0 8px;
@@ -1572,13 +1519,6 @@ dialog::backdrop {
   }
   .assistant {
     gap: 14px;
-  }
-  .orb {
-    width: 44px;
-    height: 44px;
-  }
-  .orb span {
-    font-size: 24px;
   }
   .assistant-name {
     font-size: 9px;
@@ -1863,4 +1803,33 @@ dialog::backdrop {
   .at-current-destination .glass-instrument.port-instrument {
     bottom: 36%;
   }
+}
+
+/* Organic onboard presence: transparent threads, no enclosing mechanical orb. */
+.iarete-flow {
+  flex: 0 0 142px;
+  width: 142px;
+  height: 82px;
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  position: relative;
+}
+.iarete-flow canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.iarete-flow:hover {
+  background: #7be7e908;
+  box-shadow: inset 0 0 20px #83e4e807;
+}
+@media (max-width: 1100px), (max-height: 700px) {
+  .iarete-flow { flex-basis: 108px; width: 108px; height: 70px; }
+}
+@media (max-width: 760px) {
+  .iarete-flow { flex-basis: 88px; width: 88px; height: 66px; }
+  .assistant { gap: 10px; }
 }

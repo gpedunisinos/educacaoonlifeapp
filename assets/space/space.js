@@ -1,7 +1,9 @@
 import * as THREE from "./vendor/three.module.js";
 import { SpaceAudio } from "./audio.js";
+import { IareteFlow } from "./iarete-flow.js";
 const $ = (id) => document.getElementById(id);
 const audio = new SpaceAudio();
+const iareteFlow = new IareteFlow($("iarete-flow"));
 const flightTiming = { charge: 3.6, jump: 2.4, settle: 1.2 };
 const destinations = [
   {
@@ -1221,6 +1223,7 @@ function tick(now) {
     dt = Math.min(raw || 0.016, 0.05);
   last = now;
   elapsed += dt;
+  iareteFlow.draw(dt, reduced, document.body.classList.contains("speaking"));
   if (!qualityReduced && renderer && raw > 0.035) {
     if (++slowFrames > 150) {
       renderer.setPixelRatio(1);

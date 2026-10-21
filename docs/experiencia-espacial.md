@@ -176,3 +176,11 @@ Iniciar conversa abre `/space/agents/:id`, escurecendo o ambiente e deixando a p
 Validação: 12 testes aprovados (seleção → conversa → seleção, envio por fonte isolada, falha sem perder rascunho e sem duplicar mensagem, nova tentativa de lista/histórico, layout móvel, ponte da nave, atalho fora da área de envio, além das verificações da sala de Conexões). Análise Dart sem erros, com avisos legados; build web concluído. Navegador: seis agentes reais, troca de presença, abertura do histórico existente e composição desktop/móvel. Não foram enviadas mensagens aos agentes reais durante a validação; o envio foi exercitado nos testes com fonte isolada.
 
 Evidências: `space-intelligence-chamber.jpg` e `space-intelligence-conversation.jpg`. Vídeo `space-intelligence-chamber.mp4`: aproximadamente 17 segundos, H.264, 1280×800, sem áudio, montado a partir de capturas sequenciais da interface real. Mostra troca de agentes, entrada na conversa e retorno à seleção; duração, codec e quadros foram conferidos.
+
+### Iareté como fluxo orgânico no cockpit
+
+Checkpoint anterior: `8a28f59` (Câmara de Inteligências, já publicado). O antigo botão circular com estrela foi substituído por uma presença horizontal e transparente, inspirada nos fios entrelaçados e no contorno fluido da referência fornecida. Trinta filamentos em ciano, azul, lavanda, coral e verde claro formam uma trama assimétrica, com pequenas ramificações e pontos que percorrem os fios. Não usa a imagem original nem depende de recursos externos.
+
+O Canvas 2D acompanha a animação da nave, limitado a 30 desenhos por segundo e resolução até 2×. Durante a digitação da Iareté, amplitude, brilho e velocidade dos pontos aumentam gradualmente; ao terminar, relaxam. Movimento reduzido fixa uma composição estática. A pausa da nave também pausa o fluxo. O botão mantém nome acessível, foco por teclado e abertura da conversa existente. A presença se adapta ao espaço do console em desktop e celular.
+
+Validação: bundle regenerado; análise Dart sem erros (127 avisos/informações preexistentes). Navegador: cruzeiro, salto e chegada à Terra, modo reduzido, abertura da conversa pelo novo fluxo, retorno com posição preservada e layout de 390 px. Nenhuma mensagem enviada. Evidência: `space-iarete-flow.jpg`.
