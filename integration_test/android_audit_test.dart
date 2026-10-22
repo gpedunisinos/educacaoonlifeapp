@@ -234,7 +234,9 @@ void main() {
           arguments: entry.value,
           preventDuplicates: false,
         );
-        await tester.pump(const Duration(seconds: 3));
+        for (var frame = 0; frame < 18; frame++) {
+          await tester.pump(const Duration(milliseconds: 200));
+        }
         Object? error;
         while ((error = tester.takeException()) != null) {
           errors.add('${entry.key}: $error');

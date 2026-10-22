@@ -125,14 +125,19 @@ class _CategoryUpdateScreenState extends State<CategoryUpdateScreen> {
                             labelText: 'Tipo',
                             border: OutlineInputBorder(),
                           ),
-                          items: CategoryType.values
-                              .map(
-                                (type) => DropdownMenuItem<String>(
-                                  value: type,
-                                  child: Text(type),
-                                ),
-                              )
-                              .toList(),
+                          items:
+                              <String>{
+                                    ...CategoryType.values,
+                                    if (_selectedType?.isNotEmpty ?? false)
+                                      _selectedType!,
+                                  }
+                                  .map(
+                                    (type) => DropdownMenuItem<String>(
+                                      value: type,
+                                      child: Text(type),
+                                    ),
+                                  )
+                                  .toList(),
                           onChanged: (value) =>
                               setState(() => _selectedType = value),
                           validator: (value) => PValidator([
@@ -185,7 +190,8 @@ class _CategoryUpdateScreenState extends State<CategoryUpdateScreen> {
                         ),
                         Insets.large.height,
                         ManagementInput(
-                          hintText: 'Campos adicionais (ex.: tag_teste,tag_other)',
+                          hintText:
+                              'Campos adicionais (ex.: tag_teste,tag_other)',
                           controller: _metadataTagsController,
                           validator: (value) => PValidator([
                             PRuleRequired(value, message: 'Obrigatório'),
@@ -232,7 +238,7 @@ class _CategoryUpdateScreenState extends State<CategoryUpdateScreen> {
   }
 
   void _onColorTextChanged() {
-    if (!mounted) return;
+    if (!mounted || !_filledControllers) return;
     setState(() {});
   }
 
