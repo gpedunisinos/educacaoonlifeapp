@@ -48,7 +48,7 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
     notes: [
       'A Terra abre o Mapa de Pistas em tela cheia. A Lua permite pesquisar pistas, o Observatório explorar problemáticas e o Campo de Inteligências selecionar agentes.',
       'Ações autorizadas nesta conta: ${destinations.keys.join(', ')}. O seletor Explorador/Inventor preserva a rota.',
-      if (kIsWeb && MeetingRoom.enabled)
+      if (MeetingRoom.enabled)
         'Encontros abre uma sala em outra aba; a Iareté não acompanha seu conteúdo nem a presença.',
     ],
   );
@@ -164,7 +164,7 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
       send('configure', {
         'tutorialSeen': tutorialSeen,
         'audioEnabled': ShipAudioPreferences.enabled.value,
-        'meetings': kIsWeb && MeetingRoom.enabled && MeetingRoom.configured,
+        'meetings': MeetingRoom.enabled && MeetingRoom.configured,
         'mode': Get.find<UserController>().user.value?.usageMode,
         'destinations': destinations.keys.toList(),
         'management': ClueConnectionPolicy(
@@ -222,7 +222,6 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
     }
     final meetings =
         data['type'] == 'meetings' &&
-        kIsWeb &&
         MeetingRoom.enabled &&
         MeetingRoom.configured;
     final management =

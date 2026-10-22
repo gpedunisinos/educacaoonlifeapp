@@ -2,6 +2,7 @@ import 'package:unisinos_usp_app/services/presence/presence_service.dart';
 import 'package:unisinos_usp_app/widgets/app_page_viewport.dart';
 import 'dart:async';
 import 'dart:ui';
+import 'package:flutter/services.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -49,9 +50,15 @@ Future<void> main() async {
           ],
           supportedLocales: const [Locale('pt', 'BR'), Locale('en', 'US')],
           locale: const Locale('pt', 'BR'),
-          builder: (context, child) => Overlay.wrap(
-            child: AiAssistantLauncher(
-              child: AppPageViewport(child: child ?? const SizedBox.shrink()),
+          builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
+            value: SystemUiOverlayStyle.light.copyWith(
+              systemNavigationBarColor: const Color(0xFF050C18),
+              systemNavigationBarIconBrightness: Brightness.light,
+            ),
+            child: Overlay.wrap(
+              child: AiAssistantLauncher(
+                child: AppPageViewport(child: child ?? const SizedBox.shrink()),
+              ),
             ),
           ),
         ),

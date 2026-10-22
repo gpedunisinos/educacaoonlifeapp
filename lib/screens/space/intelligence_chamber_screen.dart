@@ -510,7 +510,12 @@ class _IntelligenceChamberScreenState extends State<IntelligenceChamberScreen>
                           !failed &&
                           agents.isNotEmpty)
                         SizedBox(
-                          height: compact ? 110 : 132,
+                          height: math.max(
+                            compact ? 128.0 : 144.0,
+                            80 +
+                                MediaQuery.textScalerOf(context).scale(13) *
+                                    3.2,
+                          ),
                           child: ListView.separated(
                             scrollDirection: Axis.horizontal,
                             padding: const EdgeInsets.symmetric(vertical: 12),

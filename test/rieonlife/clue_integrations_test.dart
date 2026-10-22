@@ -142,7 +142,7 @@ void main() {
   });
 
   testWidgets(
-    'native reader preserves unsupported content without offering incompatible actions',
+    'native reader offers a provider fallback and preserves unknown content',
     (tester) async {
       final delta = jsonEncode([
         {'insert': 'Descrição mantida\n'},
@@ -183,13 +183,13 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.textContaining('Integração preservada.'), findsOneWidget);
+      expect(find.text('Abrir no navegador'), findsOneWidget);
       expect(
         find.textContaining('Conteúdo de outra versão preservado'),
         findsNWidgets(2),
       );
       expect(find.byType(Image), findsNothing);
-      expect(find.text('Abrir na origem'), findsNothing);
+      expect(find.text('Abrir na origem'), findsOneWidget);
       expect(
         find.textContaining('Final da pista', findRichText: true),
         findsOneWidget,

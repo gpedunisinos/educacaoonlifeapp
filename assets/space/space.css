@@ -2090,3 +2090,35 @@ body:has(#welcome:not([hidden])) #presence-labels, body:has(#ship-tutorial:not([
 #participant-dialog { width: min(460px, calc(100vw - 32px)); }
 .participant-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
 .participant-identify { align-self: flex-start; margin-top: 6px; padding: 6px 10px; font-size: 12px; }
+
+/* Portrait flight deck: retain a clear central windshield and touch controls. */
+@media (max-width: 760px) and (min-height: 561px) {
+  header { top: 12px; right: 12px; gap: 8px; }
+  .brand { font-size: 14px; }
+  .tools { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
+  .tools button { flex: 0 0 auto; min-height: 36px; font-size: 10px; padding: 8px; white-space: nowrap; }
+  .console { max-height: 45vh; max-height: 45dvh; padding: 10px 12px 0; }
+  .console-content, .at-current-destination .console-content { grid-template-columns: minmax(0,1fr); gap: 8px; padding: 8px 0; }
+  .console-top { padding-bottom: 7px; font-size: 8px; }
+  .assistant { display: flex; flex-direction: row; align-items: center; gap: 10px; text-align: left; min-width: 0; max-width: 100%; }
+  .iarete-flow { flex: 0 0 68px; width: 68px; height: 60px; }
+  .assistant-copy { min-width: 0; flex: 1; }
+  .assistant-name { font-size: 11px; }
+  .assistant p { white-space: normal; overflow-wrap: anywhere; max-width: 100%; font-size: 13px; line-height: 1.45; min-height: 36px; max-height: 74px; overflow-y: auto; margin: 6px 0; }
+  .assistant .text-button { min-height: 30px; font-size: 11px; padding: 4px 0; }
+  .destination { min-height: 60px; padding: 8px 3px; gap: 5px; }
+  .destination .symbol { font-size: 21px; }
+  .destination strong { font-size: 10px; }
+  .console-footer { gap: 4px 8px; padding: 4px 0; }
+  .mode-lever { min-width: 190px; }
+  .mode-lever button { min-height: 36px; font-size: 11px; }
+  .console-links .text-button { font-size: 10px; min-height: 30px; }
+  .at-destination .port-instrument { display: flex; align-items: center; top: 108px; left: 12px; right: 12px; width: auto; max-height: 104px; padding: 8px 12px; gap: 10px; overflow-y: auto; }
+  .port-instrument .instrument-heading, .port-instrument .local-copy p, .port-instrument .local-copy small { display: none; }
+  .port-instrument #local-details { display: flex; align-items: center; width: 100%; gap: 10px; }
+  .port-instrument .local-copy { min-width: 0; flex: 1; }
+  .port-instrument .local-copy h2 { font-size: 16px; margin: 0; }
+  .port-instrument .local-open { flex: 0 1 52%; margin: 0; padding: 10px 8px; font-size: 11px; min-height: 40px; }
+  .mission { top: 16%; left: 7%; }
+  .mission h1 { font-size: 26px; margin: 8px 0; }
+}

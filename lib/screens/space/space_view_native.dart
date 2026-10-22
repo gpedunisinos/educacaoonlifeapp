@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/widgets/native_webview.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
@@ -63,18 +64,22 @@ class _SpaceViewState extends State<SpaceView> {
       if (mounted) setState(() => failed = true);
     });
     commands = widget.commands.listen((data) {
-      controller?.runJavaScript(
-        'window.receiveSpaceCommand(${jsonEncode({...data, 'channel': 'econectiva-space'})});',
-      );
+      controller
+          ?.runJavaScript(
+            'if (typeof window.receiveSpaceCommand === "function") window.receiveSpaceCommand(${jsonEncode({...data, 'channel': 'econectiva-space'})});',
+          )
+          .catchError((_) {});
     });
   }
 
   @override
   void dispose() {
     commands?.cancel();
-    controller?.runJavaScript(
-      'window.receiveSpaceCommand({type:"pause",channel:"econectiva-space"});',
-    );
+    controller
+        ?.runJavaScript(
+          'if (typeof window.receiveSpaceCommand === "function") window.receiveSpaceCommand({type:"pause",channel:"econectiva-space"});',
+        )
+        .catchError((_) {});
     super.dispose();
   }
 
@@ -89,5 +94,5 @@ class _SpaceViewState extends State<SpaceView> {
             ),
           ),
         )
-      : WebViewWidget(controller: controller!);
+      : SafeArea(child: nativeWebView(controller!));
 }

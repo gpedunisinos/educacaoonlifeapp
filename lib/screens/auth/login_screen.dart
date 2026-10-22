@@ -151,9 +151,15 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void _doLogin() {
-    if (_formKey.currentState!.validate()) {
-      _controller.login(_mailTextController.text, _passwordTextController.text);
+  Future<void> _doLogin() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    try {
+      await _controller.login(
+        _mailTextController.text.trim(),
+        _passwordTextController.text,
+      );
+    } catch (_) {
+      /* The controller presents a recoverable authentication error. */
     }
   }
 

@@ -56,7 +56,7 @@ class _MeetingRoomDialogState extends State<MeetingRoomDialog> {
         if (window == null) {
           setState(
             () => error =
-                'O navegador não abriu a nova aba. Permita a abertura e tente novamente.',
+                'Não foi possível preparar a abertura do encontro. Tente novamente.',
           );
           return;
         }
@@ -70,7 +70,7 @@ class _MeetingRoomDialogState extends State<MeetingRoomDialog> {
       }
       final launched = widget.onOpen != null
           ? await widget.onOpen!(uri)
-          : window!.navigate(uri);
+          : await window!.navigate(uri);
       if (!mounted) return;
       if (launched) {
         Navigator.of(context).pop();
@@ -79,7 +79,7 @@ class _MeetingRoomDialogState extends State<MeetingRoomDialog> {
       window?.close();
       setState(
         () => error =
-            'O navegador não abriu a nova aba. Permita a abertura ou copie o link da sala.',
+            'Não foi possível abrir o encontro. Tente novamente ou copie o link da sala.',
       );
     } catch (_) {
       window?.close();
@@ -109,9 +109,7 @@ class _MeetingRoomDialogState extends State<MeetingRoomDialog> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Abra uma sala em outra aba e continue explorando a nave durante o encontro.',
-          ),
+          const Text('Conecte-se a uma sala e retorne à nave quando desejar.'),
           const SizedBox(height: 18),
           TextField(
             controller: input,

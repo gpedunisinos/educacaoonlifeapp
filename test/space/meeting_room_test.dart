@@ -146,7 +146,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(
         find.text(
-          'O navegador não abriu a nova aba. Permita a abertura ou copie o link da sala.',
+          'Não foi possível abrir o encontro. Tente novamente ou copie o link da sala.',
         ),
         findsOneWidget,
       );

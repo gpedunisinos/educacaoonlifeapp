@@ -1,3 +1,4 @@
+import { approachOffset, focusOffset } from './flight-framing.js';
 import { RemoteFleet } from "./remote-fleet.js";
 import { FlightModeSwitch } from "./flight-mode.js";
 import { ShipTutorial } from "./ship-tutorial.js";
@@ -562,17 +563,13 @@ function navigate() {
     flightTo = target
       .clone()
       .add(
-        new THREE.Vector3(
-          -selected.radius * 0.85,
-          selected.radius * 0.4,
-          selected.radius * 3.2,
-        ),
+        new THREE.Vector3(...approachOffset(selected, camera.aspect)),
       );
     lookTo = target
       .clone()
       .add(
         new THREE.Vector3(
-          ...(selected.focusOffset ?? [-selected.radius * 0.65, 0, 0]),
+          ...focusOffset(selected, camera.aspect),
         ),
       );
   }
@@ -1455,16 +1452,16 @@ function tick(now) {
         .copy(target)
         .add(
           new THREE.Vector3(
-            Math.sin(orbitPhase) * body.radius * 3.2 - body.radius * 0.85,
+            Math.sin(orbitPhase) * approachOffset(body, camera.aspect)[2] - body.radius * 0.85,
             body.radius * 0.4,
-            Math.cos(orbitPhase) * body.radius * 3.2,
+            Math.cos(orbitPhase) * approachOffset(body, camera.aspect)[2],
           ),
         );
       look
         .copy(target)
         .add(
           new THREE.Vector3(
-            ...(body.focusOffset ?? [-body.radius * 0.65, 0, 0]),
+            ...focusOffset(body, camera.aspect),
           ),
         );
     } else {

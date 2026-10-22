@@ -13,7 +13,7 @@ class MeetingWindow {
     return MeetingWindow._(opened);
   }
 
-  bool navigate(Uri uri) {
+  Future<bool> navigate(Uri uri) async {
     if (_window.closed) return false;
     _window.location.replace(uri.toString());
     return true;

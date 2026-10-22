@@ -3,7 +3,6 @@ import 'package:unisinos_usp_app/widgets/clue_agent_integration.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart';
@@ -40,7 +39,7 @@ class ClueIntegrationCards extends StatelessWidget {
         'youtube',
         'agent',
         'node',
-        if (kIsWeb) ...ClueIntegration.providers,
+        ...ClueIntegration.providers,
       ];
       final margin =
           Theme.of(context).cardTheme.margin ?? const EdgeInsets.all(4);
@@ -355,7 +354,7 @@ class ClueIntegrationBuilder extends EmbedBuilder {
     }
     return ClueIntegrationView(
       block: block,
-      onEdit: editing && kIsWeb
+      onEdit: editing
           ? () => editClueIntegration(
               context,
               embedContext.controller,
@@ -364,7 +363,7 @@ class ClueIntegrationBuilder extends EmbedBuilder {
               offset: embedContext.node.documentOffset,
             )
           : null,
-      onRemove: editing && kIsWeb
+      onRemove: editing
           ? () => embedContext.controller.replaceText(
               embedContext.node.documentOffset,
               1,
@@ -467,14 +466,7 @@ class ClueIntegrationView extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Text(block.instructions),
               ),
-            if (!kIsWeb)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 12),
-                child: Text(
-                  'Integração preservada. Acesse esta pista no navegador para usar este recurso.',
-                ),
-              )
-            else if (editing) ...[
+            if (editing) ...[
               const SizedBox(height: 10),
               Text(block.url),
               const SizedBox(height: 10),

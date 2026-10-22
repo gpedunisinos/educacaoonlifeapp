@@ -311,4 +311,27 @@ void main() {
     expect(Get.currentRoute, '/space/agents/1');
     expect(find.byType(TextField), findsOneWidget);
   });
+  testWidgets('long agent names fit the Android portrait cards', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(411, 914);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final source = ChamberFake();
+    source.entries[0] = ChatTemplateModel(
+      id: 1,
+      name: 'Guia do Território — demonstração',
+      description: 'Agente sintético.',
+    );
+    source.entries[1] = ChatTemplateModel(
+      id: 2,
+      name: 'Cartógrafa dos territórios e vivências OnLIFE',
+      description: 'Agente sintético.',
+    );
+    await tester.pumpWidget(chamberApp(source));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(find.text('Guia do Território — demonstração'), findsWidgets);
+  });
 }

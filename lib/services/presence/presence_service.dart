@@ -61,8 +61,13 @@ class PresenceService extends GetxService {
   PresenceService({
     PresenceConnection Function(Uri)? connect,
     this.endpoint,
-    this.supported = kIsWeb,
-  }) : connect = connect ?? openPresenceConnection;
+    bool? supported,
+  }) : connect = connect ?? openPresenceConnection,
+       supported =
+           supported ??
+           (kIsWeb ||
+               defaultTargetPlatform == TargetPlatform.android ||
+               defaultTargetPlatform == TargetPlatform.iOS);
   final PresenceConnection Function(Uri) connect;
   final Uri? endpoint;
   final bool supported;
