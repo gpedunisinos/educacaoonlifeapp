@@ -37,7 +37,7 @@ class CreateAccountScreen extends StatelessWidget {
               Text(
                 'Cadastre-se para se\njuntar a nós',
                 textAlign: TextAlign.center,
-                style: boldTextStyle(size: 22),
+                style: boldTextStyle(size: 22, color: Colors.white),
               ),
               Insets.large.height,
               InputText(

@@ -27,7 +27,10 @@ class CreatePasswordScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Crie uma nova senha', style: boldTextStyle(size: 22)),
+              Text(
+                'Crie uma nova senha',
+                style: boldTextStyle(size: 22, color: Colors.white),
+              ),
               Insets.small.height,
               Text('Acesse a plataforma', style: secondaryTextStyle(size: 14)),
               Insets.extraLarge.height,

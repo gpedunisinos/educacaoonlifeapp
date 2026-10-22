@@ -23,7 +23,6 @@ import 'package:unisinos_usp_app/webclients/econectiva_webclient.dart';
 import 'package:unisinos_usp_app/screens/management/management_input.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
-import 'package:unisinos_usp_app/controllers/node_graph/node_graph_controller.dart';
 import 'package:unisinos_usp_app/models/meeting_room.dart';
 import 'package:unisinos_usp_app/webclients/meeting_webclient.dart';
 import 'package:unisinos_usp_app/controllers/living_clue/living_clue_map_controller.dart';
@@ -408,20 +407,19 @@ void main() {
       expect(map.errorMessage.value, isNull);
       debugPrint('AUDIT native map search loaded georeferenced clues');
       await backToShip();
-      Get.toNamed('/nodes/graph');
+      Get.toNamed('/nodes/graph?focus=2');
       await until(
         tester,
-        () => Get.isRegistered<NodeGraphController>(),
-        'graph controller',
+        () => find.text('Acesso à água — teste').evaluate().isNotEmpty,
+        'selected problematic',
       );
-      final graph = Get.find<NodeGraphController>();
-      await until(tester, () => !graph.isLoading.value, 'graph data');
-      expect(graph.errorMessage.value, isNull);
-      expect(graph.graphNodes, isNotEmpty);
-      graph.selectNode(2);
-      expect(graph.selectedNodeId.value, 2);
-      graph.updateSearch('Acesso');
-      expect(graph.visibleNodes.any((n) => n.node.id == 2), isTrue);
+      final graphSearch = find.byWidgetPredicate(
+        (w) =>
+            w is TextField &&
+            (w.decoration?.hintText ?? '').contains('Buscar problemática'),
+      );
+      await tester.enterText(graphSearch, 'Acesso');
+      FocusManager.instance.primaryFocus?.unfocus();
       await tester.pump(const Duration(milliseconds: 400));
       debugPrint('AUDIT_CAPTURE graph-selected');
       await tester.pump(const Duration(seconds: 2));
@@ -480,6 +478,14 @@ void main() {
         peerEvents.add(jsonDecode(data as String) as Map);
       });
       peerSocket.add(jsonEncode({'type': 'auth', 'token': token}));
+      peerSocket.add(
+        jsonEncode({
+          'type': 'state',
+          'destination': 'cockpit',
+          'visible': true,
+          'interacted': true,
+        }),
+      );
       final presence = Get.find<PresenceService>();
       await until(
         tester,

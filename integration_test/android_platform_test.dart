@@ -1,5 +1,6 @@
 // Run only against scripts/run-integrations-preview.py and synthetic records.
 import 'dart:convert';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -118,6 +119,17 @@ void main() {
       expect(await js('window.__auditAudio[0].state'), 'suspended');
       debugPrint(
         'AUDIT app suspension/resumption preserved WebGL, presence and mute control',
+      );
+      final pool = await AudioPool.create(
+        source: AssetSource('space/iarete-type.wav'),
+        maxPlayers: 3,
+      );
+      final stop = await pool.start(volume: .08);
+      await tester.pump(const Duration(milliseconds: 200));
+      await stop();
+      await pool.dispose();
+      debugPrint(
+        'AUDIT native Iareté typing audio asset played through Android audio plugin',
       );
       debugPrint('AUDIT_LOCATION_FIX');
       await tester.pump(const Duration(seconds: 2));

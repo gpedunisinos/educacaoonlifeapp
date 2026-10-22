@@ -28,7 +28,10 @@ class RecoverPasswordScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Confirme seu e-mail', style: boldTextStyle(size: 22)),
+              Text(
+                'Confirme seu e-mail',
+                style: boldTextStyle(size: 22, color: Colors.white),
+              ),
               Insets.small.height,
               Text(
                 'Insira o e-mail associado à sua conta e\nenviaremos um e-mail com um código para\nredefinir sua senha',

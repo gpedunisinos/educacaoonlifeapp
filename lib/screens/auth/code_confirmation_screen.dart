@@ -48,7 +48,10 @@ class _CodeConfirmationScreenState extends State<CodeConfirmationScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Verifique o código', style: boldTextStyle(size: 22)),
+              Text(
+                'Verifique o código',
+                style: boldTextStyle(size: 22, color: Colors.white),
+              ),
               Insets.small.height,
               Text(
                 'Digite o código que foi enviado para seu e-mail e\nconclua a verificação da sua conta',
@@ -90,7 +93,10 @@ class _CodeConfirmationScreenState extends State<CodeConfirmationScreen> {
                 if (_timeout.value > 0) {
                   return Text(
                     'Reenviar em 00:${_timeout.value}',
-                    style: boldTextStyle(size: 14),
+                    style: boldTextStyle(
+                      size: 14,
+                      color: const Color(0xFFA6C5EF),
+                    ),
                   );
                 } else {
                   return GestureDetector(
