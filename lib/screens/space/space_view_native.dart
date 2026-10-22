@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class SpaceView extends StatefulWidget {
@@ -37,6 +38,7 @@ class _SpaceViewState extends State<SpaceView> {
             final data = jsonDecode(message.message);
             if (data is Map<String, dynamic> &&
                 data['channel'] == 'econectiva-space') {
+              if (data['type'] == 'ready') _sendEarthTexture();
               widget.onMessage(data);
             }
           } catch (_) {
@@ -70,6 +72,22 @@ class _SpaceViewState extends State<SpaceView> {
           )
           .catchError((_) {});
     });
+  }
+
+  // WebGL cannot sample file:// images on Android. Deliver this bundled asset
+  // as a data URI through our private scene bridge; no file-access relaxation.
+  Future<void> _sendEarthTexture() async {
+    try {
+      final bytes = await rootBundle.load('assets/space/earth.png');
+      if (!mounted || controller == null) return;
+      final src =
+          'data:image/png;base64,${base64Encode(bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes))}';
+      await controller!.runJavaScript(
+        'window.receiveSpaceCommand(${jsonEncode({'channel': 'econectiva-space', 'type': 'earth-texture', 'src': src})});',
+      );
+    } catch (_) {
+      // The scene keeps its simplified globe and the other modules available.
+    }
   }
 
   @override

@@ -749,6 +749,16 @@ function setPaused(value) {
 }
 window.receiveSpaceCommand = (data) => {
   if (data?.channel !== "econectiva-space") return;
+  if (data.type === "earth-texture" && typeof data.src === "string" && data.src.startsWith("data:image/png;base64,") && earth) {
+    const texture = new THREE.TextureLoader().load(data.src, () => {
+      document.body.dataset.earthTexture = "ready";
+    });
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+    earth.material.map?.dispose();
+    earth.material.map = texture;
+    earth.material.needsUpdate = true;
+  }
   if (data.type === "configure" && Array.isArray(data.destinations)) {
     flightMode.update({mode: data.mode});
     if (typeof data.audioEnabled === "boolean") $("start-sound").checked = data.audioEnabled;
@@ -1317,9 +1327,9 @@ function initScene() {
       }),
     );
     scene.add(stars);
-    const texture = new THREE.TextureLoader().load(
+    const texture = window.SpaceBridge ? new THREE.Texture() : new THREE.TextureLoader().load(
       "earth.png",
-      undefined,
+      () => { document.body.dataset.earthTexture = "ready"; },
       undefined,
       () =>
         record("Textura da Terra indisponível · representação simplificada"),

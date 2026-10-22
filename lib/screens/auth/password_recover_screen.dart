@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/widgets/auth_form_viewport.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pvalidator/pvalidator.dart';
@@ -19,48 +20,42 @@ class RecoverPasswordScreen extends StatelessWidget {
   }
 
   Widget _buildContent() {
-    return SafeArea(
-      top: false,
-      child: Scaffold(
-        body: Center(
-          child: Container(
-            constraints: BoxConstraints(maxWidth: 600),
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('Confirme seu e-mail', style: boldTextStyle(size: 22)),
-                  Insets.small.height,
-                  Text(
-                    'Insira o e-mail associado à sua conta e\nenviaremos um e-mail com um código para\nredefinir sua senha',
-                    textAlign: TextAlign.center,
-                    style: secondaryTextStyle(size: 14),
-                  ),
-                  Insets.large.height,
-                  InputText(
-                    hintText: 'Digite seu e-mail',
-                    controller: _mailTextController,
-                    validator: (string) {
-                      return PValidator([
-                        PRuleRequired(string, message: 'Obrigatório'.tlt),
-                      ]).val();
-                    },
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  Insets.extraLarge.height,
-                  SizedBox(
-                    width: double.infinity,
-                    child: ActionButton(
-                      theme: ActionButtonTheme.blue,
-                      title: 'Enviar código',
-                      onPressed: _doSendCode,
-                    ),
-                  ),
-                ],
+    return Scaffold(
+      body: AuthFormViewport(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Confirme seu e-mail', style: boldTextStyle(size: 22)),
+              Insets.small.height,
+              Text(
+                'Insira o e-mail associado à sua conta e\nenviaremos um e-mail com um código para\nredefinir sua senha',
+                textAlign: TextAlign.center,
+                style: secondaryTextStyle(size: 14),
               ),
-            ),
+              Insets.large.height,
+              InputText(
+                hintText: 'Digite seu e-mail',
+                controller: _mailTextController,
+                validator: (string) {
+                  return PValidator([
+                    PRuleRequired(string, message: 'Obrigatório'.tlt),
+                  ]).val();
+                },
+                keyboardType: TextInputType.emailAddress,
+              ),
+              Insets.extraLarge.height,
+              SizedBox(
+                width: double.infinity,
+                child: ActionButton(
+                  theme: ActionButtonTheme.blue,
+                  title: 'Enviar código',
+                  onPressed: _doSendCode,
+                ),
+              ),
+            ],
           ),
         ),
       ),

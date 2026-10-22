@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/widgets/auth_form_viewport.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
@@ -18,61 +19,52 @@ class CreatePasswordScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      child: Scaffold(
-        body: Center(
-          child: Container(
-            constraints: BoxConstraints(maxWidth: 600),
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('Crie uma nova senha', style: boldTextStyle(size: 22)),
-                  Insets.small.height,
-                  Text(
-                    'Acesse a plataforma',
-                    style: secondaryTextStyle(size: 14),
-                  ),
-                  Insets.extraLarge.height,
-                  InputText(
-                    hintText: 'Crie uma nova senha',
-                    controller: _passwordTextController,
-                    obscureText: true,
-                    validator: (string) {
-                      if (string == null || string.isEmpty) {
-                        return 'Obrigatório';
-                      }
-                    },
-                  ),
-                  Insets.large.height,
-                  InputText(
-                    hintText: 'Confirme a senha',
-                    controller: _confirmPasswordTextController,
-                    obscureText: true,
-                    validator: (string) {
-                      if (string == null || string.isEmpty) {
-                        return 'Obrigatório';
-                      }
-                      if (string != _passwordTextController.text) {
-                        return 'As senhas não coincidem';
-                      }
-                    },
-                  ),
-                  Insets.extraLarge.height,
-                  SizedBox(
-                    width: double.infinity,
-                    child: ActionButton(
-                      theme: ActionButtonTheme.blue,
-                      title: 'Registrar',
-                      onPressed: _doChangePassword,
-                    ),
-                  ),
-                ],
+    return Scaffold(
+      body: AuthFormViewport(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Crie uma nova senha', style: boldTextStyle(size: 22)),
+              Insets.small.height,
+              Text('Acesse a plataforma', style: secondaryTextStyle(size: 14)),
+              Insets.extraLarge.height,
+              InputText(
+                hintText: 'Crie uma nova senha',
+                controller: _passwordTextController,
+                obscureText: true,
+                validator: (string) {
+                  if (string == null || string.isEmpty) {
+                    return 'Obrigatório';
+                  }
+                },
               ),
-            ),
+              Insets.large.height,
+              InputText(
+                hintText: 'Confirme a senha',
+                controller: _confirmPasswordTextController,
+                obscureText: true,
+                validator: (string) {
+                  if (string == null || string.isEmpty) {
+                    return 'Obrigatório';
+                  }
+                  if (string != _passwordTextController.text) {
+                    return 'As senhas não coincidem';
+                  }
+                },
+              ),
+              Insets.extraLarge.height,
+              SizedBox(
+                width: double.infinity,
+                child: ActionButton(
+                  theme: ActionButtonTheme.blue,
+                  title: 'Registrar',
+                  onPressed: _doChangePassword,
+                ),
+              ),
+            ],
           ),
         ),
       ),

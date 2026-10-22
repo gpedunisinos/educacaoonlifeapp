@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/widgets/auth_form_viewport.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -39,89 +40,84 @@ class _CodeConfirmationScreenState extends State<CodeConfirmationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      child: Scaffold(
-        body: Center(
-          child: Container(
-            constraints: BoxConstraints(maxWidth: 600),
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('Verifique o código', style: boldTextStyle(size: 22)),
-                  Insets.small.height,
-                  Text(
-                    'Digite o código que foi enviado para seu e-mail e\nconclua a verificação da sua conta',
-                    textAlign: TextAlign.center,
-                    style: secondaryTextStyle(size: 14),
-                  ),
-                  Insets.extraLarge.height,
-                  PinCodeTextField(
-                    appContext: context,
-                    length: 5,
-                    controller: _pinController,
-                    backgroundColor: Colors.white,
-                    animationType: AnimationType.scale,
-                    pinTheme: PinTheme(
-                      shape: PinCodeFieldShape.underline,
-                      borderRadius: BorderRadius.circular(4),
-                      fieldHeight: 60,
-                      fieldWidth: 50,
-                      activeFillColor: Colors.transparent,
-                      inactiveFillColor: Colors.transparent,
-                      selectedFillColor: Colors.transparent,
-                      activeColor: Color(0Xffefefef),
-                      selectedColor: Color(0xFF084cec),
-                      inactiveColor: Color(0Xffefefef),
-                    ),
-                    onChanged: (value) {},
-                    validator: (value) {
-                      return null;
-                    },
-                  ),
-                  Insets.medium.height,
-                  Text(
-                    'Um código foi enviado para seu e-mail',
-                    style: secondaryTextStyle(size: 14),
-                  ),
-                  Insets.small.height,
-                  Obx(() {
-                    if (_timeout.value > 0) {
-                      return Text(
-                        'Reenviar em 00:${_timeout.value}',
-                        style: boldTextStyle(size: 14),
-                      );
-                    } else {
-                      return GestureDetector(
-                        onTap: () async {
-                          _startTimer();
-                          _pinController.text = '';
-                          await _controller.sendCode(email);
-                        },
-                        child: Text(
-                          'Reenviar código',
-                          style: boldTextStyle(
-                            size: 14,
-                          ).copyWith(color: Color(0xFF084cec)),
-                        ),
-                      );
-                    }
-                  }),
-                  Insets.large.height,
-                  SizedBox(
-                    width: double.infinity,
-                    child: ActionButton(
-                      theme: ActionButtonTheme.blue,
-                      title: 'Continuar',
-                      onPressed: _doConfirmCode,
-                    ),
-                  ),
-                ],
+    return Scaffold(
+      body: AuthFormViewport(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Verifique o código', style: boldTextStyle(size: 22)),
+              Insets.small.height,
+              Text(
+                'Digite o código que foi enviado para seu e-mail e\nconclua a verificação da sua conta',
+                textAlign: TextAlign.center,
+                style: secondaryTextStyle(size: 14),
               ),
-            ),
+              Insets.extraLarge.height,
+              PinCodeTextField(
+                autoDisposeControllers: false,
+                appContext: context,
+                length: 5,
+                controller: _pinController,
+                backgroundColor: Colors.white,
+                animationType: AnimationType.scale,
+                pinTheme: PinTheme(
+                  shape: PinCodeFieldShape.underline,
+                  borderRadius: BorderRadius.circular(4),
+                  fieldHeight: 60,
+                  fieldWidth: 50,
+                  activeFillColor: Colors.transparent,
+                  inactiveFillColor: Colors.transparent,
+                  selectedFillColor: Colors.transparent,
+                  activeColor: Color(0Xffefefef),
+                  selectedColor: Color(0xFF084cec),
+                  inactiveColor: Color(0Xffefefef),
+                ),
+                onChanged: (value) {},
+                validator: (value) {
+                  return null;
+                },
+              ),
+              Insets.medium.height,
+              Text(
+                'Um código foi enviado para seu e-mail',
+                style: secondaryTextStyle(size: 14),
+              ),
+              Insets.small.height,
+              Obx(() {
+                if (_timeout.value > 0) {
+                  return Text(
+                    'Reenviar em 00:${_timeout.value}',
+                    style: boldTextStyle(size: 14),
+                  );
+                } else {
+                  return GestureDetector(
+                    onTap: () async {
+                      _startTimer();
+                      _pinController.text = '';
+                      await _controller.sendCode(email);
+                    },
+                    child: Text(
+                      'Reenviar código',
+                      style: boldTextStyle(
+                        size: 14,
+                      ).copyWith(color: Color(0xFF084cec)),
+                    ),
+                  );
+                }
+              }),
+              Insets.large.height,
+              SizedBox(
+                width: double.infinity,
+                child: ActionButton(
+                  theme: ActionButtonTheme.blue,
+                  title: 'Continuar',
+                  onPressed: _doConfirmCode,
+                ),
+              ),
+            ],
           ),
         ),
       ),

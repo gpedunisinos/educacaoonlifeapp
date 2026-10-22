@@ -7,6 +7,14 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:unisinos_usp_app/webclients/living_clue_webclient.dart';
 import 'dart:typed_data';
+import 'package:uuid/uuid.dart';
+import 'dart:io' show WebSocket;
+import 'package:unisinos_usp_app/services/presence/presence_service.dart';
+import 'package:unisinos_usp_app/services/participant_chat/participant_chat_service.dart';
+import 'package:unisinos_usp_app/models/user_model.dart';
+import 'package:unisinos_usp_app/webclients/user_webclient.dart';
+import 'package:flutter/services.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:unisinos_usp_app/models/file_model.dart';
 import 'package:unisinos_usp_app/webclients/file_webclient.dart';
@@ -14,6 +22,9 @@ import 'package:unisinos_usp_app/webclients/econectiva_webclient.dart';
 import 'package:unisinos_usp_app/screens/management/management_input.dart';
 import 'package:unisinos_usp_app/widgets/action_button.dart';
 import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
+import 'package:unisinos_usp_app/controllers/node_graph/node_graph_controller.dart';
+import 'package:unisinos_usp_app/models/meeting_room.dart';
+import 'package:unisinos_usp_app/webclients/meeting_webclient.dart';
 import 'package:unisinos_usp_app/controllers/living_clue/living_clue_map_controller.dart';
 
 import 'package:unisinos_usp_app/main.dart' as app;
@@ -63,6 +74,115 @@ void main() {
         'authenticated cockpit',
       );
 
+      await until(
+        tester,
+        () => find.byType(WebViewWidget).evaluate().isNotEmpty,
+        'cockpit',
+      );
+      final web = tester
+          .widget<WebViewWidget>(find.byType(WebViewWidget).first)
+          .platform
+          .params
+          .controller;
+      Future<dynamic> js(String expression) async {
+        var value = await web.runJavaScriptReturningResult(
+          'JSON.stringify(($expression))',
+        );
+        if (value is String) value = jsonDecode(value);
+        if (value is String) value = jsonDecode(value);
+        return value;
+      }
+
+      for (var i = 0; i < 100; i++) {
+        await tester.pump(const Duration(milliseconds: 250));
+        if (await js('typeof window.receiveSpaceCommand === "function"') ==
+            true)
+          break;
+      }
+      await web.runJavaScript(
+        'document.getElementById("start-sound").checked=true;document.getElementById("start").click();',
+      );
+      await tester.pump(const Duration(seconds: 2));
+      for (var i = 0; i < 16; i++) {
+        if (await js('document.getElementById("ship-tutorial").hidden') == true)
+          break;
+        final bounds =
+            await js(
+                  '(()=>{const r=document.getElementById("tour-card").getBoundingClientRect();return {left:r.left,top:r.top,right:r.right,bottom:r.bottom,width:innerWidth,height:innerHeight};})()',
+                )
+                as Map;
+        expect(bounds['left'], greaterThanOrEqualTo(0));
+        expect(bounds['top'], greaterThanOrEqualTo(0));
+        expect(
+          bounds['right'],
+          lessThanOrEqualTo((bounds['width'] as num) + 1),
+        );
+        expect(
+          bounds['bottom'],
+          lessThanOrEqualTo((bounds['height'] as num) + 1),
+        );
+        if (i == 0) {
+          debugPrint('AUDIT_CAPTURE tutorial-portrait');
+          await tester.pump(const Duration(seconds: 2));
+        }
+        await web.runJavaScript(
+          'document.getElementById("tour-next").click();',
+        );
+        await tester.pump(const Duration(milliseconds: 400));
+      }
+      expect(
+        await js('document.getElementById("ship-tutorial").hidden'),
+        isTrue,
+      );
+      debugPrint(
+        'AUDIT native tutorial completed with every explanation inside viewport',
+      );
+      await web.runJavaScript(
+        'document.querySelector("[data-destination=earth]").click();document.getElementById("navigate").click();',
+      );
+      await tester.pump(const Duration(seconds: 1));
+      await web.runJavaScript('document.getElementById("skip").click();');
+      await tester.pump(const Duration(seconds: 3));
+      expect(
+        await js(
+          '(()=>{const p=document.getElementById("message");return p.scrollWidth <= p.clientWidth+1;})()',
+        ),
+        isTrue,
+        reason: 'Iareté explanations must wrap within the phone console',
+      );
+      expect(
+        await js('document.body.dataset.earthTexture'),
+        'ready',
+        reason: 'The real Earth texture must load in Android WebGL',
+      );
+      debugPrint('AUDIT_CAPTURE cockpit-portrait-final');
+      await tester.pump(const Duration(seconds: 2));
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+      ]);
+      await tester.pump(const Duration(seconds: 3));
+      for (
+        var i = 0;
+        i < 40 && await js('innerWidth > innerHeight') != true;
+        i++
+      ) {
+        await tester.pump(const Duration(milliseconds: 250));
+      }
+      expect(await js('innerWidth > innerHeight'), isTrue);
+      debugPrint('AUDIT_CAPTURE cockpit-landscape');
+      await tester.pump(const Duration(seconds: 2));
+      expect(
+        await js('document.documentElement.scrollWidth <= innerWidth+1'),
+        isTrue,
+      );
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+      ]);
+      await tester.pump(const Duration(seconds: 3));
+      expect(await js('innerWidth < innerHeight'), isTrue);
+      debugPrint(
+        'AUDIT native orientation changes preserved the WebGL cockpit',
+      );
       final api = EconectivaApi();
       final clues = LivingClueWebclient();
       final stamp = DateTime.now().millisecondsSinceEpoch;
@@ -92,7 +212,7 @@ void main() {
         field('Observacao'),
         'Registro sintético escrito no Android.',
       );
-      tester.testTextInput.hide();
+      FocusManager.instance.primaryFocus?.unfocus();
       final save = find.byWidgetPredicate(
         (w) => w is ActionButton && w.title == 'Salvar',
       );
@@ -121,7 +241,7 @@ void main() {
         'load editor',
       );
       await tester.enterText(field('Nome'), '$name revisada');
-      tester.testTextInput.hide();
+      FocusManager.instance.primaryFocus?.unfocus();
       final update = find.byWidgetPredicate(
         (w) => w is ActionButton && w.title == 'Atualizar',
       );
@@ -139,7 +259,7 @@ void main() {
       saved.metadata = {
         'observacao': 'Preservada',
         'future_key': {'v': 2, 'opaque': true},
-        'praticas_inventivas': {'future_option': true},
+        'praticas_inventivas': ['niig', 'saigon'],
       };
       await clues.update(saved);
       Get.toNamed('/living_clues/update?id=$id');
@@ -149,7 +269,7 @@ void main() {
         'rich editor',
       );
       await tester.enterText(field('Nome'), '$name integrações revisadas');
-      tester.testTextInput.hide();
+      FocusManager.instance.primaryFocus?.unfocus();
       await tester.ensureVisible(update);
       await tester.tap(update);
       await tester.pump(const Duration(seconds: 2));
@@ -261,6 +381,31 @@ void main() {
       expect(map.errorMessage.value, isNull);
       debugPrint('AUDIT native map search loaded georeferenced clues');
       await backToShip();
+      Get.toNamed('/nodes/graph');
+      await tester.pump(const Duration(seconds: 2));
+      final graph = Get.find<NodeGraphController>();
+      await until(tester, () => !graph.isLoading.value, 'graph data');
+      expect(graph.errorMessage.value, isNull);
+      expect(graph.graphNodes, isNotEmpty);
+      graph.selectNode(2);
+      expect(graph.selectedNodeId.value, 2);
+      graph.updateSearch('Acesso');
+      expect(graph.visibleNodes.any((n) => n.node.id == 2), isTrue);
+      await tester.pump(const Duration(milliseconds: 400));
+      debugPrint('AUDIT_CAPTURE graph-selected');
+      await tester.pump(const Duration(seconds: 2));
+      expect(tester.takeException(), isNull);
+      await backToShip();
+      debugPrint(
+        'AUDIT native graph loaded, selected and filtered a problematic',
+      );
+      final meeting = MeetingRoom.parse('android-sintetico-$stamp');
+      final authorized = await MeetingWebclient().authorize(meeting);
+      expect(authorized.queryParameters['jwt'], isNotEmpty);
+      expect(meeting.uri.queryParameters.containsKey('jwt'), isFalse);
+      debugPrint(
+        'AUDIT meeting authorization passed on native authenticated transport',
+      );
       final users = Get.find<UserController>();
       await users.chooseMode('explorer', navigate: false);
       expect(Get.currentRoute, '/space');
@@ -273,9 +418,138 @@ void main() {
       for (final entry in created.entries.toList().reversed) {
         await api.write('DELETE', '/${entry.key}/${entry.value}');
       }
+      final userApi = UserWebclient();
+      final peer = await userApi.createUser(
+        UserModel(
+          id: 0,
+          name: 'Par Android $stamp',
+          email: 'android-$stamp@example.test',
+          profile: 10,
+          password: const String.fromEnvironment('E2E_PASSWORD'),
+        ),
+      );
+      final loginResponse = await http.post(
+        Uri.parse('http://10.0.2.2:8082/api/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': peer.email,
+          'password': const String.fromEnvironment('E2E_PASSWORD'),
+        }),
+      );
+      expect(loginResponse.statusCode, 200);
+      final loginData = jsonDecode(loginResponse.body) as Map;
+      final token =
+          (loginData['token'] ?? loginData['plain_text_token']) as String;
+      final peerSocket = await WebSocket.connect(
+        'ws://10.0.2.2:8082/api/presence',
+        headers: {'Origin': 'http://127.0.0.1:8773'},
+      );
+      final peerEvents = <Map>[];
+      peerSocket.listen((data) {
+        peerEvents.add(jsonDecode(data as String) as Map);
+      });
+      peerSocket.add(jsonEncode({'type': 'auth', 'token': token}));
+      final presence = Get.find<PresenceService>();
+      await until(
+        tester,
+        () => presence.participants.any((p) => p.name == peer.name),
+        'synthetic peer presence',
+      );
+      final participant = presence.participants.firstWhere(
+        (p) => p.name == peer.name,
+      );
+      final chats = Get.find<ParticipantChatService>();
+      await chats.openParticipant(participant.id);
+      expect(chats.active.value, isNotNull);
+      final text = 'Olá do Android 🌎✨ $stamp';
+      expect(await chats.send(text), isTrue);
+      final conversation = chats.active.value!.id;
+      final peerHeaders = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      };
+      final history = await http.get(
+        Uri.parse(
+          'http://10.0.2.2:8082/api/me/conversations/$conversation/messages',
+        ),
+        headers: peerHeaders,
+      );
+      expect(history.statusCode, 200);
+      expect(history.body, contains(text));
+      final reply = 'Resposta sintética 🚀 $stamp';
+      final sent = await http.post(
+        Uri.parse(
+          'http://10.0.2.2:8082/api/me/conversations/$conversation/messages',
+        ),
+        headers: peerHeaders,
+        body: jsonEncode({'text': reply, 'client_id': const Uuid().v4()}),
+      );
+      expect(sent.statusCode, anyOf(200, 201));
+      await chats.loadMessages();
+      expect(chats.texts.any((t) => t.text == reply && !t.own), isTrue);
+      final ownRegion = presence.section;
+      peerSocket.add(
+        jsonEncode({
+          'type': 'state',
+          'destination': 'research',
+          'visible': true,
+          'interacted': true,
+        }),
+      );
+      await until(
+        tester,
+        () => presence.participants.any(
+          (p) => p.id == participant.id && p.destination == 'research',
+        ),
+        'peer changed region',
+      );
+      expect(
+        presence.section,
+        ownRegion,
+        reason: 'A peer trip must not move this ship',
+      );
+      await peerSocket.close();
+      await userApi.deleteUser(peer.id);
+      debugPrint(
+        'AUDIT native participant chat sent text/emojis, received reply and preserved separate regions',
+      );
       await clues.delete(id);
       expect(tester.takeException(), isNull);
       debugPrint('AUDIT synthetic workflow records cleaned up');
+      for (final orientation in [
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.landscapeLeft,
+      ]) {
+        await SystemChrome.setPreferredOrientations([orientation]);
+        await tester.pump(const Duration(seconds: 2));
+        for (final route in [
+          '/choose_mode',
+          '/create_account',
+          '/recover_password',
+          '/code_confirmation',
+          '/create_password',
+        ]) {
+          Get.toNamed(
+            route,
+            arguments: route == '/create_password'
+                ? 'synthetic-invalid-code'
+                : null,
+          );
+          await tester.pump(const Duration(seconds: 1));
+          expect(
+            tester.takeException(),
+            isNull,
+            reason: '$route at $orientation',
+          );
+          await backToShip();
+        }
+      }
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+      ]);
+      debugPrint(
+        'AUDIT authentication and mode screens fit portrait and landscape',
+      );
     },
     timeout: const Timeout(Duration(minutes: 12)),
   );
