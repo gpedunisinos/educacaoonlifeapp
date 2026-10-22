@@ -154,7 +154,9 @@ void main() {
           () => Get.currentRoute != '/space',
           'open module $destination',
         );
-        await tester.pump(const Duration(seconds: 2));
+        for (var frame = 0; frame < 20; frame++) {
+          await tester.pump(const Duration(milliseconds: 200));
+        }
         expect(
           tester.takeException(),
           isNull,
@@ -173,6 +175,28 @@ void main() {
         expect(Get.find<PresenceService>().section, destination);
       }
       debugPrint('AUDIT all four flights and module returns passed');
+      if (const bool.fromEnvironment('NATIVE_BRIDGE_ONLY')) {
+        await view.runJavaScript('document.getElementById("exit").click();');
+        await until(
+          tester,
+          () => find.text('Sair da conta').evaluate().isNotEmpty,
+          'native account menu',
+        );
+        for (var frame = 0; frame < 10; frame++) {
+          await tester.pump(const Duration(milliseconds: 100));
+        }
+        await tester.ensureVisible(find.text('Sair da conta'));
+        await tester.tap(find.text('Sair da conta'));
+        await until(tester, () => Get.currentRoute == '/login', 'logout');
+        expect(prefs.getString('user'), isNull);
+        expect(Get.find<PresenceService>().account, isNull);
+        expect(tester.takeException(), isNull);
+        debugPrint(
+          'AUDIT native account menu logged out and cleared session/presence',
+        );
+        return;
+      }
+
       final routes = <String, Object?>{
         '/space/research': null,
         '/space/research/1': null,
