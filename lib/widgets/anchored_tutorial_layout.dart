@@ -1,4 +1,13 @@
 import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
+
+/// A route can detach its anchor before a queued overlay rebuild runs.
+RenderBox? attachedTutorialBox(BuildContext? context) {
+  final render = context is Element ? context.renderObject : null;
+  return render is RenderBox && render.attached && render.hasSize
+      ? render
+      : null;
+}
 
 /// Positions a measured guide card in the same coordinate space as its target.
 /// Prefer an unobstructed side; if none fits, cover as little of the target as possible.

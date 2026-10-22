@@ -311,6 +311,8 @@ void main() {
         ),
       );
       expect(attachment.id, greaterThan(0));
+      if (const bool.fromEnvironment('NATIVE_S3'))
+        expect(attachment.storageProvider, 's3');
       expect(
         (await files.fetch(livingClueId: id)).any((f) => f.id == attachment.id),
         isTrue,
@@ -326,11 +328,16 @@ void main() {
       await backToShip();
       await files.delete(attachment.id);
       expect(
+        (await http.get(url)).statusCode,
+        404,
+        reason: 'Deleted content must be removed from storage',
+      );
+      expect(
         (await files.fetch(livingClueId: id)).any((f) => f.id == attachment.id),
         isFalse,
       );
       debugPrint(
-        'AUDIT native multipart upload, authorized download and delete passed',
+        'AUDIT native multipart upload, authorized download and delete passed (${attachment.storageProvider})',
       );
 
       Get.toNamed('/living_clues/connect', arguments: rich);
@@ -489,11 +496,21 @@ void main() {
       final presence = Get.find<PresenceService>();
       await until(
         tester,
-        () => presence.participants.any((p) => p.name == peer.name),
+        () => peerEvents.any(
+          (e) => e['type'] == 'snapshot' && e['self'] is String,
+        ),
+        'peer identity',
+      );
+      final peerId =
+          peerEvents.firstWhere((e) => e['type'] == 'snapshot')['self']
+              as String;
+      await until(
+        tester,
+        () => presence.participants.any((p) => p.id == peerId),
         'synthetic peer presence',
       );
       final participant = presence.participants.firstWhere(
-        (p) => p.name == peer.name,
+        (p) => p.id == peerId,
       );
       final chats = Get.find<ParticipantChatService>();
       await chats.openParticipant(participant.id);

@@ -1,6 +1,9 @@
 // Run only against scripts/run-integrations-preview.py and synthetic records.
 import 'dart:convert';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:unisinos_usp_app/models/meeting_room.dart';
+import 'package:unisinos_usp_app/services/meeting_window.dart';
+import 'package:unisinos_usp_app/webclients/meeting_webclient.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -17,7 +20,7 @@ import 'package:unisinos_usp_app/main.dart' as app;
 
 void main() {
   debugPrint = debugPrintSynchronously;
-  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   Future<void> until(
     WidgetTester tester,
     bool Function() ready,
@@ -35,6 +38,14 @@ void main() {
   testWidgets(
     'Android: real audio, lifecycle, location and AI transports',
     (tester) async {
+      binding.shouldPropagateDevicePointerEvents = true;
+      addTearDown(() => binding.shouldPropagateDevicePointerEvents = false);
+      final previousError = FlutterError.onError;
+      FlutterError.onError = (details) {
+        debugPrint('AUDIT error stack: ${details.stack}');
+        previousError?.call(details);
+      };
+      addTearDown(() => FlutterError.onError = previousError);
       expect(const bool.fromEnvironment('NATIVE_AUDIT'), isTrue);
       expect(const String.fromEnvironment('API_HOST'), '10.0.2.2');
       expect(const String.fromEnvironment('API_PORT'), '8082');
@@ -149,6 +160,17 @@ void main() {
       debugPrint('AUDIT Android location permission and simulated GPS passed');
       Get.back();
       await tester.pump(const Duration(seconds: 1));
+      final room = MeetingRoom.parse(
+        'android-browser-${DateTime.now().millisecondsSinceEpoch}',
+      );
+      final uri = await MeetingWebclient().authorize(room);
+      expect(await MeetingWindow.reserve()!.navigate(uri), isTrue);
+      await tester.pump(const Duration(seconds: 2));
+      debugPrint('AUDIT_BACKGROUND');
+      await tester.pump(const Duration(seconds: 4));
+      debugPrint(
+        'AUDIT authorized meeting opened in the Android browser and returned to the app',
+      );
       if (const bool.fromEnvironment('NATIVE_AI')) {
         final message =
             'Validação sintética Android. Responda em uma frase curta, sem consultar dados pessoais.';
@@ -174,6 +196,8 @@ void main() {
         expect(clue.any((m) => !m.isUser && m.text.trim().isNotEmpty), isTrue);
         debugPrint('AUDIT clue live AI response passed on Android');
       }
+      binding.shouldPropagateDevicePointerEvents = false;
+      FlutterError.onError = previousError;
       expect(tester.takeException(), isNull);
     },
     timeout: const Timeout(Duration(minutes: 8)),

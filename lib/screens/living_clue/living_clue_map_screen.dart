@@ -71,6 +71,15 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
   Timer? _searchDebounce;
   Worker? _routeWorker;
   VoidCallback? _dismissTutorial;
+  ModalRoute<dynamic>? _hostRoute;
+  bool get _routeIsCurrent => _hostRoute?.isCurrent ?? true;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _hostRoute = ModalRoute.of(context);
+  }
+
   late final AnimationController _sonarPulseController;
 
   late final String _contextRoute = Get.currentRoute;
@@ -92,6 +101,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
           }
         });
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_routeIsCurrent) return;
       _loadCurrentBounds();
       _environmentalController.openWithSatellite();
       _showInitialTutorialIfNeeded();
@@ -1490,8 +1500,12 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     entry = OverlayEntry(
       builder: (context) => LayoutBuilder(
         builder: (context, constraints) {
+          if (closed || !mounted || !_routeIsCurrent) {
+            return const SizedBox.shrink();
+          }
           final step = steps[currentIndex];
-          final overlayBox = overlay.context.findRenderObject() as RenderBox;
+          final overlayBox = attachedTutorialBox(overlay.context);
+          if (overlayBox == null) return const SizedBox.shrink();
           final viewport = Offset.zero & constraints.biggest;
           final targetRect = _targetRect(
             step.targetKey,
@@ -1641,8 +1655,8 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
   }
 
   Rect _targetRect(GlobalKey key, RenderBox overlayBox) {
-    final box = key.currentContext?.findRenderObject();
-    if (box is! RenderBox || !box.hasSize || !box.attached) return Rect.zero;
+    final box = attachedTutorialBox(key.currentContext);
+    if (box == null) return Rect.zero;
     return box.localToGlobal(Offset.zero, ancestor: overlayBox) & box.size;
   }
 
