@@ -3,14 +3,50 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 import 'package:unisinos_usp_app/routes/auth.dart';
+import 'package:unisinos_usp_app/screens/auth/login_screen.dart';
 
 class _User extends UserController {
   @override
   // ignore: must_call_super
   void onInit() {}
+  @override
+  Future<void> login(String mail, String password) async =>
+      throw StateError('Synthetic authentication failure');
+  @override
+  Future<void> loginGoogle() async =>
+      throw StateError('Synthetic provider cancellation');
 }
 
 void main() {
+  testWidgets(
+    'authentication failures retain the form without uncaught futures',
+    (tester) async {
+      Get.testMode = true;
+      Get.put<UserController>(_User());
+      await tester.pumpWidget(GetMaterialApp(home: const LoginScreen()));
+      await tester.pump();
+      await tester.enterText(
+        find.byType(TextFormField).at(0),
+        'synthetic@example.test',
+      );
+      await tester.enterText(
+        find.byType(TextFormField).at(1),
+        'synthetic-password',
+      );
+      await tester.ensureVisible(find.text('Entrar'));
+      await tester.tap(find.text('Entrar'));
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+      await tester.ensureVisible(find.text('Continuar com Google'));
+      await tester.tap(find.text('Continuar com Google'));
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+      expect(find.byType(LoginScreen), findsOneWidget);
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pumpWidget(const SizedBox.shrink());
+      Get.reset();
+    },
+  );
   for (final route in [
     '/login',
     '/create_account',

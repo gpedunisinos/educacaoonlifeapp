@@ -27,6 +27,17 @@ with (a.output/'test.log').open('w') as log:
   for secret in secrets:line=line.replace(secret,'[REDACTED]')
   log.write(line);log.flush()
   if 'AUDIT ' in line:milestones.append(line.strip());print(line.strip(),flush=True)
+  tap=re.search(r'AUDIT_TAP (\d+) (\d+)',line)
+  if tap:
+   subprocess.run([str(adb),'-s',a.device,'shell','input','tap',tap[1],tap[2]],check=True,capture_output=True,timeout=10)
+  if 'AUDIT_BACKGROUND' in line:
+   subprocess.run([str(adb),'-s',a.device,'shell','input','keyevent','KEYCODE_HOME'],check=True,capture_output=True,timeout=10)
+   time.sleep(1)
+   subprocess.run([str(adb),'-s',a.device,'shell','am','start','-n','com.br.spotecnologia.uniuspapp/.MainActivity'],check=True,capture_output=True,timeout=10)
+  if 'AUDIT_LOCATION_FIX' in line:
+   for permission in ['ACCESS_COARSE_LOCATION','ACCESS_FINE_LOCATION']:
+    subprocess.run([str(adb),'-s',a.device,'shell','pm','grant','com.br.spotecnologia.uniuspapp','android.permission.'+permission],check=True,capture_output=True,timeout=10)
+   subprocess.run([str(adb),'-s',a.device,'emu','geo','fix','-51.143','-29.718'],check=True,capture_output=True,timeout=10)
   capture=re.search(r'AUDIT_CAPTURE ([a-zA-Z0-9_-]+)',line)
   if capture:
    name=capture[1]+'.png'

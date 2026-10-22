@@ -172,17 +172,21 @@ class CreateAccountScreen extends StatelessWidget {
     );
   }
 
-  void _doCreateAccount(BuildContext context) {
+  Future<void> _doCreateAccount(BuildContext context) async {
     if (_formKey.currentState!.validate()) {
       if (isAcceptedTerms.value) {
-        LoadingDialog.showFuture(
-          context,
-          _controller.createAccount(
-            name: _nameTextController.text.trim(),
-            email: _mailTextController.text.trim(),
-            password: _passwordTextController.text,
-          ),
-        );
+        try {
+          await LoadingDialog.showFuture(
+            context,
+            _controller.createAccount(
+              name: _nameTextController.text.trim(),
+              email: _mailTextController.text.trim(),
+              password: _passwordTextController.text,
+            ),
+          );
+        } catch (_) {
+          // The controller keeps the form and explains the registration error.
+        }
       } else {
         Get.customSnackbar(
           'Aviso',
@@ -193,6 +197,10 @@ class CreateAccountScreen extends StatelessWidget {
   }
 
   Future<void> _doGoogleLogin() async {
-    await _controller.loginGoogle();
+    try {
+      await _controller.loginGoogle();
+    } catch (_) {
+      // The controller already presents the recoverable authentication error.
+    }
   }
 }

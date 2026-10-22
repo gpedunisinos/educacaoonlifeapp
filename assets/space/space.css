@@ -2122,3 +2122,39 @@ body:has(#welcome:not([hidden])) #presence-labels, body:has(#ship-tutorial:not([
   .mission { top: 16%; left: 7%; }
   .mission h1 { font-size: 26px; margin: 8px 0; }
 }
+
+/* Landscape phones keep flight controls reachable and leave the canopy open. */
+@media (max-height: 560px) and (min-aspect-ratio: 13/10) {
+  header { top: 8px; left: 12px; right: 12px; display: flex; flex-wrap: nowrap; gap: 14px; align-items: center; }
+  .brand { flex: 0 0 auto; width: auto; font-size: 12px; gap: 8px; white-space: nowrap; }
+  .brand small { display: none; }
+  .brand svg { width: 28px; height: 28px; }
+  .tools { flex: 1; min-width: 0; width: auto; margin: 0; flex-wrap: nowrap; overflow-x: auto; justify-content: flex-end; gap: 5px; }
+  .tools button { flex: 0 0 auto; font-size: 9px; padding: 7px; min-height: 32px; white-space: nowrap; }
+  .console { left: 12px; right: 12px; bottom: 8px; padding: 6px 10px 0; max-height: 43dvh; overflow-y: auto; }
+  .console-content, .at-current-destination .console-content { grid-template-columns: minmax(0,1fr) minmax(0,1.2fr); padding: 4px 0; gap: 14px; }
+  .assistant { min-width: 0; flex-direction: row; gap: 8px; }
+  .iarete-flow { flex: 0 0 48px; width: 48px; height: 42px; }
+  .assistant-name { font-size: 9px; text-align: left; }
+  .assistant-name span { display: none; }
+  .assistant p { font-size: 10px; line-height: 1.35; min-height: 0; max-height: 29px; overflow-y: auto; overflow-wrap: anywhere; margin: 4px 0; }
+  .console .assistant .text-button { font-size: 9px; padding: 2px 0; min-height: 22px; }
+  #destinations { padding: 0; gap: 5px; }
+  .destination { flex-direction: column; min-height: 50px; padding: 5px 3px; gap: 4px; }
+  .destination .symbol { font-size: 17px; }
+  .destination strong { font-size: 9px; }
+  .destination small { display: none; }
+  .console-footer { display: flex; flex-wrap: wrap; min-height: 32px; padding: 3px 0; gap: 4px 10px; }
+  .console-footer .navigation { flex: 0 1 auto; order: 0; }
+  .console-footer .actions button { min-height: 30px; font-size: 10px; padding: 5px 8px; }
+  .mode-lever { min-width: 170px; }
+  .mode-lever button { min-height: 27px; font-size: 10px; padding: 4px 6px; }
+  .console-links .text-button { min-height: 28px; font-size: 9px; padding: 3px 0; }
+  .at-destination .port-instrument { top: 56px; left: 12px; width: 240px; max-height: 68px; padding: 7px 10px; overflow-y: auto; }
+  .port-instrument .instrument-heading, .port-instrument .local-copy p, .port-instrument .local-copy small { display: none; }
+  .port-instrument #local-details { display: flex; align-items: center; gap: 10px; }
+  .port-instrument .local-copy { flex: 1; min-width: 0; }
+  .port-instrument .local-copy h2 { font-size: 14px; margin: 0; }
+  .port-instrument .local-open { flex: 0 1 60%; font-size: 9px; min-height: 32px; padding: 6px; margin: 0; }
+  .mission { top: 24%; }
+}

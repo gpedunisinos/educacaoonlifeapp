@@ -97,7 +97,9 @@ class _CodeConfirmationScreenState extends State<CodeConfirmationScreen> {
                     onTap: () async {
                       _startTimer();
                       _pinController.text = '';
-                      await _controller.sendCode(email);
+                      try {
+                        await _controller.sendCode(email);
+                      } catch (_) {}
                     },
                     child: Text(
                       'Reenviar código',
@@ -137,11 +139,15 @@ class _CodeConfirmationScreenState extends State<CodeConfirmationScreen> {
   }
 
   Future<void> _doConfirmCode() async {
-    if (_formKey.currentState!.validate() &&
-        await _controller.validateRecoverToken(_pinController.text)) {
-      Get.toNamed('/create_password', arguments: _pinController.text);
-    } else {
-      Get.snackbar('Erro', 'Código inválido');
+    try {
+      if (_formKey.currentState!.validate() &&
+          await _controller.validateRecoverToken(_pinController.text)) {
+        Get.toNamed('/create_password', arguments: _pinController.text);
+      } else {
+        Get.snackbar('Erro', 'Código inválido');
+      }
+    } catch (_) {
+      /* Error presented by the controller. */
     }
   }
 }

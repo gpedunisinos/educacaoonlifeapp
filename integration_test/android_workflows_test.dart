@@ -1,5 +1,6 @@
 // Run only against scripts/run-integrations-preview.py and synthetic records.
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -30,6 +31,7 @@ import 'package:unisinos_usp_app/controllers/living_clue/living_clue_map_control
 import 'package:unisinos_usp_app/main.dart' as app;
 
 void main() {
+  debugPrint = debugPrintSynchronously;
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   Future<void> until(
     WidgetTester tester,
@@ -179,6 +181,13 @@ void main() {
         DeviceOrientation.portraitUp,
       ]);
       await tester.pump(const Duration(seconds: 3));
+      for (
+        var i = 0;
+        i < 40 && await js('innerWidth < innerHeight') != true;
+        i++
+      ) {
+        await tester.pump(const Duration(milliseconds: 250));
+      }
       expect(await js('innerWidth < innerHeight'), isTrue);
       debugPrint(
         'AUDIT native orientation changes preserved the WebGL cockpit',
@@ -206,7 +215,11 @@ void main() {
           'metadataTags': 'observacao',
         },
       );
-      await tester.pump(const Duration(seconds: 2));
+      await until(
+        tester,
+        () => field('Nome').evaluate().isNotEmpty,
+        'native create form',
+      );
       await tester.enterText(field('Nome'), name);
       await tester.enterText(
         field('Observacao'),
@@ -322,7 +335,11 @@ void main() {
       );
 
       Get.toNamed('/living_clues/connect', arguments: rich);
-      await tester.pump(const Duration(seconds: 2));
+      await until(
+        tester,
+        () => find.text(rich.name).evaluate().isNotEmpty,
+        'connection form source',
+      );
       expect(find.text(rich.name), findsWidgets);
       expect(tester.takeException(), isNull);
       await backToShip();
@@ -368,13 +385,23 @@ void main() {
           'name': '${entry.value['name']} revisada',
         });
         Get.toNamed('/${entry.key}/update?id=$record');
-        await tester.pump(const Duration(seconds: 2));
+        await until(
+          tester,
+          () => find.byType(ManagementInput).evaluate().isNotEmpty,
+          'saved administrative form',
+        );
+        await tester.pump(const Duration(seconds: 1));
         expect(tester.takeException(), isNull, reason: entry.key);
         await backToShip();
         debugPrint('AUDIT native CRUD and edit screen: ${entry.key}');
       }
       Get.toNamed('/living_clues/map');
-      await tester.pump(const Duration(seconds: 3));
+      await until(
+        tester,
+        () => Get.isRegistered<LivingClueMapController>(),
+        'map controller',
+      );
+      await tester.pump(const Duration(seconds: 1));
       final map = Get.find<LivingClueMapController>();
       await map.searchGlobal('Pista de demonstração do mapa');
       expect(map.livingClues.any((c) => c.id == 2), isTrue);
@@ -382,7 +409,11 @@ void main() {
       debugPrint('AUDIT native map search loaded georeferenced clues');
       await backToShip();
       Get.toNamed('/nodes/graph');
-      await tester.pump(const Duration(seconds: 2));
+      await until(
+        tester,
+        () => Get.isRegistered<NodeGraphController>(),
+        'graph controller',
+      );
       final graph = Get.find<NodeGraphController>();
       await until(tester, () => !graph.isLoading.value, 'graph data');
       expect(graph.errorMessage.value, isNull);

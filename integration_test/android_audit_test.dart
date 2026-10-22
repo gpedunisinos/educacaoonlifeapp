@@ -1,5 +1,6 @@
 // Run only against scripts/run-integrations-preview.py and synthetic records.
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -11,6 +12,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:unisinos_usp_app/main.dart' as app;
 
 void main() {
+  debugPrint = debugPrintSynchronously;
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   Future<void> until(
     WidgetTester tester,

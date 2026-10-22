@@ -64,11 +64,15 @@ class RecoverPasswordScreen extends StatelessWidget {
 
   Future<void> _doSendCode() async {
     if (_formKey.currentState!.validate()) {
-      if (await _controller.sendCode(_mailTextController.text)) {
-        Get.toNamed(
-          '/code_confirmation',
-          parameters: {'email': _mailTextController.text},
-        );
+      try {
+        if (await _controller.sendCode(_mailTextController.text)) {
+          Get.toNamed(
+            '/code_confirmation',
+            parameters: {'email': _mailTextController.text},
+          );
+        }
+      } catch (_) {
+        /* Error presented by the controller. */
       }
     }
   }

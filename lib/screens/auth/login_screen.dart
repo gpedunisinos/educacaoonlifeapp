@@ -149,6 +149,10 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _doGoogleLogin() async {
-    await _controller.loginGoogle();
+    try {
+      await _controller.loginGoogle();
+    } catch (_) {
+      // The controller already presents the recoverable authentication error.
+    }
   }
 }

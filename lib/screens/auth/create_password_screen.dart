@@ -12,7 +12,7 @@ class CreatePasswordScreen extends StatelessWidget {
   final TextEditingController _confirmPasswordTextController =
       TextEditingController();
 
-  final String token = Get.arguments;
+  final String token = Get.arguments is String ? Get.arguments as String : '';
   final _formKey = GlobalKey<FormState>();
 
   CreatePasswordScreen({super.key});
@@ -39,6 +39,7 @@ class CreatePasswordScreen extends StatelessWidget {
                   if (string == null || string.isEmpty) {
                     return 'Obrigatório';
                   }
+                  return null;
                 },
               ),
               Insets.large.height,
@@ -53,6 +54,7 @@ class CreatePasswordScreen extends StatelessWidget {
                   if (string != _passwordTextController.text) {
                     return 'As senhas não coincidem';
                   }
+                  return null;
                 },
               ),
               Insets.extraLarge.height,
@@ -73,13 +75,17 @@ class CreatePasswordScreen extends StatelessWidget {
 
   Future<void> _doChangePassword() async {
     if (_formKey.currentState!.validate()) {
-      final user = await _controller.recoverPassword(
-        token,
-        _passwordTextController.text,
-      );
+      try {
+        final user = await _controller.recoverPassword(
+          token,
+          _passwordTextController.text,
+        );
 
-      await _controller.savePrefs(user);
-      Get.offAllNamed(_controller.modeHome);
+        await _controller.savePrefs(user);
+        Get.offAllNamed(_controller.modeHome);
+      } catch (_) {
+        /* Error presented by the controller. */
+      }
     }
   }
 }
