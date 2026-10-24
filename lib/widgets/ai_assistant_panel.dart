@@ -1,3 +1,5 @@
+import 'package:unisinos_usp_app/services/iarete_voice/voice_conversation.dart';
+import 'package:unisinos_usp_app/widgets/iarete_voice_controls.dart';
 import 'package:unisinos_usp_app/services/ship_audio_preferences.dart';
 import 'package:unisinos_usp_app/services/iarete_audio/typing_audio.dart';
 import 'package:unisinos_usp_app/widgets/iarete_reply.dart';
@@ -12,13 +14,16 @@ import 'package:unisinos_usp_app/controllers/ai_assistant/ai_assistant_controlle
 import 'package:unisinos_usp_app/models/ai_assistant_message_model.dart';
 
 class AiAssistantPanel extends StatefulWidget {
-  const AiAssistantPanel({super.key});
+  const AiAssistantPanel({super.key, this.voice});
+  final VoiceConversation? voice;
 
   @override
   State<AiAssistantPanel> createState() => _AiAssistantPanelState();
 }
 
-class _AiAssistantPanelState extends State<AiAssistantPanel> {
+class _AiAssistantPanelState extends State<AiAssistantPanel>
+    with WidgetsBindingObserver {
+  late final VoiceConversation _voice;
   final AiAssistantController _controller = Get.find<AiAssistantController>();
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -33,6 +38,10 @@ class _AiAssistantPanelState extends State<AiAssistantPanel> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _voice =
+        widget.voice ?? VoiceConversation(sendText: _controller.sendWithResult);
+    _voice.restore();
     _worker = ever<List<AiAssistantMessageModel>>(_controller.messages, (
       messages,
     ) {
@@ -52,6 +61,8 @@ class _AiAssistantPanelState extends State<AiAssistantPanel> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _voice.dispose();
     _worker.dispose();
     _typingAudio.dispose();
     _textController.dispose();
@@ -78,14 +89,29 @@ class _AiAssistantPanelState extends State<AiAssistantPanel> {
                     SpaceConversationHeader(
                       title: const Text('Iareté'),
                       eyebrow: 'EC–01 / INTELIGÊNCIA DE BORDO',
-                      iarete: true,
-                      subtitle: Obx(
-                        () => Semantics(
-                          liveRegion: true,
-                          child: Text(
-                            _controller.isSending.value
-                                ? 'Elaborando uma resposta…'
-                                : 'Sua inteligência de bordo para explorar a Educação OnLIFE.',
+                      leading: Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: ListenableBuilder(
+                          listenable: _voice,
+                          builder: (_, _) => IareteConversationSignal(
+                            speaking: _voice.playing && !_voice.previewing,
+                          ),
+                        ),
+                      ),
+                      subtitle: ListenableBuilder(
+                        listenable: _voice,
+                        builder: (_, _) => Obx(
+                          () => Semantics(
+                            liveRegion: true,
+                            child: Text(
+                              _voice.busy ||
+                                      _voice.playing ||
+                                      _voice.loadingId != null
+                                  ? _voice.status
+                                  : _controller.isSending.value
+                                  ? 'Elaborando uma resposta…'
+                                  : 'Sua inteligência de bordo para explorar a Educação OnLIFE.',
+                            ),
                           ),
                         ),
                       ),
@@ -148,12 +174,16 @@ class _AiAssistantPanelState extends State<AiAssistantPanel> {
                           itemBuilder: (_, index) {
                             final message = _controller.messages[index];
                             return _MessageBubble(
+                              key: ValueKey(_messageKey(message)),
                               message: message,
                               animate: identical(_revealing, message),
                               onType: () {
-                                if (ShipAudioPreferences.enabled.value)
+                                if (ShipAudioPreferences.enabled.value &&
+                                    !_voice.wantsVoice &&
+                                    !_voice.playing)
                                   _typingAudio.tick();
                               },
+                              voice: _voice,
                               onProgress: _followReply,
                               onComplete: () {
                                 if (mounted && identical(_revealing, message)) {
@@ -164,6 +194,16 @@ class _AiAssistantPanelState extends State<AiAssistantPanel> {
                           },
                         );
                       }),
+                    ),
+                    Obx(
+                      () => IareteVoiceControls(
+                        voice: _voice,
+                        sending: _controller.isSending.value,
+                        onUseTranscript: (text) {
+                          _textController.text = text;
+                          _inputFocusNode.requestFocus();
+                        },
+                      ),
                     ),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(14, 8, 14, 14),
@@ -214,30 +254,36 @@ class _AiAssistantPanelState extends State<AiAssistantPanel> {
                               ),
                             ),
                             const SizedBox(width: 8),
-                            Obx(
-                              () => FilledButton(
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: spaceChatAccent,
-                                  foregroundColor: const Color(0xFF06202A),
-                                  minimumSize: const Size(64, 44),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
+                            ListenableBuilder(
+                              listenable: _voice,
+                              builder: (_, _) => Obx(
+                                () => FilledButton(
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: spaceChatAccent,
+                                    foregroundColor: const Color(0xFF06202A),
+                                    minimumSize: const Size(64, 44),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
                                   ),
+                                  onPressed:
+                                      _controller.isSending.value ||
+                                          _voice.busy ||
+                                          _voice.hasDraft
+                                      ? null
+                                      : _submit,
+                                  child: _controller.isSending.value
+                                      ? const SizedBox(
+                                          width: 18,
+                                          height: 18,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: spaceChatAccent,
+                                            semanticsLabel: 'Enviando mensagem',
+                                          ),
+                                        )
+                                      : const Text('Enviar'),
                                 ),
-                                onPressed: _controller.isSending.value
-                                    ? null
-                                    : _submit,
-                                child: _controller.isSending.value
-                                    ? const SizedBox(
-                                        width: 18,
-                                        height: 18,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: spaceChatAccent,
-                                          semanticsLabel: 'Enviando mensagem',
-                                        ),
-                                      )
-                                    : const Text('Enviar'),
                               ),
                             ),
                           ],
@@ -254,13 +300,40 @@ class _AiAssistantPanelState extends State<AiAssistantPanel> {
     );
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     final String value = _textController.text.trim();
-    if (value.isEmpty || _controller.isSending.value) return;
+    if (value.isEmpty ||
+        _controller.isSending.value ||
+        _voice.busy ||
+        _voice.hasDraft)
+      return;
     if (ShipAudioPreferences.enabled.value) _typingAudio.prepare();
     setState(() => _revealing = null);
     _textController.clear();
-    _controller.sendMessage(value);
+    await _voice.stopPlayback();
+    final previous = _controller.messages.lastOrNull;
+    await _controller.sendMessage(value);
+    if (!mounted) return;
+    if (_controller.errorMessage.value != null) {
+      if (_textController.text.isEmpty) _textController.text = value;
+      return;
+    }
+    final reply = _controller.messages.lastOrNull;
+    if (reply != null &&
+        !identical(reply, previous) &&
+        !reply.isUser &&
+        reply.id != null &&
+        _voice.wantsVoice) {
+      await _voice.speak(reply.id!);
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed)
+      _voice.background();
+    else
+      _voice.foreground();
   }
 
   Future<void> _initializePanel() async {
@@ -301,12 +374,15 @@ class _AiAssistantPanelState extends State<AiAssistantPanel> {
 
 class _MessageBubble extends StatelessWidget {
   const _MessageBubble({
+    super.key,
     required this.message,
     this.animate = false,
     this.onType,
     this.onProgress,
     this.onComplete,
+    required this.voice,
   });
+  final VoiceConversation voice;
   final bool animate;
   final VoidCallback? onType, onProgress, onComplete;
 
@@ -391,6 +467,32 @@ class _MessageBubble extends StatelessWidget {
                               href,
                               beforeNavigate: () => Navigator.of(context).pop(),
                             ),
+                          ),
+                        ),
+                      ),
+                    if (!isUser && message.id != null)
+                      ListenableBuilder(
+                        listenable: voice,
+                        builder: (_, _) => TextButton.icon(
+                          onPressed:
+                              voice.busy ||
+                                  voice.hasDraft ||
+                                  voice.loadingId == message.id
+                              ? null
+                              : () => voice.speak(message.id!, manual: true),
+                          icon: Icon(
+                            voice.speakingId == message.id && voice.playing
+                                ? Icons.stop_circle_outlined
+                                : Icons.volume_up_outlined,
+                            size: 17,
+                          ),
+                          label: Text(
+                            voice.loadingId == message.id
+                                ? 'Preparando áudio…'
+                                : voice.speakingId == message.id &&
+                                      voice.playing
+                                ? 'Interromper voz'
+                                : 'Ouvir resposta',
                           ),
                         ),
                       ),

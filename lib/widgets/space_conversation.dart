@@ -191,7 +191,8 @@ class SpaceConversationRoom extends StatelessWidget {
 
 /// A quiet thread-like presence, inspired by Iareté's cockpit flow.
 class IareteConversationSignal extends StatefulWidget {
-  const IareteConversationSignal({super.key});
+  const IareteConversationSignal({super.key, this.speaking = false});
+  final bool speaking;
   @override
   State<IareteConversationSignal> createState() =>
       _IareteConversationSignalState();
@@ -227,8 +228,12 @@ class _IareteConversationSignalState extends State<IareteConversationSignal>
       child: RepaintBoundary(
         child: AnimatedBuilder(
           animation: _phase,
-          builder: (_, __) =>
-              CustomPaint(painter: _SignalPainter(_phase.value * math.pi * 2)),
+          builder: (_, __) => CustomPaint(
+            painter: _SignalPainter(
+              _phase.value * math.pi * 2,
+              widget.speaking,
+            ),
+          ),
         ),
       ),
     ),
@@ -236,8 +241,9 @@ class _IareteConversationSignalState extends State<IareteConversationSignal>
 }
 
 class _SignalPainter extends CustomPainter {
-  const _SignalPainter(this.phase);
+  const _SignalPainter(this.phase, this.speaking);
   final double phase;
+  final bool speaking;
   @override
   void paint(Canvas canvas, Size size) {
     const colors = [
@@ -255,7 +261,7 @@ class _SignalPainter extends CustomPainter {
             size.height * .5 +
             envelope *
                 size.height *
-                .34 *
+                (speaking ? .44 : .34) *
                 math.sin(u * math.pi * 3 + phase + strand * .33);
         final x = size.width * u;
         if (step == 0) {
@@ -270,12 +276,13 @@ class _SignalPainter extends CustomPainter {
           ..style = PaintingStyle.stroke
           ..strokeWidth = .7
           ..color = colors[strand % colors.length].withValues(
-            alpha: .25 + (strand % 4) * .12,
+            alpha: (speaking ? .42 : .25) + (strand % 4) * .12,
           ),
       );
     }
   }
 
   @override
-  bool shouldRepaint(_SignalPainter oldDelegate) => phase != oldDelegate.phase;
+  bool shouldRepaint(_SignalPainter oldDelegate) =>
+      phase != oldDelegate.phase || speaking != oldDelegate.speaking;
 }

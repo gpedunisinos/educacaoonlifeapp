@@ -96,8 +96,11 @@ void main() {
       await tester.pump();
       expect(find.text('Exibir resposta completa'), findsOneWidget);
       expect(find.text('Nova resposta que aparece aos poucos.'), findsNothing);
+      await tester.pump(const Duration(milliseconds: 250));
+      await tester.ensureVisible(find.text('Exibir resposta completa'));
       await tester.tap(find.text('Exibir resposta completa'));
       await tester.pump();
+      await tester.pump(const Duration(milliseconds: 250));
       await tester.pump();
       expect(
         find.text('Nova resposta que aparece aos poucos.'),
