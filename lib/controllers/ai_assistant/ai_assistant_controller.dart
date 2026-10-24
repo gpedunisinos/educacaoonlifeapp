@@ -49,16 +49,19 @@ class AiAssistantController extends GetxController {
   }
 
   Future<void> sendMessage(String value) async {
-    final String message = value.trim();
-    if (message.isEmpty || isSending.value) return;
+    await sendWithResult(value);
+  }
 
-    messages.add(
-      AiAssistantMessageModel(
-        role: 'user',
-        content: message,
-        createdAt: DateTime.now(),
-      ),
+  Future<AiAssistantMessageModel?> sendWithResult(String value) async {
+    final String message = value.trim();
+    if (message.isEmpty || isSending.value) return null;
+
+    final optimistic = AiAssistantMessageModel(
+      role: 'user',
+      content: message,
+      createdAt: DateTime.now(),
     );
+    messages.add(optimistic);
 
     try {
       isSending.value = true;
@@ -71,7 +74,7 @@ class AiAssistantController extends GetxController {
             screenContext: contextData,
           );
 
-      if (returnedMessages.isEmpty) return;
+      if (returnedMessages.isEmpty) return null;
 
       for (final item in returnedMessages) {
         final bool alreadyPresent =
@@ -81,11 +84,14 @@ class AiAssistantController extends GetxController {
         }
       }
       hasLoadedHistory.value = true;
+      return returnedMessages.where((m) => !m.isUser).lastOrNull;
     } catch (error) {
+      messages.remove(optimistic);
       errorMessage.value = aiChatError(error);
       Get.customSnackbar('Erro', errorMessage.value!);
     } finally {
       isSending.value = false;
     }
+    return null;
   }
 }

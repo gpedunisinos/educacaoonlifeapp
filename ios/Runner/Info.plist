@@ -61,7 +61,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Nós precisamos de acesso à sua câmera para tirar fotos de perfil ou capturar evidências para relatórios.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Nós precisamos de acesso ao seu microfone para gravar áudios em vídeos ou anexar notas de voz.</string>
+	<string>Permite gravar mensagens de áudio para conversar com a Iareté. Você pode revisar ou cancelar antes de enviar.</string>
 	<key>GIDClientID</key>
 	<string>375087330293-i34sbetodktlfe3259pvfdn69u2idu4e.apps.googleusercontent.com</string>
 	<key>CFBundleURLTypes</key>
