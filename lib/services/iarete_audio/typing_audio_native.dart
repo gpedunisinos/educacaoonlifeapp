@@ -9,6 +9,12 @@ class TypingAudio {
     try {
       final pool = await AudioPool.create(
         source: AssetSource('space/iarete-type.wav'),
+        audioContext: AudioContext(
+          android: const AudioContextAndroid(
+            audioFocus: AndroidAudioFocus.none,
+          ),
+          iOS: AudioContextIOS(category: AVAudioSessionCategory.ambient),
+        ),
         maxPlayers: 3,
       );
       if (_disposed) {

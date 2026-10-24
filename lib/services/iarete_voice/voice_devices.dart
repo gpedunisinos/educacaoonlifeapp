@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:unisinos_usp_app/services/iarete_voice/voice_source.dart';
 import 'dart:typed_data';
 import 'package:record/record.dart';
@@ -68,7 +69,15 @@ class IareteVoicePlayer implements VoicePlayer {
     }
     await _clear();
     _source = source;
-    await _device.play(source.source);
+    await _device.play(
+      source.source,
+      ctx: AudioContext(
+        android: const AudioContextAndroid(
+          contentType: AndroidContentType.speech,
+        ),
+        iOS: AudioContextIOS(category: AVAudioSessionCategory.playback),
+      ),
+    );
   }
 
   Future<void> _clear() async {
@@ -114,4 +123,17 @@ Uint8List pcmToVoiceWav(Uint8List pcm) {
   data.setUint32(40, pcm.length, Endian.little);
   data.buffer.asUint8List().setRange(44, 44 + pcm.length, pcm);
   return data.buffer.asUint8List();
+}
+
+/// A short local confirmation uses the same player as speech, so it cannot
+/// steal audio focus from a reply that finishes unusually quickly.
+Uint8List voiceAcknowledgement() {
+  final pcm = ByteData(2400);
+  for (var i = 0; i < 1200; i++) {
+    final envelope = math.sin(math.pi * i / 1200);
+    final sample = (math.sin(i * 2 * math.pi * 660 / 16000) * envelope * 1400)
+        .round();
+    pcm.setInt16(i * 2, sample, Endian.little);
+  }
+  return pcmToVoiceWav(pcm.buffer.asUint8List());
 }

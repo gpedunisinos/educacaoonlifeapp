@@ -34,6 +34,8 @@ with (a.output/'test.log').open('w') as log:
    subprocess.run([str(adb),'-s',a.device,'shell','input','keyevent','KEYCODE_HOME'],check=True,capture_output=True,timeout=10)
    time.sleep(1)
    subprocess.run([str(adb),'-s',a.device,'shell','am','start','-n','com.br.spotecnologia.uniuspapp/.MainActivity'],check=True,capture_output=True,timeout=10)
+  if 'AUDIT_MIC_PERMISSION' in line:
+   subprocess.run([str(adb),'-s',a.device,'shell','pm','grant','com.br.spotecnologia.uniuspapp','android.permission.RECORD_AUDIO'],check=True,capture_output=True,timeout=10)
   if 'AUDIT_LOCATION_FIX' in line:
    for permission in ['ACCESS_COARSE_LOCATION','ACCESS_FINE_LOCATION']:
     subprocess.run([str(adb),'-s',a.device,'shell','pm','grant','com.br.spotecnologia.uniuspapp','android.permission.'+permission],check=True,capture_output=True,timeout=10)

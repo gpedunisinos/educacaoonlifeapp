@@ -243,6 +243,14 @@ class VoiceConversation extends ChangeNotifier {
     await stopPlayback();
     if (_disposed) return;
     try {
+      if (transcript == null &&
+          _foreground &&
+          ShipAudioPreferences.enabled.value) {
+        try {
+          await player.play(voiceAcknowledgement());
+        } catch (_) {}
+        if (_disposed || revision != _revision) return;
+      }
       transcript ??= await api.transcribe(recording!);
       if (_disposed || revision != _revision) return;
       stage = VoiceStage.thinking;
@@ -259,7 +267,11 @@ class VoiceConversation extends ChangeNotifier {
       stage = VoiceStage.idle;
       seconds = 0;
       _emit();
-      if (wantsVoice && reply.id != null) await speak(reply.id!);
+      if (wantsVoice && reply.id != null) {
+        await speak(reply.id!);
+      } else {
+        await stopPlayback();
+      }
     } catch (e) {
       if (!_disposed && revision == _revision) {
         stage = VoiceStage.review;

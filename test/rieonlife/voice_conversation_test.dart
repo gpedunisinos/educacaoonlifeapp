@@ -131,7 +131,7 @@ void main() {
       expect(sent, ['Como explorar a Terra?']);
       expect(api.transcriptions, 1);
       expect(api.speeches, 1);
-      expect(player.plays, 2);
+      expect(player.plays, 3);
       expect(voice.recording, isNull);
       expect(voice.playing, isTrue);
       await voice.send();
