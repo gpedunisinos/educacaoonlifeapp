@@ -38,6 +38,19 @@ for relative, minimum in {
 for path in root.rglob('*'):
     if path.is_symlink() or path.name == '.env' or 'service_account' in path.name:
         parser.error('Refusing symlink or protected configuration in the build.')
+# HTTP caches may retain the previous bootstrap/main even after index reloads.
+# Give both entrypoints the same release identity; Flutter assets and push scope
+# remain unchanged. Repeat deployments of the same build are idempotent.
+index = root / 'index.html'
+bootstrap = root / 'flutter_bootstrap.js'
+html, index_count = re.subn(r'flutter_bootstrap\.js(?:\?v=[0-9a-f]+)?',
+                            'flutter_bootstrap.js?v=' + args.revision, index.read_text())
+loader, main_count = re.subn(r'"mainJsPath":"main\.dart\.js(?:\?v=[0-9a-f]+)?"',
+                            '"mainJsPath":"main.dart.js?v=' + args.revision + '"', bootstrap.read_text())
+if index_count != 1 or main_count != 1:
+    parser.error('Unexpected Flutter entrypoint format; release was not published.')
+index.write_text(html)
+bootstrap.write_text(loader)
 release = 'integrations-' + datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '-' + args.revision[:7]
 with tempfile.TemporaryDirectory(prefix='onlife-web-release-') as temp:
     archive = Path(temp) / (release + '.tgz')
