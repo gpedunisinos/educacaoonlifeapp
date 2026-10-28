@@ -2,7 +2,7 @@ name: unisinos_usp_app
 description: "Educação Onlife"
 publish_to: "none"
 
-version: 0.8.1+14
+version: 1.0.0+15
 
 environment:
   sdk: ">=3.10.0 <4.0.0"

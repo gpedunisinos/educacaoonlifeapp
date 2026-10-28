@@ -3,17 +3,17 @@
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
-	<string>AIzaSyAztmuEGrQ9gl122JGJf3yA2i51pZqck74</string>
+	<string>AIzaSyBZliIxWthcffzDK73oBBTgbIorzxIjgl4</string>
 	<key>GCM_SENDER_ID</key>
-	<string>419473345657</string>
+	<string>431431134667</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.br.spotecnologia.uniuspapp</string>
 	<key>PROJECT_ID</key>
-	<string>efv-app-256d4</string>
+	<string>unisinos-usp</string>
 	<key>STORAGE_BUCKET</key>
-	<string>efv-app-256d4.firebasestorage.app</string>
+	<string>unisinos-usp.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:419473345657:ios:54097980f41ba51d9f58a8</string>
+	<string>1:431431134667:ios:640672ceb1a85f3d0d1a4e</string>
 </dict>
 </plist>
