@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/services/clue_links.dart';
 import 'dart:convert';
 import 'package:unisinos_usp_app/services/locker_service.dart';
 import 'package:unisinos_usp_app/webclients/econectiva_webclient.dart';
@@ -35,7 +36,17 @@ class UserController extends GetxController {
     await savePrefs(
       AuthUser.fromJson({...current.toJson(), 'usage_mode': mode}),
     );
-    if (navigate) Get.offAllNamed(modeHome);
+    if (navigate) completeAuthentication();
+  }
+
+  void completeAuthentication() {
+    final target = ClueLinks.pending(Get.parameters['returnTo']);
+    if (user.value?.usageMode == null) {
+      Get.offAllNamed(ClueLinks.authRoute('/choose_mode', target));
+    } else {
+      ClueLinks.clear();
+      Get.offAllNamed(target ?? modeHome);
+    }
   }
 
   bool get isLoggedIn => user.value != null;
@@ -68,7 +79,16 @@ class UserController extends GetxController {
   void redirectLoggedUser() async {
     await initialization;
     final bool loggedIn = user.value != null;
-    Get.offAllNamed(loggedIn ? modeHome : '/login');
+    if (loggedIn) {
+      completeAuthentication();
+    } else {
+      Get.offAllNamed(
+        ClueLinks.authRoute(
+          '/login',
+          ClueLinks.pending(Get.parameters['returnTo']),
+        ),
+      );
+    }
   }
 
   /// @method
@@ -79,7 +99,7 @@ class UserController extends GetxController {
         password: password,
       );
       await savePrefs(loggedUser);
-      Get.offAllNamed(modeHome);
+      completeAuthentication();
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
       Get.customSnackbar('Erro', 'Falha ao realizar login.');
@@ -106,7 +126,7 @@ class UserController extends GetxController {
 
         await savePrefs(loggedUser);
 
-        Get.offAllNamed(modeHome);
+        completeAuthentication();
       }
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
@@ -129,7 +149,7 @@ class UserController extends GetxController {
 
       await savePrefs(loggedUser);
       Get.successSnackbar('Usuário registrado com sucesso!'.tlt);
-      Get.offAllNamed(modeHome);
+      completeAuthentication();
       return true;
     } catch (error, stackTrace) {
       Util.debug(exception: error, stackTrace: stackTrace);
@@ -193,10 +213,13 @@ class UserController extends GetxController {
   }
 
   Future<void> logout() async {
+    ClueLinks.clear();
     Get.find<LockerService>().clear();
     user.value = null;
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) async => AuthProvider.instance.logout(),
+      (_) async => (AuthProvider.instance as UserAuthService).logout(
+        preserveDestination: false,
+      ),
     );
   }
 

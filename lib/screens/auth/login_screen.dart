@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/services/clue_links.dart';
 import 'package:unisinos_usp_app/widgets/auth_form_viewport.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -25,6 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
+    ClueLinks.remember(Get.parameters['returnTo']);
   }
 
   @override

@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/services/clue_links.dart';
 import 'package:unisinos_usp_app/services/auth_user.dart';
 import 'package:get/get.dart';
 import 'package:widgets_spo/services/auth_provider.dart';
@@ -19,12 +20,16 @@ class UserAuthService implements AuthService {
   }
 
   @override
-  Future<void> logout() async {
+  Future<void> logout({bool preserveDestination = true}) async {
+    final target = preserveDestination
+        ? ClueLinks.safeTarget(Get.currentRoute) ??
+              ClueLinks.pending(Get.parameters['returnTo'])
+        : null;
     await Util.prefs.clear();
     _user = null;
 
     if (Get.key.currentState != null && Get.currentRoute != '/login') {
-      await Get.offAllNamed('/login');
+      await Get.offAllNamed(ClueLinks.authRoute('/login', target));
     }
   }
 }

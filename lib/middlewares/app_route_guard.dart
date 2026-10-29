@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/services/clue_links.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
@@ -16,11 +17,18 @@ class AppRouteGuard extends GetMiddleware {
     final user = controller.user.value;
 
     if (user == null) {
-      return const RouteSettings(name: '/login');
+      ClueLinks.remember(route);
+      return RouteSettings(
+        name: ClueLinks.authRoute('/login', ClueLinks.safeTarget(route)),
+      );
     }
 
-    if (user.usageMode == null)
-      return const RouteSettings(name: '/choose_mode');
+    if (user.usageMode == null) {
+      ClueLinks.remember(route);
+      return RouteSettings(
+        name: ClueLinks.authRoute('/choose_mode', ClueLinks.safeTarget(route)),
+      );
+    }
 
     final authorRoute = RegExp(
       r'/(create|update|connect|pre_create|type_select)(/|$)',

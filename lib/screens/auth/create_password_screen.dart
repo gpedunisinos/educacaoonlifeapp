@@ -85,7 +85,7 @@ class CreatePasswordScreen extends StatelessWidget {
         );
 
         await _controller.savePrefs(user);
-        Get.offAllNamed(_controller.modeHome);
+        _controller.completeAuthentication();
       } catch (_) {
         /* Error presented by the controller. */
       }
