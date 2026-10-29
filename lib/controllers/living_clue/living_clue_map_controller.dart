@@ -108,15 +108,8 @@ class LivingClueMapController extends GetxController {
     try {
       isLoading.value = true;
       final loadedClues = await _webclient.search(search: trimmedSearch);
-      List<NominatimPlaceModel> loadedPlaces = <NominatimPlaceModel>[];
-      try {
-        loadedPlaces = await _nominatimWebclient.search(search: trimmedSearch);
-      } catch (error, stackTrace) {
-        Util.debug(exception: error, stackTrace: stackTrace);
-      }
       if (requestId != _requestSerial) return;
       livingClues.assignAll(loadedClues);
-      mapPlaces.assignAll(loadedPlaces);
       await _loadCategories();
       await _loadConnections();
     } catch (error, stackTrace) {
@@ -127,6 +120,36 @@ class LivingClueMapController extends GetxController {
       if (requestId == _requestSerial) {
         isLoading.value = false;
       }
+    }
+  }
+
+  int _placeSerial = 0;
+  void invalidatePlaces() {
+    _placeSerial++;
+    mapPlaces.clear();
+    placeMessage.value = '';
+  }
+
+  final searchingPlaces = false.obs;
+  final placeMessage = ''.obs;
+  Future<void> searchPlaces(String query) async {
+    if (searchingPlaces.value || query.trim().length < 3) return;
+    searchingPlaces.value = true;
+    placeMessage.value = '';
+    final serial = _requestSerial;
+    final placeSerial = ++_placeSerial;
+    try {
+      final places = await _nominatimWebclient.search(search: query);
+      if (serial != _requestSerial || placeSerial != _placeSerial) return;
+      mapPlaces.assignAll(places);
+      placeMessage.value = places.isEmpty
+          ? 'Nenhum lugar encontrado.'
+          : 'Lugares: © OpenStreetMap contributors';
+    } catch (error) {
+      if (serial == _requestSerial)
+        placeMessage.value = error.toString().replaceFirst('Exception: ', '');
+    } finally {
+      searchingPlaces.value = false;
     }
   }
 
@@ -162,10 +185,7 @@ class LivingClueMapController extends GetxController {
     }
   }
 
-  Future<bool> updatePosition(
-    LivingClueModel clue,
-    LatLng newPosition,
-  ) async {
+  Future<bool> updatePosition(LivingClueModel clue, LatLng newPosition) async {
     try {
       isLoading.value = true;
       errorMessage.value = null;
@@ -197,7 +217,9 @@ class LivingClueMapController extends GetxController {
       Util.debug(exception: error, stackTrace: stackTrace);
       errorMessage.value = 'Não foi possível atualizar a posição da pista.';
       Get.customSnackbar(
-          'Erro', 'Não foi possível atualizar a posição da pista.');
+        'Erro',
+        'Não foi possível atualizar a posição da pista.',
+      );
       return false;
     } finally {
       isLoading.value = false;

@@ -187,10 +187,20 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     });
   }
 
+  Future<void> _searchWorldwide() async {
+    _searchDebounce?.cancel();
+    final query = _searchController.text.trim();
+    if (query.length < 3) return;
+    await _controller.searchGlobal(query);
+    if (!mounted || query != _searchController.text.trim()) return;
+    await _controller.searchPlaces(query);
+  }
+
   void _onSearchChanged(String value) {
     if (_isUpdatingSearchText) return;
 
     final query = value.trim();
+    _controller.invalidatePlaces();
     setState(() {
       _searchQuery = query;
       _searchResultsExpanded = true;
@@ -587,7 +597,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                       textInputAction: TextInputAction.search,
                       decoration: InputDecoration(
                         isDense: true,
-                        hintText: 'Pesquisar pistas em todo o mapa',
+                        hintText: 'Pistas e lugares no mundo',
                         hintStyle: TextStyle(
                           color: Colors.white.withValues(alpha: 0.72),
                         ),
@@ -611,6 +621,44 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                         ),
                       ),
                       onChanged: _onSearchChanged,
+                      onSubmitted: (_) => _searchWorldwide(),
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Pistas: busca automática. Lugares: toque em Buscar.',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                        Obx(
+                          () => TextButton.icon(
+                            onPressed: _controller.searchingPlaces.value
+                                ? null
+                                : _searchWorldwide,
+                            icon: Icon(Icons.travel_explore),
+                            label: Text(
+                              _controller.searchingPlaces.value
+                                  ? 'Buscando…'
+                                  : 'Buscar',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Obx(
+                      () => _controller.placeMessage.value.isEmpty
+                          ? const SizedBox.shrink()
+                          : Text(
+                              _controller.placeMessage.value,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
+                            ),
                     ),
                     Obx(() => _buildLoadStatus()),
                     const SizedBox(height: 8),

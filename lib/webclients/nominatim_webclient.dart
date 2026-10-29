@@ -1,38 +1,31 @@
-import 'package:http/http.dart' as http;
 import 'package:unisinos_usp_app/models/nominatim_place_model.dart';
+import 'package:widgets_spo/widgets_spo.dart';
+import 'webclient.dart';
 
 class NominatimWebclient {
-  static const String _host = 'nominatim.openstreetmap.org';
-  static const String _userAgent = 'unisinos_usp_app/0.7.0';
-
+  NominatimWebclient({WebClient? client})
+    : client = client ?? WebClient.instance;
+  final WebClient client;
   Future<List<NominatimPlaceModel>> search({
     required String search,
     int limit = 5,
   }) async {
-    final trimmedSearch = search.trim();
-    if (trimmedSearch.isEmpty) return <NominatimPlaceModel>[];
-
-    final uri = Uri.https(_host, '/search', {
-      'q': trimmedSearch,
-      'format': 'jsonv2',
-      'addressdetails': '1',
-      'limit': limit.toString(),
-      'countrycodes': 'br',
-    });
-
-    final response = await http.get(
-      uri,
-      headers: const {
-        'Accept': 'application/json',
-        'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.6',
-        'User-Agent': _userAgent,
-      },
+    if (search.trim().isEmpty) return [];
+    final response = await client.get(
+      '/places/search',
+      [ApiInterceptor(), TokenInterceptor()],
+      {'q': search.trim()},
     );
-
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw Exception('Falha na busca de locais (${response.statusCode}).');
+    if (response.statusCode == 429) {
+      throw Exception(
+        'Busca de lugares ocupada. Aguarde um instante e toque em Buscar novamente.',
+      );
     }
-
+    if (response.statusCode != 200) {
+      throw Exception(
+        'Não foi possível buscar lugares. Tente novamente em instantes.',
+      );
+    }
     return NominatimPlaceModel.fromJsonArray(response.body);
   }
 }
