@@ -60,7 +60,7 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
     screenName: 'Registro de pista na nave',
     route: _route,
     stage: 'visualização completa de pista',
-    goal: 'explorar a pista, suas relações, contexto e COMpartilhAÇÕES',
+    goal: 'explorar a pista, suas relações, contexto e COnversAÇÕES',
     references: {'living_clue_id': model.id},
     filledFields: {'pista': model.name, 'id': model.id.toString()},
     notes: const [

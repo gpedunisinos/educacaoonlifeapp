@@ -42,7 +42,7 @@ class _LivingClueChatScreenState extends State<LivingClueChatScreen> {
         'pista': _controller.livingClue.value!.name,
     },
     notes: const [
-      'Este chat responde como a própria pista. A IAraeté global é outra conversa. Não importar o histórico desta conversa nem COMpartilhAÇÕES para a IAraeté por padrão.',
+      'Este chat responde como a própria pista. A IAraeté global é outra conversa. Não importar o histórico desta conversa nem COnversAÇÕES para a IAraeté por padrão.',
     ],
   );
 
