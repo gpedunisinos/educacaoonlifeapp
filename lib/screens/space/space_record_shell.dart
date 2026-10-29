@@ -7,6 +7,13 @@ ThemeData spaceRecordTheme() => ThemeData.dark(useMaterial3: true).copyWith(
     brightness: Brightness.dark,
   ),
   scaffoldBackgroundColor: const Color(0xFF050C18),
+  // dropdown_search falls back to white unless the sheet color is explicit.
+  // Its options and search field already inherit this dark theme's text colors.
+  bottomSheetTheme: const BottomSheetThemeData(
+    backgroundColor: Color(0xFF091B2A),
+    modalBackgroundColor: Color(0xFF091B2A),
+    surfaceTintColor: Colors.transparent,
+  ),
   cardTheme: const CardThemeData(
     color: Color(0xEE091B2A),
     elevation: 0,
