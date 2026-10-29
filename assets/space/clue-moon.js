@@ -91,55 +91,65 @@ function cardTexture(story, index) {
   return texture;
 }
 
+// Five interwoven currents form a porous nebula, rather than a solid moon.
+// Shared textures and geometry keep the landmark bounded on mobile GPUs.
 export function createClueMoon(destination) {
   const group = new THREE.Group();
-  group.name = "research-hollow-clue-moon";
+  group.name = "research-clue-flow-nebula";
   group.position.set(...destination.position);
-  const shell = new THREE.Group();
-  group.add(shell);
-  const materials = stories.map(
-    (story, i) =>
-      new THREE.MeshBasicMaterial({
-        map: cardTexture(story, i),
-        side: THREE.DoubleSide,
-        transparent: true,
-        alphaTest: 0.1,
-        // Cards occlude cards behind them, while their open gaps reveal the space.
-        depthWrite: true,
-      }),
-  );
-  const geometry = new THREE.PlaneGeometry(0.57, 0.75);
-  const radius = 2.36;
-  // Regular latitude bands: identical radius, horizontal baselines and north up.
-  const bandCounts = [4, 12, 18, 22, 24, 22, 18, 12, 4];
-  const outward = new THREE.Vector3();
-  let index = 0;
-  bandCounts.forEach((count, band) => {
-    const latitude = THREE.MathUtils.degToRad(-80 + band * 20);
-    const spread = Math.cos(latitude);
-    for (let column = 0; column < count; column++) {
-      const longitude = (column * Math.PI * 2) / count;
-      const direction = new THREE.Vector3(
-        Math.sin(longitude) * spread,
-        Math.sin(latitude),
-        Math.cos(longitude) * spread,
-      );
-      const card = new THREE.Mesh(
-        geometry,
-        materials[index++ % materials.length],
-      );
-      card.position.copy(direction).multiplyScalar(radius);
-      // lookAt uses the shared vertical axis to avoid arbitrary roll near poles.
-      card.lookAt(outward.copy(card.position).add(direction));
-      shell.add(card);
+  const materials = stories.map((story, i) => new THREE.MeshBasicMaterial({
+    map: cardTexture(story, i), side: THREE.DoubleSide,
+    transparent: true, alphaTest: 0.1, depthWrite: true,
+  }));
+  const geometry = new THREE.PlaneGeometry(0.32, 0.43);
+  const palette = [0x85e9d7, 0x82c9ee, 0xaaa1eb, 0x85d6ce, 0xa3cce9];
+  function point(u, lane, time) {
+    const x = (u * 2 - 1) * 3.0;
+    const envelope = Math.sin(Math.PI * u);
+    const angle = u * Math.PI * 2 + lane * Math.PI * 2 / 5 + time * .12;
+    return new THREE.Vector3(x,
+      Math.sin(angle) * envelope * 1.05 + Math.sin(u * Math.PI * 3 + time * .12) * .28,
+      Math.cos(angle) * envelope * 1.25);
+  }
+  const cards = [];
+  for (let lane = 0; lane < 5; lane++) {
+    for (let i = 0; i < 28; i++) {
+      const card = new THREE.Mesh(geometry, materials[(i + lane) % materials.length]);
+      group.add(card); cards.push({card, lane, u: (i + lane * .17) / 28});
     }
-  });
+    const curve = new THREE.CatmullRomCurve3(Array.from({length: 81}, (_, i) => point(i / 80, lane, 0)));
+    const ribbon = new THREE.Mesh(new THREE.TubeGeometry(curve, 80, .012, 4, false),
+      new THREE.MeshBasicMaterial({color: palette[lane], transparent: true, opacity: .32, depthWrite: false, blending: THREE.AdditiveBlending}));
+    group.add(ribbon);
+  }
+  const canvas = document.createElement('canvas'); canvas.width = canvas.height = 64;
+  const ctx = canvas.getContext('2d');
+  const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+  gradient.addColorStop(0, 'rgba(255,255,255,.6)');
+  gradient.addColorStop(.35, 'rgba(255,255,255,.22)');
+  gradient.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = gradient; ctx.fillRect(0, 0, 64, 64);
+  const mistTexture = new THREE.CanvasTexture(canvas);
+  const mist = [];
+  for (let lane = 0; lane < 5; lane++) {
+    const material = new THREE.SpriteMaterial({map: mistTexture, color: palette[lane], transparent: true,
+      opacity: .10, depthWrite: false, blending: THREE.AdditiveBlending});
+    for (let i = 1; i < 9; i++) {
+      const cloud = new THREE.Sprite(material); cloud.scale.set(1.55, 1.55, 1);
+      group.add(cloud); mist.push({cloud, lane, u: i / 10});
+    }
+  }
   let time = 0;
   function update(dt) {
     time += dt;
-    // The organized shell turns as one body; cards keep their band and posture.
-    shell.rotation.set(0, time * 0.055, 0);
+    for (const item of cards) {
+      const u = (item.u + time * .009) % 1;
+      item.card.position.copy(point(u, item.lane, time));
+      // Upright cards follow the current without random roll.
+      item.card.rotation.y = Math.sin(u * Math.PI * 2 + item.lane) * .35;
+    }
+    for (const item of mist) item.cloud.position.copy(point(item.u, item.lane, time));
   }
   update(0);
-  return { group, update };
+  return {group, update};
 }

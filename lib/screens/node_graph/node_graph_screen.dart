@@ -89,7 +89,7 @@ class _NodeGraphScreenState extends State<NodeGraphScreen> {
                         const SizedBox(width: 14),
                         const Expanded(
                           child: Text(
-                            'SALA DE PROBLEMÁTICAS',
+                            'RASTROS E PROBLEMÁTICAS',
                             style: TextStyle(
                               color: Color(0xFF9CE7DF),
                               letterSpacing: 1.6,

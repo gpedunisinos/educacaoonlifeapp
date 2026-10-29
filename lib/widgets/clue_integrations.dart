@@ -637,7 +637,7 @@ class _ClueIntegrationRoomState extends State<ClueIntegrationRoom>
           : 'incorporação exibida',
     },
     notes: const [
-      'A Iareté não observa o mundo, as pessoas, as mensagens, a câmera ou o áudio do provedor.',
+      'A IAraeté não observa o mundo, as pessoas, as mensagens, a câmera ou o áudio do provedor.',
       'A janela exibida não comprova conexão ou ingresso no ambiente externo; não afirmar isso sem informação da pessoa.',
     ],
   );

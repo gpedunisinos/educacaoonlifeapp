@@ -322,9 +322,9 @@ void main() {
       ),
     );
     await tester.pump();
-    expect(find.byTooltip('Abrir Iareté e Locker'), findsNothing);
+    expect(find.byTooltip('Abrir IAraeté e Locker'), findsNothing);
     AiAssistantLauncher.activeRoute.value = '/space/agents';
     await tester.pump();
-    expect(find.byTooltip('Abrir Iareté e Locker'), findsOneWidget);
+    expect(find.byTooltip('Abrir IAraeté e Locker'), findsOneWidget);
   });
 }

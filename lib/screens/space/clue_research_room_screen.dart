@@ -49,7 +49,7 @@ class _ClueResearchRoomScreenState extends State<ClueResearchRoomScreen>
   Timer? debounce;
   late final AiAssistantContextProvider provider = buildContext;
   AiAssistantScreenContext buildContext() => AiAssistantScreenContext(
-    screenName: 'Sala da Lua de Pistas',
+    screenName: 'Sala de Pistas em fluxo',
     route: route,
     references: {if (selected != null) 'living_clue_id': selected!.id},
     visibleRecords: clues
@@ -63,13 +63,13 @@ class _ClueResearchRoomScreenState extends State<ClueResearchRoomScreen>
         )
         .toList(),
     stage: 'busca de pistas',
-    goal: 'pesquisar pistas e localizar sua representação na lua holográfica',
+    goal: 'pesquisar pistas e localizar sua representação na nebulosa holográfica',
     filledFields: {
       'busca': search.text,
       if (selected != null) 'pista selecionada': selected!.name,
     },
     notes: const [
-      'A lista usa pistas reais. A lua é uma representação visual dos cards.',
+      'A lista usa pistas reais. A nebulosa é uma representação visual dos cards.',
     ],
   );
   @override
@@ -283,7 +283,7 @@ class _ClueResearchRoomScreenState extends State<ClueResearchRoomScreen>
                           if (!compact)
                             const Expanded(
                               child: Text(
-                                'EC–01 / LUA DE PISTAS',
+                                'EC–01 / PISTAS EM FLUXO',
                                 textAlign: TextAlign.right,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,

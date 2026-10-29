@@ -129,7 +129,7 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(GetMaterialApp(home: NodeGraphScreen(controllerFactory: () => graph)));
       await tester.pumpAndSettle();
-      expect(find.text('SALA DE PROBLEMÁTICAS'), findsOneWidget);
+      expect(find.text('RASTROS E PROBLEMÁTICAS'), findsOneWidget);
       final matrix = tester
           .widget<InteractiveViewer>(find.byType(InteractiveViewer))
           .transformationController!;

@@ -151,7 +151,7 @@ class _MeetingRoomDialogState extends State<MeetingRoomDialog> {
           ),
           const SizedBox(height: 8),
           const Text(
-            'A conversa e a presença no encontro não são adicionadas às pistas nem à Iareté.',
+            'A conversa e a presença no encontro não são adicionadas às pistas nem à IAraeté.',
             style: TextStyle(
               color: Color(0xFF91ADB9),
               fontSize: 12,

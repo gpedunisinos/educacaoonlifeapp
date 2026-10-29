@@ -555,7 +555,7 @@ class _SpaceEntry extends StatelessWidget {
                     ),
                     SizedBox(height: 6),
                     Text(
-                      'Explore os destinos da Educação OnLIFE com a Iareté, sua inteligência de bordo.',
+                      'Explore os destinos da Educação OnLIFE com a IAraeté, sua parceira epistêmica.',
                       style: TextStyle(color: Color(0xFFB8CDD6)),
                     ),
                   ],

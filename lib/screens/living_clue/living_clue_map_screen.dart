@@ -2131,7 +2131,7 @@ class _TutorialCard extends StatelessWidget {
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'IARETÉ / GUIA DO MAPA',
+                    'IAraeté / GUIA DO MAPA',
                     style: TextStyle(color: mapIce, fontSize: 11),
                   ),
                 ),

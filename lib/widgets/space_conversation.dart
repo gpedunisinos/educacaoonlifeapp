@@ -189,7 +189,7 @@ class SpaceConversationRoom extends StatelessWidget {
   );
 }
 
-/// A quiet thread-like presence, inspired by Iareté's cockpit flow.
+/// A quiet thread-like presence, inspired by IAraeté's cockpit flow.
 class IareteConversationSignal extends StatefulWidget {
   const IareteConversationSignal({super.key, this.speaking = false});
   final bool speaking;

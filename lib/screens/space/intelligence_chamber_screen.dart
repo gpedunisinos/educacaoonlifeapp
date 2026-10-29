@@ -92,7 +92,7 @@ class _IntelligenceChamberScreenState extends State<IntelligenceChamberScreen>
       if (selected != null) 'agente': selected!.name,
     },
     notes: const [
-      'Presenças holográficas representam agentes reais cadastrados. A Iareté é a anfitriã global; este agente tem conversa própria, distinta da Iareté e do chat da pista.',
+      'Presenças holográficas representam agentes reais cadastrados. A IAraeté é a anfitriã global; este agente tem conversa própria, distinta da IAraeté e do chat da pista.',
     ],
   );
   @override
@@ -593,7 +593,7 @@ class _IntelligenceChamberScreenState extends State<IntelligenceChamberScreen>
                         const Padding(
                           padding: EdgeInsets.only(bottom: 16),
                           child: Text(
-                            'IARETÉ / Cada inteligência abre uma forma de olhar.',
+                            'IAraeté / Cada inteligência abre uma forma de olhar.',
                             style: TextStyle(
                               color: _soft,
                               fontSize: 10,
@@ -729,7 +729,7 @@ class _IntelligenceChamberScreenState extends State<IntelligenceChamberScreen>
             ),
             const SizedBox(height: 12),
             const Text(
-              'Esta conversa é própria deste agente, separada da Iareté. Seu histórico pode ser retomado aqui.',
+              'Esta conversa é própria deste agente, separada da IAraeté. Seu histórico pode ser retomado aqui.',
               style: TextStyle(color: _soft, fontSize: 11, height: 1.4),
             ),
           ],

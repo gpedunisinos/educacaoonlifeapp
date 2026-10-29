@@ -54,7 +54,7 @@ void main() {
         ),
       );
       await tester.pump();
-      await tester.tap(find.text('Falar com Iareté'));
+      await tester.tap(find.text('Falar com IAraeté'));
       await tester.pump();
       expect(find.text('Parar e revisar'), findsOneWidget);
       recorder.feed();

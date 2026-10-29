@@ -1945,7 +1945,7 @@ dialog::backdrop {
   .assistant-name { text-align: center; }
 }
 
-/* Iareté's first-flight guide: real controls stay visible in a spotlight. */
+/* IAraeté's first-flight guide: real controls stay visible in a spotlight. */
 .console-footer { flex-wrap: wrap; }
 #ship-tutorial { position: fixed; inset: 0; z-index: 30; }
 #ship-tutorial[hidden] { display: none; }
@@ -1974,7 +1974,7 @@ dialog::backdrop {
   #tour-card > small { display: none; }
 }
 
-/* Iareté takes the guide channel while the cockpit console rests. */
+/* IAraeté takes the guide channel while the cockpit console rests. */
 #tour-iarete-flow { display: block; width: 100%; height: 92px; margin: 2px 0 8px; }
 #tour-text { display: grid; }
 #tour-text::before { content: attr(data-text); visibility: hidden; grid-area: 1 / 1; }

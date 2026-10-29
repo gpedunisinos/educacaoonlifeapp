@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// One audio choice for the cockpit and Iareté's conversation.
+/// One audio choice for the cockpit and IAraeté's conversation.
 abstract final class ShipAudioPreferences {
   static final enabled = ValueNotifier<bool>(true);
   static Future<void>? _restore;

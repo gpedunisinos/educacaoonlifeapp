@@ -45,9 +45,9 @@ const destinations = [
     id: "research",
     description: "Pistas cadastradas",
     contents: ["Pistas", "Vivências e descobertas"],
-    name: "Lua de Pistas",
+    name: "Pistas em fluxo",
     module: "Pistas cadastradas",
-    short: "Lua de Pistas",
+    short: "Pistas em fluxo",
     symbol: "◇",
     sector: "SETOR · 07",
     subtitle: "Pistas cadastradas",
@@ -56,14 +56,14 @@ const destinations = [
     focusOffset: [0, -1.75, 0],
     color: 0x85f5d3,
     message:
-      "Rota para a Lua de Pistas. Cada card representa uma pista do nosso acervo. Aqui também encontramos as que ainda não têm localização no mapa.",
+      "Rota para Pistas em fluxo. Cada card representa uma pista do nosso acervo. Aqui também encontramos as que ainda não têm localização no mapa.",
     arrival:
-      "Chegamos à Lua de Pistas. Os cards flutuam ao nosso redor. Conecte-se à Lua de Pistas para explorar as vivências e descobertas dos territórios.",
+      "Chegamos a Pistas em fluxo. Os cards flutuam ao nosso redor. Conecte-se a Pistas em fluxo para explorar as vivências e descobertas dos territórios.",
   },
   {
     id: "observatory",
     description:
-      "Explore problemáticas e observe as relações entre os desafios dos territórios.",
+      "Explore problemáticas e observe as conexões entre os desafios dos territórios.",
     contents: ["Problemáticas", "Conexões entre problemáticas"],
     name: "Observatório",
     module: "Problemáticas",
@@ -83,7 +83,7 @@ const destinations = [
     id: "agents",
     description:
       "Conheça os agentes de inteligência artificial que acompanham suas explorações.",
-    contents: ["Agentes de IA", "Conversas e apoio à exploração"],
+    contents: ["Agentes de IA", "Conversas e exploração"],
     name: "Campo de Inteligências",
     module: "Agentes",
     short: "Inteligências",
@@ -140,7 +140,7 @@ function tutorialSteps() {
     {
       targets: ["#assistant-orb"],
       title: "Bem-vindo a bordo!",
-      text: "Olá, sou a Iareté, sua inteligência de bordo. Vou mostrar como explorar a Educação OnLIFE. A nave já segue pelo espaço: você escolhe o próximo destino, no seu ritmo.",
+      text: "Olá, sou a IAraeté, sua parceira epistêmica. Vou mostrar como explorar a Educação OnLIFE. A nave já segue pelo espaço: você escolhe o próximo destino, no seu ritmo.",
     },
     {
       targets: ["#destinations"],
@@ -151,11 +151,11 @@ function tutorialSteps() {
   const descriptions = {
     earth: [
       "Terra: os territórios",
-      "Na Terra, você explora as pistas pela localização nos territórios. É o mesmo acervo da Lua de Pistas, apresentado no mapa. Ele se abre em tela cheia; ao voltar, estarei aqui no cockpit.",
+      "Na Terra, você explora as pistas pela localização nos territórios. É o mesmo acervo de Pistas em fluxo, apresentado no mapa. Ele se abre em tela cheia; ao voltar, estarei aqui no cockpit.",
     ],
     research: [
-      "Lua de Pistas",
-      "Na Lua de Pistas, você busca as mesmas pistas por nome ou descrição, inclusive as que ainda não têm localização. Na sala da nave, um card da lua holográfica destaca a pista selecionada. Selecione uma pista para conhecer seus detalhes.",
+      "Pistas em fluxo",
+      "Em Pistas em fluxo, você busca as mesmas pistas por nome ou descrição, inclusive as que ainda não têm localização. Na sala da nave, um card da nebulosa holográfica destaca a pista selecionada. Selecione uma pista para conhecer seus detalhes.",
     ],
     observatory: [
       "Observatório: as problemáticas",
@@ -199,7 +199,7 @@ function tutorialSteps() {
     {
       targets: ["#tour-replay"],
       title: "Podemos começar?",
-      text: "Pronto! Escolha um destino e vamos explorar. Você pode conversar comigo pelo console e rever estas orientações a qualquer momento em Guia da Iareté. Estarei por aqui.",
+      text: "Pronto! Escolha um destino e vamos explorar. Você pode conversar comigo pelo console e rever estas orientações a qualquer momento em Guia da IAraeté. Estarei por aqui.",
     },
   );
   return steps;
@@ -217,11 +217,11 @@ const tutorial = new ShipTutorial({
     emit("tutorial-complete", { version: 1 });
     record(
       skipped
-        ? "Guia da Iareté encerrado · disponível para rever"
-        : "Primeiro voo · guia da Iareté concluído",
+        ? "Guia da IAraeté encerrado · disponível para rever"
+        : "Primeiro voo · guia da IAraeté concluído",
     );
     say(
-      "A nave está pronta. Escolha um destino para nossa próxima descoberta. Se precisar, o Guia da Iareté continua disponível no console.",
+      "A nave está pronta. Escolha um destino para nossa próxima descoberta. Se precisar, o Guia da IAraeté continua disponível no console.",
     );
   },
 });
@@ -255,7 +255,7 @@ function offerTutorial() {
   if (!tutorialSeen) tutorial.start();
 }
 function connectLabel(destination) {
-  return {earth: 'Conecte-se ao Mapa de Pistas', research: 'Conecte-se à Lua de Pistas',
+  return {earth: 'Conecte-se ao Mapa de Pistas', research: 'Conecte-se a Pistas em fluxo',
     observatory: 'Conecte-se às Problemáticas', agents: 'Conecte-se aos Agentes'}[destination.id] || 'Conecte-se ao destino';
 }
 function emit(type, extra = {}) {
@@ -270,7 +270,7 @@ function emit(type, extra = {}) {
     );
     record(
       "Prévia · acesso a " +
-        (type === "assistant" ? "Iareté" : selected.module),
+        (type === "assistant" ? "IAraeté" : selected.module),
     );
   }
 }
@@ -488,7 +488,7 @@ function select(d) {
           : d.id === "observatory"
             ? "Navegar até o Observatório →"
             : d.id === "research"
-              ? "Navegar até a Lua de Pistas →"
+              ? "Navegar até Pistas em fluxo →"
               : "Navegar até o destino →";
   $("reticle-label").textContent =
     current === d.id
@@ -605,7 +605,7 @@ function finishTravel() {
         : selected.id === "observatory"
           ? "Rede de Problemáticas alcançada"
           : selected.id === "research"
-            ? "Órbita da Lua de Pistas estabelecida"
+            ? "Conexão com Pistas em fluxo estabelecida"
             : "Acoplamento concluído";
   $("speed").textContent = "ÓRBITA";
   $("progress").style.width = "100%";
@@ -696,18 +696,18 @@ function openDestination(destination) {
     destination.id === "earth"
       ? "Preparando a imersão territorial. O cockpit se recolhe para dar lugar ao mapa."
       : destination.id === "research"
-        ? "Preparando a sala da Lua de Pistas. A lua holográfica vai ajudar você a localizar cada pista."
+        ? "Preparando a sala de Pistas em fluxo. A nebulosa holográfica vai ajudar você a localizar cada pista."
         : destination.id === "connections"
           ? "Preparando a sala de Conexões da nave. A tela de exploração está pronta para receber você."
           : destination.id === "agents"
             ? "Preparando a Câmara de Inteligências. Escolha um agente para iniciar sua conversa."
-            : "Preparando a Sala de Problemáticas. Vamos explorar a rede e suas relações.",
+            : "Preparando a Rastros e Problemáticas. Vamos explorar a rede e suas relações.",
   );
   $("transfer-label").textContent =
     destination.id === "earth"
       ? "Conectando ao Mapa de Pistas"
       : destination.id === "research"
-        ? "Entrando na sala da Lua de Pistas"
+        ? "Entrando na sala de Pistas em fluxo"
         : destination.id === "connections"
           ? "Entrando na sala de Conexões"
           : destination.id === "agents"
@@ -1553,9 +1553,9 @@ $("start").onclick = async () => {
   await audio.enable($("start-sound").checked);
   updateSound();
   audio.arrival();
-  record("Expedição iniciada · Iareté online");
+  record("Expedição iniciada · IAraeté online");
   say(
-    "Olá, sou a Iareté, sua inteligência de bordo. Já estamos em uma rota contínua de exploração. Escolha nosso próximo destino e eu preparo o salto.",
+    "Olá, sou a IAraeté, sua parceira epistêmica. Já estamos em uma rota contínua de exploração. Escolha nosso próximo destino e eu preparo o salto.",
   );
   $("navigate").focus({ preventScroll: true });
   offerTutorial();

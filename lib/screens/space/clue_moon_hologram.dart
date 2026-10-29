@@ -1,22 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
-const _bands = [4, 12, 18, 22, 24, 22, 18, 12, 4];
-(double, double) _angles(int slot) {
-  var offset = 0;
-  for (var row = 0; row < _bands.length; row++) {
-    if (slot < offset + _bands[row]) {
-      return (
-        (row * 20 - 80) * math.pi / 180,
-        (slot - offset) * math.pi * 2 / _bands[row],
-      );
-    }
-    offset += _bands[row];
-  }
-  return (0, 0);
-}
-
-/// Shipboard projection of the same organized, hollow card moon as the landmark.
+/// Shipboard projection of the same interwoven clue currents as the landmark.
 class ClueMoonHologram extends StatelessWidget {
   const ClueMoonHologram({
     super.key,
@@ -32,13 +17,13 @@ class ClueMoonHologram extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Semantics(
     label: slot == null
-        ? 'Lua de Pistas sem seleção'
-        : 'Card destacado na lua: $title',
+        ? 'Pistas em fluxo sem seleção'
+        : 'Card destacado no fluxo: $title',
     image: true,
     child: TweenAnimationBuilder<double>(
       duration: Duration(milliseconds: reduced ? 0 : 1100),
       curve: Curves.easeInOutCubic,
-      tween: Tween(end: slot == null ? 0 : -_angles(slot!).$2),
+      tween: Tween(end: 0.0),
       builder: (_, yaw, _) => CustomPaint(
         painter: _MoonPainter(
           yaw: yaw + (reduced ? 0 : math.sin(phase) * .10),
@@ -76,22 +61,74 @@ class _MoonPainter extends CustomPainter {
     final cards =
         <({int id, double x, double y, double z, double lat, double lon})>[];
     for (var i = 0; i < 136; i++) {
-      final (lat, lon) = _angles(i);
+      final lane = i % 5;
+      final u = ((i ~/ 5) / 28 + phase / (math.pi * 2) * .12) % 1;
+      final envelope = math.sin(math.pi * u);
+      final angle = u * math.pi * 2 + lane * math.pi * 2 / 5 + phase;
       cards.add((
         id: i,
-        x: math.sin(lon + yaw) * math.cos(lat),
-        y: math.sin(lat),
-        z: math.cos(lon + yaw) * math.cos(lat),
-        lat: lat,
-        lon: lon + yaw,
+        x: (u * 2 - 1) * 1.23,
+        y:
+            math.sin(angle) * envelope * .43 +
+            math.sin(u * math.pi * 3 + phase) * .12,
+        z: math.cos(angle) * envelope * .51,
+        lat: 0,
+        lon: math.sin(angle) * .18,
       ));
     }
-    cards.sort((a, b) => a.z.compareTo(b.z));
+    cards.sort(
+      (a, b) => a.id == selected
+          ? 1
+          : b.id == selected
+          ? -1
+          : a.z.compareTo(b.z),
+    );
     Offset project(double x, double y, double z) {
       final perspective = 4 / (4 - z * .65);
       return center + Offset(x * r * perspective, -y * r * perspective);
     }
 
+    for (var lane = 0; lane < 5; lane++) {
+      const palette = [
+        ice,
+        Color(0xFF82C9EE),
+        Color(0xFFAAA1EB),
+        ice,
+        Color(0xFFA3CCE9),
+      ];
+      final path = Path();
+      for (var step = 0; step <= 60; step++) {
+        final u = step / 60;
+        final envelope = math.sin(math.pi * u);
+        final angle = u * math.pi * 2 + lane * math.pi * 2 / 5 + phase;
+        final p = project(
+          (u * 2 - 1) * 1.23,
+          math.sin(angle) * envelope * .43 +
+              math.sin(u * math.pi * 3 + phase) * .12,
+          math.cos(angle) * envelope * .51,
+        );
+        if (step == 0) {
+          path.moveTo(p.dx, p.dy);
+        } else {
+          path.lineTo(p.dx, p.dy);
+        }
+      }
+      canvas.drawPath(
+        path,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = r * .12
+          ..color = palette[lane].withValues(alpha: .15)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 16),
+      );
+      canvas.drawPath(
+        path,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = .8
+          ..color = palette[lane].withValues(alpha: .3),
+      );
+    }
     for (final card in cards) {
       final active = card.id == selected;
       final expansion = active ? 1.10 : 1.0;
@@ -106,13 +143,13 @@ class _MoonPainter extends CustomPainter {
       final corners = [
         for (final pair in [(-1.0, 1.0), (1.0, 1.0), (1.0, -1.0), (-1.0, -1.0)])
           project(
-            x + rightX * pair.$1 * .115 + upX * pair.$2 * .15,
-            y + upY * pair.$2 * .15,
-            z + rightZ * pair.$1 * .115 + upZ * pair.$2 * .15,
+            x + rightX * pair.$1 * .064 + upX * pair.$2 * .084,
+            y + upY * pair.$2 * .084,
+            z + rightZ * pair.$1 * .064 + upZ * pair.$2 * .084,
           ),
       ];
       final path = Path()..addPolygon(corners, true);
-      final front = card.z > 0;
+      final front = active || card.z > 0;
       final tint = active ? const Color(0xFFFFDF9B) : ice;
       if (active && front) {
         canvas.drawPath(
@@ -191,7 +228,7 @@ class _MoonPainter extends CustomPainter {
     final label = TextPainter(
       text: TextSpan(
         text: selected == null
-            ? 'ARQUIVO HOLOGRÁFICO'
+            ? 'PISTAS EM FLUXO · PROJEÇÃO'
             : 'PISTA LOCALIZADA · CARD EM DESTAQUE',
         style: const TextStyle(color: ice, fontSize: 9, letterSpacing: 1.5),
       ),

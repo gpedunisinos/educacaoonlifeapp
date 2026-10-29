@@ -64,7 +64,7 @@ void main() {
   tearDown(Get.reset);
 
   testWidgets(
-    'Iareté reveals only new replies and does not replay completed history',
+    'IAraeté reveals only new replies and does not replay completed history',
     (tester) async {
       final assistant = PreviewAssistant();
       assistant.messages.add(
@@ -219,7 +219,7 @@ void main() {
       );
       await tester.pump();
       expect(find.text('Mensagem anterior preservada.'), findsOneWidget);
-      expect(find.byTooltip('Fechar Iareté'), findsOneWidget);
+      expect(find.byTooltip('Fechar IAraeté'), findsOneWidget);
       expect(tester.takeException(), isNull);
       assistant.isSending.value = true;
       await tester.pump();

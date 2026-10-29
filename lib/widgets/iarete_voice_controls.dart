@@ -184,7 +184,7 @@ class IareteVoiceControls extends StatelessWidget {
                               voice.start();
                             },
                       icon: const Icon(Icons.mic_none_outlined, size: 20),
-                      label: const Text('Falar com Iareté'),
+                      label: const Text('Falar com IAraeté'),
                     ),
                     IconButton(
                       tooltip: voice.enabled

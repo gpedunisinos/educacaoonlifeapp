@@ -590,7 +590,7 @@ class _RoomShell extends StatelessWidget {
                         const Padding(
                           padding: EdgeInsets.only(bottom: 25),
                           child: Text(
-                            'IARETÉ  /  Cada vínculo revela uma nova perspectiva.',
+                            'IAraeté  /  Cada vínculo revela uma nova perspectiva.',
                             style: TextStyle(
                               color: _muted,
                               fontSize: 11,

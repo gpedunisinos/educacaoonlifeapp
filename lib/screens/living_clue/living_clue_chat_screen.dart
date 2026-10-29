@@ -42,7 +42,7 @@ class _LivingClueChatScreenState extends State<LivingClueChatScreen> {
         'pista': _controller.livingClue.value!.name,
     },
     notes: const [
-      'Este chat responde como a própria pista. A Iareté global é outra conversa. Não importar o histórico desta conversa nem COMpartilhAÇÕES para a Iareté por padrão.',
+      'Este chat responde como a própria pista. A IAraeté global é outra conversa. Não importar o histórico desta conversa nem COMpartilhAÇÕES para a IAraeté por padrão.',
     ],
   );
 
@@ -107,7 +107,7 @@ class _LivingClueChatScreenState extends State<LivingClueChatScreen> {
       ),
       eyebrow: 'EC–01 / DIÁLOGO COM A PISTA',
       subtitle: const Text(
-        'Esta conversa responde como a própria pista, com base em seus registros e leituras. É separada da Iareté.',
+        'Esta conversa responde como a própria pista, com base em seus registros e leituras. É separada da IAraeté.',
       ),
       actions: [
         IconButton(

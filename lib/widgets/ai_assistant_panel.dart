@@ -87,8 +87,8 @@ class _AiAssistantPanelState extends State<AiAssistantPanel>
                 child: Column(
                   children: [
                     SpaceConversationHeader(
-                      title: const Text('Iareté'),
-                      eyebrow: 'EC–01 / INTELIGÊNCIA DE BORDO',
+                      title: const Text('IAraeté'),
+                      eyebrow: 'EC–01 / PARCEIRA EPISTÊMICA',
                       leading: Padding(
                         padding: const EdgeInsets.only(right: 12),
                         child: ListenableBuilder(
@@ -110,7 +110,7 @@ class _AiAssistantPanelState extends State<AiAssistantPanel>
                                   ? _voice.status
                                   : _controller.isSending.value
                                   ? 'Elaborando uma resposta…'
-                                  : 'Sua inteligência de bordo para explorar a Educação OnLIFE.',
+                                  : 'Sua parceira epistêmica para explorar a Educação OnLIFE.',
                             ),
                           ),
                         ),
@@ -120,8 +120,8 @@ class _AiAssistantPanelState extends State<AiAssistantPanel>
                           valueListenable: ShipAudioPreferences.enabled,
                           builder: (_, enabled, _) => IconButton(
                             tooltip: enabled
-                                ? 'Silenciar Iareté'
-                                : 'Ativar som da Iareté',
+                                ? 'Silenciar IAraeté'
+                                : 'Ativar som da IAraeté',
                             icon: Icon(
                               enabled
                                   ? Icons.volume_up_outlined
@@ -134,7 +134,7 @@ class _AiAssistantPanelState extends State<AiAssistantPanel>
                           ),
                         ),
                         IconButton(
-                          tooltip: 'Fechar Iareté',
+                          tooltip: 'Fechar IAraeté',
                           onPressed: () => Navigator.of(context).pop(),
                           icon: const Icon(Icons.close, color: spaceChatMuted),
                         ),
@@ -156,7 +156,7 @@ class _AiAssistantPanelState extends State<AiAssistantPanel>
                               padding: const EdgeInsets.all(28),
                               child: Text(
                                 _controller.errorMessage.value ??
-                                    'Olá, sou a Iareté, sua inteligência de bordo. O que vamos explorar juntos?',
+                                    'Olá, sou a IAraeté, sua parceira epistêmica. O que vamos explorar juntos?',
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(
                                   color: spaceChatMuted,
@@ -411,7 +411,7 @@ class _MessageBubble extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      isUser ? 'VOCÊ' : 'IARETÉ',
+                      isUser ? 'VOCÊ' : 'IAraeté',
                       style: const TextStyle(
                         color: spaceChatAccent,
                         fontSize: 10,

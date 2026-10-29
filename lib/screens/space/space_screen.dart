@@ -38,7 +38,7 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
     screenName: 'Cockpit Educação OnLIFE',
     route: '/space',
     stage: 'exploração espacial',
-    goal: 'navegar pelos territórios e módulos com a orientação da Iareté',
+    goal: 'navegar pelos territórios e módulos com a orientação da IAraeté',
     filledFields: {
       'destino selecionado': destination,
       'modo': Get.find<UserController>().user.value?.usageMode == 'inventor'
@@ -49,7 +49,7 @@ class _SpaceScreenState extends State<SpaceScreen> with WidgetsBindingObserver {
       'A Terra abre o Mapa de Pistas em tela cheia. A Lua permite pesquisar pistas, o Observatório explorar problemáticas e o Campo de Inteligências selecionar agentes.',
       'Ações autorizadas nesta conta: ${destinations.keys.join(', ')}. O seletor Explorador/Inventor preserva a rota.',
       if (MeetingRoom.enabled)
-        'Encontros abre uma sala em outra aba; a Iareté não acompanha seu conteúdo nem a presença.',
+        'Encontros abre uma sala em outra aba; a IAraeté não acompanha seu conteúdo nem a presença.',
     ],
   );
   Map<String, String> get destinations {

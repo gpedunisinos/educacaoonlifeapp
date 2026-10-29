@@ -54,7 +54,7 @@ class VoiceConversation extends ChangeNotifier {
   bool get wantsVoice => enabled && ShipAudioPreferences.enabled.value;
   String get status => switch (stage) {
     VoiceStage.permission =>
-      'Permita o uso do microfone para falar com a Iareté.',
+      'Permita o uso do microfone para falar com a IAraeté.',
     VoiceStage.recording => 'Estou ouvindo. Pare a gravação para revisar.',
     VoiceStage.stopping => 'Preparando sua gravação…',
     VoiceStage.review =>
@@ -65,9 +65,9 @@ class VoiceConversation extends ChangeNotifier {
     VoiceStage.thinking => 'Entendi. Estou pensando na sua resposta…',
     VoiceStage.idle =>
       loadingId != null
-          ? 'Preparando a voz da Iareté…'
+          ? 'Preparando a voz da IAraeté…'
           : playing && !previewing
-          ? 'Iareté está falando…'
+          ? 'IAraeté está falando…'
           : 'Converse por texto ou áudio.',
   };
   Future<void> restore() async {

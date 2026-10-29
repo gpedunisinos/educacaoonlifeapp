@@ -277,7 +277,7 @@ class _AiAssistantLauncherState extends State<AiAssistantLauncher> {
                         backgroundColor: const Color(0xFF282346),
                         foregroundColor: Colors.white,
                         icon: const Icon(Icons.auto_awesome),
-                        label: const Text('Iareté'),
+                        label: const Text('IAraeté'),
                       ),
                       const SizedBox(height: 12),
                     ],
@@ -285,7 +285,7 @@ class _AiAssistantLauncherState extends State<AiAssistantLauncher> {
                       heroTag: 'global-shortcuts',
                       tooltip: expanded
                           ? 'Recolher atalhos'
-                          : 'Abrir Iareté e Locker',
+                          : 'Abrir IAraeté e Locker',
                       backgroundColor: const Color(0xFF111A32),
                       foregroundColor: accent,
                       onPressed: () => setState(() => expanded = !expanded),

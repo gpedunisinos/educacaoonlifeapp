@@ -96,7 +96,7 @@ void main() {
       Get.back();
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byTooltip('Abrir Iareté e Locker'));
+      await tester.tap(find.byTooltip('Abrir IAraeté e Locker'));
       await tester.pump();
       expect(tester.takeException(), isNull);
       await tester.tap(find.text('Locker'));
@@ -107,17 +107,17 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Seu Locker'), findsNothing);
       expect(find.text('Página de origem'), findsOneWidget);
-      await tester.tap(find.byTooltip('Abrir Iareté e Locker'));
+      await tester.tap(find.byTooltip('Abrir IAraeté e Locker'));
       await tester.pump();
-      await tester.tap(find.text('Iareté'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 350));
-      expect(find.byTooltip('Fechar Iareté'), findsOneWidget);
-      expect(find.byTooltip('Abrir Iareté e Locker'), findsNothing);
-      await tester.tap(find.byTooltip('Fechar Iareté'));
+      await tester.tap(find.text('IAraeté'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 350));
-      expect(find.byTooltip('Abrir Iareté e Locker'), findsOneWidget);
+      expect(find.byTooltip('Fechar IAraeté'), findsOneWidget);
+      expect(find.byTooltip('Abrir IAraeté e Locker'), findsNothing);
+      await tester.tap(find.byTooltip('Fechar IAraeté'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 350));
+      expect(find.byTooltip('Abrir IAraeté e Locker'), findsOneWidget);
       await tester.tap(find.text('Explorador'));
       await tester.pumpAndSettle();
       expect(find.text('Escolha de modo'), findsNothing);
