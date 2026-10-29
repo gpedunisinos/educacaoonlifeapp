@@ -238,6 +238,11 @@ class _ReadingContent extends StatelessWidget {
                             ),
                             const SizedBox(height: 5),
                             SelectableText(
+                              // EditableText has its own scroll position. Keep it
+                              // separate from ExpansionTile's boolean storage.
+                              key: PageStorageKey(
+                                'sensor-value-${reading.livingClueId}-${reading.id}-${entry.key}',
+                              ),
                               '${_value(entry.value)}${units[entry.key] == null ? '' : ' ${units[entry.key]}'}',
                               style: const TextStyle(
                                 color: Color(0xFFE2F1F5),
@@ -318,6 +323,9 @@ class _ReadingContent extends StatelessWidget {
                   'sensor-payload-scroll-${reading.livingClueId}-${reading.id}',
                 ),
                 child: SelectableText(
+                  key: PageStorageKey(
+                    'sensor-raw-text-${reading.livingClueId}-${reading.id}',
+                  ),
                   _excerpt(reading.formattedPayload, limit: 16000),
                   style: const TextStyle(
                     fontFamily: 'monospace',

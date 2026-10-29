@@ -133,6 +133,22 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Registro #2'), findsWidgets);
       expect(find.text('Registro #1'), findsWidgets);
+      final record = find.byKey(const PageStorageKey('sensor-history-72-2'));
+      await tester.ensureVisible(record);
+      await tester.tap(
+        find.descendant(of: record, matching: find.text('Registro #2')),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('23'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      final details = find.descendant(
+        of: record,
+        matching: find.text('Ver dados completos'),
+      );
+      await tester.ensureVisible(details);
+      await tester.tap(details);
+      await tester.pumpAndSettle();
+      expect(find.text('Copiar dados'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   }
