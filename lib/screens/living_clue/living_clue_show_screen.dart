@@ -462,6 +462,11 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
                             child: Image.network(
                               model.imageUrl!,
                               fit: BoxFit.cover,
+                              // External image hosts may serve images without
+                              // allowing cross-origin pixel reads on Flutter Web.
+                              webHtmlElementStrategy:
+                                  WebHtmlElementStrategy.fallback,
+                              semanticLabel: 'Imagem da pista ${model.name}',
                               errorBuilder: (_, __, ___) =>
                                   const Center(child: Icon(Icons.broken_image)),
                               loadingBuilder: (context, child, progress) =>
