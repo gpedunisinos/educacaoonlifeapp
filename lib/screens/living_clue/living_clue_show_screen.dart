@@ -1,3 +1,5 @@
+import 'package:unisinos_usp_app/widgets/clue_qr_dialog.dart';
+import 'package:unisinos_usp_app/services/clue_map_navigation.dart';
 import 'package:unisinos_usp_app/widgets/clue_sensor_readings.dart';
 import 'package:unisinos_usp_app/models/inventive/inventive_catalog.dart';
 import 'package:unisinos_usp_app/widgets/inventive_classification_fields.dart';
@@ -193,7 +195,21 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
         backLabel: Get.currentRoute.startsWith('/space/research/')
             ? 'Voltar à lista'
             : 'Voltar',
-        actions: actions,
+        actions: [
+          if (MediaQuery.sizeOf(context).width >= 650)
+            OutlinedButton.icon(
+              onPressed: returnToClueMap,
+              icon: const Icon(Icons.map_outlined, size: 18),
+              label: const Text('Voltar ao mapa'),
+            )
+          else
+            IconButton(
+              tooltip: 'Voltar ao mapa',
+              onPressed: returnToClueMap,
+              icon: const Icon(Icons.map_outlined),
+            ),
+          ...actions,
+        ],
         child: child,
       );
 
@@ -539,6 +555,14 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
         ],
       ),
       actions: [
+        IconButton(
+          tooltip: 'Gerar QR Code',
+          icon: const Icon(Icons.qr_code),
+          onPressed: () => showDialog<void>(
+            context: context,
+            builder: (_) => ClueQrDialog(clueId: model.id, name: model.name),
+          ),
+        ),
         IconButton(
           tooltip: 'Ver leituras dos sensores',
           icon: const Icon(Icons.sensors, color: Color(0xFF9CE7DF)),
