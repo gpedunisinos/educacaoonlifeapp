@@ -291,6 +291,15 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('TERRA / EXPLORAÇÃO'), findsOneWidget);
       expect(data.boundsLoads, greaterThan(0));
+      await tester.tap(find.byTooltip('Categorias no mapa'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Categorias das pistas carregadas nesta área.'),
+        findsOneWidget,
+      );
+      await tester.tap(find.byTooltip('Fechar legenda'));
+      await tester.pumpAndSettle();
+
       final map = tester.widget<FlutterMap>(find.byType(FlutterMap));
       final oldZoom = map.mapController!.camera.zoom;
       await tester.tap(find.byTooltip('Aproximar mapa'));

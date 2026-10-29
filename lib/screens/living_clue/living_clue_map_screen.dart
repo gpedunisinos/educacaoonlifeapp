@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/widgets/category_map_marker.dart';
 import 'package:unisinos_usp_app/widgets/anchored_tutorial_layout.dart';
 import 'package:unisinos_usp_app/widgets/iarete_reply.dart';
 import 'package:unisinos_usp_app/widgets/space_conversation.dart';
@@ -681,9 +682,13 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                       .map(
                         (item) => Marker(
                           point: LatLng(item.latitude!, item.longitude!),
+                          // The pin tip, rather than its circular head, marks
+                          // the geographic point (47px into a 52px hit area).
+                          alignment: const Alignment(0, -.8),
                           width: 52,
                           height: 52,
                           child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
                             key: ValueKey('map-clue-${item.id}'),
                             onTap: () => _handleMarkerTap(item),
                             child: Stack(
@@ -734,10 +739,18 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                                       ),
                                     ),
                                   ),
-                                Icon(
-                                  Icons.location_on,
-                                  color: _categoryColor(item),
-                                  size: 36,
+                                Tooltip(
+                                  message:
+                                      '${item.name} · ${(item.category ?? _controller.categoriesById[item.categoryId])?.name ?? 'Pista'}',
+                                  child: CategoryMapMarker(
+                                    color: _categoryColor(item),
+                                    icon: categoryMapIcon(
+                                      item.category ??
+                                          _controller.categoriesById[item
+                                              .categoryId],
+                                    ),
+                                    selected: _contextClue?.id == item.id,
+                                  ),
                                 ),
                               ],
                             ),
@@ -998,6 +1011,25 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                               ),
                             ),
                             onPressed: _showEnvironmentalLayers,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 180,
+                        right: 12,
+                        child: Material(
+                          color: mapPanel,
+                          shape: const CircleBorder(),
+                          child: IconButton(
+                            tooltip: 'Categorias no mapa',
+                            constraints: const BoxConstraints.tightFor(
+                              width: 36,
+                              height: 36,
+                            ),
+                            padding: EdgeInsets.zero,
+                            color: Colors.white,
+                            icon: const Icon(Icons.category_outlined, size: 20),
+                            onPressed: () => _showCategoryLegend(visibleClues),
                           ),
                         ),
                       ),
@@ -1660,6 +1692,87 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
     return box.localToGlobal(Offset.zero, ancestor: overlayBox) & box.size;
   }
 
+  void _showCategoryLegend(List<LivingClueModel> clues) {
+    final categories = <int, LivingClueModel>{
+      for (final clue in clues) clue.categoryId: clue,
+    };
+    Get.bottomSheet(
+      _mapSheet(
+        SafeArea(
+          child: Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.sizeOf(context).height * .6,
+            ),
+            padding: const EdgeInsets.all(16),
+            color: mapPanel,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Categorias no mapa',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: 'Fechar legenda',
+                      onPressed: () => Get.back(),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+                const Text('Categorias das pistas carregadas nesta área.'),
+                if (categories.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Text('Nenhuma pista nesta área.'),
+                  ),
+                Flexible(
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: [
+                      for (final clue in categories.values)
+                        ListTile(
+                          leading: CategoryMapMarker(
+                            color: _categoryColor(clue),
+                            icon: categoryMapIcon(
+                              clue.category ??
+                                  _controller.categoriesById[clue.categoryId],
+                            ),
+                          ),
+                          title: Text(
+                            (clue.category ??
+                                        _controller.categoriesById[clue
+                                            .categoryId])
+                                    ?.name ??
+                                'Categoria indisponível',
+                          ),
+                          trailing: Text(
+                            clues
+                                .where(
+                                  (item) => item.categoryId == clue.categoryId,
+                                )
+                                .length
+                                .toString(),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      isScrollControlled: true,
+    );
+  }
+
   Color _categoryColor(LivingClueModel model) {
     final String? hex =
         model.category?.colorHex ??
@@ -1845,7 +1958,16 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
         clue.category ?? _controller.categoriesById[clue.categoryId];
     return ListTile(
       dense: true,
-      leading: Icon(Icons.location_on, color: _categoryColor(clue)),
+      leading: SizedBox(
+        width: 32,
+        height: 38,
+        child: FittedBox(
+          child: CategoryMapMarker(
+            color: _categoryColor(clue),
+            icon: categoryMapIcon(category),
+          ),
+        ),
+      ),
       title: Text(
         clue.name,
         maxLines: 1,
@@ -1924,7 +2046,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
   LivingClueModel? _contextClue;
 
   void _showClueSheet(LivingClueModel item) {
-    _contextClue = item;
+    setState(() => _contextClue = item);
     Get.bottomSheet(
       _mapSheet(
         Container(
@@ -2016,7 +2138,8 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
       ),
       isScrollControlled: true,
     ).whenComplete(() {
-      if (identical(_contextClue, item)) _contextClue = null;
+      if (mounted && identical(_contextClue, item))
+        setState(() => _contextClue = null);
     });
   }
 }

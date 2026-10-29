@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/widgets/category_icon_picker.dart';
 import 'package:unisinos_usp_app/screens/management/management_input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
@@ -131,9 +132,11 @@ class _CategoryCreateScreenState extends State<CategoryCreateScreen> {
                     ],
                   ),
                   Insets.large.height,
-                  ManagementInput(
-                    hintText: 'Código do ícone (opcional)',
+                  CategoryIconPicker(
                     controller: _iconController,
+                    name: _nameController.text,
+                    type: _selectedType ?? '',
+                    color: _selectedColor,
                   ),
                   Insets.large.height,
                   ManagementInput(
