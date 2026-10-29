@@ -116,6 +116,55 @@ void main() {
     },
   );
   testWidgets(
+    'images preview inline and enlarge inside the app; failed links can be retried',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final transport = UploadClient()..status = 503;
+      final api = FileWebclient(client: transport);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ClueAttachmentTile(
+              file: FileModel(
+                id: 23,
+                extension: 'PNG',
+                name: 'Imagem da pista.png',
+                mimeType: 'image/png',
+              ),
+              client: api,
+              onRemove: () {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(transport.gets, 1);
+      expect(find.text('Não foi possível exibir a imagem.'), findsOneWidget);
+      transport.status = 200;
+      await tester.tap(find.text('Tentar novamente'));
+      await tester.pumpAndSettle();
+      expect(transport.gets, 2);
+      expect(find.byType(Image), findsOneWidget);
+      expect(
+        (tester.widget<Image>(find.byType(Image)).image as NetworkImage).url,
+        transport.accessURL,
+      );
+      expect(find.byTooltip('Baixar arquivo'), findsOneWidget);
+      await tester.tap(find.byTooltip('Ampliar imagem'));
+      await tester.pumpAndSettle();
+      expect(transport.gets, 3);
+      expect(find.byType(InteractiveViewer), findsOneWidget);
+      expect(find.byTooltip('Fechar imagem'), findsOneWidget);
+      await tester.tap(find.byTooltip('Fechar imagem'));
+      await tester.pumpAndSettle();
+      expect(find.byType(InteractiveViewer), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
+  testWidgets(
     'attachment controls fit narrow screens and failed access allows retry',
     (tester) async {
       tester.view.physicalSize = const Size(390, 844);
