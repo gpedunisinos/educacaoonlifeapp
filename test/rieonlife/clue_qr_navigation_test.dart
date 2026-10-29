@@ -69,7 +69,7 @@ void main() {
     () {
       expect(
         ClueLinks.publicUrl(72),
-        'https://web.uniusp.gpedu.com.br/#/space/research/72',
+        'https://educacaoonlife.gpedu.com.br/#/space/research/72',
       );
       for (final value in [
         'https://evil.test/space/research/72',

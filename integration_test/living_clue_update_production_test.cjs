@@ -2,7 +2,7 @@ const { chromium } = require('playwright');
 
 const targetUrl =
   process.env.E2E_URL ||
-  'https://web.uniusp.gpedu.com.br/#/living_clues/update?id=8';
+  'https://educacaoonlife.gpedu.com.br/#/living_clues/update?id=8';
 const email = process.env.E2E_EMAIL || 'admin@admin.com';
 const password = process.env.E2E_PASSWORD || 'uu2admin';
 const screenshotPath =

@@ -85,7 +85,7 @@ private.mkdir(parents=True,exist_ok=True,mode=0o700)
 record=private/(p['release']+'.json')
 record.write_text(json.dumps(manifest,indent=2));record.chmod(0o600)
 (target/'onlife-release.json').write_text(json.dumps({'revision':p['revision'],'archive_sha256':p['sha256']},indent=2))
-for url in ['https://web.uniusp.gpedu.com.br/','https://plataforma.atopos.spotec.app/']:
+for url in ['https://educacaoonlife.gpedu.com.br/','https://plataforma.atopos.spotec.app/']:
  result=subprocess.run(['curl','-fSs','-o','/dev/null',url],capture_output=True)
  if result.returncode:
   subprocess.run(['sudo','ln','-sfn',previous,str(web)],check=True)

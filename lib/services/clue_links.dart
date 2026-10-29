@@ -10,7 +10,7 @@ class ClueLinks {
   }
 
   static String publicUrl(int id) =>
-      'https://web.uniusp.gpedu.com.br/#${route(id)}';
+      'https://educacaoonlife.gpedu.com.br/#${route(id)}';
 
   static String? safeTarget(String? raw) {
     if (raw == null || raw.length > 150 || raw != raw.trim()) return null;

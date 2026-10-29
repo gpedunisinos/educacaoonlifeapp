@@ -22,7 +22,7 @@ A pipeline contém os parâmetros, mas builds manuais não os herdam automaticam
 Verificar os dois domínios:
 
 - https://plataforma.atopos.spotec.app/
-- https://web.uniusp.gpedu.com.br/
+- https://educacaoonlife.gpedu.com.br/
 
 Conferir `onlife-release.json` e comparar o SHA-256 das duas fontes servidas com os arquivos do artefato validado:
 
