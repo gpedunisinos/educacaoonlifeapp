@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/models/sensor_reading_model.dart';
 import 'package:unisinos_usp_app/models/file_model.dart';
 import 'dart:convert';
 
@@ -6,6 +7,7 @@ import 'package:unisinos_usp_app/models/environmental_context_model.dart';
 
 class LivingClueModel {
   List<FileModel> files;
+  final List<SensorReadingModel> sensorReadings;
   int id;
   String name;
   int categoryId;
@@ -24,6 +26,7 @@ class LivingClueModel {
   LivingClueModel({
     required this.id,
     this.files = const [],
+    this.sensorReadings = const [],
     required this.name,
     required this.categoryId,
     this.latitude,
@@ -40,7 +43,17 @@ class LivingClueModel {
   });
 
   LivingClueModel.fromJson(Map<String, dynamic> json)
-    : files = (json['files'] as List? ?? [])
+    : sensorReadings =
+          (json['sensor_readings'] is List
+                  ? json['sensor_readings'] as List
+                  : const [])
+              .whereType<Map>()
+              .map(
+                (e) =>
+                    SensorReadingModel.fromJson(Map<String, dynamic>.from(e)),
+              )
+              .toList(),
+      files = (json['files'] as List? ?? [])
           .map((e) => FileModel.fromJson(Map<String, dynamic>.from(e)))
           .toList(),
       id = json['id'] is int ? json['id'] : int.parse(json['id'].toString()),

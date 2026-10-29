@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/widgets/clue_sensor_readings.dart';
 import 'package:unisinos_usp_app/models/inventive/inventive_catalog.dart';
 import 'package:unisinos_usp_app/widgets/inventive_classification_fields.dart';
 import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
@@ -48,6 +49,9 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
   late final source = widget.source ?? LivingClueRecordSource();
   bool _initialLoading = false;
   String? _initialError;
+  final _readingsKey = GlobalKey();
+  bool _refreshingReadings = false;
+  String? _readingsError;
   Timer? _refreshTimer;
   int _refreshAttempts = 0;
   late final String _route = Get.currentRoute;
@@ -134,6 +138,26 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
           _initialLoading = false;
           _initialError = 'Não foi possível abrir esta pista.';
         });
+    }
+  }
+
+  Future<void> _refreshReadings() async {
+    if (_refreshingReadings) return;
+    setState(() {
+      _refreshingReadings = true;
+      _readingsError = null;
+    });
+    try {
+      final refreshed = await source.clue(model.id);
+      if (mounted) setState(() => model = refreshed);
+    } catch (_) {
+      if (mounted)
+        setState(
+          () => _readingsError =
+              'Não foi possível atualizar as leituras. Os registros já carregados foram preservados. Tente novamente.',
+        );
+    } finally {
+      if (mounted) setState(() => _refreshingReadings = false);
     }
   }
 
@@ -299,6 +323,14 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
                       context: model.environmentalContext,
                       onRetry: _reprocessContext,
                     ),
+                  const SizedBox(height: 12),
+                  ClueSensorReadings(
+                    key: _readingsKey,
+                    readings: model.sensorReadings,
+                    onRefresh: _refreshReadings,
+                    refreshing: _refreshingReadings,
+                    error: _readingsError,
+                  ),
                   const SizedBox(height: 12),
                   _buildConnectionsCard(context),
                   const SizedBox(height: 12),
@@ -507,6 +539,22 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
         ],
       ),
       actions: [
+        IconButton(
+          tooltip: 'Ver leituras dos sensores',
+          icon: const Icon(Icons.sensors, color: Color(0xFF9CE7DF)),
+          onPressed: () {
+            final target = _readingsKey.currentContext;
+            if (target != null)
+              Scrollable.ensureVisible(
+                target,
+                alignment: 0.03,
+                duration: MediaQuery.disableAnimationsOf(context)
+                    ? Duration.zero
+                    : const Duration(milliseconds: 300),
+                curve: Curves.easeOutCubic,
+              );
+          },
+        ),
         LockerButton(type: 'living_clue', id: model.id),
         if (LivingCluePolicy(
           Get.find<UserController>().user.value,
