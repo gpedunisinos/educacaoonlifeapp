@@ -13,20 +13,13 @@ class ClueIntegration {
   final String url;
   final String title;
   final String instructions;
-  static const providers = [
-    'genially',
-    'padlet',
-    'framevr',
-    'overte',
-    'vircadia',
-  ];
+  static const providers = ['genially', 'padlet', 'framevr'];
   bool get supported =>
       version == 1 &&
       (provider == 'agent' ||
           provider == 'node' ||
           providers.contains(provider));
   bool get inline => provider == 'genially' || provider == 'padlet';
-  bool get desktopClient => provider == 'overte' || provider == 'vircadia';
   String get name =>
       const {
         'agent': 'Agente da plataforma',
@@ -34,8 +27,6 @@ class ClueIntegration {
         'genially': 'Genially',
         'padlet': 'Padlet',
         'framevr': 'FrameVR',
-        'overte': 'Overte',
-        'vircadia': 'Vircadia',
       }[provider] ??
       'Integração';
   static String explanation(String provider) =>
@@ -47,8 +38,6 @@ class ClueIntegration {
         'genially': 'Inclua uma apresentação ou experiência interativa.',
         'padlet': 'Inclua um mural para compartilhar ideias e materiais.',
         'framevr': 'Conecte a pista a um ambiente virtual 3D.',
-        'overte': 'Adicione acesso a um mundo no aplicativo Overte.',
-        'vircadia': 'Conecte a pista a um ambiente Vircadia.',
       }[provider] ??
       '';
 
@@ -109,19 +98,6 @@ class ClueIntegration {
         u.userInfo.isNotEmpty ||
         u.host.isEmpty)
       return 'Informe um endereço válido, sem HTML ou credenciais.';
-    if (provider == 'overte' || provider == 'vircadia') {
-      if (u.scheme != 'hifi' ||
-          u.host == 'localhost' ||
-          u.host.endsWith('.local') ||
-          u.host.startsWith('127.') ||
-          u.host.startsWith('10.') ||
-          u.host.startsWith('192.168.') ||
-          u.host == '::1' ||
-          u.hasQuery ||
-          u.hasFragment)
-        return 'Use o endereço hifi:// do mundo no cliente instalado.';
-      return null;
-    }
     if (u.scheme != 'https' || (u.hasPort && u.port != 443))
       return 'Use um link HTTPS do provedor.';
     final path = u.path.replaceAll(RegExp(r'^/+|/+$'), '');
@@ -154,8 +130,7 @@ class ClueIntegration {
     if (!supported ||
         provider == 'agent' ||
         provider == 'node' ||
-        validateURL(provider, url) != null ||
-        desktopClient)
+        validateURL(provider, url) != null)
       return null;
     final u = Uri.parse(url);
     if (provider == 'padlet') {

@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
 import 'package:unisinos_usp_app/services/ai_assistant_context_service.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:unisinos_usp_app/models/clue_integration.dart';
@@ -19,7 +18,6 @@ IconData integrationIcon(String provider) => switch (provider) {
   'genially' => Icons.auto_awesome_outlined,
   'padlet' => Icons.dashboard_outlined,
   'framevr' => Icons.view_in_ar_outlined,
-  'overte' || 'vircadia' => Icons.public,
   _ => Icons.extension_outlined,
 };
 
@@ -170,6 +168,7 @@ Future<void> editClueIntegration(
     );
     return;
   }
+  if (!ClueIntegration.providers.contains(provider)) return;
   final selection = controller.selection;
   final url = TextEditingController(text: initial?.url);
   final title = TextEditingController(text: initial?.title);
@@ -195,12 +194,7 @@ Future<void> editClueIntegration(
                   autofocus: true,
                   maxLength: 2000,
                   decoration: InputDecoration(
-                    labelText:
-                        initial?.desktopClient == true ||
-                            provider == 'overte' ||
-                            provider == 'vircadia'
-                        ? 'Endereço hifi:// do mundo'
-                        : 'Link de visualização',
+                    labelText: 'Link de visualização',
                     hintText: provider == 'genially'
                         ? 'https://view.genially.com/…'
                         : null,
@@ -227,13 +221,6 @@ Future<void> editClueIntegration(
                     labelText: 'Instruções de acesso (opcional)',
                   ),
                 ),
-                if (provider == 'overte' || provider == 'vircadia')
-                  const Padding(
-                    padding: EdgeInsets.only(top: 12),
-                    child: Text(
-                      'O mundo abre em um cliente instalado. A compatibilidade do ambiente precisa ser conferida; não há execução 3D incorporada.',
-                    ),
-                  ),
               ],
             ),
           ),
@@ -419,13 +406,13 @@ class ClueIntegrationView extends StatelessWidget {
       ))
         return;
     } catch (_) {
-      /* Clipboard and access instructions remain available. */
+      /* Keep the explanatory error below available. */
     }
     if (context.mounted)
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Não foi possível abrir. Confira o acesso ou use o endereço copiado.',
+            'Não foi possível abrir. Confira o endereço e as permissões do provedor.',
           ),
         ),
       );
@@ -502,20 +489,12 @@ class ClueIntegrationView extends StatelessWidget {
                     ),
                   ),
                 ),
-              if (block.desktopClient)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  child: Text(
-                    'Requer o cliente instalado. A abertura deste ambiente ainda precisa ser conferida no aplicativo de origem.',
-                  ),
-                ),
-              if (block.desktopClient) SelectableText(block.url),
               const SizedBox(height: 12),
               Wrap(
                 spacing: 10,
                 runSpacing: 8,
                 children: [
-                  if (!block.desktopClient && block.embedURI != null)
+                  if (block.embedURI != null)
                     OutlinedButton.icon(
                       onPressed: () {
                         final origin =
@@ -546,41 +525,17 @@ class ClueIntegrationView extends StatelessWidget {
                   TextButton.icon(
                     onPressed: () => _open(context),
                     icon: const Icon(Icons.open_in_new),
-                    label: Text(
-                      block.desktopClient
-                          ? 'Abrir no ${block.name}'
-                          : 'Abrir na origem',
-                    ),
+                    label: const Text('Abrir na origem'),
                   ),
-                  if (block.desktopClient)
-                    TextButton.icon(
-                      onPressed: () =>
-                          Clipboard.setData(ClipboardData(text: block.url)),
-                      icon: const Icon(Icons.copy),
-                      label: const Text('Copiar endereço'),
-                    ),
-                  if (block.desktopClient)
-                    TextButton(
-                      onPressed: () => launchUrl(
-                        Uri.parse(
-                          block.provider == 'overte'
-                              ? 'https://overte.org/downloads.html'
-                              : 'https://vircadia.com/',
-                        ),
-                        webOnlyWindowName: '_blank',
-                      ),
-                      child: const Text('Conhecer o aplicativo'),
-                    ),
                 ],
               ),
-              if (!block.desktopClient)
-                const Padding(
-                  padding: EdgeInsets.only(top: 8),
-                  child: Text(
-                    'O acesso e a participação seguem as regras do provedor. Se não carregar aqui, abra na origem.',
-                    style: TextStyle(fontSize: 12),
-                  ),
+              const Padding(
+                padding: EdgeInsets.only(top: 8),
+                child: Text(
+                  'O acesso e a participação seguem as regras do provedor. Se não carregar aqui, abra na origem.',
+                  style: TextStyle(fontSize: 12),
                 ),
+              ),
             ],
           ],
         ),

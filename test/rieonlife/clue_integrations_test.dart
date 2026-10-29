@@ -35,7 +35,7 @@ void main() {
       );
       expect(
         ClueIntegration.validateURL('overte', 'hifi://world.example.org'),
-        isNull,
+        isNotNull,
       );
       for (final url in [
         'javascript:alert(1)',
@@ -52,6 +52,25 @@ void main() {
     },
   );
 
+  test(
+    'retired world clients are unavailable without discarding stored content',
+    () {
+      for (final provider in ['overte', 'vircadia']) {
+        final legacy = ClueIntegration(
+          provider: provider,
+          url: 'hifi://world.example.org',
+        );
+        expect(ClueIntegration.providers, isNot(contains(provider)));
+        expect(legacy.supported, isFalse);
+        expect(legacy.embedURI, isNull);
+        expect(ClueIntegration.validateURL(provider, legacy.url), isNotNull);
+        expect(
+          ClueIntegration.decode(legacy.encode())!.toJson(),
+          legacy.toJson(),
+        );
+      }
+    },
+  );
   test(
     'mixed blocks roundtrip in order including unknown embeds and versions',
     () {
@@ -88,7 +107,7 @@ void main() {
       );
       final encoded = QuillDocumentUtils.encodeDelta(c)!;
       expect(jsonDecode(encoded), ops);
-      expect(QuillDocumentUtils.plainText(c), 'Antes\n\n\n\n\n\n\n\nDepois');
+      expect(QuillDocumentUtils.plainText(c), 'Antes\n\n\n\n\n\nDepois');
       final reopened = QuillDocumentUtils.fromStored(delta: encoded);
       expect(reopened.toDelta().toJson(), ops);
       c.dispose();
