@@ -1,4 +1,5 @@
 import * as THREE from "./vendor/three.module.js";
+import { clueFlowPoint } from "./clue-flow-path.js";
 
 // Illustrative clue cards: no requests, personal records or solid lunar core.
 const stories = [
@@ -91,11 +92,11 @@ function cardTexture(story, index) {
   return texture;
 }
 
-// Five interwoven currents form a porous nebula, rather than a solid moon.
+// Five close strands of upright cards trace a continuous infinity symbol.
 // Shared textures and geometry keep the landmark bounded on mobile GPUs.
 export function createClueMoon(destination) {
   const group = new THREE.Group();
-  group.name = "research-clue-flow-nebula";
+  group.name = "research-clue-infinity";
   group.position.set(...destination.position);
   const materials = stories.map((story, i) => new THREE.MeshBasicMaterial({
     map: cardTexture(story, i), side: THREE.DoubleSide,
@@ -103,13 +104,8 @@ export function createClueMoon(destination) {
   }));
   const geometry = new THREE.PlaneGeometry(0.32, 0.43);
   const palette = [0x85e9d7, 0x82c9ee, 0xaaa1eb, 0x85d6ce, 0xa3cce9];
-  function point(u, lane, time) {
-    const x = (u * 2 - 1) * 3.0;
-    const envelope = Math.sin(Math.PI * u);
-    const angle = u * Math.PI * 2 + lane * Math.PI * 2 / 5 + time * .12;
-    return new THREE.Vector3(x,
-      Math.sin(angle) * envelope * 1.05 + Math.sin(u * Math.PI * 3 + time * .12) * .28,
-      Math.cos(angle) * envelope * 1.25);
+  function point(u, lane) {
+    return new THREE.Vector3(...clueFlowPoint(u, lane));
   }
   const cards = [];
   for (let lane = 0; lane < 5; lane++) {
@@ -117,8 +113,8 @@ export function createClueMoon(destination) {
       const card = new THREE.Mesh(geometry, materials[(i + lane) % materials.length]);
       group.add(card); cards.push({card, lane, u: (i + lane * .17) / 28});
     }
-    const curve = new THREE.CatmullRomCurve3(Array.from({length: 81}, (_, i) => point(i / 80, lane, 0)));
-    const ribbon = new THREE.Mesh(new THREE.TubeGeometry(curve, 80, .012, 4, false),
+    const curve = new THREE.CatmullRomCurve3(Array.from({length: 81}, (_, i) => point(i / 80, lane)));
+    const ribbon = new THREE.Mesh(new THREE.TubeGeometry(curve, 120, .012, 4, true),
       new THREE.MeshBasicMaterial({color: palette[lane], transparent: true, opacity: .32, depthWrite: false, blending: THREE.AdditiveBlending}));
     group.add(ribbon);
   }
@@ -133,10 +129,10 @@ export function createClueMoon(destination) {
   const mist = [];
   for (let lane = 0; lane < 5; lane++) {
     const material = new THREE.SpriteMaterial({map: mistTexture, color: palette[lane], transparent: true,
-      opacity: .10, depthWrite: false, blending: THREE.AdditiveBlending});
-    for (let i = 1; i < 9; i++) {
-      const cloud = new THREE.Sprite(material); cloud.scale.set(1.55, 1.55, 1);
-      group.add(cloud); mist.push({cloud, lane, u: i / 10});
+      opacity: .07, depthWrite: false, blending: THREE.AdditiveBlending});
+    for (let i = 0; i < 20; i++) {
+      const cloud = new THREE.Sprite(material); cloud.scale.set(.72, .72, 1);
+      group.add(cloud); mist.push({cloud, lane, u: i / 20});
     }
   }
   let time = 0;
@@ -144,11 +140,11 @@ export function createClueMoon(destination) {
     time += dt;
     for (const item of cards) {
       const u = (item.u + time * .009) % 1;
-      item.card.position.copy(point(u, item.lane, time));
+      item.card.position.copy(point(u, item.lane));
       // Upright cards follow the current without random roll.
       item.card.rotation.y = Math.sin(u * Math.PI * 2 + item.lane) * .35;
     }
-    for (const item of mist) item.cloud.position.copy(point(item.u, item.lane, time));
+    for (const item of mist) item.cloud.position.copy(point(item.u, item.lane));
   }
   update(0);
   return {group, update};

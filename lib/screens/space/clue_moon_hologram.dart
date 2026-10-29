@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
-/// Shipboard projection of the same interwoven clue currents as the landmark.
+/// Shipboard projection of the same infinity-shaped clue currents as the landmark.
 class ClueMoonHologram extends StatelessWidget {
   const ClueMoonHologram({
     super.key,
@@ -48,9 +48,24 @@ class _MoonPainter extends CustomPainter {
   final double phase;
   final int? selected;
   final String title;
+  // Same closed curve as the exterior landmark, scaled for the projection.
+  (double, double, double) _flowPoint(double u, int lane) {
+    final angle = u * math.pi * 2;
+    final strand = lane * math.pi * 2 / 5;
+    final dx = 2.55 * math.cos(angle);
+    final dy = 2.4 * math.cos(2 * angle);
+    final length = math.sqrt(dx * dx + dy * dy);
+    final offset = math.cos(strand) * .115;
+    return (
+      (2.55 * math.sin(angle) - dy / length * offset) * .48,
+      (2.4 * math.sin(angle) * math.cos(angle) + dx / length * offset) * .48,
+      (.36 * math.cos(angle) + math.sin(strand) * .115) * .48,
+    );
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
-    final r = math.min(size.width * .34, size.height * .36);
+    final r = math.min(size.width * .34, size.height * .58);
     final center = Offset(size.width / 2, size.height * .43);
     const ice = Color(0xFF8BDDDC);
     final glow = Paint()
@@ -63,17 +78,14 @@ class _MoonPainter extends CustomPainter {
     for (var i = 0; i < 136; i++) {
       final lane = i % 5;
       final u = ((i ~/ 5) / 28 + phase / (math.pi * 2) * .12) % 1;
-      final envelope = math.sin(math.pi * u);
-      final angle = u * math.pi * 2 + lane * math.pi * 2 / 5 + phase;
+      final point = _flowPoint(u, lane);
       cards.add((
         id: i,
-        x: (u * 2 - 1) * 1.23,
-        y:
-            math.sin(angle) * envelope * .43 +
-            math.sin(u * math.pi * 3 + phase) * .12,
-        z: math.cos(angle) * envelope * .51,
+        x: point.$1,
+        y: point.$2,
+        z: point.$3,
         lat: 0,
-        lon: math.sin(angle) * .18,
+        lon: math.sin(u * math.pi * 2) * .18,
       ));
     }
     cards.sort(
@@ -99,14 +111,8 @@ class _MoonPainter extends CustomPainter {
       final path = Path();
       for (var step = 0; step <= 60; step++) {
         final u = step / 60;
-        final envelope = math.sin(math.pi * u);
-        final angle = u * math.pi * 2 + lane * math.pi * 2 / 5 + phase;
-        final p = project(
-          (u * 2 - 1) * 1.23,
-          math.sin(angle) * envelope * .43 +
-              math.sin(u * math.pi * 3 + phase) * .12,
-          math.cos(angle) * envelope * .51,
-        );
+        final point = _flowPoint(u, lane);
+        final p = project(point.$1, point.$2, point.$3);
         if (step == 0) {
           path.moveTo(p.dx, p.dy);
         } else {
