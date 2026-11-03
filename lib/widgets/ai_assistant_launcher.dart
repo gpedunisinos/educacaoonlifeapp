@@ -165,91 +165,87 @@ class _AiAssistantLauncherState extends State<AiAssistantLauncher> {
             child: widget.child,
           ),
           if (show)
-            const Positioned(
-              left: 16,
-              top: 14,
-              child: Text(
-                'Educação OnLIFE',
-                style: TextStyle(
-                  color: Color(0xFF9DC6D8),
-                  letterSpacing: 0.2,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          if (show)
             Positioned(
-              right: 194,
+              left: 12,
+              right: 12,
               top: MediaQuery.paddingOf(context).top + 4,
-              child: const ParticipantChatButton(),
-            ),
-          if (show &&
-              !route.startsWith('/management') &&
-              !isManagementRecordRoute(route) &&
-              ClueConnectionPolicy(u).viewAny())
-            Positioned(
-              right: 146,
-              top: MediaQuery.paddingOf(context).top + 4,
-              child: IconButton(
-                tooltip: 'Central de Gestão',
-                icon: const Icon(
-                  Icons.tune_rounded,
-                  color: Color(0xFF9DC6D8),
-                  size: 19,
-                ),
-                onPressed: () => Get.toNamed('/management'),
-              ),
-            ),
-          if (show) ...[
-            if (showMode)
-              Positioned(
-                right: 12,
-                top: MediaQuery.paddingOf(context).top + 4,
-                child: Material(
-                  color: const Color(0xFF111A32),
-                  borderRadius: BorderRadius.circular(24),
-                  elevation: 4,
-                  child: Tooltip(
-                    key: modeTooltip,
-                    message: u.usageMode == null
-                        ? 'Escolha como utilizar a plataforma.'
-                        : '${explorer ? 'Explorador: explore pistas e referências' : 'Inventor: crie e organize vivências'}. Toque para trocar de modo.',
-                    triggerMode: TooltipTriggerMode.longPress,
-                    child: TextButton.icon(
-                      focusNode: modeFocus,
-                      onFocusChange: (focused) {
-                        if (!focused) {
-                          Tooltip.dismissAllToolTips();
-                          return;
-                        }
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          if (mounted && modeFocus.hasFocus)
-                            modeTooltip.currentState?.ensureTooltipVisible();
-                        });
-                      },
-                      onPressed: changingMode ? null : chooseMode,
-                      icon: Icon(
-                        explorer
-                            ? Icons.rocket_launch_outlined
-                            : Icons.handyman_outlined,
-                        color: accent,
-                        size: 18,
-                      ),
-                      label: Text(
-                        changingMode
-                            ? 'Alterando…'
-                            : u.usageMode == null
-                            ? 'Escolher modo'
-                            : explorer
-                            ? 'Explorador'
-                            : 'Inventor',
-                        style: TextStyle(color: accent),
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'Educação OnLIFE',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Color(0xFF9DC6D8),
+                        letterSpacing: 0.2,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
-                ),
+                  const ParticipantChatButton(),
+                  if (!route.startsWith('/management') &&
+                      !isManagementRecordRoute(route) &&
+                      ClueConnectionPolicy(u).viewAny())
+                    IconButton(
+                      tooltip: 'Central de Gestão',
+                      icon: const Icon(
+                        Icons.tune_rounded,
+                        color: Color(0xFF9DC6D8),
+                        size: 19,
+                      ),
+                      onPressed: () => Get.toNamed('/management'),
+                    ),
+                  if (showMode)
+                    Material(
+                      color: const Color(0xFF111A32),
+                      borderRadius: BorderRadius.circular(24),
+                      elevation: 4,
+                      child: Tooltip(
+                        key: modeTooltip,
+                        message: u.usageMode == null
+                            ? 'Escolha como utilizar a plataforma.'
+                            : '${explorer ? 'Explorador: explore pistas e referências' : 'Inventor: crie e organize vivências'}. Toque para trocar de modo.',
+                        triggerMode: TooltipTriggerMode.longPress,
+                        child: TextButton.icon(
+                          focusNode: modeFocus,
+                          onFocusChange: (focused) {
+                            if (!focused) {
+                              Tooltip.dismissAllToolTips();
+                              return;
+                            }
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (mounted && modeFocus.hasFocus)
+                                modeTooltip.currentState
+                                    ?.ensureTooltipVisible();
+                            });
+                          },
+                          onPressed: changingMode ? null : chooseMode,
+                          icon: Icon(
+                            explorer
+                                ? Icons.rocket_launch_outlined
+                                : Icons.handyman_outlined,
+                            color: accent,
+                            size: 18,
+                          ),
+                          label: Text(
+                            changingMode
+                                ? 'Alterando…'
+                                : u.usageMode == null
+                                ? 'Escolher modo'
+                                : explorer
+                                ? 'Explorador'
+                                : 'Inventor',
+                            style: TextStyle(color: accent),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
+            ),
+          if (show) ...[
             if (panelFuture == null && !route.startsWith('/space/agents/'))
               Positioned(
                 right: 16,
