@@ -145,6 +145,13 @@ class UserWebclient {
     await webClient.delete('/$endpoint/$id', _authInterceptors);
   }
 
+  Future<void> deleteOwnAccount(int id) async {
+    final response = await webClient.delete('/$endpoint/$id', _authInterceptors);
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      throw Exception('Não foi possível excluir a conta.');
+    }
+  }
+
   List<InterceptorContract> get _authInterceptors => [
     LoggingInterceptor(),
     ApiInterceptor(),

@@ -238,6 +238,13 @@ class UserController extends GetxController {
     );
   }
 
+  Future<void> deleteOwnAccount() async {
+    final accountId = user.value?.id;
+    if (accountId == null) throw StateError('Usuário não autenticado.');
+    await webclient.deleteOwnAccount(accountId);
+    if (user.value?.id == accountId) await logout();
+  }
+
   Future<void> savePrefs(AuthUser loggedUser) async {
     if (user.value?.id != loggedUser.id) Get.find<LockerService>().clear();
     await Util.prefs.setString('user', jsonEncode(loggedUser.toJson()));

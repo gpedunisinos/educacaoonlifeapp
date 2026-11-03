@@ -4,8 +4,55 @@ import 'package:get/get.dart';
 import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 import 'package:unisinos_usp_app/screens/space/space_record_shell.dart';
 
-class SpaceAccountPanel extends StatelessWidget {
+class SpaceAccountPanel extends StatefulWidget {
   const SpaceAccountPanel({super.key});
+
+  @override
+  State<SpaceAccountPanel> createState() => _SpaceAccountPanelState();
+}
+
+class _SpaceAccountPanelState extends State<SpaceAccountPanel> {
+  bool deleting = false;
+  String? deletionError;
+
+  Future<void> deleteAccount() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Excluir sua conta?'),
+        content: const Text(
+          'Esta ação é permanente. Sua conta e os dados associados serão excluídos.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Excluir conta'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted || deleting) return;
+    setState(() {
+      deleting = true;
+      deletionError = null;
+    });
+    try {
+      await Get.find<UserController>().deleteOwnAccount();
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => deletionError =
+              'Não foi possível excluir sua conta. Tente novamente.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => deleting = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +81,7 @@ class SpaceAccountPanel extends StatelessWidget {
                     ),
                     IconButton(
                       tooltip: 'Fechar conta',
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: deleting ? null : () => Navigator.pop(context),
                       icon: const Icon(Icons.close),
                     ),
                   ],
@@ -57,15 +104,41 @@ class SpaceAccountPanel extends StatelessWidget {
                   ),
                   subtitle: const Text('Usar seletor no console de bordo'),
                   trailing: const Icon(Icons.chevron_right),
-                  onTap: () => Navigator.pop(context, 'mode'),
+                  onTap: deleting ? null : () => Navigator.pop(context, 'mode'),
                 ),
                 const Divider(),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.logout),
                   title: const Text('Sair da conta'),
-                  onTap: () => Navigator.pop(context, 'logout'),
+                  onTap: deleting
+                      ? null
+                      : () => Navigator.pop(context, 'logout'),
                 ),
+                const Divider(),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: deleting
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(
+                          Icons.delete_outline,
+                          color: Color(0xFFFFB4A7),
+                        ),
+                  title: const Text(
+                    'Excluir minha conta',
+                    style: TextStyle(color: Color(0xFFFFB4A7)),
+                  ),
+                  onTap: deleting ? null : deleteAccount,
+                ),
+                if (deletionError != null)
+                  Text(
+                    deletionError!,
+                    style: const TextStyle(color: Color(0xFFFFB4A7)),
+                  ),
               ],
             ),
           ),

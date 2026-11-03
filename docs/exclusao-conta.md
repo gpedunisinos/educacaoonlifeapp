@@ -1,0 +1,5 @@
+# Exclusão da própria conta
+
+O aplicativo solicita confirmação e envia `DELETE /users/{id}` com o ID da conta autenticada e o token da sessão, seguindo o fluxo do EFV. A API deve autorizar o usuário a excluir a própria conta, impedir exclusões indevidas e devolver HTTP 200 ou 204 somente após concluir a exclusão. Em qualquer outra resposta, o app mantém a sessão e informa falha. As permissões e o comportamento da rota precisam ser validados na API antes de oferecer a funcionalidade.
+
+O servidor deve remover a conta e seus dados associados, inclusive conteúdo compartilhado, respeitando retenções obrigatórias e informadas ao usuário; invalidar sessões e impedir novo acesso com tokens antigos. Para contas criadas com Apple, deve revogar a autorização usando a API da Apple e os tokens necessários. A integração Apple atual envia apenas o token de identidade e o nome; a obtenção e o armazenamento seguro do authorization code e do refresh token exigem implementação coordenada no app e na API. Não apresentar a exclusão como concluída enquanto esses requisitos não forem atendidos.
