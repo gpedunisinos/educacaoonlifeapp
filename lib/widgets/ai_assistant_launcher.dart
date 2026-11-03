@@ -17,6 +17,7 @@ class AiAssistantLauncher extends StatefulWidget {
   final Widget child;
   static final RxString activeRoute = ''.obs;
   static final modeOverlayBlocked = false.obs;
+  static final contentFullscreen = false.obs;
   static void didNavigate(Routing? routing) {
     final route = routing?.current ?? '';
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -149,7 +150,11 @@ class _AiAssistantLauncherState extends State<AiAssistantLauncher> {
     final u = Get.find<UserController>().user.value;
     final route = AiAssistantLauncher.activeRoute.value;
 
-    final show = u != null && route != '/splash' && route != '/space';
+    final show =
+        u != null &&
+        route != '/splash' &&
+        route != '/space' &&
+        !AiAssistantLauncher.contentFullscreen.value;
     final showMode =
         show &&
         canSwitchModeOnRoute(route) &&

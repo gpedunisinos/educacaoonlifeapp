@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:unisinos_usp_app/widgets/native_webview.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -89,7 +91,22 @@ class _IntegrationFrameState extends State<IntegrationFrame>
       _loading = false;
       return;
     }
-    _controller?.loadRequest(widget.uri).catchError((Object error) {
+    final uri = widget.uri;
+    final Future<void>? load;
+    if (uri.host == 'view.genially.com') {
+      final escapedUrl = const HtmlEscape(
+        HtmlEscapeMode.attribute,
+      ).convert(uri.toString());
+      load = _controller?.loadHtmlString('''
+<!doctype html>
+<html><head><meta name="viewport" content="width=device-width, initial-scale=1">
+<style>html,body,iframe{width:100%;height:100%;margin:0;border:0;background:#071623} iframe{display:block}</style>
+</head><body><iframe src="$escapedUrl" title="Genially"></iframe></body></html>
+''');
+    } else {
+      load = _controller?.loadRequest(uri);
+    }
+    load?.catchError((Object error) {
       if (mounted)
         setState(() {
           _failed = true;
