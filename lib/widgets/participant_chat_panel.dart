@@ -10,6 +10,8 @@ Future<void> showParticipantChat(
   String? participant,
 }) async {
   if (!Get.isRegistered<ParticipantChatService>()) return;
+  final navigator = Navigator.maybeOf(context) ?? Get.key.currentState;
+  if (navigator == null) return;
   final service = Get.find<ParticipantChatService>();
   if (service.panelOpen) return;
   service.panelOpen = true;
@@ -21,7 +23,7 @@ Future<void> showParticipantChat(
   }
   try {
     await showDialog<void>(
-      context: context,
+      context: navigator.context,
       barrierColor: Colors.black54,
       builder: (context) {
         final size = MediaQuery.sizeOf(context);
