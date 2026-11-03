@@ -112,6 +112,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Insets.medium.height,
               Wrap(
                 alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   const Text(
                     'Não possui uma conta?',

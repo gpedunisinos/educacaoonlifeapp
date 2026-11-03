@@ -146,6 +146,7 @@ class CreateAccountScreen extends StatelessWidget {
               Insets.small.height,
               Wrap(
                 alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   const Text(
                     'Já tem uma conta?',
