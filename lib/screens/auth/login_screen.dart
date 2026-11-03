@@ -109,6 +109,19 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: _doGoogleLogin,
                 ),
               ),
+              if (AppleLoginButton.isSupported) ...[
+                Insets.medium.height,
+                SizedBox(
+                  width: double.infinity,
+                  child: AppleLoginButton(
+                    onLogin: _controller.loginApple,
+                    onError: (_, __) => Get.customSnackbar(
+                      'Erro',
+                      'Não foi possível entrar com a Apple.',
+                    ),
+                  ),
+                ),
+              ],
               Insets.medium.height,
               Wrap(
                 alignment: WrapAlignment.center,

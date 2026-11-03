@@ -12,6 +12,7 @@ import 'package:unisinos_usp_app/services/user_auth_service.dart';
 import 'package:unisinos_usp_app/webclients/user_webclient.dart';
 import 'package:widgets_spo/services/auth_provider.dart';
 import 'package:widgets_spo/utils.dart';
+import 'package:widgets_spo/widgets/controllers/apple_login_controller.dart';
 
 class UserController extends GetxController {
   UserWebclient webclient = UserWebclient();
@@ -132,6 +133,20 @@ class UserController extends GetxController {
       Util.debug(exception: error, stackTrace: stackTrace);
       Get.customSnackbar('Erro', 'Não foi possível entrar com o Google.');
       rethrow;
+    }
+  }
+
+  Future<void> loginApple(AppleLoginCredential credential) async {
+    try {
+      final loggedUser = await webclient.loginWithApple(
+        idToken: credential.idToken,
+        name: credential.name,
+      );
+      await savePrefs(loggedUser);
+      completeAuthentication();
+    } catch (error, stackTrace) {
+      Util.debug(exception: error, stackTrace: stackTrace);
+      Get.customSnackbar('Erro', 'Não foi possível entrar com a Apple.');
     }
   }
 
