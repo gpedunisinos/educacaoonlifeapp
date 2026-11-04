@@ -12,6 +12,7 @@ import 'package:unisinos_usp_app/services/user_auth_service.dart';
 import 'package:unisinos_usp_app/webclients/user_webclient.dart';
 import 'package:widgets_spo/services/auth_provider.dart';
 import 'package:widgets_spo/utils.dart';
+import 'package:widgets_spo/widgets/controllers/apple_login_controller.dart';
 
 class UserController extends GetxController {
   UserWebclient webclient = UserWebclient();
@@ -135,6 +136,20 @@ class UserController extends GetxController {
     }
   }
 
+  Future<void> loginApple(AppleLoginCredential credential) async {
+    try {
+      final loggedUser = await webclient.loginWithApple(
+        idToken: credential.idToken,
+        name: credential.name,
+      );
+      await savePrefs(loggedUser);
+      completeAuthentication();
+    } catch (error, stackTrace) {
+      Util.debug(exception: error, stackTrace: stackTrace);
+      Get.customSnackbar('Erro', 'Não foi possível entrar com a Apple.');
+    }
+  }
+
   Future<bool> createAccount({
     required String name,
     required String email,
@@ -221,6 +236,13 @@ class UserController extends GetxController {
         preserveDestination: false,
       ),
     );
+  }
+
+  Future<void> deleteOwnAccount() async {
+    final accountId = user.value?.id;
+    if (accountId == null) throw StateError('Usuário não autenticado.');
+    await webclient.deleteOwnAccount(accountId);
+    if (user.value?.id == accountId) await logout();
   }
 
   Future<void> savePrefs(AuthUser loggedUser) async {

@@ -1,4 +1,5 @@
 import 'package:unisinos_usp_app/widgets/clue_node_integration.dart';
+import 'package:unisinos_usp_app/widgets/ai_assistant_launcher.dart';
 import 'package:unisinos_usp_app/widgets/clue_agent_integration.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
@@ -446,8 +447,10 @@ class ClueIntegrationView extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            Text(block.name, style: Theme.of(context).textTheme.labelMedium),
+            if (editing || block.provider != 'genially') ...[
+              const SizedBox(height: 8),
+              Text(block.name, style: Theme.of(context).textTheme.labelMedium),
+            ],
             if (block.instructions.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
@@ -480,7 +483,7 @@ class ClueIntegrationView extends StatelessWidget {
                     builder: (context, size) => SizedBox(
                       height: block.provider == 'padlet'
                           ? 420
-                          : (size.maxWidth * 9 / 16).clamp(220.0, 440.0),
+                          : size.maxWidth * 9 / 16,
                       child: IntegrationFrame(
                         key: ValueKey(block.url),
                         uri: block.embedURI!,
@@ -496,20 +499,25 @@ class ClueIntegrationView extends StatelessWidget {
                 children: [
                   if (block.embedURI != null)
                     OutlinedButton.icon(
-                      onPressed: () {
+                      onPressed: () async {
                         final origin =
                             Get.isRegistered<AiAssistantContextService>()
                             ? Get.find<AiAssistantContextService>()
                                   .resolveCurrentContext()
                             : null;
-                        Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => ClueIntegrationRoom(
-                              block: block,
-                              originContext: origin,
+                        AiAssistantLauncher.contentFullscreen.value = true;
+                        try {
+                          await Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => ClueIntegrationRoom(
+                                block: block,
+                                originContext: origin,
+                              ),
                             ),
-                          ),
-                        );
+                          );
+                        } finally {
+                          AiAssistantLauncher.contentFullscreen.value = false;
+                        }
                       },
                       icon: Icon(
                         block.inline
@@ -529,13 +537,14 @@ class ClueIntegrationView extends StatelessWidget {
                   ),
                 ],
               ),
-              const Padding(
-                padding: EdgeInsets.only(top: 8),
-                child: Text(
-                  'O acesso e a participação seguem as regras do provedor. Se não carregar aqui, abra na origem.',
-                  style: TextStyle(fontSize: 12),
+              if (block.provider != 'genially')
+                const Padding(
+                  padding: EdgeInsets.only(top: 8),
+                  child: Text(
+                    'O acesso e a participação seguem as regras do provedor. Se não carregar aqui, abra na origem.',
+                    style: TextStyle(fontSize: 12),
+                  ),
                 ),
-              ),
             ],
           ],
         ),
@@ -691,14 +700,15 @@ class _ClueIntegrationRoomState extends State<ClueIntegrationRoom>
         ),
         body: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Text(
-                _isWorld
-                    ? 'Você está entrando em um ambiente externo. Câmera e microfone serão solicitados pelo provedor quando necessários. Ao voltar ou mudar de tela, o ambiente será encerrado.'
-                    : 'As permissões deste conteúdo são controladas pelo provedor.',
+            if (block.provider != 'genially')
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Text(
+                  _isWorld
+                      ? 'Você está entrando em um ambiente externo. Câmera e microfone serão solicitados pelo provedor quando necessários. Ao voltar ou mudar de tela, o ambiente será encerrado.'
+                      : 'As permissões deste conteúdo são controladas pelo provedor.',
+                ),
               ),
-            ),
             Expanded(
               child: _requiresReentry
                   ? Center(
@@ -726,6 +736,17 @@ class _ClueIntegrationRoomState extends State<ClueIntegrationRoom>
                               label: const Text('Entrar novamente'),
                             ),
                           ],
+                        ),
+                      ),
+                    )
+                  // Keep the presentation within its own 16:9 surface.
+                  : block.provider == 'genially'
+                  ? Center(
+                      child: AspectRatio(
+                        aspectRatio: 16 / 9,
+                        child: IntegrationFrame(
+                          uri: block.embedURI!,
+                          title: block.name,
                         ),
                       ),
                     )

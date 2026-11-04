@@ -143,9 +143,23 @@ class CreateAccountScreen extends StatelessWidget {
                   onPressed: _doGoogleLogin,
                 ),
               ),
+              if (AppleLoginButton.isSupported) ...[
+                Insets.small.height,
+                SizedBox(
+                  width: double.infinity,
+                  child: AppleLoginButton(
+                    onLogin: _controller.loginApple,
+                    onError: (_, __) => Get.customSnackbar(
+                      'Erro',
+                      'Não foi possível entrar com a Apple.',
+                    ),
+                  ),
+                ),
+              ],
               Insets.small.height,
               Wrap(
                 alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   const Text(
                     'Já tem uma conta?',

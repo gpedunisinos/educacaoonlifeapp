@@ -25,10 +25,7 @@ class UserWebclient {
     final Response response = await webClient.post(
       '/register',
       jsonEncode(data),
-      [
-        LoggingInterceptor(),
-        ApiInterceptor(),
-      ],
+      [LoggingInterceptor(), ApiInterceptor()],
     );
 
     return AuthUser.fromJson(jsonDecode(response.body));
@@ -40,15 +37,8 @@ class UserWebclient {
   }) async {
     final Response response = await webClient.post(
       '/login',
-      jsonEncode({
-        'email': mail,
-        'password': password,
-        'device_name': '',
-      }),
-      [
-        LoggingInterceptor(),
-        ApiInterceptor(),
-      ],
+      jsonEncode({'email': mail, 'password': password, 'device_name': ''}),
+      [LoggingInterceptor(), ApiInterceptor()],
     );
 
     return AuthUser.fromJson(jsonDecode(response.body));
@@ -57,41 +47,37 @@ class UserWebclient {
   Future<AuthUser> loginGoogle(String idToken, String accessToken) async {
     final Response response = await webClient.post(
       '/login/google',
-      jsonEncode({
-        'id_token': idToken,
-        'access_token': accessToken,
-      }),
-      [
-        LoggingInterceptor(),
-        ApiInterceptor(),
-      ],
+      jsonEncode({'id_token': idToken, 'access_token': accessToken}),
+      [LoggingInterceptor(), ApiInterceptor()],
     );
 
     return AuthUser.fromJson(jsonDecode(response.body));
   }
 
-  Future<void> forgotPassword(String email) async {
-    await webClient.post(
-      '/forgot_password',
-      jsonEncode({'email': email}),
-      [
-        LoggingInterceptor(),
-        ApiInterceptor(),
-      ],
+  Future<AuthUser> loginWithApple({
+    required String idToken,
+    required String name,
+  }) async {
+    final response = await webClient.post(
+      '/login/apple',
+      jsonEncode({'id_token': idToken, 'name': name}),
+      [LoggingInterceptor(), ApiInterceptor()],
     );
+    return AuthUser.fromJson(jsonDecode(response.body));
+  }
+
+  Future<void> forgotPassword(String email) async {
+    await webClient.post('/forgot_password', jsonEncode({'email': email}), [
+      LoggingInterceptor(),
+      ApiInterceptor(),
+    ]);
   }
 
   Future<AuthUser> recoverPassword(String token, String password) async {
     final Response response = await webClient.post(
       '/recover_password',
-      jsonEncode({
-        'password': password,
-        'recover_code': token,
-      }),
-      [
-        LoggingInterceptor(),
-        ApiInterceptor(),
-      ],
+      jsonEncode({'password': password, 'recover_code': token}),
+      [LoggingInterceptor(), ApiInterceptor()],
     );
 
     return AuthUser.fromJson(jsonDecode(response.body));
@@ -101,10 +87,7 @@ class UserWebclient {
     final Response response = await webClient.post(
       '/validate_recover_code/$token',
       '',
-      [
-        LoggingInterceptor(),
-        ApiInterceptor(),
-      ],
+      [LoggingInterceptor(), ApiInterceptor()],
     );
 
     return response.statusCode == 200;
@@ -115,31 +98,36 @@ class UserWebclient {
     int offset = 0,
     String? search,
   }) async {
-    final Response response = await webClient.get(
-      '/$endpoint',
-      _authInterceptors,
-      {
-        if (limit != null) 'limit': limit.toString(),
-        'offset': offset.toString(),
-        if (search != null) 'search': search,
-      },
-    );
+    final Response response = await webClient
+        .get('/$endpoint', _authInterceptors, {
+          if (limit != null) 'limit': limit.toString(),
+          'offset': offset.toString(),
+          if (search != null) 'search': search,
+        });
 
     return UserModel.fromResponseBody(response.body);
   }
 
   Future<UserModel> fetchUserById(int id) async {
-    final Response response =
-        await webClient.get('/$endpoint/$id', _authInterceptors, {});
+    final Response response = await webClient.get(
+      '/$endpoint/$id',
+      _authInterceptors,
+      {},
+    );
     return UserModel.fromJson(
-        _extractObject(jsonDecode(response.body), 'user'));
+      _extractObject(jsonDecode(response.body), 'user'),
+    );
   }
 
   Future<UserModel> createUser(UserModel model) async {
     final Response response = await webClient.post(
-        '/$endpoint', jsonEncode(model.toCreateJson()), _authInterceptors);
+      '/$endpoint',
+      jsonEncode(model.toCreateJson()),
+      _authInterceptors,
+    );
     return UserModel.fromJson(
-        _extractObject(jsonDecode(response.body), 'user'));
+      _extractObject(jsonDecode(response.body), 'user'),
+    );
   }
 
   Future<UserModel> updateUser(UserModel model) async {
@@ -149,18 +137,26 @@ class UserWebclient {
       _authInterceptors,
     );
     return UserModel.fromJson(
-        _extractObject(jsonDecode(response.body), 'user'));
+      _extractObject(jsonDecode(response.body), 'user'),
+    );
   }
 
   Future<void> deleteUser(int id) async {
     await webClient.delete('/$endpoint/$id', _authInterceptors);
   }
 
+  Future<void> deleteOwnAccount(int id) async {
+    final response = await webClient.delete('/$endpoint/$id', _authInterceptors);
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      throw Exception('Não foi possível excluir a conta.');
+    }
+  }
+
   List<InterceptorContract> get _authInterceptors => [
-        LoggingInterceptor(),
-        ApiInterceptor(),
-        TokenInterceptor(),
-      ];
+    LoggingInterceptor(),
+    ApiInterceptor(),
+    TokenInterceptor(),
+  ];
 
   Map<String, dynamic> _extractObject(Object? decoded, String key) {
     if (decoded is Map<String, dynamic>) {
