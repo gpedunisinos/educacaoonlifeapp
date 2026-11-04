@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/widgets/clue_connections_list.dart';
 import 'package:unisinos_usp_app/widgets/clue_qr_dialog.dart';
 import 'package:unisinos_usp_app/services/clue_map_navigation.dart';
 import 'package:unisinos_usp_app/widgets/clue_sensor_readings.dart';
@@ -614,24 +615,6 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
 
   Widget _buildConnectionsCard(BuildContext context) {
     final policy = ClueConnectionPolicy(Get.find<UserController>().user.value);
-    final outgoing = _connections
-        .where(
-          (item) =>
-              (item.connectionType?.isDirectional ?? true) &&
-              item.isOutgoingFrom(model.id),
-        )
-        .toList();
-    final incoming = _connections
-        .where(
-          (item) =>
-              (item.connectionType?.isDirectional ?? true) &&
-              !item.isOutgoingFrom(model.id),
-        )
-        .toList();
-    final related = _connections
-        .where((item) => !(item.connectionType?.isDirectional ?? true))
-        .toList();
-
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
@@ -680,52 +663,16 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
                   'Esta pista ainda não possui relações cadastradas.',
                 ),
               )
-            else ...[
-              if (outgoing.isNotEmpty)
-                _buildConnectionGroup(
-                  context,
-                  'Relações que partem desta pista',
-                  outgoing,
-                  policy,
-                ),
-              if (incoming.isNotEmpty)
-                _buildConnectionGroup(
-                  context,
-                  'Relações que chegam nesta pista',
-                  incoming,
-                  policy,
-                ),
-              if (related.isNotEmpty)
-                _buildConnectionGroup(
-                  context,
-                  'Pistas relacionadas',
-                  related,
-                  policy,
-                ),
-            ],
+            else
+              ClueConnectionsList(
+                key: ValueKey(model.id),
+                clueId: model.id,
+                connections: _connections,
+                itemBuilder: (context, connection) =>
+                    _buildConnectionTile(context, connection, policy),
+              ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildConnectionGroup(
-    BuildContext context,
-    String title,
-    List<ClueConnectionModel> connections,
-    ClueConnectionPolicy policy,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: Theme.of(context).textTheme.labelLarge),
-          const SizedBox(height: 6),
-          ...connections.map(
-            (connection) => _buildConnectionTile(context, connection, policy),
-          ),
-        ],
       ),
     );
   }
