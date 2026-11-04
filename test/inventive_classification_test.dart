@@ -85,6 +85,28 @@ void main() {
     );
   }
 
+  testWidgets('classification cards align at a consistent size on mobile', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await mount(
+      tester,
+      metadata: {
+        'praticas_inventivas': ['saigon', 'niig'],
+        'metodologias_inventivas': ['pag', 'bv'],
+      },
+    );
+    final chips = find.byType(InputChip);
+    expect(chips, findsNWidgets(4));
+    final sizes = List.generate(4, (i) => tester.getSize(chips.at(i)));
+    expect(sizes.map((size) => size.width).toSet(), hasLength(1));
+    expect(sizes.map((size) => size.height).toSet(), hasLength(1));
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
     'explanations and cancel never select; confirm returns an array',
     (tester) async {

@@ -7,18 +7,45 @@ import 'package:unisinos_usp_app/services/presence/presence_service.dart';
 import 'package:unisinos_usp_app/webclients/econectiva_webclient.dart';
 
 class ParticipantConversation {
+  ParticipantConversation._({
+    required this.id,
+    required this.name,
+    required this.activity,
+    required this.online,
+    required this.blocked,
+    required this.blockedByMe,
+    required this.preview,
+    required this.unread,
+    required this.updatedAt,
+  });
   ParticipantConversation.fromJson(Map<String, dynamic> j)
     : id = j['id'],
       name = j['name'],
       activity = j['activity'],
       online = j['online'] == true,
+      blocked = j['blocked'] == true,
+      blockedByMe = j['blocked_by_me'] == true,
       preview = j['preview'] ?? '',
       unread = j['unread'] ?? 0,
       updatedAt = DateTime.tryParse(j['updated_at'] ?? '');
   final String id, name, activity, preview;
   final DateTime? updatedAt;
   final bool online;
+  final bool blocked, blockedByMe;
   final int unread;
+
+  ParticipantConversation withBlockState(bool blocked, bool blockedByMe) =>
+      ParticipantConversation._(
+        id: id,
+        name: name,
+        activity: activity,
+        online: online,
+        blocked: blocked,
+        blockedByMe: blockedByMe,
+        preview: preview,
+        unread: unread,
+        updatedAt: updatedAt,
+      );
 }
 
 class ParticipantText {
@@ -156,7 +183,14 @@ class ParticipantChatService extends GetxService {
       final selected = active.value;
       if (selected != null)
         for (final c in rows) {
-          if (c.id == selected.id) active.value = c;
+          if (c.id == selected.id) {
+            active.value = c;
+            if (c.blocked && !c.blockedByMe) {
+              messageGeneration++;
+              texts.clear();
+              loadingMessages.value = false;
+            }
+          }
         }
     } catch (_) {
       if (epoch == accountGeneration && request == inboxGeneration)
@@ -205,9 +239,27 @@ class ParticipantChatService extends GetxService {
     refreshInbox();
   }
 
+  void confirmOwnBlock(String conversationId, {required bool blocked}) {
+    inboxGeneration++;
+    for (var i = 0; i < conversations.length; i++) {
+      if (conversations[i].id == conversationId) {
+        conversations[i] = conversations[i].withBlockState(blocked, blocked);
+      }
+    }
+    final current = active.value;
+    if (current?.id == conversationId) {
+      active.value = current!.withBlockState(blocked, blocked);
+      messageError.value = null;
+    }
+  }
+
   Future<void> loadMessages({bool older = false}) async {
     final c = active.value;
     if (c == null || account == null || disposed) return;
+    if (c.blocked && !c.blockedByMe) {
+      texts.clear();
+      return;
+    }
     final epoch = accountGeneration, request = ++messageGeneration;
     if (texts.isEmpty) loadingMessages.value = true;
     try {
@@ -234,8 +286,15 @@ class ParticipantChatService extends GetxService {
         await api.read(c.id, texts.last.id);
         if (epoch == accountGeneration) refreshInbox();
       }
-    } catch (_) {
-      if (epoch == accountGeneration && request == messageGeneration)
+    } catch (error) {
+      if (epoch == accountGeneration) refreshInbox();
+      if (epoch == accountGeneration &&
+          request == messageGeneration &&
+          error.toString().contains('O participante bloqueou esta conversa.')) {
+        texts.clear();
+        active.value = c.withBlockState(true, false);
+        messageError.value = null;
+      } else if (epoch == accountGeneration && request == messageGeneration)
         messageError.value =
             'Não foi possível carregar as mensagens. Tente novamente.';
     } finally {
@@ -250,7 +309,8 @@ class ParticipantChatService extends GetxService {
         account == null ||
         text.isEmpty ||
         text.runes.length > 2000 ||
-        sending.value)
+        sending.value ||
+        c.blocked)
       return false;
     final epoch = accountGeneration;
     final previous = retries[c.id];
@@ -272,6 +332,7 @@ class ParticipantChatService extends GetxService {
       refreshInbox();
       return true;
     } catch (_) {
+      if (epoch == accountGeneration) refreshInbox();
       if (epoch == accountGeneration)
         messageError.value =
             'Não foi possível enviar. Seu texto foi mantido; aguarde um pouco e tente novamente.';
