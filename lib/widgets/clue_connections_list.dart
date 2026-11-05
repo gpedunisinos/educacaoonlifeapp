@@ -19,10 +19,9 @@ class ClueConnectionsList extends StatefulWidget {
 }
 
 class _ClueConnectionsListState extends State<ClueConnectionsList> {
-  static const _previewCount = 5;
+  static const _searchThreshold = 5;
   final _search = TextEditingController();
   final _scroll = ScrollController();
-  bool _expanded = false;
 
   @override
   void dispose() {
@@ -48,7 +47,7 @@ class _ClueConnectionsListState extends State<ClueConnectionsList> {
 
   @override
   Widget build(BuildContext context) {
-    final searchable = widget.connections.length > _previewCount;
+    final searchable = widget.connections.length > _searchThreshold;
     final terms = _normalize(_search.text).trim().split(RegExp(r'\s+'));
     final matches = widget.connections.where((connection) {
       if (!searchable) return true;
@@ -67,7 +66,7 @@ class _ClueConnectionsListState extends State<ClueConnectionsList> {
       for (var group = 0; group < 3; group++)
         ...matches.where((item) => _group(item) == group),
     ];
-    final visible = _expanded ? ordered : ordered.take(_previewCount).toList();
+    final visible = ordered;
 
     Widget row(int index) {
       final connection = visible[index];
@@ -127,7 +126,7 @@ class _ClueConnectionsListState extends State<ClueConnectionsList> {
           const SizedBox(height: 8),
           Text(
             _search.text.trim().isEmpty
-                ? '${visible.length} de ${widget.connections.length} relações'
+                ? '${widget.connections.length} relações'
                 : '${ordered.length} de ${widget.connections.length} relações encontradas',
             style: Theme.of(context).textTheme.bodySmall,
           ),
@@ -137,7 +136,7 @@ class _ClueConnectionsListState extends State<ClueConnectionsList> {
             padding: EdgeInsets.symmetric(vertical: 20),
             child: Text('Nenhuma pista encontrada para esta pesquisa.'),
           )
-        else if (_expanded && visible.length > _previewCount)
+        else if (visible.length > _searchThreshold)
           SizedBox(
             height: (MediaQuery.sizeOf(context).height * .6).clamp(
               240.0,
@@ -156,17 +155,6 @@ class _ClueConnectionsListState extends State<ClueConnectionsList> {
           )
         else
           for (var i = 0; i < visible.length; i++) row(i),
-        if (searchable && (ordered.length > _previewCount || _expanded))
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton.icon(
-              onPressed: () => setState(() => _expanded = !_expanded),
-              icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
-              label: Text(
-                _expanded ? 'Recolher' : 'Ver todas (${ordered.length})',
-              ),
-            ),
-          ),
       ],
     );
   }

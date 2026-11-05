@@ -48,20 +48,25 @@ void main() {
     expect(find.textContaining('Ver todas'), findsNothing);
   });
 
-  testWidgets('six relationships start collapsed and can expand and collapse', (
-    tester,
-  ) async {
-    await tester.pumpWidget(app(connections(6)));
-    expect(find.byType(ListTile), findsNWidgets(5));
-    expect(find.text('Educação em conexão'), findsNothing);
-    await tester.tap(find.text('Ver todas (6)'));
-    await tester.pumpAndSettle();
-    expect(find.text('Educação em conexão'), findsOneWidget);
-    await tester.ensureVisible(find.text('Recolher'));
-    await tester.tap(find.text('Recolher'));
-    await tester.pumpAndSettle();
-    expect(find.byType(ListTile), findsNWidgets(5));
-  });
+  testWidgets(
+    'six relationships are available immediately without an expand button',
+    (tester) async {
+      await tester.pumpWidget(app(connections(6)));
+      expect(find.byType(ListView), findsOneWidget);
+      expect(find.text('6 relações'), findsOneWidget);
+      expect(find.textContaining('Ver todas'), findsNothing);
+      expect(find.text('Recolher'), findsNothing);
+      await tester.scrollUntilVisible(
+        find.text('Educação em conexão'),
+        100,
+        scrollable: find.descendant(
+          of: find.byType(ListView),
+          matching: find.byType(Scrollable),
+        ),
+      );
+      expect(find.text('Educação em conexão'), findsOneWidget);
+    },
+  );
 
   testWidgets(
     'search includes hidden entries, ignores accents and keeps opening',
@@ -84,24 +89,23 @@ void main() {
       );
       await tester.tap(find.byTooltip('Limpar pesquisa'));
       await tester.pump();
-      expect(find.byType(ListTile), findsNWidgets(5));
+      expect(find.text('110 relações'), findsOneWidget);
+      expect(find.byType(ListView), findsOneWidget);
     },
   );
 
-  testWidgets('large expanded list fits a narrow mobile viewport', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(360, 640);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    await tester.pumpWidget(app(connections(110)));
-    await tester.ensureVisible(find.text('Ver todas (110)'));
-    await tester.tap(find.text('Ver todas (110)'));
-    await tester.pumpAndSettle();
-    await tester.drag(find.byType(ListView), const Offset(0, -350));
-    await tester.pumpAndSettle();
-    expect(tester.takeException(), isNull);
-    expect(find.byType(ListTile).evaluate().length, lessThan(110));
-  });
+  testWidgets(
+    'large list is immediately scrollable and fits a narrow mobile viewport',
+    (tester) async {
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(app(connections(110)));
+      await tester.drag(find.byType(ListView), const Offset(0, -350));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      expect(find.byType(ListTile).evaluate().length, lessThan(110));
+    },
+  );
 }
