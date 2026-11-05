@@ -1,9 +1,9 @@
-import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
-import 'package:unisinos_usp_app/policies/user_policy.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:unisinos_usp_app/controllers/auth/user_controller.dart';
 import 'package:unisinos_usp_app/controllers/user/user_index_controller.dart';
 import 'package:unisinos_usp_app/models/user_model.dart';
+import 'package:unisinos_usp_app/policies/user_policy.dart';
 import 'package:unisinos_usp_app/screens/management/management_record_scaffold.dart';
 
 class UserIndexScreen extends StatefulWidget {
@@ -190,55 +190,82 @@ class _UserCard extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
-        child: Row(
-          children: [
-            CircleAvatar(
-              backgroundColor: Colors.blue.withValues(alpha: 0.2),
-              child: Text(
-                model.name.isNotEmpty
-                    ? model.name.characters.first.toUpperCase()
-                    : '?',
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    model.name,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    model.email,
-                    style: const TextStyle(color: Colors.white70),
-                  ),
-                  if ((model.phone ?? '').isNotEmpty)
-                    Text(
-                      model.phone!,
-                      style: const TextStyle(
-                        color: Colors.white60,
-                        fontSize: 12,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final compact = constraints.maxWidth < 420;
+            final actions = Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  tooltip: 'Editar usuário',
+                  onPressed: onEdit,
+                  icon: const Icon(Icons.edit_outlined, color: Colors.white),
+                ),
+                IconButton(
+                  tooltip: 'Excluir usuário',
+                  onPressed: onDelete,
+                  icon: const Icon(Icons.delete_outline, color: Colors.white),
+                ),
+              ],
+            );
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: Colors.blue.withValues(alpha: 0.2),
+                      child: Text(
+                        model.name.isNotEmpty
+                            ? model.name.characters.first.toUpperCase()
+                            : '?',
                       ),
                     ),
-                ],
-              ),
-            ),
-            if (canManage)
-              IconButton(
-                onPressed: onEdit,
-                icon: const Icon(Icons.edit, color: Colors.white),
-              ),
-            if (canManage)
-              IconButton(
-                onPressed: onDelete,
-                icon: const Icon(Icons.delete_outline, color: Colors.white),
-              ),
-          ],
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SelectableText(
+                            model.name.isEmpty
+                                ? 'Nome não informado'
+                                : model.name,
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                          const SizedBox(height: 4),
+                          SelectableText(
+                            model.email.isEmpty
+                                ? 'E-mail não informado'
+                                : model.email,
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              height: 1.35,
+                            ),
+                          ),
+                          if ((model.phone ?? '').isNotEmpty)
+                            Text(
+                              model.phone!,
+                              style: const TextStyle(
+                                color: Colors.white60,
+                                fontSize: 12,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    if (canManage && !compact) actions,
+                  ],
+                ),
+                if (canManage && compact)
+                  Align(alignment: Alignment.centerRight, child: actions),
+              ],
+            );
+          },
         ),
       ),
     );

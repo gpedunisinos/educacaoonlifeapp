@@ -286,59 +286,63 @@ class InventiveClassificationFields extends StatelessWidget {
                   label: const Text('Remover registro legado'),
                 ),
             ] else ...[
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   for (final code in InventiveCatalog.codes(metadata[key]))
-                    InputChip(
-                      label: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxWidth: (MediaQuery.sizeOf(context).width - 180)
-                              .clamp(110.0, 650.0),
-                        ),
-                        child: Text(
-                          InventiveCatalog.label(key, code),
-                          softWrap: true,
-                          maxLines: 6,
-                        ),
-                      ),
-                      onPressed: () {
-                        final concept = InventiveCatalog.find(key, code);
-                        if (concept != null) {
-                          showInventiveConcept(context, concept);
-                        } else {
-                          showDialog<void>(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              backgroundColor: const Color(0xFF10212D),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(18),
-                                side: const BorderSide(
-                                  color: Color(0x665EDCD1),
-                                ),
-                              ),
-                              title: const Text(
-                                'Classificação não reconhecida nesta versão',
-                              ),
-                              content: Text('Código preservado: $code'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  child: const Text('Voltar'),
-                                ),
-                              ],
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: InputChip(
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        label: ConstrainedBox(
+                          constraints: const BoxConstraints(minHeight: 36),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            heightFactor: 1,
+                            child: Text(
+                              InventiveCatalog.label(key, code),
+                              softWrap: true,
+                              maxLines: 6,
                             ),
-                          );
-                        }
-                      },
-                      onDeleted: editing
-                          ? () => onChanged!(
-                              key,
-                              InventiveCatalog.codes(metadata[key])
-                                ..remove(code),
-                            )
-                          : null,
+                          ),
+                        ),
+                        onPressed: () {
+                          final concept = InventiveCatalog.find(key, code);
+                          if (concept != null) {
+                            showInventiveConcept(context, concept);
+                          } else {
+                            showDialog<void>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                backgroundColor: const Color(0xFF10212D),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                  side: const BorderSide(
+                                    color: Color(0x665EDCD1),
+                                  ),
+                                ),
+                                title: const Text(
+                                  'Classificação não reconhecida nesta versão',
+                                ),
+                                content: Text('Código preservado: $code'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text('Voltar'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                        },
+                        onDeleted: editing
+                            ? () => onChanged!(
+                                key,
+                                InventiveCatalog.codes(metadata[key])
+                                  ..remove(code),
+                              )
+                            : null,
+                      ),
                     ),
                 ],
               ),

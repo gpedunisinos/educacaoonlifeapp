@@ -6,7 +6,7 @@ import 'package:unisinos_usp_app/widgets/participant_chat_panel.dart';
 
 void main() {
   testWidgets('opens chat from a button outside the navigator', (tester) async {
-    Get.put(ParticipantChatService());
+    final service = Get.put(ParticipantChatService());
     addTearDown(Get.reset);
 
     await tester.pumpWidget(
@@ -22,5 +22,15 @@ void main() {
 
     expect(find.byType(ParticipantChatPanel), findsOneWidget);
     expect(tester.takeException(), isNull);
+
+    service.active.value = ParticipantConversation.fromJson({
+      'id': 'conversation',
+      'name': 'Participante',
+      'activity': '',
+    });
+    await tester.pump();
+    await tester.tap(find.byTooltip('Bloquear conversa'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bloquear conversa?'), findsOneWidget);
   });
 }

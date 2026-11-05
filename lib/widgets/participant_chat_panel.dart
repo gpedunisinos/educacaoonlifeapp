@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/screens/space/space_record_shell.dart';
 import 'package:unisinos_usp_app/services/participant_chat/participant_chat_service.dart';
+import 'package:unisinos_usp_app/widgets/moderation_actions.dart';
 
 Future<void> showParticipantChat(
   BuildContext context, {
@@ -33,7 +34,12 @@ Future<void> showParticipantChat(
           child: SizedBox(
             width: math.min(520, size.width - 24),
             height: size.height - 48,
-            child: ParticipantChatPanel(service: service),
+            child: ScaffoldMessenger(
+              child: Scaffold(
+                backgroundColor: Colors.transparent,
+                body: ParticipantChatPanel(service: service),
+              ),
+            ),
           ),
         );
       },
@@ -134,6 +140,34 @@ class ParticipantChatPanel extends StatelessWidget {
                       ],
                     ),
                   ),
+                  if (c != null && (!c.blocked || c.blockedByMe))
+                    IconButton(
+                      tooltip: c.blockedByMe
+                          ? 'Desbloquear conversa'
+                          : 'Bloquear conversa',
+                      icon: Icon(c.blockedByMe ? Icons.lock_open : Icons.block),
+                      onPressed: () async {
+                        final accountGeneration = service.accountGeneration;
+                        final changed = await ModerationActions.block(
+                          context,
+                          conversationId: c.id,
+                          unblock: c.blockedByMe,
+                        );
+                        if (changed &&
+                            context.mounted &&
+                            accountGeneration == service.accountGeneration) {
+                          service.confirmOwnBlock(
+                            c.id,
+                            blocked: !c.blockedByMe,
+                          );
+                          await service.refreshInbox();
+                          if (c.blockedByMe &&
+                              service.active.value?.id == c.id) {
+                            await service.loadMessages();
+                          }
+                        }
+                      },
+                    ),
                   IconButton(
                     tooltip: 'Fechar conversas',
                     onPressed: () => Navigator.of(context).pop(),
@@ -301,6 +335,12 @@ class _ParticipantConversationPaneState
         Expanded(
           child: widget.service.loadingMessages.value
               ? const Center(child: CircularProgressIndicator())
+              : widget.conversation.blocked && !widget.conversation.blockedByMe
+              ? const Center(
+                  child: Text(
+                    'As mensagens desta conversa não estão disponíveis.',
+                  ),
+                )
               : widget.service.texts.isEmpty
               ? const Center(
                   child: Padding(
@@ -350,6 +390,7 @@ class _ParticipantConversationPaneState
                           ),
                         ),
                         child: Column(
+                          mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Semantics(
@@ -366,15 +407,47 @@ class _ParticipantConversationPaneState
                                 ),
                               ),
                             ),
-                            if (at != null)
+                            if (at != null || !message.own)
                               Padding(
-                                padding: const EdgeInsets.only(top: 6),
-                                child: Text(
-                                  '${at.day.toString().padLeft(2, '0')}/${at.month.toString().padLeft(2, '0')} · ${at.hour.toString().padLeft(2, '0')}:${at.minute.toString().padLeft(2, '0')}',
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                    color: Color(0xFFAAC5CB),
-                                  ),
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (at != null)
+                                      Text(
+                                        '${at.day.toString().padLeft(2, '0')}/${at.month.toString().padLeft(2, '0')} · ${at.hour.toString().padLeft(2, '0')}:${at.minute.toString().padLeft(2, '0')}',
+                                        style: const TextStyle(
+                                          fontSize: 10,
+                                          color: Color(0xFFAAC5CB),
+                                        ),
+                                      ),
+                                    if (!message.own)
+                                      PopupMenuButton<String>(
+                                        tooltip: 'Opções da mensagem',
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(
+                                          minWidth: 0,
+                                          minHeight: 0,
+                                        ),
+                                        iconSize: 18,
+                                        icon: const Icon(
+                                          Icons.more_horiz,
+                                          color: Color(0xFFAAC5CB),
+                                        ),
+                                        onSelected: (_) =>
+                                            ModerationActions.report(
+                                              context,
+                                              conversationId:
+                                                  widget.conversation.id,
+                                            ),
+                                        itemBuilder: (_) => const [
+                                          PopupMenuItem(
+                                            value: 'report',
+                                            child: Text('Denunciar conversa'),
+                                          ),
+                                        ],
+                                      ),
+                                  ],
                                 ),
                               ),
                           ],
@@ -406,7 +479,16 @@ class _ParticipantConversationPaneState
               ],
             ),
           ),
-        if (emojis)
+        if (widget.conversation.blocked)
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Text(
+              widget.conversation.blockedByMe
+                  ? 'Você bloqueou esta conversa. Desbloqueie para voltar a enviar mensagens.'
+                  : 'Esta conversa está bloqueada. Não é possível enviar mensagens.',
+            ),
+          ),
+        if (emojis && !widget.conversation.blocked)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Wrap(
@@ -441,7 +523,9 @@ class _ParticipantConversationPaneState
             children: [
               IconButton(
                 tooltip: 'Escolher emoji',
-                onPressed: () => setState(() => emojis = !emojis),
+                onPressed: widget.conversation.blocked
+                    ? null
+                    : () => setState(() => emojis = !emojis),
                 icon: const Icon(
                   Icons.emoji_emotions_outlined,
                   color: Color(0xFF9CE7DF),
@@ -453,6 +537,7 @@ class _ParticipantConversationPaneState
                     const SingleActivator(LogicalKeyboardKey.enter): send,
                   },
                   child: TextField(
+                    enabled: !widget.conversation.blocked,
                     controller: text,
                     focusNode: focus,
                     minLines: 1,
@@ -475,7 +560,10 @@ class _ParticipantConversationPaneState
               const SizedBox(width: 8),
               IconButton.filled(
                 tooltip: 'Enviar mensagem',
-                onPressed: widget.service.sending.value ? null : send,
+                onPressed:
+                    widget.service.sending.value || widget.conversation.blocked
+                    ? null
+                    : send,
                 icon: widget.service.sending.value
                     ? const SizedBox(
                         width: 18,

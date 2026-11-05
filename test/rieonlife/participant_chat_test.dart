@@ -76,6 +76,54 @@ const account = AuthUser(
   token: 'test',
 );
 void main() {
+  test(
+    'confirmed block updates the open conversation even outside the first page',
+    () {
+      final chat = ParticipantChatService(api: ChatApiFixture());
+      final conversation = ParticipantConversation.fromJson(sampleConversation);
+      chat.active.value = conversation;
+      chat.conversations.add(conversation);
+      chat.confirmOwnBlock(conversation.id, blocked: true);
+      expect(chat.active.value!.blocked, isTrue);
+      expect(chat.active.value!.blockedByMe, isTrue);
+      expect(chat.conversations.single.blocked, isTrue);
+      chat.confirmOwnBlock(conversation.id, blocked: false);
+      expect(chat.active.value!.blocked, isFalse);
+      chat.onClose();
+    },
+  );
+  testWidgets(
+    'blocked conversations disable sending and hide messages from the blocked participant',
+    (tester) async {
+      final api = ChatApiFixture();
+      final chat = ParticipantChatService(api: api);
+      chat.account = account;
+      final conversation = ParticipantConversation.fromJson({
+        ...sampleConversation,
+        'blocked': true,
+        'blocked_by_me': false,
+      });
+      chat.active.value = conversation;
+      chat.texts.add(ParticipantText.fromJson(api.stored.first));
+      await chat.loadMessages();
+      expect(chat.texts, isEmpty);
+      expect(await chat.send('Não deve ser enviada'), isFalse);
+      expect(api.sends, isEmpty);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(body: ParticipantChatPanel(service: chat)),
+        ),
+      );
+      await tester.pump();
+      expect(
+        find.text('As mensagens desta conversa não estão disponíveis.'),
+        findsOneWidget,
+      );
+      expect(tester.widget<TextField>(find.byType(TextField)).enabled, isFalse);
+      expect(find.byTooltip('Desbloquear conversa'), findsNothing);
+      chat.onClose();
+    },
+  );
   testWidgets(
     'conversation sends text and emoji, keeps draft on failure and retries without duplication',
     (tester) async {

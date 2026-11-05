@@ -275,13 +275,17 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Expanded(
-                                child: Text(
-                                  model.name,
-                                  style: theme.textTheme.titleLarge?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                                child: _ClueTitle(
+                                  text: model.name,
+                                  style:
+                                      (theme.textTheme.titleLarge ??
+                                              const TextStyle(fontSize: 22))
+                                          .copyWith(
+                                            fontWeight: FontWeight.w700,
+                                          ),
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -785,4 +789,40 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
   void _openRelatedClue(LivingClueModel relatedClue) {
     Get.toNamed('/space/research/${relatedClue.id}', arguments: relatedClue);
   }
+}
+
+class _ClueTitle extends StatelessWidget {
+  const _ClueTitle({required this.text, required this.style});
+  final String text;
+  final TextStyle style;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final base = style.fontSize ?? 22;
+      var size = base;
+      final minSize = base < 12 ? base : 12.0;
+      while (size > minSize) {
+        final painter = TextPainter(
+          text: TextSpan(
+            text: text,
+            style: style.copyWith(fontSize: size),
+          ),
+          textDirection: Directionality.of(context),
+          textScaler: MediaQuery.textScalerOf(context),
+          maxLines: 3,
+        )..layout(maxWidth: constraints.maxWidth);
+        final fits = !painter.didExceedMaxLines;
+        painter.dispose();
+        if (fits) break;
+        size = (size - 1).clamp(minSize, base);
+      }
+      return Text(
+        text,
+        maxLines: 3,
+        overflow: TextOverflow.ellipsis,
+        style: style.copyWith(fontSize: size),
+      );
+    },
+  );
 }
