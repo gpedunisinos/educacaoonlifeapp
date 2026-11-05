@@ -21,7 +21,7 @@ class NativePresenceConnection
   }
   static const origin = String.fromEnvironment(
     'PRESENCE_ORIGIN',
-    defaultValue: 'https://plataforma.atopos.spotec.app',
+    defaultValue: 'https://educacaoonlife.gpedu.com.br',
   );
   final _opening = Completer<void>();
   final _incoming = StreamController<String>();
