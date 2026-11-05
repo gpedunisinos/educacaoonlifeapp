@@ -248,33 +248,35 @@ class ManagementShell extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
+                          Wrap(
+                            alignment: WrapAlignment.spaceBetween,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 12,
+                            runSpacing: 4,
                             children: [
-                              if (compact)
-                                Builder(
-                                  builder: (context) => IconButton(
-                                    tooltip: 'Menu de gestão',
-                                    onPressed: () =>
-                                        Scaffold.of(context).openDrawer(),
-                                    icon: const Icon(Icons.menu),
-                                  ),
-                                ),
-                              if (onBack != null)
-                                Flexible(
-                                  child: TextButton.icon(
-                                    onPressed: onBack,
-                                    icon: const Icon(
-                                      Icons.arrow_back,
-                                      size: 16,
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (compact)
+                                    Builder(
+                                      builder: (context) => IconButton(
+                                        tooltip: 'Menu de gestão',
+                                        onPressed: () =>
+                                            Scaffold.of(context).openDrawer(),
+                                        icon: const Icon(Icons.menu),
+                                      ),
                                     ),
-                                    label: Text(
-                                      backLabel,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                                  if (onBack != null)
+                                    TextButton.icon(
+                                      onPressed: onBack,
+                                      icon: const Icon(
+                                        Icons.arrow_back,
+                                        size: 16,
+                                      ),
+                                      label: Text(backLabel),
                                     ),
-                                  ),
-                                ),
-                              const Spacer(),
+                                ],
+                              ),
                               const Text(
                                 'EC–01 / SISTEMAS',
                                 style: TextStyle(

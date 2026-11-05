@@ -654,9 +654,6 @@ dialog::backdrop {
   .tools #exit {
     display: none;
   }
-  .tools #motion {
-    max-width: 80px;
-  }
   .welcome {
     left: 8%;
     right: 8%;
