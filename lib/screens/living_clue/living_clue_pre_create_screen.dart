@@ -78,15 +78,17 @@ class _LivingCluePreCreateScreenState extends State<LivingCluePreCreateScreen> {
                                 color: spaceChatAccent,
                               ),
                               const SizedBox(width: 8),
-                              Text(
-                                _selectedType == null
-                                    ? 'Selecione a categoria base'
-                                    : 'Selecione a categoria base de $_selectedType',
-                                style: Theme.of(context).textTheme.titleMedium
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                      color: spaceChatText,
-                                    ),
+                              Expanded(
+                                child: Text(
+                                  _selectedType == null
+                                      ? 'Selecione a categoria base'
+                                      : 'Selecione a categoria base de $_selectedType',
+                                  style: Theme.of(context).textTheme.titleMedium
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                        color: spaceChatText,
+                                      ),
+                                ),
                               ),
                             ],
                           ),
