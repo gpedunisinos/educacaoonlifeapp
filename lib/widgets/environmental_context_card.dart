@@ -29,8 +29,12 @@ class EnvironmentalContextCard extends StatelessWidget {
               children: [
                 Icon(Icons.eco_outlined, color: Colors.green),
                 SizedBox(width: 8),
-                Text('Contexto socioambiental',
-                    style: TextStyle(fontWeight: FontWeight.w700)),
+                Expanded(
+                  child: Text(
+                    'Contexto socioambiental',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 6),
@@ -77,12 +81,16 @@ class EnvironmentalContextCard extends StatelessWidget {
               _value('Cobertura predominante', data.landCover),
               _value('Vegetação no entorno', _percent(data.vegetationPercent)),
               _value(
-                  'Corpo d’água mais próximo', _distance(data.waterDistanceM)),
+                'Corpo d’água mais próximo',
+                _distance(data.waterDistanceM),
+              ),
               _value('Altitude', _meters(data.altitudeM)),
               _value('Declividade média', _percent(data.slopePercent)),
               _value('Ocupação construída', _percent(data.builtUpPercent)),
-              _value('Densidade populacional',
-                  _density(data.populationDensityKm2)),
+              _value(
+                'Densidade populacional',
+                _density(data.populationDensityKm2),
+              ),
               if (data.analyzedAt != null) ...[
                 const Divider(height: 22),
                 Text(
@@ -96,12 +104,27 @@ class EnvironmentalContextCard extends StatelessWidget {
                   childrenPadding: EdgeInsets.zero,
                   title: const Text('Fontes e versões'),
                   children: data.sources.entries
-                      .map((source) => ListTile(
-                            dense: true,
-                            contentPadding: EdgeInsets.zero,
-                            title: Text(_label(source.key)),
-                            trailing: Text(source.value.toString()),
-                          ))
+                      .map(
+                        (source) => Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Text(
+                                _label(source.key),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              SelectableText(
+                                _sourceValue(source.value),
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
                       .toList(),
                 ),
             ],
@@ -121,9 +144,12 @@ class EnvironmentalContextCard extends StatelessWidget {
           Expanded(child: Text(label)),
           const SizedBox(width: 12),
           Flexible(
-              child: Text(value,
-                  textAlign: TextAlign.end,
-                  style: const TextStyle(fontWeight: FontWeight.w600))),
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
         ],
       ),
     );
@@ -143,6 +169,19 @@ class EnvironmentalContextCard extends StatelessWidget {
       .where((part) => part.isNotEmpty)
       .map((part) => '${part[0].toUpperCase()}${part.substring(1)}')
       .join(' ');
+
+  String _sourceValue(dynamic value) {
+    if (value is Map) {
+      return value.entries
+          .map(
+            (entry) =>
+                '${_label(entry.key.toString())}: ${_sourceValue(entry.value)}',
+          )
+          .join('\n');
+    }
+    if (value is List) return value.map(_sourceValue).join(', ');
+    return value?.toString() ?? 'Não informado';
+  }
 }
 
 class _ContextMessage extends StatelessWidget {
@@ -150,21 +189,25 @@ class _ContextMessage extends StatelessWidget {
   final String text;
   final bool showProgress;
 
-  const _ContextMessage(
-      {required this.icon, required this.text, this.showProgress = false});
+  const _ContextMessage({
+    required this.icon,
+    required this.text,
+    this.showProgress = false,
+  });
 
   @override
   Widget build(BuildContext context) => Row(
-        children: [
-          if (showProgress)
-            const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(strokeWidth: 2))
-          else
-            Icon(icon, size: 20, color: Colors.blueGrey),
-          const SizedBox(width: 10),
-          Expanded(child: Text(text)),
-        ],
-      );
+    children: [
+      if (showProgress)
+        const SizedBox(
+          width: 18,
+          height: 18,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        )
+      else
+        Icon(icon, size: 20, color: Colors.blueGrey),
+      const SizedBox(width: 10),
+      Expanded(child: Text(text)),
+    ],
+  );
 }

@@ -1,5 +1,6 @@
 import 'package:unisinos_usp_app/widgets/clue_node_integration.dart';
 import 'package:unisinos_usp_app/widgets/ai_assistant_launcher.dart';
+import 'package:unisinos_usp_app/widgets/auto_visible_frame.dart';
 import 'package:unisinos_usp_app/widgets/clue_agent_integration.dart';
 import 'package:get/get.dart';
 import 'package:unisinos_usp_app/models/ai_assistant_screen_context.dart';
@@ -484,11 +485,23 @@ class ClueIntegrationView extends StatelessWidget {
                       height: block.provider == 'padlet'
                           ? 420
                           : size.maxWidth * 9 / 16,
-                      child: IntegrationFrame(
-                        key: ValueKey(block.url),
-                        uri: block.embedURI!,
-                        title: block.title.isEmpty ? block.name : block.title,
-                      ),
+                      child: block.provider == 'genially'
+                          ? AutoVisibleFrame(
+                              key: ValueKey(block.url),
+                              builder: (_) => IntegrationFrame(
+                                uri: block.embedURI!,
+                                title: block.title.isEmpty
+                                    ? block.name
+                                    : block.title,
+                              ),
+                            )
+                          : IntegrationFrame(
+                              key: ValueKey(block.url),
+                              uri: block.embedURI!,
+                              title: block.title.isEmpty
+                                  ? block.name
+                                  : block.title,
+                            ),
                     ),
                   ),
                 ),
