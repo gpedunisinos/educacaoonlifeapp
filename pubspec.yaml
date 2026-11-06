@@ -73,6 +73,7 @@ flutter:
   assets:
     - assets/space/
     - assets/space/vendor/
+    - assets/financiamento/
     - assets/google_icon.svg
     - assets/logo.svg
     - assets/assessment.png

@@ -145,10 +145,52 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ],
               ),
+              const SizedBox(height: 24),
+              const Divider(color: Color(0xFF294356)),
+              const SizedBox(height: 12),
+              const Text(
+                'Financiamento',
+                style: TextStyle(
+                  color: Color(0xFFA6C5EF),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 14),
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 16,
+                runSpacing: 12,
+                children: [
+                  _fundingLogo(
+                    'assets/financiamento/fapergs.jpg',
+                    'FAPERGS — Fundação de Amparo à Pesquisa do Estado do Rio Grande do Sul',
+                    Colors.white,
+                  ),
+                  _fundingLogo(
+                    'assets/financiamento/fapesp.png',
+                    'FAPESP — Fundação de Amparo à Pesquisa do Estado de São Paulo',
+                    const Color(0xFF123B69),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _fundingLogo(String asset, String label, Color background) {
+    return Container(
+      width: 168,
+      height: 64,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Image.asset(asset, fit: BoxFit.contain, semanticLabel: label),
     );
   }
 
