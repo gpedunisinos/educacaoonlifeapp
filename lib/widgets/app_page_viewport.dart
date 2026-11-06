@@ -15,7 +15,9 @@ class AppPageViewport extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Obx(() {
     final route = AiAssistantLauncher.activeRoute.value;
+    // Login supplies its own full-window star field; keep only its form narrow.
     final immersive =
+        route == '/login' ||
         (route == '/space' || route.startsWith('/space/')) ||
         (route == '/management' || route.startsWith('/management/')) ||
         route == '/living_clues/map' ||

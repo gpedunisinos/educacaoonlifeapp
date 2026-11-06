@@ -1,9 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:unisinos_usp_app/widgets/ai_assistant_launcher.dart';
+import 'package:unisinos_usp_app/widgets/starfield_background.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:unisinos_usp_app/widgets/app_page_viewport.dart';
 import 'package:unisinos_usp_app/widgets/living_clue_layout.dart';
 
 void main() {
+  testWidgets(
+    'login background fills the desktop window without outer scenery',
+    (tester) async {
+      tester.view.physicalSize = const Size(1920, 1080);
+      tester.view.devicePixelRatio = 1;
+      AiAssistantLauncher.activeRoute.value = '/login';
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+        AiAssistantLauncher.activeRoute.value = '';
+      });
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: AppPageViewport(
+            child: SizedBox.expand(key: ValueKey('login-window')),
+          ),
+        ),
+      );
+      expect(
+        tester.getRect(find.byKey(const ValueKey('login-window'))),
+        const Rect.fromLTWH(0, 0, 1920, 1080),
+      );
+      expect(find.byType(StarfieldBackground), findsNothing);
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
+
   for (final width in [1920.0, 1040.0, 390.0]) {
     testWidgets('all route content fits a $width px window', (tester) async {
       tester.view.physicalSize = Size(width, 844);
