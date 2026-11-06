@@ -76,6 +76,7 @@ flutter:
     - assets/financiamento/
     - assets/google_icon.svg
     - assets/logo.svg
+    - assets/logo_gpedu.png
     - assets/assessment.png
     - assets/assessment_list.png
     - assets/certificate.png
