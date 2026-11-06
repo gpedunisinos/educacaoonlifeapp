@@ -356,6 +356,19 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
                   const SizedBox(height: 12),
                   _buildConnectionsCard(context),
                   const SizedBox(height: 12),
+                  Obx(
+                    () => ClueSuggestions(
+                      key: ValueKey(
+                        'suggestions-${model.id}-${model.updatedAt}',
+                      ),
+                      clue: model,
+                      canAuthor:
+                          Get.find<UserController>().user.value?.canAuthor ??
+                          false,
+                      onConnectionChanged: _loadConnections,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   Card(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -542,7 +555,7 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
                     ),
                   ],
                   const SizedBox(height: 12),
-                  if (model.files.isNotEmpty)
+                  if (model.files.isNotEmpty) ...[
                     Card(
                       child: Column(
                         children: [
@@ -555,18 +568,8 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
                         ],
                       ),
                     ),
-                  Obx(
-                    () => ClueSuggestions(
-                      key: ValueKey(
-                        'suggestions-${model.id}-${model.updatedAt}',
-                      ),
-                      clue: model,
-                      canAuthor:
-                          Get.find<UserController>().user.value?.canAuthor ??
-                          false,
-                      onConnectionChanged: _loadConnections,
-                    ),
-                  ),
+                    const SizedBox(height: 12),
+                  ],
                   ClueEditHistory(
                     key: ValueKey('history-${model.id}-${model.updatedAt}'),
                     clueId: model.id,
