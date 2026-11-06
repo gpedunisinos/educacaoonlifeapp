@@ -554,7 +554,10 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
                         ],
                       ),
                     ),
-                  ClueEditHistory(clueId: model.id),
+                  ClueEditHistory(
+                    key: ValueKey('history-${model.id}-${model.updatedAt}'),
+                    clueId: model.id,
+                  ),
                   const SizedBox(height: 12),
                   ClueParticipation(clueId: model.id),
                   const SizedBox(height: 90),

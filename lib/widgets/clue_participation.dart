@@ -360,7 +360,8 @@ class _ClueParticipationState extends State<ClueParticipation> {
 }
 
 class ClueEditHistory extends StatefulWidget {
-  const ClueEditHistory({super.key, required this.clueId});
+  const ClueEditHistory({super.key, required this.clueId, this.fetchEvents});
+  final Future<List<dynamic>> Function(int offset)? fetchEvents;
   final int clueId;
   @override
   State<ClueEditHistory> createState() => _ClueEditHistoryState();
@@ -375,10 +376,12 @@ class _ClueEditHistoryState extends State<ClueEditHistory> {
     if (loading) return;
     setState(() => loading = true);
     try {
-      final data = await EconectivaApi().get(
-        '/living_clues/${widget.clueId}/edits',
-        {'limit': '20', 'offset': '${events.length}'},
-      );
+      final data = widget.fetchEvents != null
+          ? await widget.fetchEvents!(events.length)
+          : await EconectivaApi().get('/living_clues/${widget.clueId}/edits', {
+              'limit': '20',
+              'offset': '${events.length}',
+            });
       if (mounted) {
         setState(() {
           events.addAll(data as List);
@@ -397,22 +400,29 @@ class _ClueEditHistoryState extends State<ClueEditHistory> {
   Widget build(BuildContext context) => Card(
     child: ExpansionTile(
       leading: const Icon(Icons.history),
-      title: const Text('Histórico de edições'),
+      title: const Text('Histórico da pista'),
       onExpansionChanged: (open) {
         if (open && events.isEmpty) load();
       },
       children: [
         if (loading) const LinearProgressIndicator(),
         if (error != null) Text(error!),
-        if (!loading && events.isEmpty)
+        if (!loading && error == null && events.isEmpty)
           const Padding(
             padding: EdgeInsets.all(16),
-            child: Text('Nenhuma edição registrada após a atualização.'),
+            child: Text('Nenhum evento registrado.'),
           ),
         for (final e in events)
           ListTile(
-            title: Text('${e['author']['name']} • Pista editada'),
-            subtitle: Text(eventDate(e['created_at'])),
+            title: Text(
+              e['description']?.toString() ??
+                  (e['event_type'] == 'created'
+                      ? 'Pista criada'
+                      : 'Pista editada'),
+            ),
+            subtitle: Text(
+              '${e['author']?['name'] ?? 'Autoria não registrada'} • ${eventDate(e['created_at'])}',
+            ),
           ),
         if (more && events.isNotEmpty || error != null)
           TextButton(onPressed: load, child: const Text('Carregar histórico')),
