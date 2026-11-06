@@ -1439,7 +1439,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
       LivingClueMapLoadMode.search =>
         '$clueTotal pistas e $placeTotal locais encontrados',
       LivingClueMapLoadMode.radius => '$clueTotal pistas no raio do sonar',
-      LivingClueMapLoadMode.bounds => '$clueTotal pistas nesta area',
+      LivingClueMapLoadMode.bounds => '$clueTotal pistas nesta área',
     };
 
     return Padding(
@@ -1447,7 +1447,8 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
       child: Align(
         alignment: Alignment.centerLeft,
         child: Text(
-          label,
+          '$label · Até ${LivingClueMapController.clueLimit} pistas por consulta.'
+          '${clueTotal >= LivingClueMapController.clueLimit ? ' Limite atingido: aproxime o mapa ou refine a pesquisa para encontrar outras pistas.' : ''}',
           style: TextStyle(
             color: Colors.white.withValues(alpha: 0.74),
             fontSize: 12,

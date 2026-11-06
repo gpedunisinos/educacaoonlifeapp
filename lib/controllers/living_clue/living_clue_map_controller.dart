@@ -15,6 +15,7 @@ import 'package:widgets_spo/widgets_spo.dart';
 enum LivingClueMapLoadMode { bounds, radius, search }
 
 class LivingClueMapController extends GetxController {
+  static const int clueLimit = 500;
   final LivingClueWebclient _webclient = LivingClueWebclient();
   final ClueConnectionWebclient _connectionWebclient =
       ClueConnectionWebclient();
@@ -48,6 +49,7 @@ class LivingClueMapController extends GetxController {
         south: bounds.south,
         east: bounds.east,
         west: bounds.west,
+        limit: clueLimit,
       );
       if (requestId != _requestSerial) return;
       livingClues.assignAll(loadedClues);
@@ -78,6 +80,7 @@ class LivingClueMapController extends GetxController {
         latitude: center.latitude,
         longitude: center.longitude,
         radiusMeters: radiusMeters,
+        limit: clueLimit,
       );
       if (requestId != _requestSerial) return;
       livingClues.assignAll(loadedClues);
@@ -107,7 +110,10 @@ class LivingClueMapController extends GetxController {
     mapPlaces.clear();
     try {
       isLoading.value = true;
-      final loadedClues = await _webclient.search(search: trimmedSearch);
+      final loadedClues = await _webclient.search(
+        search: trimmedSearch,
+        limit: clueLimit,
+      );
       if (requestId != _requestSerial) return;
       livingClues.assignAll(loadedClues);
       await _loadCategories();
