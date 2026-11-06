@@ -10,6 +10,7 @@ class LivingClueModel {
   final List<SensorReadingModel> sensorReadings;
   int id;
   String name;
+  List<String>? aliasNames;
   int categoryId;
   String? description;
   String? descriptionDelta;
@@ -28,6 +29,7 @@ class LivingClueModel {
     this.files = const [],
     this.sensorReadings = const [],
     required this.name,
+    this.aliasNames,
     required this.categoryId,
     this.latitude,
     this.longitude,
@@ -58,6 +60,13 @@ class LivingClueModel {
           .toList(),
       id = json['id'] is int ? json['id'] : int.parse(json['id'].toString()),
       name = json['name'] ?? '',
+      aliasNames = json['aliases'] is List
+          ? (json['aliases'] as List)
+                .whereType<Map>()
+                .where((a) => a['status'] == 'approved')
+                .map((a) => a['name'].toString())
+                .toList()
+          : null,
       categoryId = _parseCategoryId(json),
       description = json['description'],
       descriptionDelta = json['description_delta'],
@@ -80,6 +89,7 @@ class LivingClueModel {
   Map<String, dynamic> toJson() => {
     'id': id,
     'name': name,
+    if (aliasNames != null) 'alias_names': aliasNames,
     'category_id': categoryId,
     'description': description,
     'description_delta': descriptionDelta,

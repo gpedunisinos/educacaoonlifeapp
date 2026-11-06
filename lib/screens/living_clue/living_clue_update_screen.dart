@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/widgets/clue_alias_field.dart';
 import 'package:unisinos_usp_app/models/inventive/inventive_catalog.dart';
 import 'package:unisinos_usp_app/widgets/inventive_classification_fields.dart';
 import 'package:file_picker/file_picker.dart';
@@ -37,6 +38,7 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _aliasesController = TextEditingController();
   final QuillController _descriptionController = QuillController.basic();
   final TextEditingController _latitudeController = TextEditingController();
   final TextEditingController _longitudeController = TextEditingController();
@@ -140,6 +142,7 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
       );
     }
     _nameController.dispose();
+    _aliasesController.dispose();
     _descriptionController.dispose();
     _latitudeController.dispose();
     _longitudeController.dispose();
@@ -318,6 +321,8 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
                 PRuleMaxString(value, 255, message: 'Máximo de 255 caracteres'),
               ]).val(),
             ),
+            Insets.large.height,
+            ClueAliasField(controller: _aliasesController),
             Insets.large.height,
             ManagementInput(
               hintText: 'Categoria',
@@ -573,6 +578,7 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
 
   String _formSnapshot() => jsonEncode({
     'name': _nameController.text,
+    'aliases': _aliasesController.text,
     'description': _descriptionController.document.toDelta().toJson(),
     'latitude': _latitudeController.text,
     'longitude': _longitudeController.text,
@@ -592,6 +598,7 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
 
   void _fillFromModel(LivingClueModel model) {
     _nameController.text = model.name;
+    _aliasesController.text = (model.aliasNames ?? []).join('; ');
     _descriptionController.document = QuillDocumentUtils.fromStored(
       delta: model.descriptionDelta,
       plainText: model.description,
@@ -819,6 +826,7 @@ class _LivingClueUpdateScreenState extends State<LivingClueUpdateScreen> {
     final model = LivingClueModel(
       id: _controller.livingClue.value?.id ?? _controller.livingClueId ?? 0,
       name: _nameController.text.trim(),
+      aliasNames: parseClueAliases(_aliasesController.text),
       categoryId: _categoryId!,
       description: QuillDocumentUtils.plainText(_descriptionController).isEmpty
           ? null

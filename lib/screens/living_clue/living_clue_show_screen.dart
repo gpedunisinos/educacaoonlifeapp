@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/widgets/clue_suggestions.dart';
 import 'package:unisinos_usp_app/widgets/clue_connections_list.dart';
 import 'package:unisinos_usp_app/widgets/clue_qr_dialog.dart';
 import 'package:unisinos_usp_app/services/clue_map_navigation.dart';
@@ -554,6 +555,18 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
                         ],
                       ),
                     ),
+                  Obx(
+                    () => ClueSuggestions(
+                      key: ValueKey(
+                        'suggestions-${model.id}-${model.updatedAt}',
+                      ),
+                      clue: model,
+                      canAuthor:
+                          Get.find<UserController>().user.value?.canAuthor ??
+                          false,
+                      onConnectionChanged: _loadConnections,
+                    ),
+                  ),
                   ClueEditHistory(
                     key: ValueKey('history-${model.id}-${model.updatedAt}'),
                     clueId: model.id,

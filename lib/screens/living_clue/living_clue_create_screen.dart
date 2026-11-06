@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/widgets/clue_alias_field.dart';
 import 'package:unisinos_usp_app/widgets/similar_clues_notice.dart';
 import 'package:unisinos_usp_app/models/inventive/inventive_catalog.dart';
 import 'package:unisinos_usp_app/widgets/inventive_classification_fields.dart';
@@ -32,6 +33,7 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _aliasesController = TextEditingController();
   final QuillController _descriptionController = QuillController.basic();
   final TextEditingController _latitudeController = TextEditingController();
   final TextEditingController _longitudeController = TextEditingController();
@@ -67,6 +69,7 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
       );
     }
     _nameController.dispose();
+    _aliasesController.dispose();
     _descriptionController.dispose();
     _latitudeController.dispose();
     _longitudeController.dispose();
@@ -174,6 +177,8 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
                               SimilarCluesNotice(
                                 nameController: _nameController,
                               ),
+                              Insets.large.height,
+                              ClueAliasField(controller: _aliasesController),
                               Insets.large.height,
                               ManagementInput(
                                 hintText: 'Categoria',
@@ -410,6 +415,7 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
     final model = LivingClueModel(
       id: 0,
       name: _nameController.text.trim(),
+      aliasNames: parseClueAliases(_aliasesController.text),
       categoryId: _categoryId!,
       description: QuillDocumentUtils.plainText(_descriptionController).isEmpty
           ? null

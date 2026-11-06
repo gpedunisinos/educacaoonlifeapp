@@ -34,6 +34,7 @@ class _LivingClueConnectScreenState extends State<LivingClueConnectScreen> {
   final TextEditingController _evidenceController = TextEditingController();
 
   LivingClueModel? _sourceClue;
+  bool _swapping = false;
 
   @override
   void initState() {
@@ -43,6 +44,15 @@ class _LivingClueConnectScreenState extends State<LivingClueConnectScreen> {
       _sourceClue = args;
     } else if (args is Map && args['model'] is LivingClueModel) {
       _sourceClue = args['model'] as LivingClueModel;
+      if (args['targetId'] is int && args['targetName'] is String) {
+        _targetSelectController.selectedItem = ItemSelect(
+          id: args['targetId'] as int,
+          name: args['targetName'] as String,
+        );
+      }
+      if (args['evidence'] is String) {
+        _evidenceController.text = args['evidence'] as String;
+      }
     }
   }
 
@@ -74,6 +84,18 @@ class _LivingClueConnectScreenState extends State<LivingClueConnectScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildSourceCard(context),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton.icon(
+                      onPressed: _swapping ? null : _swapDirection,
+                      icon: const Icon(Icons.swap_vert),
+                      label: Text(
+                        _swapping
+                            ? 'Carregando pista…'
+                            : 'Inverter sentido da conexão',
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 14),
                   Card(
                     elevation: 2,
@@ -157,8 +179,8 @@ class _LivingClueConnectScreenState extends State<LivingClueConnectScreen> {
                                     foregroundColor: const Color(0xFF06202A),
                                     minimumSize: const Size.fromHeight(44),
                                   ),
-                                  child: Text(buttonTitle),
                                   onPressed: loading ? null : _save,
+                                  child: Text(buttonTitle),
                                 );
                               }),
                             ),
@@ -280,8 +302,38 @@ class _LivingClueConnectScreenState extends State<LivingClueConnectScreen> {
     );
   }
 
+  Future<void> _swapDirection() async {
+    final current = _sourceClue;
+    final target = _targetSelectController.selectedItem;
+    if (current == null || target == null) {
+      Get.customSnackbar(
+        'Atenção',
+        'Selecione a pista destino antes de inverter.',
+      );
+      return;
+    }
+    setState(() => _swapping = true);
+    try {
+      final next = await LivingClueWebclient().fetchById(target.id);
+      if (!mounted || _targetSelectController.selectedItem?.id != target.id) {
+        return;
+      }
+      setState(() {
+        _sourceClue = next;
+        _targetSelectController.selectedItem = ItemSelect(
+          id: current.id,
+          name: current.name,
+        );
+      });
+    } catch (_) {
+      Get.customSnackbar('Erro', 'Não foi possível inverter o sentido.');
+    } finally {
+      if (mounted) setState(() => _swapping = false);
+    }
+  }
+
   Future<void> _save() async {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
+    if (_swapping || !(_formKey.currentState?.validate() ?? false)) return;
     if (_sourceClue == null) return;
 
     final int? targetId = _targetSelectController.selectedItem?.id;
