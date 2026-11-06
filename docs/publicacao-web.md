@@ -4,7 +4,7 @@
 
 Usar o comando de produção do README, com `--no-tree-shake-icons`, `--pwa-strategy=none` e API oficial. Não publicar um build local configurado para `127.0.0.1`.
 
-A opção `--no-tree-shake-icons` mantém as fontes completas. Parte dos ícones é selecionada dinamicamente pelos componentes compartilhados e pode desaparecer quando o Flutter reduz as fontes. `--pwa-strategy=none` evita gerar uma nova estratégia de cache PWA que mantenha arquivos de versões diferentes. A remoção do service worker Flutter legado já existe em `web/index.html`; preservar o worker específico de notificações Firebase.
+A opção `--no-tree-shake-icons` mantém as fontes completas. Parte dos ícones é selecionada dinamicamente pelos componentes compartilhados e pode desaparecer quando o Flutter reduz as fontes. `--pwa-strategy=none` evita gerar uma nova estratégia de cache PWA que mantenha arquivos de versões diferentes. A remoção dos service workers legados do Flutter e das notificações desativadas já existe em `web/index.html`. O app não utiliza mais Firebase.
 
 A pipeline contém os parâmetros, mas builds manuais não os herdam automaticamente. Não usar o comando simples `flutter build web --release` para publicação.
 

@@ -4,10 +4,6 @@ import java.util.Properties
 plugins {
     id("com.android.application")
     id("kotlin-android")
-    // START: FlutterFire Configuration
-    id("com.google.gms.google-services")
-    id("com.google.firebase.crashlytics")
-    // END: FlutterFire Configuration
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
@@ -64,14 +60,8 @@ android {
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 
-    // Firebase BOM
-    implementation(platform("com.google.firebase:firebase-bom:32.2.0"))
 
-    // Firebase Crashlytics
-    implementation("com.google.firebase:firebase-crashlytics")
 
-    // Firebase Messaging (para push)
-    implementation("com.google.firebase:firebase-messaging")
 }
 
 flutter { source = "../.." }
