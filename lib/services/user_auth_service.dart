@@ -1,0 +1,35 @@
+import 'package:unisinos_usp_app/services/clue_links.dart';
+import 'package:unisinos_usp_app/services/auth_user.dart';
+import 'package:get/get.dart';
+import 'package:widgets_spo/services/auth_provider.dart';
+import 'package:widgets_spo/utils/util.dart';
+
+class UserAuthService implements AuthService {
+  AuthUser? _user;
+
+  void setUser(AuthUser user) {
+    _user = user;
+  }
+
+  @override
+  String getToken() {
+    if (_user == null || _user!.token.isEmpty) {
+      throw Exception('Token inválido ou usuário não logado');
+    }
+    return _user!.token;
+  }
+
+  @override
+  Future<void> logout({bool preserveDestination = true}) async {
+    final target = preserveDestination
+        ? ClueLinks.safeTarget(Get.currentRoute) ??
+              ClueLinks.pending(Get.parameters['returnTo'])
+        : null;
+    await Util.prefs.clear();
+    _user = null;
+
+    if (Get.key.currentState != null && Get.currentRoute != '/login') {
+      await Get.offAllNamed(ClueLinks.authRoute('/login', target));
+    }
+  }
+}

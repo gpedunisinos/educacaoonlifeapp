@@ -1,0 +1,34 @@
+image: ghcr.io/cirruslabs/flutter:3.38.3
+
+definitions:
+  caches:
+    flutter: ~/.pub-cache
+  runs-on:
+    - "sshlinux"
+
+pipelines:
+  branches:
+    main:
+      - step:
+          name: Build Flutter Web
+          caches:
+            - flutter
+          runs-on:
+            - "sshlinux"
+          script:
+            - git config --global credential.helper store
+            - echo "https://x-token-auth:$BITBUCKET_TOKEN@bitbucket.org" > ~/.git-credentials
+            - flutter config --enable-web
+            - flutter build web --pwa-strategy=none --no-tree-shake-icons
+          artifacts:
+            - build/web/**
+
+      - step:
+          name: Deploy to EC2
+          deployment: production
+          runs-on:
+            - "sshlinux"
+          script:
+            - ssh-keyscan -H 54.94.142.29 >> ~/.ssh/known_hosts
+            - ssh ubuntu@54.94.142.29 "find /var/www/usp_app -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +"
+            - scp -r build/web/. ubuntu@54.94.142.29:/var/www/usp_app/
