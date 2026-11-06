@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/widgets/similar_clues_notice.dart';
 import 'package:unisinos_usp_app/models/inventive/inventive_catalog.dart';
 import 'package:unisinos_usp_app/widgets/inventive_classification_fields.dart';
 import 'package:unisinos_usp_app/screens/management/management_input.dart';
@@ -169,6 +170,9 @@ class _LivingClueCreateScreenState extends State<LivingClueCreateScreen> {
                                     message: 'Máximo de 255 caracteres',
                                   ),
                                 ]).val(),
+                              ),
+                              SimilarCluesNotice(
+                                nameController: _nameController,
                               ),
                               Insets.large.height,
                               ManagementInput(
