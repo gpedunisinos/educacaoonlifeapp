@@ -1,3 +1,6 @@
+import 'package:unisinos_usp_app/controllers/living_clue/fauna_map_controller.dart';
+import 'package:unisinos_usp_app/widgets/fauna_nearby.dart';
+import 'package:unisinos_usp_app/webclients/fauna_webclient.dart';
 import 'package:unisinos_usp_app/widgets/category_map_marker.dart';
 import 'package:unisinos_usp_app/widgets/anchored_tutorial_layout.dart';
 import 'package:unisinos_usp_app/widgets/iarete_reply.dart';
@@ -28,7 +31,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:widgets_spo/widgets_spo.dart';
 
 class LivingClueMapScreen extends StatefulWidget {
-  const LivingClueMapScreen({super.key, this.tileProvider});
+  const LivingClueMapScreen({super.key, this.tileProvider, this.faunaSource});
+  final FaunaSource? faunaSource;
   final TileProvider? tileProvider;
 
   @override
@@ -48,6 +52,13 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
   final EnvironmentalLayersController _environmentalController =
       Get.find<EnvironmentalLayersController>();
   final MapController _mapController = MapController();
+  late final FaunaMapController _fauna = FaunaMapController(
+    source: widget.faunaSource,
+  );
+  void _onFaunaChanged() {
+    if (mounted) setState(() {});
+  }
+
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   final GlobalKey _mapKey = GlobalKey();
@@ -89,6 +100,7 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
   @override
   void initState() {
     super.initState();
+    _fauna.addListener(_onFaunaChanged);
     _routeWorker = ever<String>(AiAssistantLauncher.activeRoute, (route) {
       if (route != '/living_clues/map') _dismissTutorial?.call();
     });
@@ -117,6 +129,8 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
         _contextProvider,
       );
     }
+    _fauna.removeListener(_onFaunaChanged);
+    _fauna.dispose();
     _searchDebounce?.cancel();
     _routeWorker?.dispose();
     _dismissTutorial?.call();
@@ -661,6 +675,37 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                             ),
                     ),
                     Obx(() => _buildLoadStatus()),
+                    if (_fauna.enabled)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: 8,
+                          children: [
+                            const Icon(
+                              Icons.pets,
+                              size: 16,
+                              color: Color(0xFF8CF2CD),
+                            ),
+                            Text(
+                              _fauna.loading
+                                  ? 'Consultando fauna…'
+                                  : _fauna.message ??
+                                        '${_fauna.observations.length} observações iNaturalist · até 100 por área${_fauna.limited ? ' · amostra limitada' : ''}',
+                            ),
+                            TextButton(
+                              onPressed: _fauna.loading
+                                  ? null
+                                  : () => _fauna.updateViewport(
+                                      _mapController.camera.zoom,
+                                      _mapController.camera.visibleBounds,
+                                      immediate: true,
+                                    ),
+                              child: const Text('Atualizar fauna'),
+                            ),
+                          ],
+                        ),
+                      ),
                     const SizedBox(height: 8),
                     Row(
                       children: [
@@ -907,6 +952,10 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                           },
                           onMapEvent: (event) {
                             if (event is MapEventMoveEnd) {
+                              _fauna.updateViewport(
+                                _mapController.camera.zoom,
+                                _mapController.camera.visibleBounds,
+                              );
                               if (_controller.loadMode.value ==
                                   LivingClueMapLoadMode.search) {
                                 return;
@@ -986,6 +1035,46 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                           MarkerLayer(
                             markers: [
                               ...markers,
+                              for (final item in _fauna.observations)
+                                Marker(
+                                  point: LatLng(item.latitude, item.longitude),
+                                  width: 38,
+                                  height: 38,
+                                  child: Tooltip(
+                                    message:
+                                        '${item.title}${item.approximate ? ' (localização aproximada)' : ''}',
+                                    child: Semantics(
+                                      button: true,
+                                      label: 'Fauna: ${item.title}',
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          _searchFocusNode.unfocus();
+                                          if (_searchQuery.isNotEmpty)
+                                            setState(
+                                              () => _searchResultsExpanded =
+                                                  false,
+                                            );
+                                          showFaunaDetails(context, item);
+                                        },
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF123D36),
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: const Color(0xFF8CF2CD),
+                                              width: 2,
+                                            ),
+                                          ),
+                                          child: const Icon(
+                                            Icons.pets,
+                                            size: 20,
+                                            color: Color(0xFF8CF2CD),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               if (_pendingRepositionPoint != null)
                                 Marker(
                                   point: _pendingRepositionPoint!,
@@ -1218,13 +1307,44 @@ class _LivingClueMapScreenState extends State<LivingClueMapScreen>
                               ),
                             ),
                           ),
-                          TextButton(
-                            onPressed: controller.activeLayers.isEmpty
-                                ? null
-                                : controller.disableAll,
-                            child: const Text('Desativar todas'),
+                          ListenableBuilder(
+                            listenable: _fauna,
+                            builder: (context, _) => TextButton(
+                              onPressed:
+                                  controller.activeLayers.isEmpty &&
+                                      !_fauna.enabled
+                                  ? null
+                                  : () {
+                                      controller.disableAll();
+                                      _fauna.toggle(
+                                        false,
+                                        _mapController.camera.zoom,
+                                        _mapController.camera.visibleBounds,
+                                      );
+                                    },
+                              child: const Text('Desativar todas'),
+                            ),
                           ),
                         ],
+                      ),
+                    ),
+                    ListenableBuilder(
+                      listenable: _fauna,
+                      builder: (context, _) => SwitchListTile(
+                        title: const Text('Fauna observada · iNaturalist'),
+                        subtitle: const Text(
+                          'Até 100 observações com fotos na área visível. Aproxime o mapa para consultar.',
+                        ),
+                        secondary: const Icon(
+                          Icons.pets_outlined,
+                          color: Color(0xFF8CF2CD),
+                        ),
+                        value: _fauna.enabled,
+                        onChanged: (value) => _fauna.toggle(
+                          value,
+                          _mapController.camera.zoom,
+                          _mapController.camera.visibleBounds,
+                        ),
                       ),
                     ),
                     if (controller.isLoading.value)

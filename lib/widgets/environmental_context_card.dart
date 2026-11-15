@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:unisinos_usp_app/widgets/fauna_nearby.dart';
 import 'package:intl/intl.dart';
 import 'package:unisinos_usp_app/models/environmental_context_model.dart';
 
 class EnvironmentalContextCard extends StatelessWidget {
   final EnvironmentalContextModel? context;
   final VoidCallback? onRetry;
+  final double? latitude, longitude;
 
   const EnvironmentalContextCard({
     super.key,
     required this.context,
     this.onRetry,
+    this.latitude,
+    this.longitude,
   });
 
   @override
@@ -128,6 +132,8 @@ class EnvironmentalContextCard extends StatelessWidget {
                       .toList(),
                 ),
             ],
+            if (latitude != null && longitude != null)
+              FaunaNearby(latitude: latitude!, longitude: longitude!),
           ],
         ),
       ),

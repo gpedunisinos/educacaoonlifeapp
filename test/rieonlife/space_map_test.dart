@@ -1,3 +1,4 @@
+import 'fauna_test.dart' show FaunaFake, faunaResult;
 import 'package:unisinos_usp_app/models/environmental_layer_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -122,6 +123,61 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
+  testWidgets(
+    'fauna toggle loads markers with details and clears them when disabled',
+    (tester) async {
+      Get.put<LivingClueMapController>(MapData());
+      final source = FaunaFake();
+      await tester.pumpWidget(
+        GetMaterialApp(
+          home: LivingClueMapScreen(
+            tileProvider: OfflineTiles(),
+            faunaSource: source,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final map = tester.widget<FlutterMap>(find.byType(FlutterMap));
+      map.mapController!.move(const LatLng(-29.79, -51.15), 12);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Camadas ambientais'));
+      await tester.pumpAndSettle();
+      final faunaSwitch = find.descendant(
+        of: find.widgetWithText(
+          SwitchListTile,
+          'Fauna observada · iNaturalist',
+        ),
+        matching: find.byType(Switch),
+      );
+      await tester.tap(faunaSwitch);
+      await tester.pump(const Duration(milliseconds: 1));
+      expect(source.mapResponses.length, 1);
+      source.mapResponses.single.complete(faunaResult(1));
+      await tester.pumpAndSettle();
+      Get.back();
+      await tester.pumpAndSettle();
+      expect(
+        find.byTooltip('Tapicuru 1 (localização aproximada)'),
+        findsOneWidget,
+      );
+      await tester.tap(find.byTooltip('Tapicuru 1 (localização aproximada)'));
+      await tester.pumpAndSettle();
+      expect(find.text('Ver no iNaturalist'), findsOneWidget);
+      await tester.tap(find.text('Fechar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Camadas ambientais'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Desativar todas'));
+      await tester.pumpAndSettle();
+      Get.back();
+      await tester.pumpAndSettle();
+      expect(
+        find.byTooltip('Tapicuru 1 (localização aproximada)'),
+        findsNothing,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
   for (final width in [390.0, 1280.0]) {
     testWidgets(
       'guide targets align inside an offset overlay and remain clear at $width',
@@ -344,8 +400,8 @@ void main() {
       await tester.tap(find.byTooltip('Camadas ambientais'));
       await tester.pumpAndSettle();
       expect(find.text('Desativar todas'), findsOneWidget);
-      await tester.ensureVisible(find.byType(Switch));
-      await tester.tap(find.byType(Switch));
+      await tester.ensureVisible(find.byType(Switch).last);
+      await tester.tap(find.byType(Switch).last);
       await tester.pumpAndSettle();
       expect(
         Get.find<EnvironmentalLayersController>().enabledIds,

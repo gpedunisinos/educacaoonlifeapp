@@ -343,6 +343,8 @@ class _LivingClueShowScreenState extends State<LivingClueShowScreen> {
                   if (model.hasLocation)
                     EnvironmentalContextCard(
                       context: model.environmentalContext,
+                      latitude: model.latitude,
+                      longitude: model.longitude,
                       onRetry: _reprocessContext,
                     ),
                   const SizedBox(height: 12),
