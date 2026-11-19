@@ -1,3 +1,4 @@
+import 'package:unisinos_usp_app/widgets/deter_nearby.dart';
 import 'package:flutter/material.dart';
 import 'package:unisinos_usp_app/widgets/fauna_nearby.dart';
 import 'package:intl/intl.dart';
@@ -132,6 +133,8 @@ class EnvironmentalContextCard extends StatelessWidget {
                       .toList(),
                 ),
             ],
+            if (latitude != null && longitude != null)
+              DeterNearby(latitude: latitude!, longitude: longitude!),
             if (latitude != null && longitude != null)
               FaunaNearby(latitude: latitude!, longitude: longitude!),
           ],

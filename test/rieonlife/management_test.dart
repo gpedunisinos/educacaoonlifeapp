@@ -108,7 +108,7 @@ void main() {
         mode == 'inventor' ? findsOneWidget : findsNothing,
       );
       expect(
-        find.byIcon(Icons.edit),
+        find.byIcon(Icons.edit_outlined),
         mode == 'inventor' ? findsOneWidget : findsNothing,
       );
       expect(
